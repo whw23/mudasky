@@ -28,7 +28,7 @@
 | `backend/pyproject.toml` | 项目配置和依赖声明 |
 | `backend/alembic.ini` | Alembic 迁移配置 |
 | `backend/src/app/__init__.py` | 包初始化 |
-| `backend/src/app/main.py` | FastAPI 入口，挂载路由，注册异常处理 |
+| `backend/src/app/api/main.py` | FastAPI 入口，挂载路由，注册异常处理 |
 | `backend/src/app/core/__init__.py` | 包初始化 |
 | `backend/src/app/core/config.py` | Pydantic Settings 环境变量管理 |
 | `backend/src/app/core/database.py` | async engine / session factory |
@@ -69,6 +69,10 @@
 | `backend/src/app/admin/schemas.py` | Admin Pydantic schemas |
 | `backend/src/app/admin/service.py` | Admin 业务逻辑 |
 | `backend/src/app/admin/router.py` | Admin API 路由 |
+| `backend/src/app/worker/__init__.py` | 包初始化 |
+| `backend/src/app/worker/models.py` | Task ORM 模型 |
+| `backend/src/app/worker/queue.py` | PostgreSQL 任务队列（入队/抢占/完成） |
+| `backend/src/app/worker/main.py` | Worker 入口，队列消费循环 |
 | `backend/alembic/env.py` | Alembic 迁移环境配置 |
 | `backend/alembic/script.py.mako` | 迁移脚本模板 |
 | `backend/tests/conftest.py` | pytest fixtures |
@@ -2858,17 +2862,250 @@ git commit -m "feat: 添加 Admin 领域骨架"
 
 ---
 
-## Task 12: FastAPI 入口 + Alembic 迁移
+## Task 12: Worker 骨架（任务队列 + 消费循环）
 
 **Files:**
-- Create: `backend/src/app/main.py`
+- Create: `backend/src/app/worker/__init__.py`
+- Create: `backend/src/app/worker/models.py`
+- Create: `backend/src/app/worker/queue.py`
+- Create: `backend/src/app/worker/main.py`
+
+- [ ] **Step 1: 创建 worker 包**
+
+```bash
+mkdir -p d:/Code/mudasky/backend/src/app/worker
+touch d:/Code/mudasky/backend/src/app/worker/__init__.py
+```
+
+- [ ] **Step 2: 编写 worker/models.py**
+
+```python
+"""Worker 任务 ORM 模型。"""
+
+import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.database import Base
+
+
+class Task(Base):
+    """任务表。"""
+
+    __tablename__ = "task"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, default=uuid.uuid4
+    )
+    task_type: Mapped[str] = mapped_column(
+        String(50), index=True, comment="任务类型"
+    )
+    payload: Mapped[str] = mapped_column(
+        Text, comment="任务参数（JSON）"
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), default="pending", index=True,
+        comment="状态：pending / running / completed / failed",
+    )
+    result: Mapped[str | None] = mapped_column(
+        Text, default=None, comment="执行结果（JSON）"
+    )
+    error: Mapped[str | None] = mapped_column(
+        Text, default=None, comment="错误信息"
+    )
+    retry_count: Mapped[int] = mapped_column(
+        Integer, default=0, comment="重试次数"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        comment="创建时间",
+    )
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), default=None, comment="开始执行时间"
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), default=None, comment="完成时间"
+    )
+```
+
+File: `backend/src/app/worker/models.py`
+
+- [ ] **Step 3: 编写 worker/queue.py**
+
+```python
+"""PostgreSQL 任务队列。
+
+基于 SELECT ... FOR UPDATE SKIP LOCKED 实现 FIFO 抢占式队列。
+"""
+
+import logging
+
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone
+
+from app.worker.models import Task
+
+logger = logging.getLogger(__name__)
+
+
+async def enqueue(session: AsyncSession, task_type: str, payload: str) -> Task:
+    """任务入队。
+
+    Args:
+        session: 数据库会话。
+        task_type: 任务类型标识。
+        payload: 任务参数（JSON 字符串）。
+
+    Returns:
+        创建的任务记录。
+    """
+    task = Task(task_type=task_type, payload=payload)
+    session.add(task)
+    await session.flush()
+    return task
+
+
+async def dequeue(session: AsyncSession) -> Task | None:
+    """抢占一个待执行任务（FIFO）。
+
+    使用 FOR UPDATE SKIP LOCKED 实现多 Worker 安全抢占。
+
+    Returns:
+        抢占到的任务，无可用任务时返回 None。
+    """
+    stmt = (
+        select(Task)
+        .where(Task.status == "pending")
+        .order_by(Task.created_at)
+        .limit(1)
+        .with_for_update(skip_locked=True)
+    )
+    result = await session.execute(stmt)
+    task = result.scalar_one_or_none()
+    if task:
+        task.status = "running"
+        task.started_at = datetime.now(timezone.utc)
+        await session.flush()
+    return task
+
+
+async def complete(session: AsyncSession, task: Task, result: str) -> None:
+    """标记任务完成。"""
+    task.status = "completed"
+    task.result = result
+    task.completed_at = datetime.now(timezone.utc)
+    await session.flush()
+
+
+async def fail(session: AsyncSession, task: Task, error: str) -> None:
+    """标记任务失败。"""
+    task.status = "failed"
+    task.error = error
+    task.completed_at = datetime.now(timezone.utc)
+    await session.flush()
+```
+
+File: `backend/src/app/worker/queue.py`
+
+- [ ] **Step 4: 编写 worker/main.py**
+
+```python
+"""Worker 入口。
+
+单线程消费循环，从 PostgreSQL 任务队列抢占任务并执行。
+"""
+
+import asyncio
+import logging
+
+from app.core.config import settings
+from app.core.database import async_session_factory
+from app.core.logging import setup_logging
+from app.worker import queue
+
+logger = logging.getLogger(__name__)
+
+# 无任务时的轮询间隔（秒）
+POLL_INTERVAL = 5
+
+
+async def process_task(task) -> str:
+    """处理单个任务。
+
+    TODO: 后期根据 task.task_type 分发到具体的 Agent 处理逻辑。
+
+    Returns:
+        处理结果（JSON 字符串）。
+    """
+    logger.info("开始处理任务", extra={"task_id": str(task.id), "type": task.task_type})
+    # 占位实现
+    return '{"status": "done"}'
+
+
+async def run() -> None:
+    """Worker 主循环。"""
+    logger.info("Worker 启动")
+    while True:
+        async with async_session_factory() as session:
+            task = await queue.dequeue(session)
+            if task is None:
+                await session.commit()
+                await asyncio.sleep(POLL_INTERVAL)
+                continue
+            try:
+                result = await process_task(task)
+                await queue.complete(session, task, result)
+                logger.info("任务完成", extra={"task_id": str(task.id)})
+            except Exception as e:
+                await queue.fail(session, task, str(e))
+                logger.error("任务失败", extra={"task_id": str(task.id), "error": str(e)})
+            await session.commit()
+
+
+def main() -> None:
+    """入口函数。"""
+    setup_logging()
+    asyncio.run(run())
+
+
+if __name__ == "__main__":
+    main()
+```
+
+File: `backend/src/app/worker/main.py`
+
+- [ ] **Step 5: 提交**
+
+```bash
+git add backend/src/app/worker/
+git commit -m "feat: 添加 Worker 骨架——任务模型、队列、消费循环"
+```
+
+---
+
+## Task 13: FastAPI 入口 + Alembic 迁移
+
+**Files:**
+- Create: `backend/src/app/api/__init__.py`
+- Create: `backend/src/app/api/main.py`
 - Create: `backend/alembic.ini`
 - Create: `backend/alembic/env.py`
 - Create: `backend/alembic/script.py.mako`
 - Create: `backend/tests/conftest.py`
 - Create: `backend/scripts/start.sh`
 
-- [ ] **Step 1: 编写 main.py**
+- [ ] **Step 1: 创建 api 包**
+
+```bash
+mkdir -p d:/Code/mudasky/backend/src/app/api
+touch d:/Code/mudasky/backend/src/app/api/__init__.py
+```
+
+- [ ] **Step 2: 编写 api/main.py**
 
 ```python
 """FastAPI 应用入口。
@@ -2907,14 +3144,14 @@ async def health_check() -> dict:
     return {"status": "ok"}
 ```
 
-File: `backend/src/app/main.py`
+File: `backend/src/app/api/main.py`
 
-- [ ] **Step 2: 初始化 Alembic**
+- [ ] **Step 3: 初始化 Alembic**
 
 Run: `cd d:/Code/mudasky/backend && uv run alembic init alembic`
 Expected: 创建 `alembic/` 目录和 `alembic.ini`
 
-- [ ] **Step 3: 修改 alembic.ini**
+- [ ] **Step 4: 修改 alembic.ini**
 
 将 `sqlalchemy.url` 行注释掉（改为在 env.py 中动态设置）：
 
@@ -2922,7 +3159,7 @@ Expected: 创建 `alembic/` 目录和 `alembic.ini`
 # sqlalchemy.url = driver://user:pass@localhost/dbname
 ```
 
-- [ ] **Step 4: 修改 alembic/env.py**
+- [ ] **Step 5: 修改 alembic/env.py**
 
 替换为以下内容，支持 async 和自动检测模型：
 
@@ -2943,6 +3180,7 @@ from app.user.models import User  # noqa: F401
 from app.auth.models import SmsCode, RefreshToken  # noqa: F401
 from app.content.models import Article, Category  # noqa: F401
 from app.document.models import Document  # noqa: F401
+from app.worker.models import Task  # noqa: F401
 
 config = context.config
 
@@ -2991,7 +3229,7 @@ else:
 
 File: `backend/alembic/env.py`
 
-- [ ] **Step 5: 编写容器启动脚本**
+- [ ] **Step 6: 编写容器启动脚本**
 
 ```bash
 #!/bin/bash
@@ -3003,7 +3241,7 @@ echo "执行数据库迁移..."
 alembic upgrade head
 
 echo "启动应用..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+exec uvicorn app.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 File: `backend/scripts/start.sh`
@@ -3012,7 +3250,7 @@ File: `backend/scripts/start.sh`
 
 Run: `chmod +x d:/Code/mudasky/backend/scripts/start.sh`
 
-- [ ] **Step 6: 编写 tests/conftest.py（骨架）**
+- [ ] **Step 7: 编写 tests/conftest.py（骨架）**
 
 ```python
 """pytest 全局 fixtures。"""
@@ -3022,16 +3260,16 @@ import pytest
 
 File: `backend/tests/conftest.py`
 
-- [ ] **Step 7: 提交**
+- [ ] **Step 8: 提交**
 
 ```bash
-git add backend/src/app/main.py backend/alembic.ini backend/alembic/ backend/scripts/ backend/tests/conftest.py
+git add backend/src/app/api/ backend/alembic.ini backend/alembic/ backend/scripts/ backend/tests/conftest.py
 git commit -m "feat: 添加 FastAPI 入口、Alembic 迁移配置、启动脚本"
 ```
 
 ---
 
-## Task 13: Docker 基础设施
+## Task 14: Docker 基础设施
 
 **Files:**
 - Modify: `docker/backend.Dockerfile`
@@ -3123,6 +3361,17 @@ services:
       retries: 3
       start_period: 10s
 
+  worker:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend.Dockerfile
+    command: ["python", "-m", "app.worker.main"]
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["worker"]
+
   db:
     image: postgres:17-alpine
     environment:
@@ -3140,7 +3389,6 @@ services:
 volumes:
   pgdata:
   uploads:
-  frontend_dist:
 ```
 
 File: `docker-compose.yml`
@@ -3161,7 +3409,7 @@ services:
     build:
       context: ./backend
       dockerfile: ../docker/backend.Dockerfile
-    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload"]
     ports:
       - "8000:8000"
     volumes:
@@ -3201,7 +3449,7 @@ git commit -m "feat: 添加 Docker 基础设施——Dockerfile 和 Compose 配�
 
 ---
 
-## Task 14: OpenResty 网关配置
+## Task 15: OpenResty 网关配置
 
 **Files:**
 - Modify: `gateway/nginx.conf`
@@ -3468,7 +3716,7 @@ git commit -m "feat: 添加 OpenResty 网关配置——认证、路由、限流
 
 ---
 
-## Task 15: 生成初始数据库迁移 + 端到端验证
+## Task 16: 生成初始数据库迁移 + 端到端验证
 
 **前提：** 需要 Docker 环境可用。
 
@@ -3530,7 +3778,7 @@ git commit -m "feat: 生成初始数据库迁移"
 
 ---
 
-## Task 16: 最终验证和清理
+## Task 17: 最终验证和清理
 
 - [ ] **Step 1: 运行所有后端测试**
 
