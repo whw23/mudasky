@@ -4,6 +4,17 @@ services:
       - ./gateway/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - ./gateway/conf.d/:/etc/nginx/conf.d/:ro
       - ./gateway/lua/:/usr/local/openresty/nginx/lua/:ro
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./gateway/lua/
+          target: /usr/local/openresty/nginx/lua/
+        - action: sync+restart
+          path: ./gateway/conf.d/
+          target: /etc/nginx/conf.d/
+        - action: sync+restart
+          path: ./gateway/nginx.conf
+          target: /usr/local/openresty/nginx/conf/nginx.conf
 
   frontend:
     ports:
