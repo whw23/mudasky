@@ -32,7 +32,10 @@ api.include_router(admin_router)
 app.mount("/api", api)
 
 
-@app.get("/health")
 async def health_check() -> dict:
     """健康检查端点。"""
     return {"status": "ok"}
+
+
+app.get("/health")(health_check)
+api.get("/health")(health_check)
