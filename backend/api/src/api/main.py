@@ -1,6 +1,6 @@
 """FastAPI 应用入口。
 
-挂载所有领域路由，注册异常处理。
+根应用挂载 API 子应用到 /api 前缀。
 """
 
 from fastapi import FastAPI
@@ -15,18 +15,24 @@ from app.user.router import router as user_router
 
 setup_logging()
 
+# 根应用
 app = FastAPI(title="mudasky", version="0.1.0")
 
-register_exception_handlers(app)
+# API 子应用
+api = FastAPI(title="mudasky API", version="0.1.0")
+register_exception_handlers(api)
 
-app.include_router(auth_router, prefix="/api")
-app.include_router(user_router, prefix="/api")
-app.include_router(content_router, prefix="/api")
-app.include_router(document_router, prefix="/api")
-app.include_router(admin_router, prefix="/api")
+api.include_router(auth_router)
+api.include_router(user_router)
+api.include_router(content_router)
+api.include_router(document_router)
+api.include_router(admin_router)
+
+# 挂载子应用
+app.mount("/api", api)
 
 
-@app.get("/api/health")
+@app.get("/health")
 async def health_check() -> dict:
     """健康检查端点。"""
     return {"status": "ok"}
