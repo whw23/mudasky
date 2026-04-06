@@ -1,1 +1,15 @@
-# TODO
+# TODO: 添加构建和部署步骤
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
