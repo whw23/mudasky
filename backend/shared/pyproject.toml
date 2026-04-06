@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mudasky-backend"
+version = "0.1.0"
+description = "mudasky 共享库——core + 领域模块"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.115",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.30",
+    "pydantic>=2.11",
+    "pydantic-settings>=2.9",
+    "httpx>=0.28",
+    "python-multipart>=0.0.20",
+    "aiofiles>=24.1",
+    "bcrypt>=4.2",
+    "pyotp>=2.9",
+    "qrcode[pil]>=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+[tool.black]
+line-length = 88

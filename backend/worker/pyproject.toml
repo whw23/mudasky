@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mudasky-worker"
+version = "0.1.0"
+description = "mudasky Worker 服务"
+requires-python = ">=3.14"
+dependencies = [
+    "mudasky-backend",
+]
+
+[tool.uv.sources]
+mudasky-backend = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/worker_runner"]
+
+[tool.black]
+line-length = 88

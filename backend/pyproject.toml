@@ -1,1 +1,2 @@
-# TODO
+[tool.uv.workspace]
+members = ["shared", "api", "worker"]
