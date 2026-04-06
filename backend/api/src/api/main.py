@@ -16,7 +16,7 @@ from app.user.router import router as user_router
 setup_logging()
 
 # 根应用
-app = FastAPI(title="mudasky", version="0.1.0")
+app = FastAPI(title="mudasky", version="0.1.0", docs_url=None)
 
 # API 子应用
 api = FastAPI(title="mudasky API", version="0.1.0")
@@ -28,14 +28,18 @@ api.include_router(content_router)
 api.include_router(document_router)
 api.include_router(admin_router)
 
+
+@api.get("/health")
+async def api_health_check() -> dict:
+    """API 健康检查端点。"""
+    return {"status": "ok"}
+
+
 # 挂载子应用
 app.mount("/api", api)
 
 
+@app.get("/health")
 async def health_check() -> dict:
     """健康检查端点。"""
     return {"status": "ok"}
-
-
-app.get("/health")(health_check)
-api.get("/health")(health_check)
