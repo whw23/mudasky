@@ -5,7 +5,7 @@
 | Layer       | Technology                               |
 |-------------|------------------------------------------|
 | Gateway     | OpenResty (Lua)                          |
-| Frontend    | React + Vite + React Router + TypeScript |
+| Frontend    | Next.js + React + TypeScript             |
 | UI          | shadcn/ui + Tailwind CSS                 |
 | Backend     | Python                                   |
 | Database    | PostgreSQL                               |
@@ -45,7 +45,7 @@ mudasky/
 
 | Tool   | Scope                          |
 |--------|--------------------------------|
-| pnpm   | Frontend package manager       |
+| pnpm   | Frontend package manager (Next.js) |
 | uv     | Backend local dev (IDE + LSP)  |
 | Docker | Container runtime              |
 
