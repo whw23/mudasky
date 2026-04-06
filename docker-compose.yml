@@ -15,7 +15,10 @@ services:
     working_dir: /app
     volumes:
       - ./frontend:/app
-    command: ["sh", "-c", "pnpm install && pnpm start"]
+      - /app/node_modules
+    command: ["sh", "-c", "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm start"]
+    environment:
+      - CI=true
     depends_on:
       api:
         condition: service_healthy

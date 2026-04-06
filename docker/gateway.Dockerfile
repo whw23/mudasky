@@ -1,6 +1,6 @@
 FROM openresty/openresty:alpine
 
-RUN opm get SkyLothar/lua-resty-jwt
+RUN apk add --no-cache perl curl && opm get SkyLothar/lua-resty-jwt
 
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY conf.d/ /etc/nginx/conf.d/
