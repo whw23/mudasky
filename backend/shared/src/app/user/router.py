@@ -20,7 +20,7 @@ from app.user.schemas import (
 )
 from app.user.service import UserService
 
-router = APIRouter(prefix="/user", tags=["用户"])
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 class TotpCodeBody(BaseModel):
