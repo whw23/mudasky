@@ -218,29 +218,65 @@ frontend/
 
 ## 5. 设计风格
 
-### 5.1 颜色
+> 设计决策参考 `ui-ux-pro-max` skill 生成的 Trust & Authority 风格推荐。
+> 实现时使用 `ui-ux-pro-max` skill 指导组件开发和 UX 质量控制。
 
-Tailwind 自定义颜色：
+### 5.1 设计风格：Trust & Authority
+
+教育机构需要传递专业、可靠、权威感：
+- 证书/资质展示、成功案例指标、合作院校 Logo 墙
+- 简洁清晰的信息层级，避免花哨装饰
+- 使用 shadcn/ui 组件库保持一致性
+
+### 5.2 颜色
+
+基于品牌红色自定义 shadcn/ui 主题色（CSS 变量）：
 
 ```ts
-// tailwind.config.ts
+// tailwind.config.ts — 完整颜色 token
 colors: {
   primary: {
-    DEFAULT: '#C41A1A',
-    hover: '#A01515',
-    light: '#FFF0F0',
+    DEFAULT: '#C41A1A',     // 品牌红
+    hover: '#A01515',       // hover 加深
+    light: '#FFF0F0',       // 浅红背景
+    foreground: '#FFFFFF',  // 红底白字
   },
+  background: '#F8FAFC',
+  foreground: '#1E293B',
+  card: '#FFFFFF',
+  'card-foreground': '#1E293B',
+  muted: '#E8ECF1',
+  'muted-foreground': '#64748B',
+  border: '#E2E8F0',
+  destructive: '#DC2626',
+  ring: '#C41A1A',
+  footer: '#1F2937',        // 深灰底部
 }
 ```
 
-### 5.2 交互规范
+### 5.3 字体
+
+- 英文：Lexend（专业、可读性强）
+- 中文：Noto Sans SC（思源黑体，与 Lexend 风格匹配）
+- 代码/数据：tabular figures（等宽数字）
+
+### 5.4 图标
+
+使用 Lucide 图标库（shadcn/ui 默认集成），禁止使用 emoji 作为图标。
+
+### 5.5 交互规范
 
 - 所有可点击的文字链接 hover 时变红色（primary）
 - 文章卡片 hover 时整卡片背景变红色，文字变白色
 - 导航当前项为红色，其他项 hover 变红
 - 按钮主色调为红色
+- hover 过渡时间 150-300ms
+- 触摸目标最小 44x44px
+- 文本对比度 ≥ 4.5:1（WCAG AA）
+- 尊重 `prefers-reduced-motion` 设置
+- 响应式断点：375 / 768 / 1024 / 1440px
 
-### 5.3 Banner
+### 5.6 Banner
 
 - 每个官网页面有大图 Banner
 - Banner 上叠加半透明层 + 页面标题（中文大字 + 英文小字）
