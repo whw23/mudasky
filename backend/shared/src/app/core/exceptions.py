@@ -13,6 +13,13 @@ class AppException(Exception):
         self.message = message
 
 
+class UnauthorizedException(AppException):
+    """认证失败异常。"""
+
+    def __init__(self, message: str = "认证失败"):
+        super().__init__(status_code=401, code="UNAUTHORIZED", message=message)
+
+
 class NotFoundException(AppException):
     """资源未找到异常。"""
 
@@ -32,6 +39,13 @@ class ConflictException(AppException):
 
     def __init__(self, message: str = "资源冲突"):
         super().__init__(status_code=409, code="CONFLICT", message=message)
+
+
+class TooManyRequestsException(AppException):
+    """请求过于频繁异常。"""
+
+    def __init__(self, message: str = "请求过于频繁"):
+        super().__init__(status_code=429, code="TOO_MANY_REQUESTS", message=message)
 
 
 class QuotaExceededException(AppException):
