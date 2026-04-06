@@ -24,7 +24,6 @@ eggs/
 .eggs/
 .venv/
 venv/
-env/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
