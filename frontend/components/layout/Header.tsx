@@ -7,7 +7,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Phone } from "lucide-react"
+import { Phone, User, LogOut, Settings, FileText, LayoutDashboard } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button"
 
 /** 导航菜单项 */
 const NAV_ITEMS = [
@@ -31,14 +33,45 @@ function isActive(pathname: string, href: string): boolean {
 
 export function Header() {
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   return (
     <header>
       {/* 红色顶栏 */}
       <div className="bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 py-1.5 text-sm">
-          <Phone className="size-3.5" />
-          <span>咨询热线：400-888-8888</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-sm">
+          <span>慕大国际教育 · 专注国际教育 专注出国服务</span>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Phone className="size-3.5" />
+              服务热线：189-1268-6656 | 吴老师
+            </span>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard" className="hover:underline">
+                  {user.username || user.phone}
+                </Link>
+                {user.role === "admin" && (
+                  <Link href="/admin/dashboard" className="hover:underline">
+                    管理后台
+                  </Link>
+                )}
+                <button onClick={logout} className="hover:underline">
+                  退出
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/login" className="hover:underline">
+                  登录
+                </Link>
+                <span>|</span>
+                <Link href="/register" className="hover:underline">
+                  注册
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

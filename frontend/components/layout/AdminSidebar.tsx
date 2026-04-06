@@ -7,7 +7,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, BookOpen, Tag } from "lucide-react"
+import { LayoutDashboard, Users, BookOpen, Tag, ArrowLeft } from "lucide-react"
 
 /** 侧边栏菜单项 */
 const MENU_ITEMS = [
@@ -23,6 +23,13 @@ export function AdminSidebar() {
   return (
     <aside className="w-60 shrink-0 border-r bg-gray-900 text-gray-300">
       <div className="p-4">
+        <Link
+          href="/"
+          className="mb-4 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          返回官网
+        </Link>
         <h2 className="mb-4 text-lg font-bold text-white">管理后台</h2>
         <nav className="space-y-1">
           {MENU_ITEMS.map((item) => {

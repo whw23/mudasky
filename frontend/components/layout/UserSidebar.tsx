@@ -7,7 +7,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, User, FileText, BookOpen } from "lucide-react"
+import { LayoutDashboard, User, FileText, BookOpen, ArrowLeft } from "lucide-react"
 
 /** 侧边栏菜单项 */
 const MENU_ITEMS = [
@@ -23,6 +23,13 @@ export function UserSidebar() {
   return (
     <aside className="w-60 shrink-0 border-r bg-gray-50">
       <div className="p-4">
+        <Link
+          href="/"
+          className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          返回官网
+        </Link>
         <h2 className="mb-4 text-lg font-bold text-foreground">用户中心</h2>
         <nav className="space-y-1">
           {MENU_ITEMS.map((item) => {
