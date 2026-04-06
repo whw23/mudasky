@@ -43,8 +43,10 @@ lua_modules/
 .env
 .env.local
 .env.*.local
-env/*.env
-!env/*.env.example
+env/gateway.env
+env/backend.env
+env/worker.env
+env/db.env
 
 # ─── Logs ────────────────────────────────────────────────────────────────────
 logs/
