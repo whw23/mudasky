@@ -5,20 +5,21 @@
  * 包含仪表盘、用户管理、文章管理、分类管理导航
  */
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { Link, usePathname } from "@/i18n/navigation"
 import { LayoutDashboard, Users, BookOpen, Tag, ArrowLeft } from "lucide-react"
 
-/** 侧边栏菜单项 */
-const MENU_ITEMS = [
-  { label: "仪表盘", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "用户管理", href: "/admin/users", icon: Users },
-  { label: "文章管理", href: "/admin/articles", icon: BookOpen },
-  { label: "分类管理", href: "/admin/categories", icon: Tag },
+/** 侧边栏菜单键与路径映射 */
+const MENU_KEYS = [
+  { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { key: "userManagement", href: "/admin/users", icon: Users },
+  { key: "articleManagement", href: "/admin/articles", icon: BookOpen },
+  { key: "categoryManagement", href: "/admin/categories", icon: Tag },
 ] as const
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const t = useTranslations("Admin")
 
   return (
     <aside className="w-60 shrink-0 border-r bg-gray-900 text-gray-300">
@@ -28,11 +29,11 @@ export function AdminSidebar() {
           className="mb-4 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="size-4" />
-          返回官网
+          {t("backToSite")}
         </Link>
-        <h2 className="mb-4 text-lg font-bold text-white">管理后台</h2>
+        <h2 className="mb-4 text-lg font-bold text-white">{t("title")}</h2>
         <nav className="space-y-1">
-          {MENU_ITEMS.map((item) => {
+          {MENU_KEYS.map((item) => {
             const Icon = item.icon
             const active = pathname.startsWith(item.href)
             return (
@@ -46,7 +47,7 @@ export function AdminSidebar() {
                 }`}
               >
                 <Icon className="size-4" />
-                {item.label}
+                {t(item.key)}
               </Link>
             )
           })}

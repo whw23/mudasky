@@ -6,6 +6,7 @@
  */
 
 import { useState, type FormEvent } from 'react'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import {
@@ -24,6 +25,7 @@ import { PasswordInput } from './PasswordInput'
 /** 注册弹窗组件 */
 export function RegisterModal() {
   const { authModal, hideAuthModal, fetchUser, showLoginModal } = useAuth()
+  const t = useTranslations('Auth')
 
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
@@ -57,7 +59,7 @@ export function RegisterModal() {
     setError('')
 
     if (password && password !== confirmPassword) {
-      setError('两次输入的密码不一致')
+      setError(t('passwordMismatch'))
       return
     }
 
@@ -72,7 +74,7 @@ export function RegisterModal() {
       resetForm()
       hideAuthModal()
     } catch (err: any) {
-      setError(err.response?.data?.message || '注册失败')
+      setError(err.response?.data?.message || t('registerFailed'))
     } finally {
       setLoading(false)
     }
@@ -80,34 +82,34 @@ export function RegisterModal() {
 
   return (
     <Dialog open={authModal === 'register'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md" >
         <DialogHeader>
-          <DialogTitle>注册</DialogTitle>
+          <DialogTitle>{t('registerTitle')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 手机号 */}
           <div className="space-y-2">
-            <Label htmlFor="reg-phone">手机号</Label>
+            <Label htmlFor="reg-phone">{t('phone')}</Label>
             <Input
               id="reg-phone"
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="请输入手机号"
+              placeholder={t('phonePlaceholder')}
               required
             />
           </div>
 
           {/* 验证码 */}
           <div className="space-y-2">
-            <Label htmlFor="reg-code">验证码</Label>
+            <Label htmlFor="reg-code">{t('code')}</Label>
             <div className="flex gap-2">
               <Input
                 id="reg-code"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="请输入验证码"
+                placeholder={t('codePlaceholder')}
                 maxLength={6}
                 required
               />
@@ -118,20 +120,20 @@ export function RegisterModal() {
           {/* 用户名（可选） */}
           <div className="space-y-2">
             <Label htmlFor="reg-username">
-              用户名 <span className="text-muted-foreground">（可选）</span>
+              {t('username')} <span className="text-muted-foreground">{t('optional')}</span>
             </Label>
             <Input
               id="reg-username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="请输入用户名"
+              placeholder={t('usernamePlaceholder')}
             />
           </div>
 
           {/* 密码（可选） */}
           <div className="space-y-2">
             <Label htmlFor="reg-password">
-              密码 <span className="text-muted-foreground">（可选）</span>
+              {t('password')} <span className="text-muted-foreground">{t('optional')}</span>
             </Label>
             <PasswordInput
               id="reg-password"
@@ -143,12 +145,12 @@ export function RegisterModal() {
           {/* 确认密码 */}
           {password && (
             <div className="space-y-2">
-              <Label htmlFor="reg-confirm-password">确认密码</Label>
+              <Label htmlFor="reg-confirm-password">{t('confirmPassword')}</Label>
               <PasswordInput
                 id="reg-confirm-password"
                 value={confirmPassword}
                 onChange={setConfirmPassword}
-                placeholder="请再次输入密码"
+                placeholder={t('confirmPasswordPlaceholder')}
               />
             </div>
           )}
@@ -157,19 +159,19 @@ export function RegisterModal() {
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? '注册中...' : '注册'}
+            {loading ? t('registerLoading') : t('registerButton')}
           </Button>
         </form>
 
         <Separator />
 
         <p className="text-center text-sm text-muted-foreground">
-          已有账号？
+          {t('hasAccount')}
           <button
             className="text-primary hover:underline"
             onClick={showLoginModal}
           >
-            去登录
+            {t('goLogin')}
           </button>
         </p>
       </DialogContent>
