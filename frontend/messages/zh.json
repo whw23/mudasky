@@ -103,6 +103,7 @@
     "dashboard": "管理仪表盘",
     "userManagement": "用户管理",
     "articleManagement": "文章管理",
+    "groupManagement": "权限组管理",
     "categoryManagement": "分类管理",
     "placeholder": "待实现"
   },

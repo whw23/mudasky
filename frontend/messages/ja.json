@@ -103,6 +103,7 @@
     "dashboard": "ダッシュボード",
     "userManagement": "ユーザー管理",
     "articleManagement": "記事管理",
+    "groupManagement": "権限グループ管理",
     "categoryManagement": "カテゴリ管理",
     "placeholder": "準備中"
   },

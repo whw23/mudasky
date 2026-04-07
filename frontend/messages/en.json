@@ -103,6 +103,7 @@
     "dashboard": "Dashboard",
     "userManagement": "User Management",
     "articleManagement": "Article Management",
+    "groupManagement": "Group Management",
     "categoryManagement": "Category Management",
     "placeholder": "Coming Soon"
   },

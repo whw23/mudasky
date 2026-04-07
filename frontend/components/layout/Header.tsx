@@ -9,6 +9,7 @@ import { Phone } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { usePermissions } from "@/hooks/use-permissions"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 
 /** 导航菜单键与路径映射 */
@@ -34,6 +35,7 @@ function isActive(pathname: string, href: string): boolean {
 export function Header() {
   const pathname = usePathname()
   const { user, logout, showLoginModal, showRegisterModal } = useAuth()
+  const { isAdmin } = usePermissions()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
 
@@ -54,7 +56,7 @@ export function Header() {
                 <Link href="/dashboard" className="hover:underline">
                   {user.username || user.phone}
                 </Link>
-                {user.role === "admin" && (
+                {isAdmin && (
                   <Link href="/admin/dashboard" className="hover:underline">
                     {tHeader("adminPanel")}
                   </Link>
