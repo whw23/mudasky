@@ -149,9 +149,17 @@
 
 ---
 
-## 4. 前端登录页
+## 4. 前端登录（全局 Modal）
 
-### 4.1 三种方式 Tab 切换
+登录使用全局 Modal（shadcn Dialog），不离开当前页面。
+
+### 4.1 组件结构
+
+- `components/auth/LoginModal.tsx` — 登录弹窗组件
+- 由 Header 的"登录"按钮触发，或 401 被拦截时自动弹出
+- 使用 AuthContext 中的 `showLoginModal` / `hideLoginModal` 控制显示
+
+### 4.2 三种方式 Tab 切换
 
 使用 shadcn/ui Tabs 组件，三个 Tab：
 
@@ -170,25 +178,26 @@
 - 密码输入框（带显示/隐藏切换）
 - 登录按钮
 
-### 4.2 保持登录
+### 4.3 保持登录
 
 - 底部 Checkbox："保持登录"（默认勾选）
 - 发送请求时添加请求头 `X-Keep-Login: true/false`
 
-### 4.3 2FA 流程
+### 4.4 2FA 流程
 
 当后端返回 `{"step": "2fa_required"}` 时：
 
-1. 弹出 Dialog（shadcn Dialog）
+1. Modal 内容切换为 2FA 验证界面
 2. 选择验证方式：短信验证码 / Authenticator
 3. 输入验证码
 4. 点击确认 → 重新提交 login 请求（原参数 + totp 或 sms_code_2fa）
-5. 成功 → 关闭 Dialog → 存用户信息 → 跳转
+5. 成功 → 关闭 Modal → 存用户信息 → 页面刷新数据
 
-### 4.4 其他
+### 4.5 其他
 
-- 底部"没有账号？去注册" Link
-- 登录成功跳转：优先跳转之前被拦截的页面（从 URL query 读取 redirect），否则跳首页
+- 底部"没有账号？去注册" Link（跳转到 /register 独立页面，关闭 Modal）
+- 登录成功后不跳转，关闭 Modal 即可（用户停留在当前页面）
+- LoginModal 挂载在根布局（app/layout.tsx）中，所有页面可用
 
 ---
 
