@@ -123,19 +123,16 @@
 
 API 服务启动时（`start.sh` 中，Alembic 迁移之后、uvicorn 启动之前）自动检查并创建 superuser：
 
-- 从环境变量读取 `SUPERUSER_PHONE` 和 `SUPERUSER_PASSWORD`
 - 查库检查是否已存在 `is_superuser=True` 的用户
-- 不存在 → 创建 superuser 账号（is_superuser=True, is_active=True, password 哈希存储）
+- 不存在 → 创建 superuser 账号：
+  - username: `mudasky`
+  - password: `mudasky@12321.`（bcrypt 哈希存储）
+  - is_superuser: True
+  - is_active: True
+  - phone: 不设置（superuser 通过用户名+密码登录）
 - 已存在 → 跳过
 
-在 `env/backend.env` 中配置：
-
-```
-SUPERUSER_PHONE=18912686656
-SUPERUSER_PASSWORD=changeme
-```
-
-在 `env/backend.env.example` 中添加对应模板。
+初始密码硬编码在脚本中，首次登录后应立即修改。
 
 实现为独立脚本 `backend/api/scripts/init_superuser.py`，由 `start.sh` 调用。
 
