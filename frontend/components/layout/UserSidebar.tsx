@@ -5,20 +5,21 @@
  * 包含仪表盘、个人资料、文档管理、我的文章导航
  */
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { Link, usePathname } from "@/i18n/navigation"
 import { LayoutDashboard, User, FileText, BookOpen, ArrowLeft } from "lucide-react"
 
-/** 侧边栏菜单项 */
-const MENU_ITEMS = [
-  { label: "仪表盘", href: "/dashboard", icon: LayoutDashboard },
-  { label: "个人资料", href: "/profile", icon: User },
-  { label: "文档管理", href: "/documents", icon: FileText },
-  { label: "我的文章", href: "/articles", icon: BookOpen },
+/** 侧边栏菜单键与路径映射 */
+const MENU_KEYS = [
+  { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { key: "profile", href: "/profile", icon: User },
+  { key: "documents", href: "/documents", icon: FileText },
+  { key: "myArticles", href: "/articles", icon: BookOpen },
 ] as const
 
 export function UserSidebar() {
   const pathname = usePathname()
+  const t = useTranslations("User")
 
   return (
     <aside className="w-60 shrink-0 border-r bg-gray-50">
@@ -28,11 +29,11 @@ export function UserSidebar() {
           className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="size-4" />
-          返回官网
+          {t("backToSite")}
         </Link>
-        <h2 className="mb-4 text-lg font-bold text-foreground">用户中心</h2>
+        <h2 className="mb-4 text-lg font-bold text-foreground">{t("title")}</h2>
         <nav className="space-y-1">
-          {MENU_ITEMS.map((item) => {
+          {MENU_KEYS.map((item) => {
             const Icon = item.icon
             const active = pathname.startsWith(item.href)
             return (
@@ -46,7 +47,7 @@ export function UserSidebar() {
                 }`}
               >
                 <Icon className="size-4" />
-                {item.label}
+                {t(item.key)}
               </Link>
             )
           })}

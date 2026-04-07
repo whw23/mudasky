@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
 
@@ -18,6 +19,7 @@ interface SmsCodeButtonProps {
 export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
   const [countdown, setCountdown] = useState(0)
   const [sending, setSending] = useState(false)
+  const t = useTranslations('Auth')
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -33,12 +35,12 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
       await api.post('/auth/sms-code', { phone })
       setCountdown(60)
     } catch (err: any) {
-      const msg = err.response?.data?.message || '发送失败'
+      const msg = err.response?.data?.message || t('sendFailed')
       alert(msg)
     } finally {
       setSending(false)
     }
-  }, [phone, sending, countdown])
+  }, [phone, sending, countdown, t])
 
   return (
     <Button
@@ -49,7 +51,7 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
       onClick={handleSend}
       className="w-28 shrink-0"
     >
-      {countdown > 0 ? `${countdown}s` : sending ? '发送中...' : '发送验证码'}
+      {countdown > 0 ? `${countdown}s` : sending ? t('sending') : t('sendCode')}
     </Button>
   )
 }

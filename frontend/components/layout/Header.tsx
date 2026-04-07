@@ -5,23 +5,24 @@
  * 包含红色顶栏（电话号码）和导航菜单
  */
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Phone } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { LocaleSwitcher } from "./LocaleSwitcher"
 
-/** 导航菜单项 */
-const NAV_ITEMS = [
-  { label: "网站首页", href: "/" },
-  { label: "关于我们", href: "/about" },
-  { label: "出国留学", href: "/study-abroad" },
-  { label: "院校选择", href: "/universities" },
-  { label: "申请条件", href: "/requirements" },
-  { label: "成功案例", href: "/cases" },
-  { label: "签证办理", href: "/visa" },
-  { label: "留学生活", href: "/life" },
-  { label: "新闻政策", href: "/news" },
-  { label: "联系我们", href: "/contact" },
+/** 导航菜单键与路径映射 */
+const NAV_KEYS = [
+  { key: "home", href: "/" },
+  { key: "about", href: "/about" },
+  { key: "studyAbroad", href: "/study-abroad" },
+  { key: "universities", href: "/universities" },
+  { key: "requirements", href: "/requirements" },
+  { key: "cases", href: "/cases" },
+  { key: "visa", href: "/visa" },
+  { key: "life", href: "/life" },
+  { key: "news", href: "/news" },
+  { key: "contact", href: "/contact" },
 ] as const
 
 /** 判断导航项是否激活 */
@@ -33,18 +34,21 @@ function isActive(pathname: string, href: string): boolean {
 export function Header() {
   const pathname = usePathname()
   const { user, logout, showLoginModal, showRegisterModal } = useAuth()
+  const tNav = useTranslations("Nav")
+  const tHeader = useTranslations("Header")
 
   return (
     <header>
       {/* 红色顶栏 */}
       <div className="bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-sm">
-          <span>慕大国际教育 · 专注国际教育 专注出国服务</span>
+          <span>{tHeader("tagline")}</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <Phone className="size-3.5" />
-              服务热线：189-1268-6656 | 吴老师
+              {tHeader("hotline")}
             </span>
+            <LocaleSwitcher />
             {user ? (
               <div className="flex items-center gap-3">
                 <Link href="/dashboard" className="hover:underline">
@@ -52,21 +56,21 @@ export function Header() {
                 </Link>
                 {user.role === "admin" && (
                   <Link href="/admin/dashboard" className="hover:underline">
-                    管理后台
+                    {tHeader("adminPanel")}
                   </Link>
                 )}
                 <button onClick={logout} className="hover:underline">
-                  退出
+                  {tHeader("logout")}
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={showLoginModal} className="hover:underline">
-                  登录
+                  {tHeader("login")}
                 </button>
                 <span>|</span>
                 <button onClick={showRegisterModal} className="hover:underline">
-                  注册
+                  {tHeader("register")}
                 </button>
               </div>
             )}
@@ -78,10 +82,10 @@ export function Header() {
       <nav className="border-b bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <Link href="/" className="text-xl font-bold text-primary">
-            慕大国际教育
+            {tHeader("brandName")}
           </Link>
           <ul className="flex items-center gap-1">
-            {NAV_ITEMS.map((item) => (
+            {NAV_KEYS.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -91,7 +95,7 @@ export function Header() {
                       : "text-foreground hover:text-primary"
                   }`}
                 >
-                  {item.label}
+                  {tNav(item.key)}
                 </Link>
               </li>
             ))}

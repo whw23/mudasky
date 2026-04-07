@@ -6,6 +6,7 @@
  */
 
 import { useState, type FormEvent } from 'react'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { setKeepLogin } from '@/lib/api'
@@ -28,6 +29,7 @@ import { TwoFaForm } from './TwoFaForm'
 /** 登录弹窗组件 */
 export function LoginModal() {
   const { authModal, hideAuthModal, fetchUser, showRegisterModal } = useAuth()
+  const t = useTranslations('Auth')
 
   /* 通用状态 */
   const [loading, setLoading] = useState(false)
@@ -95,7 +97,7 @@ export function LoginModal() {
       hideAuthModal()
       resetForm()
     } catch (err: any) {
-      setError(err.response?.data?.message || '登录失败')
+      setError(err.response?.data?.message || t('loginFailed'))
     } finally {
       setLoading(false)
     }
@@ -133,9 +135,9 @@ export function LoginModal() {
   if (twoFaStep) {
     return (
       <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md" >
           <DialogHeader>
-            <DialogTitle>二步验证</DialogTitle>
+            <DialogTitle>{t('twoFaTitle')}</DialogTitle>
           </DialogHeader>
           <TwoFaForm
             phone={pendingPayload?.phone || ''}
@@ -151,40 +153,40 @@ export function LoginModal() {
   /* 主登录视图 */
   return (
     <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md" >
         <DialogHeader>
-          <DialogTitle>登录</DialogTitle>
+          <DialogTitle>{t('loginTitle')}</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="sms" className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="sms">手机验证码</TabsTrigger>
-            <TabsTrigger value="username">用户名密码</TabsTrigger>
-            <TabsTrigger value="phone-pwd">手机号密码</TabsTrigger>
+            <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
+            <TabsTrigger value="username">{t('tabUsername')}</TabsTrigger>
+            <TabsTrigger value="phone-pwd">{t('tabPhonePwd')}</TabsTrigger>
           </TabsList>
 
           {/* 手机验证码登录 */}
           <TabsContent value="sms">
             <form onSubmit={handleSmsLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="sms-phone">手机号</Label>
+                <Label htmlFor="sms-phone">{t('phone')}</Label>
                 <Input
                   id="sms-phone"
                   type="tel"
                   value={smsPhone}
                   onChange={(e) => setSmsPhone(e.target.value)}
-                  placeholder="请输入手机号"
+                  placeholder={t('phonePlaceholder')}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sms-login-code">验证码</Label>
+                <Label htmlFor="sms-login-code">{t('code')}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="sms-login-code"
                     value={smsCode}
                     onChange={(e) => setSmsCode(e.target.value)}
-                    placeholder="请输入验证码"
+                    placeholder={t('codePlaceholder')}
                     maxLength={6}
                     required
                   />
@@ -195,10 +197,10 @@ export function LoginModal() {
                 <p className="text-sm text-destructive">{error}</p>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? '登录中...' : '登录 / 注册'}
+                {loading ? t('loginLoading') : t('loginOrRegister')}
               </Button>
               <p className="text-xs text-center text-muted-foreground">
-                未注册的手机号将自动创建账号
+                {t('autoRegisterHint')}
               </p>
             </form>
           </TabsContent>
@@ -207,17 +209,17 @@ export function LoginModal() {
           <TabsContent value="username">
             <form onSubmit={handleUsernameLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="login-username">用户名</Label>
+                <Label htmlFor="login-username">{t('username')}</Label>
                 <Input
                   id="login-username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="请输入用户名"
+                  placeholder={t('usernamePlaceholder')}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-username-pwd">密码</Label>
+                <Label htmlFor="login-username-pwd">{t('password')}</Label>
                 <PasswordInput
                   id="login-username-pwd"
                   value={usernamePwd}
@@ -229,7 +231,7 @@ export function LoginModal() {
                 <p className="text-sm text-destructive">{error}</p>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? '登录中...' : '登录'}
+                {loading ? t('loginLoading') : t('loginButton')}
               </Button>
             </form>
           </TabsContent>
@@ -241,18 +243,18 @@ export function LoginModal() {
               className="space-y-4 pt-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="login-phone">手机号</Label>
+                <Label htmlFor="login-phone">{t('phone')}</Label>
                 <Input
                   id="login-phone"
                   type="tel"
                   value={phoneLogin}
                   onChange={(e) => setPhoneLogin(e.target.value)}
-                  placeholder="请输入手机号"
+                  placeholder={t('phonePlaceholder')}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-phone-pwd">密码</Label>
+                <Label htmlFor="login-phone-pwd">{t('password')}</Label>
                 <PasswordInput
                   id="login-phone-pwd"
                   value={phonePwd}
@@ -264,7 +266,7 @@ export function LoginModal() {
                 <p className="text-sm text-destructive">{error}</p>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? '登录中...' : '登录'}
+                {loading ? t('loginLoading') : t('loginButton')}
               </Button>
             </form>
           </TabsContent>
@@ -278,7 +280,7 @@ export function LoginModal() {
             onCheckedChange={handleKeepLoginChange}
           />
           <Label htmlFor="keep-login" className="text-sm font-normal">
-            保持登录 30 天
+            {t('keepLogin')}
           </Label>
         </div>
 
@@ -286,12 +288,12 @@ export function LoginModal() {
 
         {/* 注册链接 */}
         <p className="text-center text-sm text-muted-foreground">
-          没有账号？
+          {t('noAccount')}
           <button
             className="text-primary hover:underline"
             onClick={showRegisterModal}
           >
-            去注册
+            {t('goRegister')}
           </button>
         </p>
       </DialogContent>

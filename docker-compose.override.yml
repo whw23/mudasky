@@ -43,6 +43,12 @@ services:
         - action: sync
           path: ./frontend/types/
           target: /app/types/
+        - action: sync
+          path: ./frontend/i18n/
+          target: /app/i18n/
+        - action: sync
+          path: ./frontend/messages/
+          target: /app/messages/
         - action: rebuild
           path: ./frontend/package.json
 

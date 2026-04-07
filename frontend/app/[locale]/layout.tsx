@@ -1,0 +1,42 @@
+import type { ReactNode } from "react"
+import { NextIntlClientProvider } from "next-intl"
+import { getMessages, getTranslations } from "next-intl/server"
+import { AuthProvider } from "@/contexts/AuthContext"
+import { LoginModal } from "@/components/auth/LoginModal"
+import { RegisterModal } from "@/components/auth/RegisterModal"
+
+/** 生成元数据 */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Metadata" })
+  return {
+    title: t("title"),
+    description: t("description"),
+  }
+}
+
+/** 语言布局 */
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: ReactNode
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const messages = await getMessages()
+
+  return (
+    <NextIntlClientProvider messages={messages}>
+      <AuthProvider>
+        {children}
+        <LoginModal />
+        <RegisterModal />
+      </AuthProvider>
+    </NextIntlClientProvider>
+  )
+}

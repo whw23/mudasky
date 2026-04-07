@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
@@ -22,10 +23,11 @@ export function PasswordInput({
   id,
   value,
   onChange,
-  placeholder = '请输入密码',
+  placeholder,
   required,
 }: PasswordInputProps) {
   const [show, setShow] = useState(false)
+  const t = useTranslations('Auth')
 
   return (
     <div className="relative">
@@ -34,7 +36,7 @@ export function PasswordInput({
         type={show ? 'text' : 'password'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('passwordPlaceholder')}
         required={required}
       />
       <button

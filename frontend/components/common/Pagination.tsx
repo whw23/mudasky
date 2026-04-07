@@ -5,6 +5,7 @@
  * 上一页/下一页按钮 + 页码显示
  */
 
+import { useTranslations } from "next-intl"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -15,6 +16,8 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
+  const t = useTranslations("Pagination")
+
   return (
     <div className="flex items-center justify-center gap-2 py-6">
       <Button
@@ -24,11 +27,11 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         onClick={() => onPageChange(page - 1)}
       >
         <ChevronLeft className="size-4" />
-        上一页
+        {t("prev")}
       </Button>
 
       <span className="px-3 text-sm text-muted-foreground">
-        第 {page} 页 / 共 {totalPages} 页
+        {t("pageInfo", { page, totalPages })}
       </span>
 
       <Button
@@ -37,7 +40,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
       >
-        下一页
+        {t("next")}
         <ChevronRight className="size-4" />
       </Button>
     </div>

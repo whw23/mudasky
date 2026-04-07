@@ -10,6 +10,7 @@ import StarterKit from "@tiptap/starter-kit"
 import Image from "@tiptap/extension-image"
 import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
+import { useTranslations } from "next-intl"
 import {
   Heading2,
   Heading3,
@@ -31,6 +32,8 @@ interface TiptapEditorProps {
 
 /** 编辑器工具栏 */
 function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+  const t = useTranslations("Editor")
+
   if (!editor) return null
 
   /** 工具栏按钮配置 */
@@ -39,49 +42,49 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
       icon: Heading2,
       action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
       active: editor.isActive("heading", { level: 2 }),
-      label: "标题 2",
+      label: t("heading2"),
     },
     {
       icon: Heading3,
       action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
       active: editor.isActive("heading", { level: 3 }),
-      label: "标题 3",
+      label: t("heading3"),
     },
     {
       icon: Bold,
       action: () => editor.chain().focus().toggleBold().run(),
       active: editor.isActive("bold"),
-      label: "加粗",
+      label: t("bold"),
     },
     {
       icon: Italic,
       action: () => editor.chain().focus().toggleItalic().run(),
       active: editor.isActive("italic"),
-      label: "斜体",
+      label: t("italic"),
     },
     {
       icon: List,
       action: () => editor.chain().focus().toggleBulletList().run(),
       active: editor.isActive("bulletList"),
-      label: "无序列表",
+      label: t("bulletList"),
     },
     {
       icon: ListOrdered,
       action: () => editor.chain().focus().toggleOrderedList().run(),
       active: editor.isActive("orderedList"),
-      label: "有序列表",
+      label: t("orderedList"),
     },
     {
       icon: Quote,
       action: () => editor.chain().focus().toggleBlockquote().run(),
       active: editor.isActive("blockquote"),
-      label: "引用",
+      label: t("quote"),
     },
   ]
 
   /** 插入图片 */
   const insertImage = () => {
-    const url = window.prompt("请输入图片地址")
+    const url = window.prompt(t("imagePrompt"))
     if (url) {
       editor.chain().focus().setImage({ src: url }).run()
     }
@@ -89,7 +92,7 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 
   /** 插入链接 */
   const insertLink = () => {
-    const url = window.prompt("请输入链接地址")
+    const url = window.prompt(t("linkPrompt"))
     if (url) {
       editor.chain().focus().setLink({ href: url }).run()
     }
@@ -121,7 +124,7 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
         variant="ghost"
         size="icon-sm"
         onClick={insertImage}
-        title="插入图片"
+        title={t("insertImage")}
       >
         <ImageIcon className="size-4" />
       </Button>
@@ -131,7 +134,7 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
         variant="ghost"
         size="icon-sm"
         onClick={insertLink}
-        title="插入链接"
+        title={t("insertLink")}
       >
         <LinkIcon className="size-4" />
       </Button>
@@ -144,13 +147,15 @@ export function TiptapEditor({
   onChange,
   placeholder,
 }: TiptapEditorProps) {
+  const t = useTranslations("Editor")
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Image,
       Link.configure({ openOnClick: false }),
       Placeholder.configure({
-        placeholder: placeholder ?? "请输入内容...",
+        placeholder: placeholder ?? t("placeholder"),
       }),
     ],
     content: content ?? "",

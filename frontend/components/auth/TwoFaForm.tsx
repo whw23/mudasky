@@ -6,6 +6,7 @@
  */
 
 import { useState, type FormEvent } from 'react'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -23,6 +24,7 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
   const [twoFaType, setTwoFaType] = useState<'totp' | 'sms'>('totp')
   const [totpCode, setTotpCode] = useState('')
   const [smsCode2fa, setSmsCode2fa] = useState('')
+  const t = useTranslations('Auth')
 
   /** 提交二步验证 */
   function handleSubmit(e: FormEvent): void {
@@ -43,7 +45,7 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
           size="sm"
           onClick={() => setTwoFaType('totp')}
         >
-          验证器
+          {t('totpTab')}
         </Button>
         <Button
           type="button"
@@ -51,30 +53,30 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
           size="sm"
           onClick={() => setTwoFaType('sms')}
         >
-          短信验证
+          {t('smsTab')}
         </Button>
       </div>
       {twoFaType === 'totp' ? (
         <div className="space-y-2">
-          <Label htmlFor="totp-code">验证器验证码</Label>
+          <Label htmlFor="totp-code">{t('totpLabel')}</Label>
           <Input
             id="totp-code"
             value={totpCode}
             onChange={(e) => setTotpCode(e.target.value)}
-            placeholder="请输入 6 位验证码"
+            placeholder={t('totpPlaceholder')}
             maxLength={6}
             required
           />
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="sms-2fa-code">短信验证码</Label>
+          <Label htmlFor="sms-2fa-code">{t('smsLabel')}</Label>
           <div className="flex gap-2">
             <Input
               id="sms-2fa-code"
               value={smsCode2fa}
               onChange={(e) => setSmsCode2fa(e.target.value)}
-              placeholder="请输入验证码"
+              placeholder={t('codePlaceholder')}
               maxLength={6}
               required
             />
@@ -84,7 +86,7 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? '验证中...' : '确认'}
+        {loading ? t('verifying') : t('confirm')}
       </Button>
     </form>
   )

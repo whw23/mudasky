@@ -5,18 +5,20 @@
  */
 
 import { Phone, Mail, MapPin } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 export function Footer() {
+  const t = useTranslations("Footer")
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:grid-cols-3">
         {/* 公司简介 */}
         <div>
-          <h3 className="mb-4 text-lg font-bold text-white">慕大国际教育</h3>
-          <p className="text-sm leading-relaxed">
-            慕大国际从事小语种留学项目运营已15年，为慕尼黑大学语言中心江苏省唯一指定招生考点。
-            慕尼黑大学语言中心是官方德语培训基地考点。
-          </p>
+          <h3 className="mb-4 text-lg font-bold text-white">
+            {t("brandName")}
+          </h3>
+          <p className="text-sm leading-relaxed">{t("description")}</p>
           <div className="mt-4 flex gap-3">
             <a
               href="#"
@@ -35,11 +37,13 @@ export function Footer() {
 
         {/* 联系方式 */}
         <div>
-          <h3 className="mb-4 text-lg font-bold text-white">联系我们</h3>
+          <h3 className="mb-4 text-lg font-bold text-white">
+            {t("contactUs")}
+          </h3>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              苏州市吴中区苏州大学城林泉街377号公共学院5号楼7楼
+              {t("address")}
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0 text-primary" />
@@ -54,17 +58,19 @@ export function Footer() {
 
         {/* 二维码 */}
         <div>
-          <h3 className="mb-4 text-lg font-bold text-white">申请留学</h3>
+          <h3 className="mb-4 text-lg font-bold text-white">
+            {t("applyStudyAbroad")}
+          </h3>
           <div className="flex h-28 w-28 items-center justify-center rounded bg-gray-800 text-xs text-gray-500">
-            二维码占位
+            {t("qrPlaceholder")}
           </div>
-          <p className="mt-2 text-xs text-gray-500">官方客服微信</p>
+          <p className="mt-2 text-xs text-gray-500">{t("officialWechat")}</p>
         </div>
       </div>
 
       {/* ICP 备案 */}
       <div className="border-t border-gray-800 py-4 text-center text-xs text-gray-600">
-        苏ICP备2022046719号-1 | © {new Date().getFullYear()} 慕大国际教育
+        {t("icp")} | © {new Date().getFullYear()} {t("brandName")}
       </div>
     </footer>
   )

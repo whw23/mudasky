@@ -3,32 +3,38 @@
  * 包含"最新文章"和"精彩专题"两个区块
  */
 
+import { useTranslations } from "next-intl"
+
 export function ArticleSidebar() {
+  const t = useTranslations("Sidebar")
+
   return (
     <aside className="w-72 shrink-0 space-y-6">
       {/* 最新文章 */}
       <div>
         <h3 className="mb-3 border-l-4 border-primary pl-3 text-base font-bold">
-          最新文章
+          {t("latestArticles")}
         </h3>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li className="truncate">文章占位 1</li>
-          <li className="truncate">文章占位 2</li>
-          <li className="truncate">文章占位 3</li>
-          <li className="truncate">文章占位 4</li>
-          <li className="truncate">文章占位 5</li>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <li key={i} className="truncate">
+              {t("articlePlaceholder", { index: i })}
+            </li>
+          ))}
         </ul>
       </div>
 
       {/* 精彩专题 */}
       <div>
         <h3 className="mb-3 border-l-4 border-primary pl-3 text-base font-bold">
-          精彩专题
+          {t("featuredTopics")}
         </h3>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li className="truncate">专题占位 1</li>
-          <li className="truncate">专题占位 2</li>
-          <li className="truncate">专题占位 3</li>
+          {[1, 2, 3].map((i) => (
+            <li key={i} className="truncate">
+              {t("topicPlaceholder", { index: i })}
+            </li>
+          ))}
         </ul>
       </div>
     </aside>
