@@ -160,11 +160,71 @@ backend/
 | password_hash | str | 密码哈希（nullable，未设置密码时为空） |
 | two_factor_enabled | bool | 是否开启二步验证（默认 false） |
 | totp_secret | str | TOTP 密钥（nullable，绑定 Authenticator 时生成） |
-| role | str | 角色枚举：`user` / `admin` |
+| is_superuser | bool | 全局管理员（默认 false，绕过所有权限检查） |
 | is_active | bool | 是否启用 |
 | storage_quota | int | 存储配额（字节） |
 | created_at | datetime | 创建时间 |
 | updated_at | datetime | 更新时间（nullable） |
+
+#### 权限系统（RBAC）
+
+采用 **权限组 + 权限** 多对多模型，用户可属于多个权限组，权限取并集。
+
+**PermissionGroup 模型：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | UUID | 主键 |
+| name | str | 组名（唯一，如 admin / teacher / student / visitor） |
+| description | str | 描述（nullable） |
+| is_default | bool | 是否为新用户默认组（默认 false） |
+| created_at | datetime | 创建时间 |
+
+**Permission 模型：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | UUID | 主键 |
+| code | str | 权限代码（唯一，如 `article:publish`） |
+| name | str | 权限名称（如"发布文章"） |
+| description | str | 描述（nullable） |
+
+**关联表：**
+
+- `permission_group_permissions`：PermissionGroup ↔ Permission 多对多
+- `user_permission_groups`：User ↔ PermissionGroup 多对多
+
+**预设权限：**
+
+| code | 名称 | 说明 |
+|------|------|------|
+| `permission:assign` | 分配权限 | 修改用户权限组 |
+| `user:manage` | 管理用户 | 查看/启用/禁用用户 |
+| `article:publish` | 发布文章 | 创建和编辑自己的文章 |
+| `article:review` | 审核文章 | 审核他人文章（拥有此权限者发布自动通过） |
+| `article:manage` | 管理文章 | 编辑/删除任何人的文章 |
+| `category:manage` | 管理分类 | 增删改分类 |
+| `document:upload` | 上传文档 | 上传和管理自己的文档 |
+| `document:manage` | 管理文档 | 管理所有人的文档 |
+
+**预设权限组：**
+
+| 组 | 权限 |
+|---|------|
+| admin | 所有权限 |
+| teacher | article:publish, article:review, document:upload |
+| student | article:publish, document:upload |
+| visitor | （无权限，仅浏览公开内容） |
+
+**Superuser 与 Global Admin 规则：**
+
+- 系统初始化时自动创建一个 superuser 账号（全局管理员，有且仅有一个）
+- `is_superuser=True` 的用户绕过所有权限检查
+- 系统自动创建一个 `global_admin` 权限组，包含所有权限，**不可修改、不可删除**
+- Superuser 默认属于 `global_admin` 组
+- 后续所有权限组和权限均由 superuser 在后台动态创建和管理
+- 新创建的权限会自动加入 `global_admin` 组（保持 global_admin 始终拥有全部权限）
+- 其他权限组的权限可自由配置（增删改查）
 
 #### Document 模型关键字段
 
@@ -209,9 +269,10 @@ backend/
 
 #### 文章发布流程
 
-- 管理员发布：`draft` → `published`（直接发布，跳过审核）
-- 用户投稿：`draft` → `pending`（提交审核）→ `published`（审核通过）/ `rejected`（审核拒绝）
-- 已发布的文章前台可见，其他状态仅作者和管理员可见
+- 拥有 `article:review` 权限的用户发布：`draft` → `published`（直接发布，自动通过审核）
+- 仅拥有 `article:publish` 权限的用户投稿：`draft` → `pending`（提交审核）→ `published`（审核通过）/ `rejected`（审核拒绝）
+- Superuser 和拥有 `article:manage` 权限的用户可编辑/删除任何文章
+- 已发布的文章前台可见，其他状态仅作者和有管理权限的用户可见
 
 #### 用户存储配额
 
@@ -219,11 +280,12 @@ backend/
 - 上传时 service 层查 `SUM(file_size) WHERE uploader_id = ?` 校验
 - 单文件大小限制在 `core/config.py` 中配置，网关层也做一道上传大小拦截（`client_max_body_size`）
 
-#### 角色鉴权
+#### 权限鉴权
 
-- 网关层注入 `X-User-Role` 请求头
-- 后端 `core/dependencies.py` 提供 `require_role("admin")` 等依赖注入工具
-- admin 领域路由通过依赖注入校验角色
+- 网关层从 JWT claims 注入 `X-User-Id`、`X-User-Permissions`（逗号分隔的权限 code 列表）、`X-Is-Superuser` 请求头
+- 后端 `core/dependencies.py` 提供 `require_permission("article:review")` 等依赖注入工具
+- Superuser 绕过所有权限检查
+- 权限检查逻辑：`is_superuser=True` → 放行；否则检查用户权限列表是否包含所需权限
 
 #### 健康检查
 
@@ -242,7 +304,7 @@ backend/
 | 过期时间 | 15 分钟 | 30 天（勾选保持登录）/ 会话级（不勾选） |
 | 存储位置 | Cookie（HttpOnly + Secure + SameSite=Strict） | Cookie（HttpOnly + Secure + SameSite=Strict） |
 | 用途 | 每次请求携带，网关验证 | 仅用于续签 access token |
-| 包含信息 | user_id、role、is_active | 仅 user_id |
+| 包含信息 | user_id、permissions（权限 code 列表）、is_superuser、is_active | 仅 user_id |
 | 签名算法 | HMAC-SHA256 | HMAC-SHA256 |
 
 ### 2.2 保持登录状态
@@ -266,7 +328,7 @@ Cookie 使用 `SameSite=Strict` 防止跨站请求。此外，所有变更操作
 |------|-------------|---------------|
 | 登录 | 验证短信验证码，返回用户信息（JSON） | 拦截响应，生成 JWT，添加 Set-Cookie |
 | 续签 | 验证 refresh token 哈希、轮换、查用户状态，返回用户信息（JSON） | 从 Cookie 读 refresh token，转发给后端，拦截响应，生成新 JWT，添加 Set-Cookie |
-| 普通请求 | 信任 X-User-Id / X-User-Role 请求头 | 读 Cookie，验签，注入请求头 |
+| 普通请求 | 信任 X-User-Id / X-User-Permissions / X-Is-Superuser 请求头 | 读 Cookie，验签，注入请求头 |
 
 ### 2.5 认证流程
 
@@ -314,9 +376,9 @@ Cookie 使用 `SameSite=Strict` 防止跨站请求。此外，所有变更操作
 2. 如果是变更请求（POST/PUT/PATCH/DELETE），校验 X-Requested-With 头
 3. 从 Cookie 读 access_token JWT
 4. 验签（HMAC-SHA256）+ 检查过期时间
-5. 从 claims 读取 user_id、role、is_active
+5. 从 claims 读取 user_id、permissions、is_superuser、is_active
 6. is_active 为 false → 返回 401 + {"code": "USER_DISABLED"}
-7. 通过 → 强制覆盖 X-User-Id / X-User-Role 请求头（防伪造） → 转发到后端
+7. 通过 → 强制覆盖 X-User-Id / X-User-Permissions / X-Is-Superuser 请求头（防伪造） → 转发到后端
 8. 验签失败 → 返回 401 + {"code": "TOKEN_INVALID"}
 9. token 过期 → 返回 401 + {"code": "TOKEN_EXPIRED"}
 10. 未携带 token → 返回 401 + {"code": "TOKEN_MISSING"}
@@ -436,7 +498,7 @@ gateway/
 6. HMAC-SHA256 验签 → 失败 → 返回 401 + {"code": "TOKEN_INVALID"}
 7. 检查 exp → 过期 → 返回 401 + {"code": "TOKEN_EXPIRED"}
 8. 读取 claims 中的 is_active → false → 返回 401 + {"code": "USER_DISABLED"}
-9. 强制覆盖 X-User-Id、X-User-Role 请求头（防止外部伪造）
+9. 强制覆盖 X-User-Id、X-User-Permissions、X-Is-Superuser 请求头（防止外部伪造）
 10. 转发请求到后端
 ```
 
