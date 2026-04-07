@@ -80,9 +80,3 @@ async def api_health_check() -> dict:
 
 # 挂载子应用
 app.mount("/api", api)
-
-
-@app.get("/health")
-async def health_check() -> dict:
-    """健康检查端点。"""
-    return {"status": "ok"}
