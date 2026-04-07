@@ -282,10 +282,9 @@ backend/
 
 #### 权限鉴权
 
-- 网关层从 JWT claims 注入 `X-User-Id`、`X-User-Permissions`（逗号分隔的权限 code 列表）、`X-Is-Superuser` 请求头
+- 网关层从 JWT claims 注入 `X-User-Id`、`X-User-Groups`（逗号分隔的权限组 ID 列表）请求头
 - 后端 `core/dependencies.py` 提供 `require_permission("article:review")` 等依赖注入工具
-- Superuser 绕过所有权限检查
-- 权限检查逻辑：`is_superuser=True` → 放行；否则检查用户权限列表是否包含所需权限
+- 权限检查逻辑：根据请求头 `X-User-Groups` 查库获取权限列表，同时查 `is_superuser` 字段。`is_superuser=True` → 放行；否则检查权限列表是否包含所需权限
 
 #### 健康检查
 
@@ -304,7 +303,7 @@ backend/
 | 过期时间 | 15 分钟 | 30 天（勾选保持登录）/ 会话级（不勾选） |
 | 存储位置 | Cookie（HttpOnly + Secure + SameSite=Strict） | Cookie（HttpOnly + Secure + SameSite=Strict） |
 | 用途 | 每次请求携带，网关验证 | 仅用于续签 access token |
-| 包含信息 | user_id、permissions（权限 code 列表）、is_superuser、is_active | 仅 user_id |
+| 包含信息 | user_id、group_ids（权限组 ID 列表）、is_active | 仅 user_id |
 | 签名算法 | HMAC-SHA256 | HMAC-SHA256 |
 
 ### 2.2 保持登录状态
@@ -328,7 +327,7 @@ Cookie 使用 `SameSite=Strict` 防止跨站请求。此外，所有变更操作
 |------|-------------|---------------|
 | 登录 | 验证短信验证码，返回用户信息（JSON） | 拦截响应，生成 JWT，添加 Set-Cookie |
 | 续签 | 验证 refresh token 哈希、轮换、查用户状态，返回用户信息（JSON） | 从 Cookie 读 refresh token，转发给后端，拦截响应，生成新 JWT，添加 Set-Cookie |
-| 普通请求 | 信任 X-User-Id / X-User-Permissions / X-Is-Superuser 请求头 | 读 Cookie，验签，注入请求头 |
+| 普通请求 | 信任 X-User-Id / X-User-Groups 请求头 | 读 Cookie，验签，注入请求头 |
 
 ### 2.5 认证流程
 
@@ -376,9 +375,9 @@ Cookie 使用 `SameSite=Strict` 防止跨站请求。此外，所有变更操作
 2. 如果是变更请求（POST/PUT/PATCH/DELETE），校验 X-Requested-With 头
 3. 从 Cookie 读 access_token JWT
 4. 验签（HMAC-SHA256）+ 检查过期时间
-5. 从 claims 读取 user_id、permissions、is_superuser、is_active
+5. 从 claims 读取 user_id、group_ids、is_active
 6. is_active 为 false → 返回 401 + {"code": "USER_DISABLED"}
-7. 通过 → 强制覆盖 X-User-Id / X-User-Permissions / X-Is-Superuser 请求头（防伪造） → 转发到后端
+7. 通过 → 强制覆盖 X-User-Id / X-User-Groups 请求头（防伪造） → 转发到后端
 8. 验签失败 → 返回 401 + {"code": "TOKEN_INVALID"}
 9. token 过期 → 返回 401 + {"code": "TOKEN_EXPIRED"}
 10. 未携带 token → 返回 401 + {"code": "TOKEN_MISSING"}
@@ -498,7 +497,7 @@ gateway/
 6. HMAC-SHA256 验签 → 失败 → 返回 401 + {"code": "TOKEN_INVALID"}
 7. 检查 exp → 过期 → 返回 401 + {"code": "TOKEN_EXPIRED"}
 8. 读取 claims 中的 is_active → false → 返回 401 + {"code": "USER_DISABLED"}
-9. 强制覆盖 X-User-Id、X-User-Permissions、X-Is-Superuser 请求头（防止外部伪造）
+9. 强制覆盖 X-User-Id、X-User-Groups 请求头（防止外部伪造）
 10. 转发请求到后端
 ```
 
