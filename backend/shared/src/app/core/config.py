@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     SMS_SIGN_NAME: str = ""
     SMS_TEMPLATE_CODE: str = ""
 
+    # 环境
+    DEBUG: bool = False
+
     # 文件上传
     MAX_UPLOAD_SIZE_MB: int = 10
     DEFAULT_STORAGE_QUOTA_MB: int = 100

@@ -27,9 +27,6 @@ _M.public_routes = {
   ["GET:/health"] = true,
   ["GET:/api/health"] = true,
   ["GET:/api/content/categories"] = true,
-  ["GET:/api/docs"] = true,
-  ["GET:/api/openapi.json"] = true,
-  ["GET:/api/docs/oauth2-redirect"] = true,
 }
 
 --- 公开路由前缀（用于动态路由）。
