@@ -101,8 +101,10 @@ local access_jwt = jwt:sign(jwt_secret, {
   header = { typ = "JWT", alg = "HS256" },
   payload = {
     sub = user.id,
-    group_ids = user.group_ids or {},
+    permissions = user.permissions or {},
+    is_superuser = user.is_superuser or false,
     is_active = user.is_active,
+    user_type = user.user_type or "student",
     type = "access",
     iat = now,
     exp = now + access_expire,
