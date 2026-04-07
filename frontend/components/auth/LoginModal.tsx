@@ -275,7 +275,7 @@ export function LoginModal() {
             onCheckedChange={handleKeepLoginChange}
           />
           <Label htmlFor="keep-login" className="text-sm font-normal">
-            保持登录
+            保持登录 30 天
           </Label>
         </div>
 
