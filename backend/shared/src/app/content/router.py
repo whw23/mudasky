@@ -16,9 +16,9 @@ from app.content.schemas import (
 from app.content.service import ContentService
 from app.core.dependencies import (
     CurrentUserId,
-    CurrentUserRole,
+    CurrentUserType,
     DbSession,
-    require_role,
+    require_permission,
 )
 from app.core.pagination import PaginatedResponse, PaginationParams
 
@@ -117,12 +117,12 @@ async def list_categories(
 async def create_article(
     data: ArticleCreate,
     user_id: CurrentUserId,
-    role: CurrentUserRole,
+    user_type: CurrentUserType,
     session: DbSession,
 ) -> ArticleResponse:
     """创建文章。"""
     svc = ContentService(session)
-    article = await svc.create_article(data, user_id, role)
+    article = await svc.create_article(data, user_id, user_type)
     return ArticleResponse.model_validate(article)
 
 
@@ -133,13 +133,13 @@ async def update_article(
     article_id: str,
     data: ArticleUpdate,
     user_id: CurrentUserId,
-    role: CurrentUserRole,
+    user_type: CurrentUserType,
     session: DbSession,
 ) -> ArticleResponse:
     """更新文章。"""
     svc = ContentService(session)
     article = await svc.update_article(
-        article_id, data, user_id, role
+        article_id, data, user_id, user_type
     )
     return ArticleResponse.model_validate(article)
 
@@ -151,12 +151,12 @@ async def update_article(
 async def delete_article(
     article_id: str,
     user_id: CurrentUserId,
-    role: CurrentUserRole,
+    user_type: CurrentUserType,
     session: DbSession,
 ) -> None:
     """删除文章。"""
     svc = ContentService(session)
-    await svc.delete_article(article_id, user_id, role)
+    await svc.delete_article(article_id, user_id, user_type)
 
 
 @router.get(
@@ -200,7 +200,7 @@ async def submit_for_review(
 @router.get(
     "/pending",
     response_model=PaginatedResponse[ArticleResponse],
-    dependencies=[Depends(require_role("admin"))],
+    dependencies=[Depends(require_permission("content:manage"))],
 )
 async def list_pending_articles(
     session: DbSession,
@@ -221,7 +221,7 @@ async def list_pending_articles(
 @router.post(
     "/{article_id}/review",
     response_model=ArticleResponse,
-    dependencies=[Depends(require_role("admin"))],
+    dependencies=[Depends(require_permission("content:manage"))],
 )
 async def review_article(
     article_id: str,
@@ -240,7 +240,7 @@ async def review_article(
     "/categories",
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_role("admin"))],
+    dependencies=[Depends(require_permission("content:manage"))],
 )
 async def create_category(
     data: CategoryCreate, session: DbSession

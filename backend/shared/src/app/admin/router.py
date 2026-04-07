@@ -6,20 +6,26 @@
 from fastapi import APIRouter, Depends
 
 from app.admin.service import AdminService
-from app.core.dependencies import DbSession, require_role
+from app.core.dependencies import DbSession, require_any_permission
 from app.core.pagination import PaginatedResponse, PaginationParams
 from app.user.schemas import UserAdminUpdate, UserResponse
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
-    dependencies=[Depends(require_role("admin"))],
 )
 
 
 @router.get(
     "/users",
     response_model=PaginatedResponse[UserResponse],
+    dependencies=[
+        Depends(
+            require_any_permission(
+                "student:manage", "staff:manage"
+            )
+        )
+    ],
 )
 async def list_users(
     session: DbSession,
@@ -45,7 +51,15 @@ async def list_users(
 
 
 @router.patch(
-    "/users/{user_id}", response_model=UserResponse
+    "/users/{user_id}",
+    response_model=UserResponse,
+    dependencies=[
+        Depends(
+            require_any_permission(
+                "student:manage", "staff:manage"
+            )
+        )
+    ],
 )
 async def update_user(
     user_id: str,

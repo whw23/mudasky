@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 from app.document.router import router as document_router
+from app.rbac.router import router as rbac_router
 from app.user.router import router as user_router
 
 setup_logging()
@@ -54,14 +55,33 @@ if settings.DEBUG:
                 "name": "X-User-Id",
                 "description": "用户 ID（网关注入，开发调试用）",
             },
-            "X-User-Role": {
+            "X-User-Permissions": {
                 "type": "apiKey",
                 "in": "header",
-                "name": "X-User-Role",
-                "description": "用户角色：user / admin（网关注入，开发调试用）",
+                "name": "X-User-Permissions",
+                "description": "用户权限列表，逗号分隔（网关注入，开发调试用）",
+            },
+            "X-User-Type": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-User-Type",
+                "description": "用户类型：student / staff（网关注入，开发调试用）",
+            },
+            "X-Is-Superuser": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-Is-Superuser",
+                "description": "是否超级管理员：true / false（网关注入，开发调试用）",
             },
         }
-        schema["security"] = [{"X-User-Id": [], "X-User-Role": []}]
+        schema["security"] = [
+            {
+                "X-User-Id": [],
+                "X-User-Permissions": [],
+                "X-User-Type": [],
+                "X-Is-Superuser": [],
+            }
+        ]
         api.openapi_schema = schema
         return schema
 
@@ -72,6 +92,7 @@ api.include_router(user_router)
 api.include_router(content_router)
 api.include_router(document_router)
 api.include_router(admin_router)
+api.include_router(rbac_router)
 
 
 @api.get("/health")
