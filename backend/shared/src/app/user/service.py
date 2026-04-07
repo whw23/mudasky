@@ -8,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictException, NotFoundException
 from app.core.security import hash_password, verify_password
+from app.rbac import repository as rbac_repo
 from app.user import repository
 from app.user.models import User
-from app.user.schemas import PasswordChange, PhoneChange, UserUpdate
+from app.user.schemas import PasswordChange, PhoneChange, UserResponse, UserUpdate
 
 
 class UserService:
@@ -21,11 +22,35 @@ class UserService:
         self.session = session
 
     async def get_user(self, user_id: str) -> User:
-        """获取用户信息，不存在则抛出异常。"""
+        """获取用户 ORM 对象，不存在则抛出异常。"""
         user = await repository.get_by_id(self.session, user_id)
         if not user:
             raise NotFoundException(message="用户不存在")
         return user
+
+    async def get_user_response(self, user_id: str) -> UserResponse:
+        """获取用户信息响应，包含权限和权限组。"""
+        user = await self.get_user(user_id)
+        permissions = await rbac_repo.get_user_permissions(
+            self.session, user_id
+        )
+        group_ids = await rbac_repo.get_user_group_ids(
+            self.session, user_id
+        )
+        return UserResponse(
+            id=user.id,
+            phone=user.phone,
+            username=user.username,
+            user_type=user.user_type,
+            is_superuser=user.is_superuser,
+            is_active=user.is_active,
+            two_factor_enabled=user.two_factor_enabled,
+            storage_quota=user.storage_quota,
+            permissions=permissions,
+            group_ids=group_ids,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+        )
 
     async def update_profile(
         self, user_id: str, data: UserUpdate

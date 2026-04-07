@@ -19,8 +19,10 @@ from app.core.exceptions import (
     UnauthorizedException,
 )
 from app.core.security import hash_password, verify_password
+from app.rbac import repository as rbac_repo
 from app.user import repository as user_repo
 from app.user.models import User
+from app.user.schemas import UserResponse
 
 
 class AuthService:
@@ -71,7 +73,9 @@ class AuthService:
             username=username,
             password_hash=password_hash,
         )
-        return await user_repo.create(self.session, user)
+        user = await user_repo.create(self.session, user)
+        await self._assign_default_group(user.id)
+        return user
 
     async def login(
         self,
@@ -143,7 +147,44 @@ class AuthService:
         )
         await repository.save_refresh_token(self.session, token)
 
+    async def build_user_response(
+        self, user: User
+    ) -> UserResponse:
+        """构建包含权限和权限组的用户响应。"""
+        permissions = await rbac_repo.get_user_permissions(
+            self.session, user.id
+        )
+        group_ids = await rbac_repo.get_user_group_ids(
+            self.session, user.id
+        )
+        return UserResponse(
+            id=user.id,
+            phone=user.phone,
+            username=user.username,
+            user_type=user.user_type,
+            is_superuser=user.is_superuser,
+            is_active=user.is_active,
+            two_factor_enabled=user.two_factor_enabled,
+            storage_quota=user.storage_quota,
+            permissions=permissions,
+            group_ids=group_ids,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+        )
+
     # ---- 私有方法 ----
+
+    async def _assign_default_group(
+        self, user_id: str
+    ) -> None:
+        """为新用户分配默认权限组（student）。"""
+        student_group = await rbac_repo.get_group_by_name(
+            self.session, "student"
+        )
+        if student_group:
+            await rbac_repo.set_user_groups(
+                self.session, user_id, [student_group.id]
+            )
 
     async def _check_sms_rate_limit(self, phone: str) -> None:
         """检查短信发送频率限制。"""
@@ -204,6 +245,7 @@ class AuthService:
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
+        await self._assign_default_group(user.id)
         return user
 
     async def _login_with_password(
