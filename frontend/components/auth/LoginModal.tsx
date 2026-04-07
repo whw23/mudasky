@@ -6,7 +6,6 @@
  */
 
 import { useState, type FormEvent } from 'react'
-import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { setKeepLogin } from '@/lib/api'
@@ -28,7 +27,7 @@ import { TwoFaForm } from './TwoFaForm'
 
 /** 登录弹窗组件 */
 export function LoginModal() {
-  const { loginModalOpen, hideLoginModal, fetchUser } = useAuth()
+  const { authModal, hideAuthModal, fetchUser, showRegisterModal } = useAuth()
 
   /* 通用状态 */
   const [loading, setLoading] = useState(false)
@@ -70,7 +69,7 @@ export function LoginModal() {
   /** 处理弹窗关闭 */
   function handleOpenChange(open: boolean): void {
     if (!open) {
-      hideLoginModal()
+      hideAuthModal()
       resetForm()
     }
   }
@@ -93,7 +92,7 @@ export function LoginModal() {
         return
       }
       await fetchUser()
-      hideLoginModal()
+      hideAuthModal()
       resetForm()
     } catch (err: any) {
       setError(err.response?.data?.message || '登录失败')
@@ -133,7 +132,7 @@ export function LoginModal() {
   /* 二步验证视图 */
   if (twoFaStep) {
     return (
-      <Dialog open={loginModalOpen} onOpenChange={handleOpenChange}>
+      <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>二步验证</DialogTitle>
@@ -151,7 +150,7 @@ export function LoginModal() {
 
   /* 主登录视图 */
   return (
-    <Dialog open={loginModalOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>登录</DialogTitle>
@@ -285,13 +284,12 @@ export function LoginModal() {
         {/* 注册链接 */}
         <p className="text-center text-sm text-muted-foreground">
           没有账号？
-          <Link
-            href="/register"
+          <button
             className="text-primary hover:underline"
-            onClick={hideLoginModal}
+            onClick={showRegisterModal}
           >
             去注册
-          </Link>
+          </button>
         </p>
       </DialogContent>
     </Dialog>

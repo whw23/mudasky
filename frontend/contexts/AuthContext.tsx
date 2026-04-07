@@ -15,15 +15,22 @@ import {
 import type { User } from '@/types'
 import api from '@/lib/api'
 
+export type AuthModal = 'login' | 'register' | null
+
 export interface AuthContextType {
   user: User | null
   loading: boolean
   isLoggedIn: boolean
   fetchUser: () => Promise<void>
   logout: () => void
-  loginModalOpen: boolean
+  /** 当前打开的认证弹窗 */
+  authModal: AuthModal
+  /** 打开登录弹窗 */
   showLoginModal: () => void
-  hideLoginModal: () => void
+  /** 打开注册弹窗 */
+  showRegisterModal: () => void
+  /** 关闭弹窗 */
+  hideAuthModal: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -32,7 +39,7 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [authModal, setAuthModal] = useState<AuthModal>(null)
 
   /** 从后端获取当前用户信息 */
   const fetchUser = useCallback(async () => {
@@ -53,8 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  const showLoginModal = useCallback(() => setLoginModalOpen(true), [])
-  const hideLoginModal = useCallback(() => setLoginModalOpen(false), [])
+  const showLoginModal = useCallback(() => setAuthModal('login'), [])
+  const showRegisterModal = useCallback(() => setAuthModal('register'), [])
+  const hideAuthModal = useCallback(() => setAuthModal(null), [])
 
   return (
     <AuthContext.Provider
@@ -64,9 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoggedIn: !!user,
         fetchUser,
         logout,
-        loginModalOpen,
+        authModal,
         showLoginModal,
-        hideLoginModal,
+        showRegisterModal,
+        hideAuthModal,
       }}
     >
       {children}

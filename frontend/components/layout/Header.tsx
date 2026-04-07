@@ -32,7 +32,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function Header() {
   const pathname = usePathname()
-  const { user, logout, showLoginModal } = useAuth()
+  const { user, logout, showLoginModal, showRegisterModal } = useAuth()
 
   return (
     <header>
@@ -65,9 +65,9 @@ export function Header() {
                   登录
                 </button>
                 <span>|</span>
-                <Link href="/register" className="hover:underline">
+                <button onClick={showRegisterModal} className="hover:underline">
                   注册
-                </Link>
+                </button>
               </div>
             )}
           </div>
