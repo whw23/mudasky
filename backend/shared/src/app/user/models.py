@@ -23,8 +23,8 @@ class User(Base):
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
-    phone: Mapped[str] = mapped_column(
-        String(20), unique=True, index=True, nullable=False
+    phone: Mapped[str | None] = mapped_column(
+        String(20), unique=True, index=True, nullable=True
     )
     username: Mapped[str | None] = mapped_column(
         String(50), unique=True, index=True, nullable=True
@@ -40,6 +40,9 @@ class User(Base):
     )
     role: Mapped[str] = mapped_column(
         String(20), default="user", nullable=False
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
