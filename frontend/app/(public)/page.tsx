@@ -55,7 +55,7 @@ export default function HomePage() {
         large
       />
 
-      {/* 统计数据条 */}
+      {/* 数据统计 */}
       <section className="border-b bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-8 md:grid-cols-4">
           {stats.map((stat) => (
