@@ -19,6 +19,9 @@ services:
   frontend:
     ports:
       - "3000:3000"
+    environment:
+      - CI=true
+      - WATCHPACK_POLLING=true
     command: ["sh", "-c", "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev --hostname 0.0.0.0"]
 
   api:
