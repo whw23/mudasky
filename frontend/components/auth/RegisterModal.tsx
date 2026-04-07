@@ -80,7 +80,7 @@ export function RegisterModal() {
 
   return (
     <Dialog open={authModal === 'register'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>注册</DialogTitle>
         </DialogHeader>

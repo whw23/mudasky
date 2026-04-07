@@ -133,7 +133,7 @@ export function LoginModal() {
   if (twoFaStep) {
     return (
       <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>二步验证</DialogTitle>
           </DialogHeader>
@@ -151,7 +151,7 @@ export function LoginModal() {
   /* 主登录视图 */
   return (
     <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>登录</DialogTitle>
         </DialogHeader>
