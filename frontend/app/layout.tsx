@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Lexend } from "next/font/google"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { LoginModal } from "@/components/auth/LoginModal"
 import "./globals.css"
 
 const lexend = Lexend({
@@ -28,7 +29,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <LoginModal />
+        </AuthProvider>
       </body>
     </html>
   )
