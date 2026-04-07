@@ -14,8 +14,5 @@ async def send_sms_code(phone: str, code: str) -> bool:
     TODO: 对接阿里云短信
     SECURITY: 仅开发环境使用
     """
-    logger.info(
-        "发送短信验证码（开发模式）",
-        extra={"phone": phone, "code": code},
-    )
+    logger.info("发送短信验证码（开发模式）phone=%s code=%s", phone, code)
     return True
