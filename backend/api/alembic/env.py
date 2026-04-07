@@ -10,6 +10,8 @@ from app.core.config import settings
 from app.core.database import Base
 
 # 导入所有模型，确保 Alembic 能检测到
+# RBAC 模型需在 User 之前导入，确保 PermissionGroup 在 User 关系解析前注册
+from app.rbac.models import Permission, PermissionGroup  # noqa: F401
 from app.user.models import User  # noqa: F401
 from app.auth.models import SmsCode, RefreshToken  # noqa: F401
 from app.content.models import Article, Category  # noqa: F401

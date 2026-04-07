@@ -29,15 +29,15 @@ class AdminService:
     async def update_user(
         self, user_id: str, data: UserAdminUpdate
     ) -> User:
-        """管理员更新用户信息（激活状态、角色、配额）。"""
+        """管理员更新用户信息（激活状态、用户类型、配额）。"""
         user = await user_repo.get_by_id(self.session, user_id)
         if not user:
             raise NotFoundException(message="用户不存在")
 
         if data.is_active is not None:
             user.is_active = data.is_active
-        if data.role is not None:
-            user.role = data.role
+        if data.user_type is not None:
+            user.user_type = data.user_type
         if data.storage_quota is not None:
             user.storage_quota = data.storage_quota
 

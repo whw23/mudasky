@@ -30,7 +30,9 @@ class UserAdminUpdate(BaseModel):
     """管理员更新用户信息请求。"""
 
     is_active: bool | None = Field(None, description="是否激活")
-    role: str | None = Field(None, max_length=20, description="角色")
+    user_type: str | None = Field(
+        None, max_length=10, description="用户类型"
+    )
     storage_quota: int | None = Field(
         None, ge=0, description="存储配额（字节）"
     )
@@ -56,9 +58,10 @@ class UserResponse(BaseModel):
     id: str
     phone: str | None = None
     username: str | None = None
-    role: str
+    user_type: str
     is_superuser: bool
     is_active: bool
+    permissions: list[str] = []
     group_ids: list[str] = []
     two_factor_enabled: bool
     storage_quota: int
