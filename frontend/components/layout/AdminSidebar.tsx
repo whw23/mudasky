@@ -2,24 +2,49 @@
 
 /**
  * 后台管理侧边栏
- * 包含仪表盘、用户管理、文章管理、分类管理导航
+ * 包含仪表盘、用户管理、权限组管理、文章管理、分类管理导航
+ * 根据用户权限过滤菜单项
  */
 
 import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
-import { LayoutDashboard, Users, BookOpen, Tag, ArrowLeft } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  Shield,
+  BookOpen,
+  Tag,
+  ArrowLeft,
+} from "lucide-react"
+import { usePermissions } from "@/hooks/use-permissions"
+
+/** 菜单项类型 */
+interface MenuItem {
+  key: string
+  href: string
+  icon: typeof LayoutDashboard
+  permissions?: string[]
+}
 
 /** 侧边栏菜单键与路径映射 */
-const MENU_KEYS = [
+const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { key: "userManagement", href: "/admin/users", icon: Users },
-  { key: "articleManagement", href: "/admin/articles", icon: BookOpen },
-  { key: "categoryManagement", href: "/admin/categories", icon: Tag },
-] as const
+  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["student:manage", "staff:manage"] },
+  { key: "groupManagement", href: "/admin/groups", icon: Shield, permissions: ["group:manage"] },
+  { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
+  { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },
+]
 
+/** 后台管理侧边栏 */
 export function AdminSidebar() {
   const pathname = usePathname()
   const t = useTranslations("Admin")
+  const { hasAnyPermission } = usePermissions()
+
+  /** 根据权限过滤菜单项 */
+  const visibleItems = MENU_KEYS.filter(
+    (item) => !item.permissions || hasAnyPermission(...item.permissions)
+  )
 
   return (
     <aside className="w-60 shrink-0 border-r bg-gray-900 text-gray-300">
@@ -33,7 +58,7 @@ export function AdminSidebar() {
         </Link>
         <h2 className="mb-4 text-lg font-bold text-white">{t("title")}</h2>
         <nav className="space-y-1">
-          {MENU_KEYS.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon
             const active = pathname.startsWith(item.href)
             return (

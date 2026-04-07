@@ -15,7 +15,6 @@ from app.auth.schemas import (
 )
 from app.auth.service import AuthService
 from app.core.dependencies import DbSession
-from app.user.schemas import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -48,9 +47,8 @@ async def register(
         username=data.username,
         password=data.password,
     )
-    return AuthResponse(
-        user=UserResponse.model_validate(user)
-    )
+    user_resp = await svc.build_user_response(user)
+    return AuthResponse(user=user_resp)
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -67,10 +65,8 @@ async def login(
         totp=data.totp,
         sms_code_2fa=data.sms_code_2fa,
     )
-    return AuthResponse(
-        user=UserResponse.model_validate(user),
-        step=step,
-    )
+    user_resp = await svc.build_user_response(user)
+    return AuthResponse(user=user_resp, step=step)
 
 
 @router.post("/refresh", response_model=AuthResponse)
@@ -81,6 +77,5 @@ async def refresh(
     """刷新令牌续签（token hash 由网关注入）。"""
     svc = AuthService(session)
     user = await svc.refresh(x_refresh_token_hash)
-    return AuthResponse(
-        user=UserResponse.model_validate(user)
-    )
+    user_resp = await svc.build_user_response(user)
+    return AuthResponse(user=user_resp)

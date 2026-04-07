@@ -20,30 +20,82 @@ async def get_current_user_id(
     return x_user_id
 
 
-async def get_current_user_role(
-    x_user_role: Annotated[str | None, Header()] = None,
+async def get_current_permissions(
+    x_user_permissions: str = Header(""),
+) -> list[str]:
+    """从网关注入的请求头获取当前用户权限列表。"""
+    return [p for p in x_user_permissions.split(",") if p]
+
+
+async def get_current_user_type(
+    x_user_type: str = Header("student"),
 ) -> str:
-    """从网关注入的请求头获取当前用户角色。"""
-    if not x_user_role:
-        raise ForbiddenException(message="未获取到用户角色")
-    return x_user_role
+    """从网关注入的请求头获取当前用户类型。"""
+    return x_user_type
 
 
-def require_role(*roles: str):
-    """创建角色校验依赖。"""
+async def get_is_superuser(
+    x_is_superuser: str = Header("false"),
+) -> bool:
+    """从网关注入的请求头获取当前用户是否为超级管理员。"""
+    return x_is_superuser.lower() == "true"
 
-    async def check_role(
-        current_role: Annotated[str, Depends(get_current_user_role)],
-    ) -> str:
-        """校验当前用户角色是否在允许列表中。"""
-        if current_role not in roles:
-            raise ForbiddenException(message="角色权限不足")
-        return current_role
 
-    return check_role
+def require_permission(*perms: str):
+    """创建权限校验依赖，要求用户拥有全部指定权限。
+
+    超级管理员跳过校验。
+    """
+
+    async def check_permissions(
+        permissions: Annotated[
+            list[str], Depends(get_current_permissions)
+        ],
+        is_superuser: Annotated[
+            bool, Depends(get_is_superuser)
+        ],
+    ) -> list[str]:
+        """校验当前用户是否拥有全部指定权限。"""
+        if is_superuser:
+            return permissions
+        if not all(p in permissions for p in perms):
+            raise ForbiddenException(message="权限不足")
+        return permissions
+
+    return check_permissions
+
+
+def require_any_permission(*perms: str):
+    """创建权限校验依赖，要求用户拥有任一指定权限。
+
+    超级管理员跳过校验。
+    """
+
+    async def check_any_permission(
+        permissions: Annotated[
+            list[str], Depends(get_current_permissions)
+        ],
+        is_superuser: Annotated[
+            bool, Depends(get_is_superuser)
+        ],
+    ) -> list[str]:
+        """校验当前用户是否拥有任一指定权限。"""
+        if is_superuser:
+            return permissions
+        if not any(p in permissions for p in perms):
+            raise ForbiddenException(message="权限不足")
+        return permissions
+
+    return check_any_permission
 
 
 # 类型别名
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]
-CurrentUserRole = Annotated[str, Depends(get_current_user_role)]
+CurrentPermissions = Annotated[
+    list[str], Depends(get_current_permissions)
+]
+CurrentUserType = Annotated[
+    str, Depends(get_current_user_type)
+]
+IsSuperuser = Annotated[bool, Depends(get_is_superuser)]

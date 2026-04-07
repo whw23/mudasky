@@ -47,8 +47,7 @@ async def get_me(
 ) -> UserResponse:
     """获取当前用户信息。"""
     svc = UserService(session)
-    user = await svc.get_user(user_id)
-    return UserResponse.model_validate(user)
+    return await svc.get_user_response(user_id)
 
 
 @router.patch("/me", response_model=UserResponse)
