@@ -195,8 +195,11 @@ export function LoginModal() {
                 <p className="text-sm text-destructive">{error}</p>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? '登录中...' : '登录'}
+                {loading ? '登录中...' : '登录 / 注册'}
               </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                未注册的手机号将自动创建账号
+              </p>
             </form>
           </TabsContent>
 
