@@ -1,70 +1,61 @@
-/**
- * 全局类型定义
- * 与后端 schemas 对应，使用 camelCase 字段命名
- */
+/** 全局类型定义，与后端 schemas 对应。 */
 
-/** 用户信息 */
 export interface User {
-  id: number
-  username: string
-  email: string
-  role: "admin" | "user"
-  avatar?: string
-  createdAt: string
-  updatedAt: string
+  id: string
+  phone: string | null
+  username: string | null
+  role: string
+  is_active: boolean
+  is_superuser: boolean
+  two_factor_enabled: boolean
+  storage_quota: number
+  group_ids: string[]
+  created_at: string
+  updated_at: string | null
 }
 
-/** 文章 */
 export interface Article {
-  id: number
+  id: string
   title: string
-  summary: string
   content: string
-  coverImage?: string
-  categoryId: number
-  category?: Category
-  authorId: number
-  author?: User
-  publishedAt?: string
-  createdAt: string
-  updatedAt: string
+  summary: string | null
+  cover_image: string | null
+  category_id: string
+  author_id: string
+  status: 'draft' | 'pending' | 'published' | 'rejected'
+  published_at: string | null
+  created_at: string
+  updated_at: string | null
 }
 
-/** 文档 */
 export interface Document {
-  id: number
-  title: string
-  fileUrl: string
-  fileType: string
-  fileSize: number
-  userId: number
-  createdAt: string
-  updatedAt: string
+  id: string
+  file_name: string
+  file_hash: string
+  mime_type: string
+  file_size: number
+  status: string
+  created_at: string
+  updated_at: string | null
 }
 
-/** 分类 */
 export interface Category {
-  id: number
+  id: string
   name: string
   slug: string
-  description?: string
-  parentId?: number
-  createdAt: string
-  updatedAt: string
+  sort_order: number
+  created_at: string
 }
 
-/** 分页响应 */
 export interface PaginatedResponse<T> {
   items: T[]
   total: number
   page: number
-  pageSize: number
-  totalPages: number
+  page_size: number
+  total_pages: number
 }
 
-/** 认证响应 */
 export interface AuthResponse {
-  accessToken: string
-  tokenType: string
   user: User
+  step: string | null
 }

@@ -5,12 +5,11 @@
 
 from pydantic import BaseModel
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 from app.auth.schemas import (
     AuthResponse,
     LoginRequest,
-    RefreshRequest,
     RegisterRequest,
     SmsCodeRequest,
 )
@@ -76,11 +75,12 @@ async def login(
 
 @router.post("/refresh", response_model=AuthResponse)
 async def refresh(
-    data: RefreshRequest, session: DbSession
+    session: DbSession,
+    x_refresh_token_hash: str = Header(...),
 ) -> AuthResponse:
-    """刷新令牌续签。"""
+    """刷新令牌续签（token hash 由网关注入）。"""
     svc = AuthService(session)
-    user = await svc.refresh(data.token_hash)
+    user = await svc.refresh(x_refresh_token_hash)
     return AuthResponse(
         user=UserResponse.model_validate(user)
     )

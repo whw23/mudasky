@@ -7,9 +7,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Phone, User, LogOut, Settings, FileText, LayoutDashboard } from "lucide-react"
+import { Phone } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { Button } from "@/components/ui/button"
 
 /** 导航菜单项 */
 const NAV_ITEMS = [
@@ -33,7 +32,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function Header() {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const { user, logout, showLoginModal, showRegisterModal } = useAuth()
 
   return (
     <header>
@@ -62,13 +61,13 @@ export function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" className="hover:underline">
+                <button onClick={showLoginModal} className="hover:underline">
                   登录
-                </Link>
+                </button>
                 <span>|</span>
-                <Link href="/register" className="hover:underline">
+                <button onClick={showRegisterModal} className="hover:underline">
                   注册
-                </Link>
+                </button>
               </div>
             )}
           </div>

@@ -54,10 +54,12 @@ class UserResponse(BaseModel):
     """用户信息响应。"""
 
     id: str
-    phone: str
+    phone: str | None = None
     username: str | None = None
     role: str
+    is_superuser: bool
     is_active: bool
+    group_ids: list[str] = []
     two_factor_enabled: bool
     storage_quota: int
     created_at: datetime

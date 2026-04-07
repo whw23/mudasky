@@ -1,9 +1,17 @@
 /**
- * axios 实例封装
- * 包含请求拦截器（添加自定义头）和响应拦截器（自动刷新 token）
+ * axios 实例封装。
+ * 包含请求拦截器（添加自定义头）和响应拦截器（自动刷新 token）。
  */
 
 import axios from "axios"
+
+/** 是否保持登录（影响 cookie 有效期） */
+let keepLogin = true
+
+/** 设置是否保持登录 */
+export function setKeepLogin(value: boolean): void {
+  keepLogin = value
+}
 
 /** 标记是否正在刷新 token，防止并发刷新 */
 let isRefreshing = false
@@ -16,9 +24,10 @@ const api = axios.create({
   withCredentials: true,
 })
 
-/** 请求拦截器：添加 X-Requested-With 头 */
+/** 请求拦截器：添加自定义头 */
 api.interceptors.request.use((config) => {
   config.headers["X-Requested-With"] = "XMLHttpRequest"
+  config.headers["X-Keep-Login"] = keepLogin ? "true" : "false"
   return config
 })
 

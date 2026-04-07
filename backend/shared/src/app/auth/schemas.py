@@ -52,14 +52,6 @@ class LoginRequest(BaseModel):
     )
 
 
-class RefreshRequest(BaseModel):
-    """刷新令牌请求。"""
-
-    token_hash: str = Field(
-        ..., max_length=64, description="刷新令牌哈希"
-    )
-
-
 class AuthResponse(BaseModel):
     """认证响应。
 

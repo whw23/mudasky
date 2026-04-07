@@ -185,11 +185,26 @@ class AuthService:
     async def _login_by_sms(
         self, phone: str, code: str
     ) -> tuple[User, str | None]:
-        """手机号 + 短信验证码登录，不需要二步验证。"""
+        """手机号 + 短信验证码登录，不需要二步验证。
+
+        如果手机号未注册，自动创建用户。
+        """
         await self._verify_sms_code(phone, code)
-        user = await self._get_user_by_phone(phone)
+        user = await user_repo.get_by_phone(self.session, phone)
+        if not user:
+            user = await self._auto_register(phone)
         self._check_user_active(user)
         return user, None
+
+    async def _auto_register(self, phone: str) -> User:
+        """手机号验证码登录时自动注册新用户。"""
+        from app.core.config import settings
+
+        user = User(phone=phone, storage_quota=settings.default_storage_quota_bytes)
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
 
     async def _login_with_password(
         self,
