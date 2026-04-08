@@ -163,6 +163,19 @@ async def get_user_group_ids(
     return [row[0] for row in result.all()]
 
 
+async def get_user_group_names(
+    session: AsyncSession, user_id: str
+) -> list[str]:
+    """查询用户所属的权限组名称列表。"""
+    stmt = (
+        select(PermissionGroup.name)
+        .join(user_group, PermissionGroup.id == user_group.c.group_id)
+        .where(user_group.c.user_id == user_id)
+    )
+    result = await session.execute(stmt)
+    return [row[0] for row in result.all()]
+
+
 async def set_user_groups(
     session: AsyncSession, user_id: str, group_ids: list[str]
 ) -> None:

@@ -12,6 +12,7 @@ export interface User {
   storage_quota: number
   permissions: string[]
   group_ids: string[]
+  group_names: string[]
   created_at: string
   updated_at: string | null
 }

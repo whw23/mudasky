@@ -484,18 +484,18 @@ export function ProfileInfo() {
           </div>
 
           {/* 权限组（只读） */}
-          {user.group_ids.length > 0 && (
+          {user.group_names && user.group_names.length > 0 && (
             <>
               <Separator />
               <div className="space-y-1">
                 <Label className="text-sm font-medium">{t('groups')}</Label>
                 <div className="flex flex-wrap gap-1">
-                  {user.group_ids.map((gid) => (
+                  {user.group_names.map((name) => (
                     <span
-                      key={gid}
+                      key={name}
                       className="inline-block rounded-full bg-muted px-3 py-0.5 text-xs font-medium"
                     >
-                      {gid}
+                      {name}
                     </span>
                   ))}
                 </div>

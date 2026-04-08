@@ -41,6 +41,9 @@ class UserService:
         group_ids = await rbac_repo.get_user_group_ids(
             self.session, user_id
         )
+        group_names = await rbac_repo.get_user_group_names(
+            self.session, user_id
+        )
         return UserResponse(
             id=user.id,
             phone=user.phone,
@@ -52,6 +55,7 @@ class UserService:
             storage_quota=user.storage_quota,
             permissions=permissions,
             group_ids=group_ids,
+            group_names=group_names,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
