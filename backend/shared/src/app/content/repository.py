@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.content.models import Article, Category
 
 
+# ---- 分类 ----
+
+
 async def create_category(
     session: AsyncSession, category: Category
 ) -> Category:
@@ -33,6 +36,41 @@ async def list_categories(
     stmt = select(Category).order_by(Category.sort_order.asc())
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def update_category(
+    session: AsyncSession, category: Category
+) -> Category:
+    """更新分类。"""
+    await session.commit()
+    await session.refresh(category)
+    return category
+
+
+async def delete_category(
+    session: AsyncSession, category: Category
+) -> None:
+    """删除分类。"""
+    await session.delete(category)
+    await session.commit()
+
+
+async def count_articles_by_category(
+    session: AsyncSession,
+) -> dict[str, int]:
+    """统计每个分类的文章数量。"""
+    stmt = (
+        select(
+            Article.category_id,
+            func.count().label("cnt"),
+        )
+        .group_by(Article.category_id)
+    )
+    result = await session.execute(stmt)
+    return {row.category_id: row.cnt for row in result}
+
+
+# ---- 文章 ----
 
 
 async def create_article(
@@ -69,7 +107,7 @@ async def list_published(
 ) -> tuple[list[Article], int]:
     """分页查询已发布文章。
 
-    可选按分类过滤。返回文章列表和总数。
+    置顶文章排在前面，可选按分类过滤。返回文章列表和总数。
     """
     base_filter = Article.status == "published"
     if category_id:
@@ -88,7 +126,10 @@ async def list_published(
     stmt = (
         select(Article)
         .where(base_filter)
-        .order_by(Article.published_at.desc())
+        .order_by(
+            Article.is_pinned.desc(),
+            Article.published_at.desc(),
+        )
         .offset(offset)
         .limit(limit)
     )
@@ -126,22 +167,35 @@ async def list_by_author(
     return articles, total
 
 
-async def list_pending(
-    session: AsyncSession, offset: int, limit: int
+async def list_all_articles(
+    session: AsyncSession,
+    offset: int,
+    limit: int,
+    status: str | None = None,
 ) -> tuple[list[Article], int]:
-    """分页查询待审核文章。"""
+    """分页查询所有文章（管理员用）。
+
+    可按状态过滤。
+    """
+    base_filter = True  # noqa: E712
+    if status:
+        base_filter = Article.status == status
+
     count_stmt = (
         select(func.count())
         .select_from(Article)
-        .where(Article.status == "pending")
+        .where(base_filter)
     )
     total_result = await session.execute(count_stmt)
     total = total_result.scalar_one()
 
     stmt = (
         select(Article)
-        .where(Article.status == "pending")
-        .order_by(Article.created_at.asc())
+        .where(base_filter)
+        .order_by(
+            Article.is_pinned.desc(),
+            Article.created_at.desc(),
+        )
         .offset(offset)
         .limit(limit)
     )

@@ -1,12 +1,20 @@
-import { getTranslations } from "next-intl/server"
+"use client"
+
+/**
+ * 分类管理页面。
+ * 展示分类列表，支持创建、编辑和删除。
+ */
+
+import { useTranslations } from "next-intl"
+import { CategoryTable } from "@/components/admin/CategoryTable"
 
 /** 分类管理页面 */
-export default async function AdminCategoriesPage() {
-  const t = await getTranslations("Admin")
+export default function AdminCategoriesPage() {
+  const t = useTranslations("Admin")
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">{t("categoryManagement")}</h1>
-      <p className="text-muted-foreground">{t("placeholder")}</p>
+      <CategoryTable />
     </div>
   )
 }

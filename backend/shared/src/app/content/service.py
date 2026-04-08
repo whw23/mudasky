@@ -1,6 +1,6 @@
 """内容领域业务逻辑层。
 
-处理文章发布、分类管理、审核流程等业务。
+处理文章发布、分类管理等业务。
 """
 
 from datetime import datetime, timezone
@@ -9,9 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.content import repository
 from app.content.models import Article, Category
-from app.content.schemas import ArticleCreate, ArticleUpdate, CategoryCreate
+from app.content.schemas import (
+    ArticleCreate,
+    ArticleUpdate,
+    CategoryCreate,
+    CategoryUpdate,
+)
 from app.core.exceptions import (
-    ConflictException,
     ForbiddenException,
     NotFoundException,
 )
@@ -33,39 +37,79 @@ class ContentService:
         category = Category(
             name=data.name,
             slug=data.slug,
+            description=data.description,
             sort_order=data.sort_order,
         )
         return await repository.create_category(
             self.session, category
         )
 
+    async def update_category(
+        self, category_id: str, data: CategoryUpdate
+    ) -> Category:
+        """更新分类。"""
+        category = await repository.get_category_by_id(
+            self.session, category_id
+        )
+        if not category:
+            raise NotFoundException(message="分类不存在")
+
+        if data.name is not None:
+            category.name = data.name
+        if data.slug is not None:
+            category.slug = data.slug
+        if data.description is not None:
+            category.description = data.description
+        if data.sort_order is not None:
+            category.sort_order = data.sort_order
+
+        return await repository.update_category(
+            self.session, category
+        )
+
+    async def delete_category(
+        self, category_id: str
+    ) -> None:
+        """删除分类。"""
+        category = await repository.get_category_by_id(
+            self.session, category_id
+        )
+        if not category:
+            raise NotFoundException(message="分类不存在")
+        await repository.delete_category(self.session, category)
+
     async def list_categories(self) -> list[Category]:
         """查询所有分类。"""
         return await repository.list_categories(self.session)
 
+    async def get_article_counts_by_category(
+        self,
+    ) -> dict[str, int]:
+        """获取每个分类的文章数量。"""
+        return await repository.count_articles_by_category(
+            self.session
+        )
+
     # ---- 文章管理 ----
 
     async def create_article(
-        self, data: ArticleCreate, author_id: str, role: str
+        self, data: ArticleCreate, author_id: str
     ) -> Article:
-        """创建文章。
-
-        管理员直接发布，普通用户进入待审核状态。
-        """
-        status = "published" if role == "admin" else "pending"
+        """创建文章。"""
         published_at = (
             datetime.now(timezone.utc)
-            if status == "published"
+            if data.status == "published"
             else None
         )
         article = Article(
             title=data.title,
+            slug=data.slug,
             content=data.content,
-            summary=data.summary,
+            excerpt=data.excerpt,
             cover_image=data.cover_image,
             category_id=data.category_id,
             author_id=author_id,
-            status=status,
+            status=data.status,
             published_at=published_at,
         )
         return await repository.create_article(
@@ -82,72 +126,45 @@ class ContentService:
         return article
 
     async def update_article(
+        self, article_id: str, data: ArticleUpdate
+    ) -> Article:
+        """更新文章（不检查权限，由调用方负责）。"""
+        article = await self.get_article(article_id)
+        self._apply_article_update(article, data)
+        return await repository.update_article(
+            self.session, article
+        )
+
+    async def update_own_article(
         self,
         article_id: str,
         data: ArticleUpdate,
         user_id: str,
-        role: str,
     ) -> Article:
-        """更新文章，检查所有权或管理员权限。"""
-        article = await self.get_article(article_id)
-        self._check_ownership_or_admin(article, user_id, role)
-
-        if data.title is not None:
-            article.title = data.title
-        if data.content is not None:
-            article.content = data.content
-        if data.summary is not None:
-            article.summary = data.summary
-        if data.cover_image is not None:
-            article.cover_image = data.cover_image
-        if data.category_id is not None:
-            article.category_id = data.category_id
-
-        return await repository.update_article(
-            self.session, article
-        )
-
-    async def delete_article(
-        self, article_id: str, user_id: str, role: str
-    ) -> None:
-        """删除文章，检查所有权或管理员权限。"""
-        article = await self.get_article(article_id)
-        self._check_ownership_or_admin(article, user_id, role)
-        await repository.delete_article(self.session, article)
-
-    async def submit_for_review(
-        self, article_id: str, user_id: str
-    ) -> Article:
-        """提交文章审核（draft → pending）。"""
+        """更新自己的文章。"""
         article = await self.get_article(article_id)
         if article.author_id != user_id:
             raise ForbiddenException(message="无权操作此文章")
-        if article.status != "draft":
-            raise ConflictException(
-                message="只有草稿状态的文章可以提交审核"
-            )
-        article.status = "pending"
+        self._apply_article_update(article, data)
         return await repository.update_article(
             self.session, article
         )
 
-    async def review_article(
-        self, article_id: str, approved: bool
-    ) -> Article:
-        """审核文章（pending → published/rejected）。"""
+    async def delete_own_article(
+        self, article_id: str, user_id: str
+    ) -> None:
+        """删除自己的文章。"""
         article = await self.get_article(article_id)
-        if article.status != "pending":
-            raise ConflictException(
-                message="只有待审核的文章可以审核"
-            )
-        if approved:
-            article.status = "published"
-            article.published_at = datetime.now(timezone.utc)
-        else:
-            article.status = "rejected"
-        return await repository.update_article(
-            self.session, article
-        )
+        if article.author_id != user_id:
+            raise ForbiddenException(message="无权操作此文章")
+        await repository.delete_article(self.session, article)
+
+    async def delete_article_admin(
+        self, article_id: str
+    ) -> None:
+        """管理员删除文章。"""
+        article = await self.get_article(article_id)
+        await repository.delete_article(self.session, article)
 
     async def list_published(
         self,
@@ -168,17 +185,42 @@ class ContentService:
             self.session, author_id, offset, limit
         )
 
-    async def list_pending(
-        self, offset: int, limit: int
+    async def list_all_articles(
+        self,
+        offset: int,
+        limit: int,
+        status: str | None = None,
     ) -> tuple[list[Article], int]:
-        """分页查询待审核文章。"""
-        return await repository.list_pending(
-            self.session, offset, limit
+        """管理员分页查询所有文章。"""
+        return await repository.list_all_articles(
+            self.session, offset, limit, status
         )
 
-    def _check_ownership_or_admin(
-        self, article: Article, user_id: str, role: str
+    def _apply_article_update(
+        self, article: Article, data: ArticleUpdate
     ) -> None:
-        """检查文章所有权或管理员权限。"""
-        if article.author_id != user_id and role != "admin":
-            raise ForbiddenException(message="无权操作此文章")
+        """将更新数据应用到文章模型。"""
+        if data.title is not None:
+            article.title = data.title
+        if data.slug is not None:
+            article.slug = data.slug
+        if data.content is not None:
+            article.content = data.content
+        if data.excerpt is not None:
+            article.excerpt = data.excerpt
+        if data.cover_image is not None:
+            article.cover_image = data.cover_image
+        if data.category_id is not None:
+            article.category_id = data.category_id
+        if data.is_pinned is not None:
+            article.is_pinned = data.is_pinned
+        if data.status is not None:
+            # 发布时设置发布时间
+            if (
+                data.status == "published"
+                and article.status != "published"
+            ):
+                article.published_at = datetime.now(
+                    timezone.utc
+                )
+            article.status = data.status

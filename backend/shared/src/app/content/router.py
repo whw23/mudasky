@@ -1,34 +1,25 @@
 """内容领域路由层。
 
-提供文章发布、分类管理、审核流程等 API 端点。
+提供文章和分类的公开、用户 API 端点。
 """
 
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, Field
 
 from app.content.schemas import (
     ArticleCreate,
     ArticleResponse,
     ArticleUpdate,
-    CategoryCreate,
     CategoryResponse,
 )
 from app.content.service import ContentService
 from app.core.dependencies import (
     CurrentUserId,
-    CurrentUserType,
     DbSession,
     require_permission,
 )
 from app.core.pagination import PaginatedResponse, PaginationParams
 
 router = APIRouter(prefix="/content", tags=["content"])
-
-
-class ReviewBody(BaseModel):
-    """审核请求体。"""
-
-    approved: bool = Field(..., description="是否通过审核")
 
 
 def _build_paginated(
@@ -50,7 +41,21 @@ def _build_paginated(
     )
 
 
-# ---- 公开端点（无需认证） ----
+async def _category_list_with_counts(
+    svc: ContentService,
+) -> list[CategoryResponse]:
+    """查询分类列表并附带文章计数。"""
+    categories = await svc.list_categories()
+    counts = await svc.get_article_counts_by_category()
+    result: list[CategoryResponse] = []
+    for c in categories:
+        resp = CategoryResponse.model_validate(c)
+        resp.article_count = counts.get(c.id, 0)
+        result.append(resp)
+    return result
+
+
+# ---- 公开端点 ----
 
 
 @router.get(
@@ -100,67 +105,15 @@ async def list_categories(
 ) -> list[CategoryResponse]:
     """查询所有分类。"""
     svc = ContentService(session)
-    categories = await svc.list_categories()
-    return [
-        CategoryResponse.model_validate(c) for c in categories
-    ]
+    return await _category_list_with_counts(svc)
 
 
-# ---- 需要认证的端点 ----
-
-
-@router.post(
-    "",
-    response_model=ArticleResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_article(
-    data: ArticleCreate,
-    user_id: CurrentUserId,
-    user_type: CurrentUserType,
-    session: DbSession,
-) -> ArticleResponse:
-    """创建文章。"""
-    svc = ContentService(session)
-    article = await svc.create_article(data, user_id, user_type)
-    return ArticleResponse.model_validate(article)
-
-
-@router.patch(
-    "/{article_id}", response_model=ArticleResponse
-)
-async def update_article(
-    article_id: str,
-    data: ArticleUpdate,
-    user_id: CurrentUserId,
-    user_type: CurrentUserType,
-    session: DbSession,
-) -> ArticleResponse:
-    """更新文章。"""
-    svc = ContentService(session)
-    article = await svc.update_article(
-        article_id, data, user_id, user_type
-    )
-    return ArticleResponse.model_validate(article)
-
-
-@router.delete(
-    "/{article_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def delete_article(
-    article_id: str,
-    user_id: CurrentUserId,
-    user_type: CurrentUserType,
-    session: DbSession,
-) -> None:
-    """删除文章。"""
-    svc = ContentService(session)
-    await svc.delete_article(article_id, user_id, user_type)
+# ---- 用户端点（需要认证） ----
 
 
 @router.get(
-    "/my", response_model=PaginatedResponse[ArticleResponse]
+    "/my",
+    response_model=PaginatedResponse[ArticleResponse],
 )
 async def list_my_articles(
     user_id: CurrentUserId,
@@ -180,72 +133,51 @@ async def list_my_articles(
 
 
 @router.post(
-    "/{article_id}/submit",
+    "/articles",
     response_model=ArticleResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(require_permission("blog:write"))
+    ],
 )
-async def submit_for_review(
-    article_id: str,
+async def create_article(
+    data: ArticleCreate,
     user_id: CurrentUserId,
     session: DbSession,
 ) -> ArticleResponse:
-    """提交文章审核。"""
+    """创建文章。"""
     svc = ContentService(session)
-    article = await svc.submit_for_review(article_id, user_id)
+    article = await svc.create_article(data, user_id)
     return ArticleResponse.model_validate(article)
 
 
-# ---- 管理员端点 ----
-
-
-@router.get(
-    "/pending",
-    response_model=PaginatedResponse[ArticleResponse],
-    dependencies=[Depends(require_permission("content:manage"))],
-)
-async def list_pending_articles(
-    session: DbSession,
-    page: int = 1,
-    page_size: int = 20,
-) -> PaginatedResponse[ArticleResponse]:
-    """分页查询待审核文章（仅管理员）。"""
-    params = PaginationParams(page=page, page_size=page_size)
-    svc = ContentService(session)
-    articles, total = await svc.list_pending(
-        params.offset, params.page_size
-    )
-    return _build_paginated(
-        articles, total, params, ArticleResponse
-    )
-
-
-@router.post(
-    "/{article_id}/review",
+@router.patch(
+    "/articles/{article_id}",
     response_model=ArticleResponse,
-    dependencies=[Depends(require_permission("content:manage"))],
 )
-async def review_article(
+async def update_own_article(
     article_id: str,
-    body: ReviewBody,
+    data: ArticleUpdate,
+    user_id: CurrentUserId,
     session: DbSession,
 ) -> ArticleResponse:
-    """审核文章（仅管理员）。"""
+    """更新自己的文章。"""
     svc = ContentService(session)
-    article = await svc.review_article(
-        article_id, body.approved
+    article = await svc.update_own_article(
+        article_id, data, user_id
     )
     return ArticleResponse.model_validate(article)
 
 
-@router.post(
-    "/categories",
-    response_model=CategoryResponse,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_permission("content:manage"))],
+@router.delete(
+    "/articles/{article_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
-async def create_category(
-    data: CategoryCreate, session: DbSession
-) -> CategoryResponse:
-    """创建分类（仅管理员）。"""
+async def delete_own_article(
+    article_id: str,
+    user_id: CurrentUserId,
+    session: DbSession,
+) -> None:
+    """删除自己的文章。"""
     svc = ContentService(session)
-    category = await svc.create_category(data)
-    return CategoryResponse.model_validate(category)
+    await svc.delete_own_article(article_id, user_id)

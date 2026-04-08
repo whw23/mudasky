@@ -40,12 +40,15 @@ export interface PermissionGroup {
 export interface Article {
   id: string
   title: string
+  slug: string
   content: string
-  summary: string | null
+  excerpt: string
   cover_image: string | null
   category_id: string
   author_id: string
-  status: 'draft' | 'pending' | 'published' | 'rejected'
+  status: "draft" | "published"
+  is_pinned: boolean
+  view_count: number
   published_at: string | null
   created_at: string
   updated_at: string | null
@@ -66,7 +69,9 @@ export interface Category {
   id: string
   name: string
   slug: string
+  description: string
   sort_order: number
+  article_count: number
   created_at: string
 }
 

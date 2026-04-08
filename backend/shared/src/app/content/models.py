@@ -6,7 +6,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -27,6 +27,9 @@ class Category(Base):
     )
     slug: Mapped[str] = mapped_column(
         String(50), unique=True, index=True, nullable=False
+    )
+    description: Mapped[str] = mapped_column(
+        String(200), default="", nullable=False
     )
     sort_order: Mapped[int] = mapped_column(
         Integer, default=0, nullable=False
@@ -51,11 +54,14 @@ class Article(Base):
     title: Mapped[str] = mapped_column(
         String(200), nullable=False
     )
+    slug: Mapped[str] = mapped_column(
+        String(200), unique=True, index=True, nullable=False
+    )
     content: Mapped[str] = mapped_column(
         Text, nullable=False
     )
-    summary: Mapped[str | None] = mapped_column(
-        String(500), nullable=True
+    excerpt: Mapped[str] = mapped_column(
+        String(500), default="", nullable=False
     )
     cover_image: Mapped[str | None] = mapped_column(
         String(500), nullable=True
@@ -72,6 +78,12 @@ class Article(Base):
     )
     status: Mapped[str] = mapped_column(
         String(20), default="draft", nullable=False
+    )
+    is_pinned: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    view_count: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False
     )
     published_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
