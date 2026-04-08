@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages, getTranslations } from "next-intl/server"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { ConfigProvider } from "@/contexts/ConfigContext"
 import { LoginModal } from "@/components/auth/LoginModal"
 import { RegisterModal } from "@/components/auth/RegisterModal"
 
@@ -33,9 +34,11 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages}>
       <AuthProvider>
-        {children}
-        <LoginModal />
-        <RegisterModal />
+        <ConfigProvider>
+          {children}
+          <LoginModal />
+          <RegisterModal />
+        </ConfigProvider>
       </AuthProvider>
     </NextIntlClientProvider>
   )
