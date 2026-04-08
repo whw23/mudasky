@@ -122,6 +122,25 @@ local new_refresh_jwt = jwt:sign(jwt_secret, {
   },
 })
 
+-- 保存新 refresh_token 的哈希到后端
+local new_sha256 = resty_sha256:new()
+new_sha256:update(new_refresh_jwt)
+local new_digest = new_sha256:final()
+local new_token_hash = str.to_hex(new_digest)
+
+local save_httpc = http.new()
+save_httpc:request_uri("http://api:8000/api/auth/refresh-token-hash", {
+  method = "POST",
+  body = cjson.encode({
+    user_id = user.id,
+    token_hash = new_token_hash,
+  }),
+  headers = {
+    ["Content-Type"] = "application/json",
+    ["X-Requested-With"] = "XMLHttpRequest",
+  },
+})
+
 -- 设置 Cookie
 local keep_login = ngx.req.get_headers()["X-Keep-Login"]
 local keep = (keep_login ~= "false")

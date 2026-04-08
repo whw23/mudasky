@@ -5,6 +5,8 @@
 local http = require("resty.http")
 local cjson = require("cjson.safe")
 local jwt = require("resty.jwt")
+local resty_sha256 = require("resty.sha256")
+local str = require("resty.string")
 local config = require("init")
 local rate_limit = require("rate_limit")
 
@@ -92,6 +94,25 @@ local refresh_jwt = jwt:sign(jwt_secret, {
     type = "refresh",
     iat = now,
     exp = now + refresh_expire,
+  },
+})
+
+-- 保存 refresh_token 的哈希到后端
+local sha256 = resty_sha256:new()
+sha256:update(refresh_jwt)
+local digest = sha256:final()
+local token_hash = str.to_hex(digest)
+
+local save_httpc = http.new()
+save_httpc:request_uri("http://api:8000/api/auth/refresh-token-hash", {
+  method = "POST",
+  body = cjson.encode({
+    user_id = user.id,
+    token_hash = token_hash,
+  }),
+  headers = {
+    ["Content-Type"] = "application/json",
+    ["X-Requested-With"] = "XMLHttpRequest",
   },
 })
 

@@ -42,7 +42,7 @@ export function ChangePhone() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.put('/users/me/phone', { phone, code })
+      await api.put('/users/me/phone', { new_phone: phone, code })
       toast.success(t('phoneChanged'))
       resetForm()
       await fetchUser()

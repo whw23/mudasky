@@ -76,6 +76,23 @@ async def login(
     return AuthResponse(user=user_resp, step=step)
 
 
+class RefreshTokenHashRequest(BaseModel):
+    """保存 refresh token 哈希请求（网关内部调用）。"""
+
+    user_id: str
+    token_hash: str
+
+
+@router.post("/refresh-token-hash", response_model=MessageResponse)
+async def save_refresh_token_hash(
+    data: RefreshTokenHashRequest, session: DbSession
+) -> MessageResponse:
+    """保存 refresh token 哈希（由网关在登录/续签后调用）。"""
+    svc = AuthService(session)
+    await svc.save_refresh_token_hash(data.user_id, data.token_hash)
+    return MessageResponse(message="ok")
+
+
 @router.post("/refresh", response_model=AuthResponse)
 async def refresh(
     session: DbSession,
