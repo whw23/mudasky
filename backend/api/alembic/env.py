@@ -17,6 +17,7 @@ from app.auth.models import SmsCode, RefreshToken  # noqa: F401
 from app.content.models import Article, Category  # noqa: F401
 from app.document.models import Document  # noqa: F401
 from app.worker.models import Task  # noqa: F401
+from app.config.models import SystemConfig  # noqa: F401
 
 config = context.config
 
