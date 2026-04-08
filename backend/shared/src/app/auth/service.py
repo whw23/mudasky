@@ -62,7 +62,7 @@ class AuthService:
 
         验证短信验证码后创建用户，可选设置用户名和密码。
         """
-        await self._verify_sms_code(phone, code)
+        await repository.verify_sms_code(self.session, phone, code)
         existing = await user_repo.get_by_phone(self.session, phone)
         if existing:
             raise ConflictException(message="手机号已注册")
@@ -199,12 +199,6 @@ class AuthService:
                 message="验证码发送次数已达上限，请一小时后再试"
             )
 
-    async def _verify_sms_code(
-        self, phone: str, code: str
-    ) -> None:
-        """验证短信验证码，验证后标记为已使用。"""
-        await repository.verify_sms_code(self.session, phone, code)
-
     async def _login_by_sms(
         self, phone: str, code: str
     ) -> tuple[User, str | None]:
@@ -212,7 +206,7 @@ class AuthService:
 
         如果手机号未注册，自动创建用户。
         """
-        await self._verify_sms_code(phone, code)
+        await repository.verify_sms_code(self.session, phone, code)
         user = await user_repo.get_by_phone(self.session, phone)
         if not user:
             user = await self._auto_register(phone)
@@ -270,8 +264,8 @@ class AuthService:
             return user, None
         # 短信验证码（totp 和 sms 模式都接受）
         if sms_code_2fa:
-            await self._verify_sms_code(
-                user.phone, sms_code_2fa
+            await repository.verify_sms_code(
+                self.session, user.phone, sms_code_2fa
             )
             return user, None
         # 未提供验证码，自动发送短信
