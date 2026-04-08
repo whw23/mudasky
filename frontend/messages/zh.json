@@ -228,6 +228,8 @@
     "newPhone": "新手机号",
     "phonePlaceholder": "请输入新手机号",
     "smsCode": "短信验证码",
+    "smsCodeSentTo": "验证码将发送至 {phone}",
+    "noPhoneForPassword": "请先绑定手机号",
     "codePlaceholder": "请输入验证码",
     "phoneChanged": "手机号修改成功",
     "twoFactorAuth": "两步验证",

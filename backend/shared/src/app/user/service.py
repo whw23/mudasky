@@ -12,7 +12,7 @@ from app.core.exceptions import (
     NotFoundException,
     UnauthorizedException,
 )
-from app.core.security import hash_password, verify_password
+from app.core.security import hash_password
 from app.rbac import repository as rbac_repo
 from app.user import repository
 from app.user.models import User
@@ -169,17 +169,24 @@ class UserService:
         await repository.update(self.session, user)
 
     async def disable_2fa(
-        self, user_id: str, password: str
+        self, user_id: str, phone: str, code: str
     ) -> None:
         """关闭双因素认证。
 
-        需验证用户密码。
+        需验证手机短信验证码。
         """
         user = await self.get_user(user_id)
-        if not user.password_hash:
-            raise ConflictException(message="用户未设置密码")
-        if not verify_password(password, user.password_hash):
-            raise ConflictException(message="密码不正确")
+        if user.phone != phone:
+            raise ConflictException(message="手机号不匹配")
+        sms_code = await auth_repo.get_latest_sms_code(self.session, phone)
+        if not sms_code:
+            raise UnauthorizedException(message="验证码无效或已过期")
+        sms_code.attempts += 1
+        if sms_code.code != code:
+            await self.session.commit()
+            raise UnauthorizedException(message="验证码不正确")
+        sms_code.is_used = True
+        await self.session.commit()
         user.two_factor_enabled = False
         user.two_factor_method = None
         user.totp_secret = None

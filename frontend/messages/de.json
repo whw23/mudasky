@@ -228,6 +228,8 @@
     "newPhone": "Neue Telefonnummer",
     "phonePlaceholder": "Neue Telefonnummer eingeben",
     "smsCode": "SMS-Code",
+    "smsCodeSentTo": "Code wird an {phone} gesendet",
+    "noPhoneForPassword": "Bitte zuerst eine Telefonnummer hinterlegen",
     "codePlaceholder": "Verifizierungscode eingeben",
     "phoneChanged": "Telefonnummer erfolgreich geändert",
     "twoFactorAuth": "Zwei-Faktor-Authentifizierung",

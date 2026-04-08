@@ -228,6 +228,8 @@
     "newPhone": "新しい電話番号",
     "phonePlaceholder": "新しい電話番号を入力",
     "smsCode": "SMS認証コード",
+    "smsCodeSentTo": "認証コードは {phone} に送信されます",
+    "noPhoneForPassword": "先に電話番号を登録してください",
     "codePlaceholder": "認証コードを入力",
     "phoneChanged": "電話番号を変更しました",
     "twoFactorAuth": "二段階認証",

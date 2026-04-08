@@ -29,12 +29,6 @@ class TotpCodeBody(BaseModel):
     totp_code: str = Field(..., description="TOTP 验证码")
 
 
-class PasswordBody(BaseModel):
-    """密码请求体。"""
-
-    password: str = Field(..., description="用户密码")
-
-
 class Sms2faBody(BaseModel):
     """短信 2FA 启用请求体。"""
 
@@ -148,11 +142,11 @@ async def enable_2fa_sms(
     "/me/2fa/disable", response_model=MessageResponse
 )
 async def disable_2fa(
-    data: PasswordBody,
+    data: Sms2faBody,
     user_id: CurrentUserId,
     session: DbSession,
 ) -> MessageResponse:
     """关闭双因素认证。"""
     svc = UserService(session)
-    await svc.disable_2fa(user_id, data.password)
+    await svc.disable_2fa(user_id, data.phone, data.code)
     return MessageResponse(message="双因素认证已关闭")

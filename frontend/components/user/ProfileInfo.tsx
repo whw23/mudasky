@@ -34,6 +34,65 @@ import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
 /** 当前正在编辑的字段 */
 type EditingField = null | 'username' | 'password' | 'phone' | '2fa'
 
+/** 信息行组件 */
+function InfoRow({
+  label,
+  value,
+  field,
+  editing,
+  onEdit,
+  onCancel,
+  editLabel,
+  cancelLabel,
+  children,
+}: {
+  label: string
+  value: React.ReactNode
+  field?: EditingField
+  editing: EditingField
+  onEdit: (field: EditingField) => void
+  onCancel: () => void
+  editLabel: string
+  cancelLabel: string
+  children?: React.ReactNode
+}) {
+  const isEditing = editing === field
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium">{label}</Label>
+        {field && !isEditing && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground"
+            onClick={() => onEdit(field)}
+          >
+            <Pencil className="mr-1 size-3" />
+            {editLabel}
+          </Button>
+        )}
+        {field && isEditing && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground"
+            onClick={onCancel}
+          >
+            <X className="mr-1 size-3" />
+            {cancelLabel}
+          </Button>
+        )}
+      </div>
+      {isEditing ? children : (
+        <p className="text-sm text-muted-foreground">{value}</p>
+      )}
+    </div>
+  )
+}
+
 /** 用户个人资料 */
 export function ProfileInfo() {
   const { user, fetchUser } = useAuth()
@@ -45,7 +104,6 @@ export function ProfileInfo() {
   const [username, setUsername] = useState('')
 
   /* 修改密码 */
-  const [pwdPhone, setPwdPhone] = useState('')
   const [pwdCode, setPwdCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -58,10 +116,9 @@ export function ProfileInfo() {
   const [twoFaMode, setTwoFaMode] = useState<'totp' | 'sms' | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [totpCode, setTotpCode] = useState('')
-  const [sms2faPhone, setSms2faPhone] = useState('')
   const [sms2faCode, setSms2faCode] = useState('')
   const [showDisableDialog, setShowDisableDialog] = useState(false)
-  const [disablePassword, setDisablePassword] = useState('')
+  const [disableCode, setDisableCode] = useState('')
 
   if (!user) return null
 
@@ -75,7 +132,6 @@ export function ProfileInfo() {
   function cancelEdit(): void {
     setEditing(null)
     setUsername('')
-    setPwdPhone('')
     setPwdCode('')
     setNewPassword('')
     setConfirmPassword('')
@@ -85,7 +141,6 @@ export function ProfileInfo() {
     if (qrUrl) URL.revokeObjectURL(qrUrl)
     setQrUrl(null)
     setTotpCode('')
-    setSms2faPhone('')
     setSms2faCode('')
   }
 
@@ -115,7 +170,7 @@ export function ProfileInfo() {
     setLoading(true)
     try {
       await api.put('/users/me/password', {
-        phone: pwdPhone,
+        phone: user!.phone,
         code: pwdCode,
         new_password: newPassword,
       })
@@ -188,7 +243,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/enable-sms', { phone: sms2faPhone, code: sms2faCode })
+      await api.post('/users/me/2fa/enable-sms', { phone: user!.phone, code: sms2faCode })
       await fetchUser()
       cancelEdit()
       toast.success(t('twoFaEnabled'))
@@ -204,65 +259,16 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/disable', { password: disablePassword })
+      await api.post('/users/me/2fa/disable', { phone: user!.phone, code: disableCode })
       await fetchUser()
       setShowDisableDialog(false)
-      setDisablePassword('')
+      setDisableCode('')
       toast.success(t('twoFaDisabled'))
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('disableFailed'))
     } finally {
       setLoading(false)
     }
-  }
-
-  /** 信息行组件 */
-  function InfoRow({
-    label,
-    value,
-    field,
-    children,
-  }: {
-    label: string
-    value: React.ReactNode
-    field?: EditingField
-    children?: React.ReactNode
-  }) {
-    const isEditing = editing === field
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">{label}</Label>
-          {field && !isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs text-muted-foreground"
-              onClick={() => startEdit(field)}
-            >
-              <Pencil className="mr-1 size-3" />
-              {t('edit')}
-            </Button>
-          )}
-          {field && isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs text-muted-foreground"
-              onClick={cancelEdit}
-            >
-              <X className="mr-1 size-3" />
-              {t('cancel')}
-            </Button>
-          )}
-        </div>
-        {isEditing ? children : (
-          <p className="text-sm text-muted-foreground">{value}</p>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -273,7 +279,7 @@ export function ProfileInfo() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 用户名 */}
-          <InfoRow label={t('username')} value={user.username || t('notSet')} field="username">
+          <InfoRow label={t('username')} value={user.username || t('notSet')} field="username" editing={editing} onEdit={startEdit} onCancel={cancelEdit} editLabel={t('edit')} cancelLabel={t('cancel')}>
             <form onSubmit={saveUsername} className="flex items-center gap-2">
               <Input
                 value={username}
@@ -291,7 +297,7 @@ export function ProfileInfo() {
           <Separator />
 
           {/* 手机号 */}
-          <InfoRow label={t('phone')} value={user.phone || t('notSet')} field="phone">
+          <InfoRow label={t('phone')} value={user.phone || t('notSet')} field="phone" editing={editing} onEdit={startEdit} onCancel={cancelEdit} editLabel={t('edit')} cancelLabel={t('cancel')}>
             <form onSubmit={savePhone} className="space-y-3 max-w-md">
               <PhoneInput
                 value={newPhone}
@@ -318,19 +324,11 @@ export function ProfileInfo() {
           <Separator />
 
           {/* 密码 */}
-          <InfoRow label={t('changePassword')} value={t('passwordSet')} field="password">
+          <InfoRow label={t('changePassword')} value={t('passwordSet')} field={user.phone ? 'password' : undefined} editing={editing} onEdit={startEdit} onCancel={cancelEdit} editLabel={t('edit')} cancelLabel={t('cancel')}>
             <form onSubmit={savePassword} className="space-y-3 max-w-md">
               <div className="space-y-1">
-                <Label className="text-xs">{t('phone')}</Label>
-                <PhoneInput
-                  value={pwdPhone}
-                  onChange={setPwdPhone}
-                  placeholder={t('phonePlaceholder')}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
                 <Label className="text-xs">{t('smsCode')}</Label>
+                <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
                 <div className="flex gap-2">
                   <Input
                     value={pwdCode}
@@ -339,7 +337,7 @@ export function ProfileInfo() {
                     maxLength={6}
                     required
                   />
-                  <SmsCodeButton phone={pwdPhone} />
+                  <SmsCodeButton phone={user.phone!} />
                 </div>
               </div>
               <div className="space-y-1">
@@ -412,9 +410,11 @@ export function ProfileInfo() {
                     <Button size="sm" variant="outline" onClick={handleEnableTotp} disabled={loading}>
                       {t('methodTotp')}
                     </Button>
-                    <Button size="sm" variant="outline" onClick={handleEnableSms}>
-                      {t('methodSms')}
-                    </Button>
+                    {user.phone && (
+                      <Button size="sm" variant="outline" onClick={handleEnableSms}>
+                        {t('methodSms')}
+                      </Button>
+                    )}
                   </div>
                 )}
                 {twoFaMode === 'totp' && qrUrl && (
@@ -439,13 +439,7 @@ export function ProfileInfo() {
                 {twoFaMode === 'sms' && (
                   /* 短信验证确认 */
                   <form onSubmit={confirmSms} className="space-y-3">
-                    <p className="text-xs text-muted-foreground">{t('sms2faHint')}</p>
-                    <PhoneInput
-                      value={sms2faPhone}
-                      onChange={setSms2faPhone}
-                      placeholder={t('phonePlaceholder')}
-                      required
-                    />
+                    <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
                     <div className="flex gap-2">
                       <Input
                         value={sms2faCode}
@@ -454,7 +448,7 @@ export function ProfileInfo() {
                         maxLength={6}
                         required
                       />
-                      <SmsCodeButton phone={sms2faPhone} />
+                      <SmsCodeButton phone={user.phone!} />
                     </div>
                     <Button type="submit" size="sm" disabled={loading}>
                       {loading ? t('saving') : t('confirmEnable')}
@@ -517,7 +511,7 @@ export function ProfileInfo() {
         onOpenChange={(open) => {
           if (!open) {
             setShowDisableDialog(false)
-            setDisablePassword('')
+            setDisableCode('')
           }
         }}
       >
@@ -526,21 +520,24 @@ export function ProfileInfo() {
             <DialogTitle>{t('disableTwoFa')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleDisable2fa} className="space-y-4">
-            <p className="text-sm text-muted-foreground">{t('disableConfirmHint')}</p>
+            <p className="text-sm text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
             <div className="space-y-2">
-              <Label htmlFor="disable-pwd">{t('password')}</Label>
-              <PasswordInput
-                id="disable-pwd"
-                value={disablePassword}
-                onChange={setDisablePassword}
-                required
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={disableCode}
+                  onChange={(e) => setDisableCode(e.target.value)}
+                  placeholder={t('codePlaceholder')}
+                  maxLength={6}
+                  required
+                />
+                <SmsCodeButton phone={user.phone!} />
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => { setShowDisableDialog(false); setDisablePassword('') }}
+                onClick={() => { setShowDisableDialog(false); setDisableCode('') }}
               >
                 {t('cancel')}
               </Button>
