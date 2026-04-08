@@ -32,7 +32,10 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
     if (!phone || sending || countdown > 0) return
     setSending(true)
     try {
-      await api.post('/auth/sms-code', { phone })
+      const res = await api.post('/auth/sms-code', { phone })
+      if (res.data.code) {
+        console.log(`[DEV] 验证码: ${res.data.code}`)
+      }
       setCountdown(60)
     } catch (err: any) {
       const msg = err.response?.data?.message || t('sendFailed')

@@ -25,14 +25,21 @@ class MessageResponse(BaseModel):
     message: str
 
 
-@router.post("/sms-code", response_model=MessageResponse)
+class SmsCodeResponse(BaseModel):
+    """短信验证码响应。"""
+
+    message: str
+    code: str | None = None
+
+
+@router.post("/sms-code", response_model=SmsCodeResponse)
 async def send_sms_code(
     data: SmsCodeRequest, session: DbSession
-) -> MessageResponse:
-    """发送短信验证码。"""
+) -> SmsCodeResponse:
+    """发送短信验证码。DEBUG 模式下返回验证码。"""
     svc = AuthService(session)
-    await svc.send_code(data.phone)
-    return MessageResponse(message="验证码已发送")
+    code = await svc.send_code(data.phone)
+    return SmsCodeResponse(message="验证码已发送", code=code)
 
 
 @router.post("/register", response_model=AuthResponse)

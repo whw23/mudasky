@@ -6,7 +6,12 @@
 import pyotp
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ConflictException, NotFoundException
+from app.auth import repository as auth_repo
+from app.core.exceptions import (
+    ConflictException,
+    NotFoundException,
+    UnauthorizedException,
+)
 from app.core.security import hash_password, verify_password
 from app.rbac import repository as rbac_repo
 from app.user import repository
@@ -74,14 +79,21 @@ class UserService:
     ) -> None:
         """修改用户密码。
 
-        如果用户已有密码，需验证旧密码。
+        通过短信验证码验证身份后设置新密码。
         """
         user = await self.get_user(user_id)
-        if user.password_hash and data.old_password:
-            if not verify_password(data.old_password, user.password_hash):
-                raise ConflictException(message="旧密码不正确")
-        elif user.password_hash and not data.old_password:
-            raise ConflictException(message="请提供旧密码")
+        if user.phone != data.phone:
+            raise ConflictException(message="手机号与当前账号不匹配")
+        sms_code = await auth_repo.get_latest_sms_code(
+            self.session, data.phone
+        )
+        if not sms_code:
+            raise UnauthorizedException(message="验证码无效或已过期")
+        sms_code.attempts += 1
+        if sms_code.code != data.code:
+            await self.session.commit()
+            raise UnauthorizedException(message="验证码不正确")
+        sms_code.is_used = True
         user.password_hash = hash_password(data.new_password)
         await repository.update(self.session, user)
 

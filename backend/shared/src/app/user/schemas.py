@@ -39,9 +39,10 @@ class UserAdminUpdate(BaseModel):
 
 
 class PasswordChange(BaseModel):
-    """修改密码请求。"""
+    """修改密码请求。需要手机号短信验证。"""
 
-    old_password: str | None = Field(None, description="旧密码")
+    phone: str = Field(..., description="手机号")
+    code: str = Field(..., description="短信验证码")
     new_password: str = Field(..., min_length=6, description="新密码")
 
 

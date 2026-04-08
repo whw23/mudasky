@@ -2,7 +2,7 @@
 
 /**
  * 登录弹窗。
- * 支持三种登录方式（手机验证码、用户名密码、手机号密码）及二步验证。
+ * 支持两种登录方式（手机验证码、账号密码）及二步验证。
  */
 
 import { useState, type FormEvent } from 'react'
@@ -26,6 +26,11 @@ import { SmsCodeButton } from './SmsCodeButton'
 import { PasswordInput } from './PasswordInput'
 import { TwoFaForm } from './TwoFaForm'
 
+/** 判断输入是否为手机号格式 */
+function isPhoneNumber(value: string): boolean {
+  return /^\d{5,}$/.test(value)
+}
+
 /** 登录弹窗组件 */
 export function LoginModal() {
   const { authModal, hideAuthModal, fetchUser, showRegisterModal } = useAuth()
@@ -40,13 +45,9 @@ export function LoginModal() {
   const [smsPhone, setSmsPhone] = useState('')
   const [smsCode, setSmsCode] = useState('')
 
-  /* 用户名密码登录 */
-  const [username, setUsername] = useState('')
-  const [usernamePwd, setUsernamePwd] = useState('')
-
-  /* 手机号密码登录 */
-  const [phoneLogin, setPhoneLogin] = useState('')
-  const [phonePwd, setPhonePwd] = useState('')
+  /* 账号密码登录 */
+  const [account, setAccount] = useState('')
+  const [accountPwd, setAccountPwd] = useState('')
 
   /* 二步验证 */
   const [twoFaStep, setTwoFaStep] = useState(false)
@@ -60,10 +61,8 @@ export function LoginModal() {
     setError('')
     setSmsPhone('')
     setSmsCode('')
-    setUsername('')
-    setUsernamePwd('')
-    setPhoneLogin('')
-    setPhonePwd('')
+    setAccount('')
+    setAccountPwd('')
     setTwoFaStep(false)
     setPendingPayload(null)
   }
@@ -109,16 +108,14 @@ export function LoginModal() {
     await doLogin({ phone: smsPhone, code: smsCode })
   }
 
-  /** 用户名密码登录 */
-  async function handleUsernameLogin(e: FormEvent): Promise<void> {
+  /** 账号密码登录（自动判断用户名或手机号） */
+  async function handleAccountLogin(e: FormEvent): Promise<void> {
     e.preventDefault()
-    await doLogin({ username, password: usernamePwd })
-  }
-
-  /** 手机号密码登录 */
-  async function handlePhonePasswordLogin(e: FormEvent): Promise<void> {
-    e.preventDefault()
-    await doLogin({ phone: phoneLogin, password: phonePwd })
+    if (isPhoneNumber(account)) {
+      await doLogin({ phone: account, password: accountPwd })
+    } else {
+      await doLogin({ username: account, password: accountPwd })
+    }
   }
 
   /** 二步验证提交 */
@@ -135,7 +132,7 @@ export function LoginModal() {
   if (twoFaStep) {
     return (
       <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md" >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('twoFaTitle')}</DialogTitle>
           </DialogHeader>
@@ -153,7 +150,7 @@ export function LoginModal() {
   /* 主登录视图 */
   return (
     <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" >
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('loginTitle')}</DialogTitle>
         </DialogHeader>
@@ -161,8 +158,7 @@ export function LoginModal() {
         <Tabs defaultValue="sms" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
-            <TabsTrigger value="username">{t('tabUsername')}</TabsTrigger>
-            <TabsTrigger value="phone-pwd">{t('tabPhonePwd')}</TabsTrigger>
+            <TabsTrigger value="account">{t('tabAccount')}</TabsTrigger>
           </TabsList>
 
           {/* 手机验证码登录 */}
@@ -205,60 +201,25 @@ export function LoginModal() {
             </form>
           </TabsContent>
 
-          {/* 用户名密码登录 */}
-          <TabsContent value="username">
-            <form onSubmit={handleUsernameLogin} className="space-y-4 pt-4">
+          {/* 账号密码登录 */}
+          <TabsContent value="account">
+            <form onSubmit={handleAccountLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="login-username">{t('username')}</Label>
+                <Label htmlFor="login-account">{t('account')}</Label>
                 <Input
-                  id="login-username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder={t('usernamePlaceholder')}
+                  id="login-account"
+                  value={account}
+                  onChange={(e) => setAccount(e.target.value)}
+                  placeholder={t('accountPlaceholder')}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-username-pwd">{t('password')}</Label>
+                <Label htmlFor="login-account-pwd">{t('password')}</Label>
                 <PasswordInput
-                  id="login-username-pwd"
-                  value={usernamePwd}
-                  onChange={setUsernamePwd}
-                  required
-                />
-              </div>
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('loginLoading') : t('loginButton')}
-              </Button>
-            </form>
-          </TabsContent>
-
-          {/* 手机号密码登录 */}
-          <TabsContent value="phone-pwd">
-            <form
-              onSubmit={handlePhonePasswordLogin}
-              className="space-y-4 pt-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="login-phone">{t('phone')}</Label>
-                <Input
-                  id="login-phone"
-                  type="tel"
-                  value={phoneLogin}
-                  onChange={(e) => setPhoneLogin(e.target.value)}
-                  placeholder={t('phonePlaceholder')}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="login-phone-pwd">{t('password')}</Label>
-                <PasswordInput
-                  id="login-phone-pwd"
-                  value={phonePwd}
-                  onChange={setPhonePwd}
+                  id="login-account-pwd"
+                  value={accountPwd}
+                  onChange={setAccountPwd}
                   required
                 />
               </div>
