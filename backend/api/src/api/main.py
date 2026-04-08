@@ -4,6 +4,9 @@
 开发环境下 Swagger UI 支持通过 Authorize 按钮设置网关注入的请求头。
 """
 
+import asyncio
+import logging
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
@@ -22,8 +25,37 @@ from app.user.router import router as user_router
 
 setup_logging()
 
+logger = logging.getLogger(__name__)
+
+CLEANUP_INTERVAL = 3600  # 清理间隔（秒）
+
+
+async def _cleanup_expired_data() -> None:
+    """后台定时清理过期的验证码和刷新令牌。"""
+    from app.auth import repository as auth_repo
+    from app.core.database import async_session_factory
+
+    while True:
+        await asyncio.sleep(CLEANUP_INTERVAL)
+        try:
+            async with async_session_factory() as session:
+                count = await auth_repo.delete_expired_refresh_tokens(session)
+                if count:
+                    logger.info("清理过期刷新令牌: %d 条", count)
+        except Exception:
+            logger.exception("清理过期数据失败")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """应用生命周期管理。"""
+    task = asyncio.create_task(_cleanup_expired_data())
+    yield
+    task.cancel()
+
+
 # 根应用
-app = FastAPI(title="mudasky", version="0.1.0", docs_url=None)
+app = FastAPI(title="mudasky", version="0.1.0", docs_url=None, lifespan=lifespan)
 
 # API 子应用（生产环境关闭 docs）
 api = FastAPI(

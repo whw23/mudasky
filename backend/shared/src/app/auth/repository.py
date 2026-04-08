@@ -61,6 +61,29 @@ async def count_recent_sms(
     return result.scalar_one()
 
 
+async def delete_expired_sms_codes(
+    session: AsyncSession, phone: str
+) -> None:
+    """删除指定手机号的已过期或已使用的验证码。"""
+    now = datetime.now(timezone.utc)
+    stmt = delete(SmsCode).where(
+        SmsCode.phone == phone,
+        (SmsCode.expires_at <= now) | (SmsCode.is_used.is_(True)),
+    )
+    await session.execute(stmt)
+
+
+async def delete_expired_refresh_tokens(
+    session: AsyncSession,
+) -> int:
+    """删除所有已过期的刷新令牌，返回删除数量。"""
+    now = datetime.now(timezone.utc)
+    stmt = delete(RefreshToken).where(RefreshToken.expires_at <= now)
+    result = await session.execute(stmt)
+    await session.commit()
+    return result.rowcount
+
+
 async def save_refresh_token(
     session: AsyncSession, token: RefreshToken
 ) -> RefreshToken:

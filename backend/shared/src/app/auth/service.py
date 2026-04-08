@@ -40,6 +40,8 @@ class AuthService:
         DEBUG 模式下返回验证码，生产环境返回 None。
         """
         await self._check_sms_rate_limit(phone)
+        # 清理该手机号的已过期验证码
+        await repository.delete_expired_sms_codes(self.session, phone)
         code = self._generate_code()
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
         sms_code = SmsCode(
