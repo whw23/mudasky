@@ -24,7 +24,7 @@ import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SmsCodeButton } from './SmsCodeButton'
 import { PasswordInput } from './PasswordInput'
-import { PhoneInput, isValidPhone } from './PhoneInput'
+import { PhoneInput } from './PhoneInput'
 import { TwoFaForm } from './TwoFaForm'
 
 /** 判断输入是否为手机号格式（以 + 开头或纯数字 5 位以上） */

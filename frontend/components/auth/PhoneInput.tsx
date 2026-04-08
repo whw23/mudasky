@@ -2,23 +2,13 @@
 
 /**
  * 国际手机号输入组件。
- * 带国家码选择器，默认 +86（中国），支持号码位数校验。
+ * 带国家码选择器，从系统配置动态获取国家码列表。
  */
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
-
-/** 支持的国家码列表 */
-const COUNTRY_CODES = [
-  { code: '+86', country: '🇨🇳', label: '中国', digits: 11 },
-  { code: '+81', country: '🇯🇵', label: '日本', digits: 10 },
-  { code: '+49', country: '🇩🇪', label: '德国', digits: 10 },
-  { code: '+65', country: '🇸🇬', label: '新加坡', digits: 8 },
-  { code: '+1', country: '🇺🇸', label: 'US/CA', digits: 10 },
-  { code: '+44', country: '🇬🇧', label: '英国', digits: 10 },
-  { code: '+82', country: '🇰🇷', label: '韩国', digits: 10 },
-  { code: '+33', country: '🇫🇷', label: '法国', digits: 9 },
-] as const
+import { useConfig } from '@/contexts/ConfigContext'
+import type { CountryCode } from '@/types/config'
 
 interface PhoneInputProps {
   /** 完整手机号值（含国家码，如 +8613800138000） */
@@ -36,25 +26,25 @@ interface PhoneInputProps {
 }
 
 /** 从完整号码中解析国家码和本地号码 */
-function parsePhone(full: string): { countryCode: string; local: string } {
-  for (const c of COUNTRY_CODES) {
+function parsePhone(full: string, codes: CountryCode[]): { countryCode: string; local: string } {
+  for (const c of codes) {
     if (full.startsWith(c.code)) {
       return { countryCode: c.code, local: full.slice(c.code.length) }
     }
   }
-  return { countryCode: '+86', local: full.replace(/^\+?\d{1,3}/, '') }
+  return { countryCode: codes[0]?.code ?? '+86', local: full.replace(/^\+?\d{1,4}/, '') }
 }
 
 /** 获取国家码对应的号码位数要求 */
-export function getDigitsForCode(code: string): number {
-  const found = COUNTRY_CODES.find((c) => c.code === code)
+export function getDigitsForCode(code: string, codes: CountryCode[]): number {
+  const found = codes.find((c) => c.code === code)
   return found?.digits ?? 10
 }
 
 /** 校验手机号是否合法（含国家码） */
-export function isValidPhone(fullPhone: string): boolean {
-  const { countryCode, local } = parsePhone(fullPhone)
-  const digits = getDigitsForCode(countryCode)
+export function isValidPhone(fullPhone: string, codes: CountryCode[]): boolean {
+  const { countryCode, local } = parsePhone(fullPhone, codes)
+  const digits = getDigitsForCode(countryCode, codes)
   return /^\d+$/.test(local) && local.length === digits
 }
 
@@ -67,7 +57,8 @@ export function PhoneInput({
   required,
   disabled,
 }: PhoneInputProps) {
-  const parsed = parsePhone(value)
+  const { countryCodes } = useConfig()
+  const parsed = parsePhone(value, countryCodes)
   const [countryCode, setCountryCode] = useState(parsed.countryCode)
   const localNumber = parsed.local
 
@@ -83,7 +74,7 @@ export function PhoneInput({
     onChange(countryCode + cleaned)
   }
 
-  const currentCountry = COUNTRY_CODES.find((c) => c.code === countryCode)
+  const currentCountry = countryCodes.find((c) => c.code === countryCode)
   const maxDigits = currentCountry?.digits ?? 10
 
   return (
@@ -94,7 +85,7 @@ export function PhoneInput({
         disabled={disabled}
         className="h-9 w-28 shrink-0 rounded-md border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
       >
-        {COUNTRY_CODES.map((c) => (
+        {countryCodes.map((c) => (
           <option key={c.code} value={c.code}>
             {c.country} {c.code}
           </option>
