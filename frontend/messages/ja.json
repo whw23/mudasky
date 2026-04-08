@@ -27,11 +27,14 @@
   "Footer": {
     "brandName": "慕大国際教育",
     "description": "慕大国際は15年にわたり外国語留学プログラムを運営しており、ミュンヘン大学語学センターの江蘇省唯一の指定入学試験会場です。",
-    "contactUs": "お問い合わせ",
-    "address": "蘇州市呉中区蘇州大学城林泉街377号公共学院5号楼7階",
-    "applyStudyAbroad": "留学申請",
+    "phone": "189-1268-6656",
+    "email": "haoanmuaxeng@163.com",
+    "quickLinks": "クイックリンク",
+    "services": "サービス",
+    "followUs": "フォローする",
+    "wechatQr": "WeChat公式アカウント",
     "qrPlaceholder": "QRコード",
-    "officialWechat": "公式WeChatカスタマーサービス",
+    "copyright": "© 2026 MUTU International Education. All rights reserved.",
     "icp": "蘇ICP備2022046719号-1"
   },
   "Home": {

@@ -27,11 +27,14 @@
   "Footer": {
     "brandName": "MUTU Internationale Bildung",
     "description": "MUTU International betreibt seit 15 Jahren Studienprogramme für Fremdsprachen und ist die einzige offizielle Anmeldestelle des Sprachzentrums der Universität München in der Provinz Jiangsu.",
-    "contactUs": "Kontakt",
-    "address": "7. OG, Gebäude 5, Public College, Nr. 377 Linquan Straße, Universitätsstadt, Bezirk Wuzhong, Suzhou",
-    "applyStudyAbroad": "Studium beantragen",
+    "phone": "189-1268-6656",
+    "email": "haoanmuaxeng@163.com",
+    "quickLinks": "Schnelllinks",
+    "services": "Dienstleistungen",
+    "followUs": "Folgen Sie uns",
+    "wechatQr": "WeChat-Offizielles Konto",
     "qrPlaceholder": "QR-Code",
-    "officialWechat": "Offizieller WeChat-Kundenservice",
+    "copyright": "© 2026 MUTU Internationale Bildung. Alle Rechte vorbehalten.",
     "icp": "Su ICP Nr. 2022046719-1"
   },
   "Home": {

@@ -27,11 +27,14 @@
   "Footer": {
     "brandName": "MUTU International Education",
     "description": "MUTU International has been operating foreign language study abroad programs for 15 years and is the only designated enrollment center for the Munich University Language Center in Jiangsu Province.",
-    "contactUs": "Contact Us",
-    "address": "7th Floor, Building 5, Public College, No. 377 Linquan Street, University Town, Wuzhong District, Suzhou",
-    "applyStudyAbroad": "Apply for Study Abroad",
+    "phone": "189-1268-6656",
+    "email": "haoanmuaxeng@163.com",
+    "quickLinks": "Quick Links",
+    "services": "Services",
+    "followUs": "Follow Us",
+    "wechatQr": "WeChat Official Account",
     "qrPlaceholder": "QR Code",
-    "officialWechat": "Official WeChat Customer Service",
+    "copyright": "© 2026 MUTU International Education. All rights reserved.",
     "icp": "Su ICP No. 2022046719-1"
   },
   "Home": {
