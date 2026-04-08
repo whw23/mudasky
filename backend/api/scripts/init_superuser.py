@@ -162,12 +162,42 @@ async def init_superuser(session) -> None:
     logger.info("超级管理员创建成功: %s", SUPERUSER_USERNAME)
 
 
+async def init_system_config(session) -> None:
+    """初始化系统配置。"""
+    from app.config.models import SystemConfig
+
+    existing = await session.execute(
+        select(SystemConfig).where(SystemConfig.key == "phone_country_codes")
+    )
+    if not existing.scalar_one_or_none():
+        session.add(SystemConfig(
+            key="phone_country_codes",
+            value=[
+                {"code": "+86", "country": "🇨🇳", "label": "中国", "digits": 11},
+                {"code": "+81", "country": "🇯🇵", "label": "日本", "digits": 10},
+                {"code": "+49", "country": "🇩🇪", "label": "德国", "digits": 10},
+                {"code": "+65", "country": "🇸🇬", "label": "新加坡", "digits": 8},
+                {"code": "+1", "country": "🇺🇸", "label": "US/CA", "digits": 10},
+                {"code": "+44", "country": "🇬🇧", "label": "英国", "digits": 10},
+                {"code": "+82", "country": "🇰🇷", "label": "韩国", "digits": 10},
+                {"code": "+33", "country": "🇫🇷", "label": "法国", "digits": 9},
+            ],
+            description="启用的手机号国家码列表",
+        ))
+        await session.flush()
+        print("  ✓ phone_country_codes 已初始化")
+    else:
+        print("  - phone_country_codes 已存在，跳过")
+
+
 async def main() -> None:
     """执行全部初始化任务。"""
     async with async_session_factory() as session:
         await init_permissions(session)
         await init_groups(session)
         await init_superuser(session)
+        print("初始化系统配置...")
+        await init_system_config(session)
         await session.commit()
         logger.info("系统初始化完成")
 
