@@ -85,9 +85,16 @@ class RefreshTokenHashRequest(BaseModel):
 
 @router.post("/refresh-token-hash", response_model=MessageResponse)
 async def save_refresh_token_hash(
-    data: RefreshTokenHashRequest, session: DbSession
+    data: RefreshTokenHashRequest,
+    session: DbSession,
+    x_internal_secret: str = Header(""),
 ) -> MessageResponse:
-    """保存 refresh token 哈希（由网关在登录/续签后调用）。"""
+    """保存 refresh token 哈希（仅限网关内部调用）。"""
+    from app.core.config import settings
+
+    if not settings.INTERNAL_SECRET or x_internal_secret != settings.INTERNAL_SECRET:
+        from app.core.exceptions import ForbiddenException
+        raise ForbiddenException(message="内部接口禁止外部访问")
     svc = AuthService(session)
     await svc.save_refresh_token_hash(data.user_id, data.token_hash)
     return MessageResponse(message="ok")

@@ -138,6 +138,7 @@ save_httpc:request_uri("http://api:8000/api/auth/refresh-token-hash", {
   headers = {
     ["Content-Type"] = "application/json",
     ["X-Requested-With"] = "XMLHttpRequest",
+    ["X-Internal-Secret"] = config.get_internal_secret(),
   },
 })
 

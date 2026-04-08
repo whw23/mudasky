@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # 环境
     DEBUG: bool = False
 
+    # 内部接口密钥（网关与后端通信）
+    INTERNAL_SECRET: str = ""
+
     # 文件上传
     MAX_UPLOAD_SIZE_MB: int = 10
     DEFAULT_STORAGE_QUOTA_MB: int = 100

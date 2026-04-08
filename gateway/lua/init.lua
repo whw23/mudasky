@@ -18,6 +18,11 @@ function _M.get_refresh_expire_seconds()
   return (ngx.shared.config:get("refresh_expire_days") or 30) * 86400
 end
 
+--- 获取内部接口密钥。
+function _M.get_internal_secret()
+  return ngx.shared.config:get("internal_secret") or ""
+end
+
 --- 公开路由白名单（精确匹配）。
 _M.public_routes = {
   ["POST:/api/auth/sms-code"] = true,
