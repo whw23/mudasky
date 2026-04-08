@@ -2,7 +2,7 @@
 
 /**
  * 官网顶部导航。
- * 白底毛玻璃风格：深色信息栏 + 半透明导航栏（sticky）。
+ * 全透明毛玻璃风格：默认透明，滚动后统一毛玻璃效果。
  * 移动端：汉堡菜单 + 毛玻璃面板。
  */
 
@@ -43,7 +43,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  /** 监听滚动，导航栏增强毛玻璃 */
+  /** 监听滚动，滚动后启用毛玻璃背景 */
   useEffect(() => {
     function handleScroll(): void {
       setScrolled(window.scrollY > 40)
@@ -58,17 +58,27 @@ export function Header() {
   }
 
   return (
-    <header className="relative z-50">
-      {/* 顶部信息栏 — 深色半透明 */}
-      <div className="bg-[rgba(26,26,46,0.92)] backdrop-blur-md text-white/80">
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/70 backdrop-blur-xl shadow-sm"
+          : ""
+      }`}
+    >
+      {/* 顶部信息栏 — 全透明 */}
+      <div className="text-foreground/60">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs">
           {/* 左侧：标语（桌面）/ 品牌名（移动） */}
-          <span className="hidden md:inline tracking-wide">{tHeader("tagline")}</span>
-          <span className="md:hidden font-medium text-white/90">{tHeader("brandName")}</span>
+          <span className="hidden md:inline tracking-wide">
+            {tHeader("tagline")}
+          </span>
+          <span className="md:hidden font-medium text-foreground/70">
+            {tHeader("brandName")}
+          </span>
 
           <div className="flex items-center gap-3 md:gap-4">
             {/* 热线电话（仅桌面） */}
-            <span className="hidden md:flex items-center gap-1.5 text-white/70">
+            <span className="hidden md:flex items-center gap-1.5">
               <Phone className="size-3" />
               {tHeader("hotline")}
             </span>
@@ -77,22 +87,31 @@ export function Header() {
 
             {user ? (
               <div className="flex items-center gap-2 md:gap-3">
-                <Link href="/dashboard" className="text-white/90 hover:text-white transition-colors">
+                <Link
+                  href="/dashboard"
+                  className="text-foreground/70 hover:text-foreground transition-colors"
+                >
                   {user.username || user.phone}
                 </Link>
                 {isAdmin && (
-                  <Link href="/admin/dashboard" className="hidden md:inline text-white/70 hover:text-white transition-colors">
+                  <Link
+                    href="/admin/dashboard"
+                    className="hidden md:inline text-foreground/60 hover:text-foreground transition-colors"
+                  >
                     {tHeader("adminPanel")}
                   </Link>
                 )}
-                <button onClick={logout} className="text-white/70 hover:text-white transition-colors">
+                <button
+                  onClick={logout}
+                  className="text-foreground/60 hover:text-foreground transition-colors"
+                >
                   {tHeader("logout")}
                 </button>
               </div>
             ) : (
               <button
                 onClick={showLoginModal}
-                className="rounded-full bg-white/10 px-3.5 py-1 text-white/90 hover:bg-white/20 transition-colors"
+                className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
               >
                 {tHeader("login")}
               </button>
@@ -101,17 +120,21 @@ export function Header() {
         </div>
       </div>
 
-      {/* 主导航栏 — 白底毛玻璃 + sticky */}
-      <nav
-        className={`sticky top-0 z-50 transition-all duration-300 border-b ${
-          scrolled
-            ? "bg-white/80 backdrop-blur-xl shadow-sm border-black/[0.04]"
-            : "bg-white/90 backdrop-blur-lg border-black/[0.06]"
+      {/* 分隔线 — 仅滚动后显示 */}
+      <div
+        className={`border-b transition-colors duration-300 ${
+          scrolled ? "border-black/[0.04]" : "border-transparent"
         }`}
-      >
+      />
+
+      {/* 主导航栏 — 透明，滚动后随父容器毛玻璃 */}
+      <nav>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* 品牌名 */}
-          <Link href="/" className="text-lg font-bold tracking-wide text-foreground">
+          <Link
+            href="/"
+            className="text-lg font-bold tracking-wide text-foreground"
+          >
             {tHeader("brandName")}
           </Link>
 
@@ -123,17 +146,13 @@ export function Header() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                       active
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
                     }`}
                   >
                     {tNav(item.key)}
-                    {/* 活跃指示线 */}
-                    {active && (
-                      <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
-                    )}
                   </Link>
                 </li>
               )
@@ -142,7 +161,7 @@ export function Header() {
 
           {/* 移动端汉堡按钮 */}
           <button
-            className="md:hidden p-2 text-foreground hover:bg-accent rounded-md transition-colors"
+            className="md:hidden p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -151,17 +170,17 @@ export function Header() {
 
         {/* 移动端展开菜单 — 毛玻璃面板 */}
         {menuOpen && (
-          <div className="md:hidden border-t border-black/[0.04] bg-white/95 backdrop-blur-xl">
+          <div className="md:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
             <ul className="flex flex-col px-4 py-2">
               {NAV_KEYS.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={closeMenu}
-                    className={`block whitespace-nowrap rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                    className={`block whitespace-nowrap rounded-full px-3 py-2.5 text-sm font-medium transition-colors ${
                       isActive(pathname, item.href)
-                        ? "text-primary bg-primary/5"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
                     }`}
                   >
                     {tNav(item.key)}
@@ -174,7 +193,7 @@ export function Header() {
                   <Link
                     href="/admin/dashboard"
                     onClick={closeMenu}
-                    className="block whitespace-nowrap rounded-md px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/5"
+                    className="block whitespace-nowrap rounded-full px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/10"
                   >
                     {tHeader("adminPanel")}
                   </Link>
