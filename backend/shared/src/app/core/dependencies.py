@@ -89,6 +89,20 @@ def require_any_permission(*perms: str):
     return check_any_permission
 
 
+def require_superuser():
+    """创建超级管理员校验依赖。"""
+
+    async def check_superuser(
+        is_superuser: Annotated[bool, Depends(get_is_superuser)],
+    ) -> bool:
+        """校验当前用户是否为超级管理员。"""
+        if not is_superuser:
+            raise ForbiddenException(message="需要超级管理员权限")
+        return True
+
+    return check_superuser
+
+
 # 类型别名
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]

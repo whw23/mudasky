@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from app.rbac.models import Permission, PermissionGroup  # noqa: F401
 import app.config.models  # noqa: F401 — 注册 ORM 映射
 from app.admin.router import router as admin_router
+from app.config.router import router as config_router
 from app.auth.router import router as auth_router
 from app.content.router import router as content_router
 from app.core.config import settings
@@ -126,6 +127,7 @@ api.include_router(content_router)
 api.include_router(document_router)
 api.include_router(admin_router)
 api.include_router(rbac_router)
+api.include_router(config_router)
 
 
 @api.get("/health")

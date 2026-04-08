@@ -34,6 +34,13 @@ class ForbiddenException(AppException):
         super().__init__(status_code=403, code="FORBIDDEN", message=message)
 
 
+class BadRequestException(AppException):
+    """请求参数错误。"""
+
+    def __init__(self, message: str = "请求参数错误") -> None:
+        super().__init__(status_code=400, code="BAD_REQUEST", message=message)
+
+
 class ConflictException(AppException):
     """资源冲突异常。"""
 
