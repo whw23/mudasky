@@ -60,7 +60,7 @@ local token_hash = str.to_hex(digest)
 
 -- 调后端
 local httpc = http.new()
-local res, err = httpc:request_uri("http://api:8000/api/auth/refresh", {
+local res, err = httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh", {
   method = "POST",
   headers = {
     ["Content-Type"] = "application/json",
@@ -129,7 +129,7 @@ local new_digest = new_sha256:final()
 local new_token_hash = str.to_hex(new_digest)
 
 local save_httpc = http.new()
-save_httpc:request_uri("http://api:8000/api/auth/refresh-token-hash", {
+save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash", {
   method = "POST",
   body = cjson.encode({
     user_id = user.id,

@@ -23,6 +23,11 @@ function _M.get_internal_secret()
   return ngx.shared.config:get("internal_secret") or ""
 end
 
+--- 获取后端 API 地址。
+function _M.get_backend_url()
+  return ngx.shared.config:get("backend_url") or "http://api:8000"
+end
+
 --- 公开路由白名单（精确匹配）。
 _M.public_routes = {
   ["POST:/api/auth/sms-code"] = true,

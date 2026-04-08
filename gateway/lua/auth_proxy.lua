@@ -25,7 +25,7 @@ local body = ngx.req.get_body_data()
 
 -- 调后端
 local httpc = http.new()
-local res, err = httpc:request_uri("http://api:8000" .. ngx.var.uri, {
+local res, err = httpc:request_uri(config.get_backend_url() .. ngx.var.uri, {
   method = "POST",
   body = body,
   headers = {
@@ -104,7 +104,7 @@ local digest = sha256:final()
 local token_hash = str.to_hex(digest)
 
 local save_httpc = http.new()
-save_httpc:request_uri("http://api:8000/api/auth/refresh-token-hash", {
+save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash", {
   method = "POST",
   body = cjson.encode({
     user_id = user.id,
