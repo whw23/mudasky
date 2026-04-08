@@ -113,8 +113,8 @@ class UserService:
         user.phone = data.new_phone
         return await repository.update(self.session, user)
 
-    async def enable_2fa(self, user_id: str) -> str:
-        """启用双因素认证，生成 TOTP 密钥。
+    async def enable_2fa_totp(self, user_id: str) -> str:
+        """启用 TOTP 双因素认证，生成密钥。
 
         返回 TOTP 密钥字符串，供生成二维码使用。
         """
@@ -124,12 +124,12 @@ class UserService:
         await repository.update(self.session, user)
         return secret
 
-    async def confirm_2fa(
+    async def confirm_2fa_totp(
         self, user_id: str, totp_code: str
     ) -> None:
-        """确认启用双因素认证。
+        """确认启用 TOTP 双因素认证。
 
-        验证 TOTP 代码正确后，设置 two_factor_enabled 为 True。
+        验证 TOTP 代码正确后，设置 two_factor_enabled 和 method。
         """
         user = await self.get_user(user_id)
         if not user.totp_secret:
@@ -138,6 +138,34 @@ class UserService:
         if not totp.verify(totp_code):
             raise ConflictException(message="验证码不正确")
         user.two_factor_enabled = True
+        user.two_factor_method = "totp"
+        await repository.update(self.session, user)
+
+    async def enable_2fa_sms(
+        self, user_id: str, phone: str, code: str
+    ) -> None:
+        """启用短信双因素认证。
+
+        验证手机号匹配和短信验证码后直接启用。
+        """
+        user = await self.get_user(user_id)
+        if not user.phone:
+            raise ConflictException(message="请先绑定手机号")
+        if user.phone != phone:
+            raise ConflictException(message="手机号与当前账号不匹配")
+        sms_code = await auth_repo.get_latest_sms_code(
+            self.session, phone
+        )
+        if not sms_code:
+            raise UnauthorizedException(message="验证码无效或已过期")
+        sms_code.attempts += 1
+        if sms_code.code != code:
+            await self.session.commit()
+            raise UnauthorizedException(message="验证码不正确")
+        sms_code.is_used = True
+        user.two_factor_enabled = True
+        user.two_factor_method = "sms"
+        user.totp_secret = None
         await repository.update(self.session, user)
 
     async def disable_2fa(
@@ -153,6 +181,7 @@ class UserService:
         if not verify_password(password, user.password_hash):
             raise ConflictException(message="密码不正确")
         user.two_factor_enabled = False
+        user.two_factor_method = None
         user.totp_secret = None
         await repository.update(self.session, user)
 

@@ -35,6 +35,13 @@ class PasswordBody(BaseModel):
     password: str = Field(..., description="用户密码")
 
 
+class Sms2faBody(BaseModel):
+    """短信 2FA 启用请求体。"""
+
+    phone: str = Field(..., description="手机号")
+    code: str = Field(..., description="短信验证码")
+
+
 class MessageResponse(BaseModel):
     """通用消息响应。"""
 
@@ -86,23 +93,21 @@ async def change_phone(
     return UserResponse.model_validate(user)
 
 
-@router.post("/me/2fa/enable")
-async def enable_2fa(
+@router.post("/me/2fa/enable-totp")
+async def enable_2fa_totp(
     user_id: CurrentUserId, session: DbSession
 ) -> StreamingResponse:
-    """启用双因素认证，返回 TOTP 二维码图片。"""
+    """启用 TOTP 双因素认证，返回二维码图片。"""
     svc = UserService(session)
     user = await svc.get_user(user_id)
-    secret = await svc.enable_2fa(user_id)
+    secret = await svc.enable_2fa_totp(user_id)
 
-    # 生成 TOTP 配置 URI
     totp = pyotp.TOTP(secret)
-    identifier = user.phone
     provisioning_uri = totp.provisioning_uri(
-        name=identifier, issuer_name="mudasky"
+        name=user.phone or user.username or user.id,
+        issuer_name="mudasky",
     )
 
-    # 生成二维码 PNG
     img = qrcode.make(provisioning_uri)
     buf = io.BytesIO()
     img.save(buf, format="PNG")
@@ -112,17 +117,31 @@ async def enable_2fa(
 
 
 @router.post(
-    "/me/2fa/confirm", response_model=MessageResponse
+    "/me/2fa/confirm-totp", response_model=MessageResponse
 )
-async def confirm_2fa(
+async def confirm_2fa_totp(
     data: TotpCodeBody,
     user_id: CurrentUserId,
     session: DbSession,
 ) -> MessageResponse:
-    """确认启用双因素认证。"""
+    """确认启用 TOTP 双因素认证。"""
     svc = UserService(session)
-    await svc.confirm_2fa(user_id, data.totp_code)
-    return MessageResponse(message="双因素认证已启用")
+    await svc.confirm_2fa_totp(user_id, data.totp_code)
+    return MessageResponse(message="TOTP 双因素认证已启用")
+
+
+@router.post(
+    "/me/2fa/enable-sms", response_model=MessageResponse
+)
+async def enable_2fa_sms(
+    data: Sms2faBody,
+    user_id: CurrentUserId,
+    session: DbSession,
+) -> MessageResponse:
+    """启用短信双因素认证。"""
+    svc = UserService(session)
+    await svc.enable_2fa_sms(user_id, data.phone, data.code)
+    return MessageResponse(message="短信双因素认证已启用")
 
 
 @router.post(

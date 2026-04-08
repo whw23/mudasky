@@ -8,6 +8,7 @@ export interface User {
   is_active: boolean
   is_superuser: boolean
   two_factor_enabled: boolean
+  two_factor_method: string | null
   storage_quota: number
   permissions: string[]
   group_ids: string[]

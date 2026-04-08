@@ -35,6 +35,9 @@ class User(Base):
     two_factor_enabled: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False
     )
+    two_factor_method: Mapped[str | None] = mapped_column(
+        String(10), nullable=True, comment="totp 或 sms"
+    )
     totp_secret: Mapped[str | None] = mapped_column(
         String(64), nullable=True
     )

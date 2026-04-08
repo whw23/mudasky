@@ -264,22 +264,27 @@ class AuthService:
         totp: str | None,
         sms_code_2fa: str | None,
     ) -> tuple[User, str | None]:
-        """处理二步验证逻辑。"""
-        # TOTP 验证
-        if totp and user.totp_secret:
+        """处理二步验证逻辑。
+
+        根据用户的 two_factor_method 决定验证方式：
+        - totp: 优先使用 TOTP 验证器，也接受短信备选
+        - sms: 只使用短信验证
+        """
+        # TOTP 验证（仅 totp 模式）
+        if totp and user.two_factor_method == "totp" and user.totp_secret:
             totp_obj = pyotp.TOTP(user.totp_secret)
             if not totp_obj.verify(totp):
                 raise UnauthorizedException(
                     message="TOTP 验证码不正确"
                 )
             return user, None
-        # 短信二步验证
+        # 短信验证码（totp 和 sms 模式都接受）
         if sms_code_2fa:
             await self._verify_sms_code(
                 user.phone, sms_code_2fa
             )
             return user, None
-        # 未提供二步验证码，自动发送短信
+        # 未提供验证码，自动发送短信
         await self.send_code(user.phone)
         return user, "2fa_required"
 

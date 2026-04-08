@@ -55,8 +55,11 @@ export function ProfileInfo() {
   const [phoneCode, setPhoneCode] = useState('')
 
   /* 2FA */
+  const [twoFaMode, setTwoFaMode] = useState<'totp' | 'sms' | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [totpCode, setTotpCode] = useState('')
+  const [sms2faPhone, setSms2faPhone] = useState('')
+  const [sms2faCode, setSms2faCode] = useState('')
   const [showDisableDialog, setShowDisableDialog] = useState(false)
   const [disablePassword, setDisablePassword] = useState('')
 
@@ -78,9 +81,12 @@ export function ProfileInfo() {
     setConfirmPassword('')
     setNewPhone('')
     setPhoneCode('')
+    setTwoFaMode(null)
     if (qrUrl) URL.revokeObjectURL(qrUrl)
     setQrUrl(null)
     setTotpCode('')
+    setSms2faPhone('')
+    setSms2faCode('')
   }
 
   /** 保存用户名 */
@@ -138,14 +144,15 @@ export function ProfileInfo() {
     }
   }
 
-  /** 启用 2FA — 获取二维码 */
-  async function handleEnable2fa(): Promise<void> {
+  /** 选择 TOTP 方式启用 2FA */
+  async function handleEnableTotp(): Promise<void> {
     setLoading(true)
     try {
-      const res = await api.post('/users/me/2fa/enable', null, {
+      const res = await api.post('/users/me/2fa/enable-totp', null, {
         responseType: 'blob',
       })
       setQrUrl(URL.createObjectURL(new Blob([res.data])))
+      setTwoFaMode('totp')
       setEditing('2fa')
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('enableFailed'))
@@ -154,12 +161,34 @@ export function ProfileInfo() {
     }
   }
 
-  /** 确认 2FA TOTP */
-  async function confirm2fa(e: FormEvent): Promise<void> {
+  /** 选择 SMS 方式启用 2FA */
+  function handleEnableSms(): void {
+    setTwoFaMode('sms')
+    setEditing('2fa')
+  }
+
+  /** 确认 TOTP 启用 */
+  async function confirmTotp(e: FormEvent): Promise<void> {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/confirm', { totp_code: totpCode })
+      await api.post('/users/me/2fa/confirm-totp', { totp_code: totpCode })
+      await fetchUser()
+      cancelEdit()
+      toast.success(t('twoFaEnabled'))
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || t('confirmFailed'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /** 确认 SMS 启用 */
+  async function confirmSms(e: FormEvent): Promise<void> {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await api.post('/users/me/2fa/enable-sms', { phone: sms2faPhone, code: sms2faCode })
       await fetchUser()
       cancelEdit()
       toast.success(t('twoFaEnabled'))
@@ -345,18 +374,6 @@ export function ProfileInfo() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">{t('twoFactorAuth')}</Label>
-              {!user.two_factor_enabled && editing !== '2fa' && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-muted-foreground"
-                  onClick={handleEnable2fa}
-                  disabled={loading}
-                >
-                  {t('enableTwoFa')}
-                </Button>
-              )}
               {editing === '2fa' && (
                 <Button
                   type="button"
@@ -370,27 +387,13 @@ export function ProfileInfo() {
                 </Button>
               )}
             </div>
-            {editing === '2fa' && qrUrl ? (
-              <div className="space-y-3 max-w-sm">
-                <p className="text-xs text-muted-foreground">{t('scanQrCode')}</p>
-                <img src={qrUrl} alt="2FA QR Code" className="mx-auto size-48 rounded border" />
-                <form onSubmit={confirm2fa} className="space-y-2">
-                  <Input
-                    value={totpCode}
-                    onChange={(e) => setTotpCode(e.target.value)}
-                    placeholder={t('totpPlaceholder')}
-                    maxLength={6}
-                    required
-                  />
-                  <Button type="submit" size="sm" disabled={loading}>
-                    {loading ? t('saving') : t('confirmEnable')}
-                  </Button>
-                </form>
-              </div>
-            ) : user.two_factor_enabled ? (
+            {user.two_factor_enabled ? (
+              /* 已启用 — 显示当前方式和禁用按钮 */
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-green-600" />
-                <span className="text-sm text-green-600">{t('twoFaStatusEnabled')}</span>
+                <span className="text-sm text-green-600">
+                  {t('twoFaStatusEnabled')}（{user.two_factor_method === 'totp' ? t('methodTotp') : t('methodSms')}）
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -400,10 +403,78 @@ export function ProfileInfo() {
                   {t('disableTwoFa')}
                 </Button>
               </div>
+            ) : editing === '2fa' ? (
+              /* 启用流程 */
+              <div className="space-y-3 max-w-md">
+                {twoFaMode === null && (
+                  /* 选择方式 */
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={handleEnableTotp} disabled={loading}>
+                      {t('methodTotp')}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleEnableSms}>
+                      {t('methodSms')}
+                    </Button>
+                  </div>
+                )}
+                {twoFaMode === 'totp' && qrUrl && (
+                  /* TOTP 扫码确认 */
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">{t('scanQrCode')}</p>
+                    <img src={qrUrl} alt="2FA QR Code" className="mx-auto size-48 rounded border" />
+                    <form onSubmit={confirmTotp} className="space-y-2">
+                      <Input
+                        value={totpCode}
+                        onChange={(e) => setTotpCode(e.target.value)}
+                        placeholder={t('totpPlaceholder')}
+                        maxLength={6}
+                        required
+                      />
+                      <Button type="submit" size="sm" disabled={loading}>
+                        {loading ? t('saving') : t('confirmEnable')}
+                      </Button>
+                    </form>
+                  </div>
+                )}
+                {twoFaMode === 'sms' && (
+                  /* 短信验证确认 */
+                  <form onSubmit={confirmSms} className="space-y-3">
+                    <p className="text-xs text-muted-foreground">{t('sms2faHint')}</p>
+                    <PhoneInput
+                      value={sms2faPhone}
+                      onChange={setSms2faPhone}
+                      placeholder={t('phonePlaceholder')}
+                      required
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={sms2faCode}
+                        onChange={(e) => setSms2faCode(e.target.value)}
+                        placeholder={t('codePlaceholder')}
+                        maxLength={6}
+                        required
+                      />
+                      <SmsCodeButton phone={sms2faPhone} />
+                    </div>
+                    <Button type="submit" size="sm" disabled={loading}>
+                      {loading ? t('saving') : t('confirmEnable')}
+                    </Button>
+                  </form>
+                )}
+              </div>
             ) : (
+              /* 未启用 — 显示启用按钮 */
               <div className="flex items-center gap-2">
                 <ShieldOff className="size-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{t('twoFaStatusDisabled')}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setEditing('2fa')}
+                >
+                  {t('enableTwoFa')}
+                </Button>
               </div>
             )}
           </div>

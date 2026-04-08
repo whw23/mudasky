@@ -85,6 +85,7 @@ class UserResponse(BaseModel):
     permissions: list[str] = []
     group_ids: list[str] = []
     two_factor_enabled: bool
+    two_factor_method: str | None = None
     storage_quota: int
     created_at: datetime
     updated_at: datetime | None = None
