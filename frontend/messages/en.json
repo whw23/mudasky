@@ -348,6 +348,411 @@
     "updateSuccess": "Updated successfully",
     "saveError": "Failed to save"
   },
+  "About": {
+    "historyTitle": "15 Years of International Education",
+    "historyContent": "Founded in 2011, MUTU International Education has been dedicated to foreign language study abroad programs for 15 years. As the only designated enrollment center for the Munich University Language Center in Jiangsu Province, we have always upheld our service philosophy of 'Professionalism, Integrity, and Efficiency,' helping hundreds of students achieve their dreams of studying at prestigious overseas universities. From initial German language training to comprehensive multilingual study abroad services covering German, Japanese, French, and Korean, we continue to expand our offerings and strive to become a leading international education service provider in China.",
+    "missionTitle": "Our Mission",
+    "missionContent": "To provide every student with a dream of studying abroad with professional, caring one-stop services, helping students find the most suitable overseas institutions and achieve a leap in life value.",
+    "visionTitle": "Our Vision",
+    "visionContent": "To become China's most trusted international education service brand, bridging the gap between Chinese students and world-class universities, and promoting cross-cultural educational exchange and integration.",
+    "partnershipTitle": "Munich University Language Center Partnership",
+    "partnershipContent": "MUTU International is the only officially designated enrollment center for the Munich University Language Center (Sprachenzentrum der LMU München) in Jiangsu Province. The Munich University Language Center is one of Germany's most authoritative German language training institutions, with globally recognized German courses. Through our deep partnership, we provide students with authentic German language instruction, examination certification, and a fast track to prestigious German universities.",
+    "partnerBadge1": "Official Enrollment Center",
+    "partnerBadge2": "German Level Certification",
+    "partnerBadge3": "University Fast Track",
+    "stats": {
+      "years": "Years of Experience",
+      "cases": "Success Cases",
+      "partners": "Partner Institutions",
+      "visaRate": "Visa Approval Rate"
+    },
+    "teamTitle": "Our Professional Team",
+    "team": {
+      "leader": "Ms. Wu",
+      "leaderRole": "Founder / Chief Study Abroad Consultant",
+      "leaderDesc": "15 years of experience in international education, expert in the German education system, having helped 300+ students successfully study in Germany.",
+      "consultant": "Mr. Li",
+      "consultantRole": "Senior Study Abroad Consultant",
+      "consultantDesc": "Overseas master's graduate with 8 years of consulting experience, specializing in Japan and Singapore study planning with precise university matching.",
+      "visa": "Ms. Zhang",
+      "visaRole": "Visa Processing Expert",
+      "visaDesc": "10 years of visa processing experience, familiar with visa policies of various countries, with a visa approval rate of up to 98%."
+    },
+    "ctaTitle": "Start Your Study Abroad Journey",
+    "ctaDesc": "Our professional team creates customized study abroad plans, accompanying you from school selection to visa processing",
+    "ctaButton": "Contact Us Now"
+  },
+  "StudyAbroad": {
+    "overviewTitle": "Multi-Country Study Programs",
+    "overviewContent": "MUTU International offers study abroad services for Germany, Japan, France, South Korea, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
+    "germanFocusTitle": "German Language Program (Featured)",
+    "germanFocusName": "Munich University Language Center Direct Program",
+    "germanFocusDesc": "Leveraging our official partnership with the Munich University Language Center, we provide students with a complete pathway from German language learning to enrollment at prestigious German universities. This is our core program and has helped hundreds of students enter top German universities.",
+    "germanFocusF1": "Officially certified German courses",
+    "germanFocusF2": "Small class premium instruction",
+    "germanFocusF3": "Munich University language level exams",
+    "germanFocusF4": "German university application guidance",
+    "germanFocusF5": "Full visa processing service",
+    "germanFocusF6": "Airport pickup arrangement",
+    "programsTitle": "Program Comparison",
+    "recommended": "Recommended",
+    "german": {
+      "title": "Study in Germany",
+      "desc": "Enjoy world-class tuition-free education with globally leading programs in engineering, business, and medicine. Studying in Germany offers excellent value and broad career prospects after graduation.",
+      "f1": "Tuition-free public universities",
+      "f2": "World-leading engineering programs",
+      "f3": "18-month post-graduation job-seeking visa",
+      "f4": "Free movement in Schengen area"
+    },
+    "japanese": {
+      "title": "Study in Japan",
+      "desc": "Asia's top education system with abundant scholarship opportunities and unique cultural experiences. Ideal for students interested in Japanese language and culture.",
+      "f1": "Abundant scholarship programs",
+      "f2": "Unique programs in animation, design, etc.",
+      "f3": "Part-time work opportunities"
+    },
+    "french": {
+      "title": "Study in France",
+      "desc": "Higher education in the city of romance, with world-renowned programs in business, art, and fashion design. Public universities offer low tuition with moderate living costs.",
+      "f1": "World-renowned business and art programs",
+      "f2": "Low tuition at public universities",
+      "f3": "Rich cultural and artistic resources"
+    },
+    "korean": {
+      "title": "Study in South Korea",
+      "desc": "High educational standards with moderate study costs and close proximity to China. Strong K-culture appeal, ideal for students interested in Korean language and culture.",
+      "f1": "Relatively low study costs",
+      "f2": "Close geographical proximity",
+      "f3": "Rich Korean language courses"
+    },
+    "ctaTitle": "Choose the Right Program for You",
+    "ctaDesc": "Every student is unique — let us help you find the best matching study abroad plan",
+    "ctaButton": "Free Consultation"
+  },
+  "Universities": {
+    "title": "Selected Partner Universities",
+    "intro": "We have established deep partnerships with numerous prestigious German universities, providing students with more convenient application channels and higher admission success rates. Below are some of our partner institutions, covering comprehensive universities, technical universities, and universities of applied sciences.",
+    "uni1": {
+      "name": "LMU Munich",
+      "location": "Munich, Bavaria",
+      "programs": "Full range of disciplines; strengths: Medicine, Law, Natural Sciences",
+      "desc": "A top German university, ranked in the QS World Top 60, the most prestigious comprehensive university in Bavaria."
+    },
+    "uni2": {
+      "name": "Technical University of Munich",
+      "location": "Munich, Bavaria",
+      "programs": "Engineering, Computer Science, Natural Sciences, Management",
+      "desc": "One of Germany's Universities of Excellence, ranked #1 in engineering in Germany, with an outstanding global employer reputation."
+    },
+    "uni3": {
+      "name": "Humboldt University of Berlin",
+      "location": "Berlin",
+      "programs": "Humanities, Social Sciences, Natural Sciences, Medicine",
+      "desc": "One of Germany's oldest universities, a cradle of Nobel laureates, with profound academic heritage."
+    },
+    "uni4": {
+      "name": "Heidelberg University",
+      "location": "Heidelberg, Baden-Württemberg",
+      "programs": "Medicine, Natural Sciences, Humanities & Social Sciences",
+      "desc": "Germany's oldest university, with a world-renowned reputation in medicine and natural sciences."
+    },
+    "uni5": {
+      "name": "University of Hamburg",
+      "location": "Hamburg",
+      "programs": "Economics, Law, Natural Sciences, Computer Science",
+      "desc": "The largest comprehensive university in northern Germany, located in the country's second-largest city, highly internationalized."
+    },
+    "uni6": {
+      "name": "RWTH Aachen University",
+      "location": "Aachen, North Rhine-Westphalia",
+      "programs": "Mechanical Engineering, Electrical Engineering, Computer Science",
+      "desc": "A top European technical university and IDEA League member, whose engineering graduates are highly sought by employers."
+    },
+    "adviceTitle": "Personalized University Selection",
+    "adviceContent": "Choosing the right university is a crucial step to study abroad success. Our senior consultants will recommend the best-matching institutions and programs based on your academic performance, language level, professional interests, and career plans. Book a free consultation and let us help you find your ideal study destination.",
+    "ctaButton": "Book a Consultation"
+  },
+  "Requirements": {
+    "overviewTitle": "Application Requirements by Country",
+    "germany": {
+      "title": "Study in Germany",
+      "r1": "High school diploma or equivalent (211/985 universities preferred)",
+      "r2": "German B1+ or English IELTS 6.0+",
+      "r3": "APS verification certificate",
+      "r4": "Proof of finances (approx. €10,332/year)"
+    },
+    "japan": {
+      "title": "Study in Japan",
+      "r1": "12+ years of education",
+      "r2": "JLPT N2+ or EJU score",
+      "r3": "Proof of financial support"
+    },
+    "korea": {
+      "title": "Study in South Korea",
+      "r1": "High school diploma or above",
+      "r2": "TOPIK Level 3+",
+      "r3": "Bank deposit certificate"
+    },
+    "langTitle": "Language Proficiency Requirements",
+    "langGerman": {
+      "title": "German Language Requirements",
+      "desc": "Most German-taught programs require TestDaF 4x4 or DSH-2. Foundation programs typically require B1 level. We partner with the Munich University Language Center to offer complete German training courses from beginner to B2."
+    },
+    "langJapanese": {
+      "title": "Japanese Language Requirements",
+      "desc": "Language schools typically require N5-N4 level, direct undergraduate applications need N2+, and graduate applications recommend N1 level. We offer supplementary Japanese training and exam preparation."
+    },
+    "docsTitle": "Document Checklist",
+    "doc1": "Valid passport (6+ months validity)",
+    "doc2": "Academic certificates and transcripts",
+    "doc3": "Language proficiency certificate",
+    "doc4": "Personal statement / motivation letter",
+    "doc5": "Letters of recommendation (2)",
+    "doc6": "Proof of finances",
+    "doc7": "APS verification certificate (Germany)",
+    "doc8": "Passport photos",
+    "timelineTitle": "Application Process",
+    "step1": {
+      "title": "Free Consultation & Assessment",
+      "desc": "One-on-one professional assessment of student background with customized study abroad plans."
+    },
+    "step2": {
+      "title": "Language Training",
+      "desc": "Targeted language training and exam preparation based on university requirements."
+    },
+    "step3": {
+      "title": "Document Preparation",
+      "desc": "Assistance in preparing application materials, ensuring completeness, accuracy, and quality."
+    },
+    "step4": {
+      "title": "University Application",
+      "desc": "Submit university applications, track progress, and handle supplementary materials promptly."
+    },
+    "step5": {
+      "title": "Visa Processing",
+      "desc": "Visa assistance after admission, including document preparation and interview scheduling."
+    },
+    "step6": {
+      "title": "Pre-departure Guidance",
+      "desc": "Pre-departure training, flight booking guidance, airport pickup arrangements, and more."
+    },
+    "ctaTitle": "Unsure If You Qualify?",
+    "ctaDesc": "We offer free background assessments to help you find the best study abroad direction",
+    "ctaButton": "Free Assessment"
+  },
+  "Cases": {
+    "title": "Student Success Stories",
+    "statCases": "Success Cases",
+    "statVisa": "Visa Approval Rate",
+    "statSchools": "Partner Schools",
+    "s1": {
+      "name": "Student Wang",
+      "uni": "LMU Munich",
+      "program": "MSc Economics",
+      "quote": "The teachers at MUTU accompanied me throughout the entire process from school selection to visa. Professional and patient. Thank you for helping me achieve my dream of studying in Germany!"
+    },
+    "s2": {
+      "name": "Student Li",
+      "uni": "Technical University of Munich",
+      "program": "MSc Mechanical Engineering",
+      "quote": "My undergraduate grades were average, but the teachers helped me with precise positioning and I successfully got into TUM. A very professional team!"
+    },
+    "s3": {
+      "name": "Student Zhang",
+      "uni": "University of Tokyo",
+      "program": "MSc Computer Science",
+      "quote": "I started Japanese from zero, passed N1 in two years and got into Todai. MUTU's Japanese training quality is excellent."
+    },
+    "s4": {
+      "name": "Student Chen",
+      "uni": "Humboldt University of Berlin",
+      "program": "LLM Law",
+      "quote": "The APS review and document preparation were very stressful, but with MUTU's guidance throughout, I passed on the first attempt."
+    },
+    "s5": {
+      "name": "Student Zhao",
+      "uni": "Heidelberg University",
+      "program": "Medical Foundation",
+      "quote": "German medical applications are very complex, but the MUTU team has rich experience and the entire process was much smoother than I expected."
+    },
+    "s6": {
+      "name": "Student Liu",
+      "uni": "Seoul National University",
+      "program": "BSc International Trade",
+      "quote": "From consultation to enrollment took only half a year, very efficient. I can still reach out to the teachers for any questions after arriving in Korea."
+    },
+    "ctaTitle": "You Could Be Our Next Success Story",
+    "ctaDesc": "Every successful study abroad story begins with a professional consultation",
+    "ctaButton": "Start Your Journey"
+  },
+  "Visa": {
+    "processTitle": "Visa Application Process",
+    "step1": {
+      "title": "Document Assessment",
+      "desc": "Visa consultant assesses the student's situation, creates a visa document preparation plan, and outlines required documents."
+    },
+    "step2": {
+      "title": "Document Preparation",
+      "desc": "Assistance with preparing all visa-required materials, including translation, notarization, and authentication."
+    },
+    "step3": {
+      "title": "Form Completion",
+      "desc": "Guidance on filling out visa application forms, ensuring accuracy and avoiding common mistakes."
+    },
+    "step4": {
+      "title": "Appointment & Submission",
+      "desc": "Booking visa center or embassy interview appointments, with mock interview training."
+    },
+    "step5": {
+      "title": "Progress Tracking",
+      "desc": "Tracking visa application progress after submission, promptly handling supplementary material requests."
+    },
+    "docsTitle": "Required Visa Documents",
+    "doc1": "Valid passport original and copies",
+    "doc2": "Visa application form",
+    "doc3": "Passport photos (embassy specifications)",
+    "doc4": "University admission letter",
+    "doc5": "Proof of finances / financial guarantee",
+    "doc6": "Insurance certificate",
+    "doc7": "Language certificate",
+    "doc8": "Academic credential verification",
+    "timelineTitle": "Processing Timeline",
+    "timeline1": {
+      "title": "Document Preparation",
+      "time": "2-4 weeks",
+      "desc": "Prepare and review visa materials based on individual circumstances"
+    },
+    "timeline2": {
+      "title": "Visa Review",
+      "time": "4-8 weeks",
+      "desc": "Embassy reviews the application; additional materials may be requested"
+    },
+    "timeline3": {
+      "title": "Total Timeline",
+      "time": "6-12 weeks",
+      "desc": "Recommend starting visa preparation at least 3 months in advance"
+    },
+    "tipsTitle": "Important Visa Tips",
+    "tip1": "Start preparing visa materials at least 3 months in advance to avoid time pressure affecting enrollment.",
+    "tip2": "Financial proof must meet the target country's minimum requirements; Germany currently requires €10,332 per year.",
+    "tip3": "All non-Chinese and non-English documents need certified translation; use reputable translation agencies.",
+    "tip4": "Stay confident during the interview, answer honestly, don't memorize answers, and dress appropriately.",
+    "tip5": "Keep copies and digital versions of all application materials in case the embassy requests supplements.",
+    "ctaTitle": "Visa Questions? Leave It to Us",
+    "ctaDesc": "98% visa approval rate — our professional visa team ensures your success",
+    "ctaButton": "Consult Visa Services"
+  },
+  "Life": {
+    "guideTitle": "Study Abroad Living Guide",
+    "guideIntro": "Embarking on your study abroad journey is not just about academic growth — it's a life-changing experience. Understanding all aspects of life in your destination country will make your study abroad experience smoother and richer. We've compiled a detailed living guide to help you quickly adapt to life overseas.",
+    "housing": {
+      "title": "Accommodation",
+      "desc": "In Germany, international students can choose student dormitories (Studentenwohnheim), shared apartments (WG), or private rentals. Student dormitories are the most affordable at around €250-400/month but have limited availability. Shared apartments are the most popular choice at about €350-600/month. We help students arrange accommodation before departure."
+    },
+    "transport": {
+      "title": "Transportation",
+      "desc": "Germany has an excellent public transportation system. Students can purchase a semester ticket (Semesterticket) covering local buses, metros, and regional trains. Deutsche Bahn (DB) offers various discount fares, and BahnCard 25/50 provides corresponding discounts. Cycling is also a primary mode of transport for German students."
+    },
+    "food": {
+      "title": "Food & Dining",
+      "desc": "German university cafeterias (Mensa) offer affordable meals at about €2-5 each. Supermarkets like Aldi, Lidl, and REWE offer diverse options; cooking at home costs about €200-300/month for groceries. Asian supermarkets are increasingly available for Chinese ingredients. Germany's beer and bread varieties are worth exploring."
+    },
+    "culture": {
+      "title": "Cultural Adaptation",
+      "desc": "Germans value punctuality and following rules, which may take time to adjust to. Universities typically have international student service centers and diverse student organizations — great channels for making friends and integrating into local culture. Germany's museums, theaters, and concerts are abundant, with many offering free or discounted tickets for students."
+    },
+    "cityTitle": "Popular City Guides",
+    "munich": {
+      "name": "Munich",
+      "desc": "Capital of Bavaria and Germany's third-largest city. Home to major tech companies like BMW and Siemens. High quality of life with world-famous beer garden culture.",
+      "h1": "Beer Culture",
+      "h2": "High-Tech Industry",
+      "h3": "Alps"
+    },
+    "berlin": {
+      "name": "Berlin",
+      "desc": "Germany's capital and one of Europe's most vibrant cities. Culturally diverse with a strong arts scene, relatively lower living costs among major German cities. Active startup ecosystem.",
+      "h1": "Cultural Diversity",
+      "h2": "Art Capital",
+      "h3": "Startup Hub"
+    },
+    "hamburg": {
+      "name": "Hamburg",
+      "desc": "Germany's second-largest city and major port. Thriving media and aviation industries, beautiful green spaces, and extremely high quality of life. Home to the famous Elbphilharmonie.",
+      "h1": "Port City",
+      "h2": "Media Industry",
+      "h3": "Elbphilharmonie"
+    },
+    "ctaTitle": "Want to Learn More About Life Abroad?",
+    "ctaDesc": "Book a consultation — our overseas-experienced consultants will share real study abroad experiences",
+    "ctaButton": "Book a Consultation"
+  },
+  "News": {
+    "title": "Latest Updates",
+    "catPolicy": "Policy Updates",
+    "catNews": "Institution News",
+    "catGuide": "Study Guide",
+    "a1": {
+      "title": "2026 German Study Visa Policy Update: New Online Appointment System",
+      "excerpt": "The German Embassy in China has announced the full launch of an online visa appointment system, allowing applicants to book submission times through the official website, significantly reducing waiting periods. The new system will go live in May."
+    },
+    "a2": {
+      "title": "MUTU International 2026 Spring Intensive German Class Now Enrolling",
+      "excerpt": "To meet growing demand for German language learning, MUTU International will launch a spring intensive German class in April, taught by Munich University Language Center certified instructors, limited to 30 students."
+    },
+    "a3": {
+      "title": "Essential for Germany: Complete APS Review Process Explained",
+      "excerpt": "APS review is a mandatory step for Chinese students applying to German universities. This article details the document preparation, interview process, common questions, and key tips to help you pass on the first attempt."
+    },
+    "a4": {
+      "title": "Japan Immigration Bureau Relaxes Student Visa Review Standards",
+      "excerpt": "Japan's Immigration Bureau recently announced relaxed visa review standards for students from certain countries, shortening visa processing times, which benefits Chinese students planning to study in Japan."
+    },
+    "a5": {
+      "title": "MUTU Student Wang Successfully Admitted to Technical University of Munich",
+      "excerpt": "Congratulations to MUTU International student Wang for receiving an admission offer for the Mechanical Engineering master's program at TUM and successfully obtaining a German study visa."
+    },
+    "a6": {
+      "title": "How to Choose the Right German University: A Complete Guide",
+      "excerpt": "Germany has over 400 higher education institutions — how do you find the right one? This article analyzes school selection strategies from multiple dimensions including rankings, programs, location, and living costs."
+    },
+    "a7": {
+      "title": "German Universities Release 2026/27 Winter Semester Application Timeline",
+      "excerpt": "Major German universities have released their 2026/27 winter semester application schedules. Most undergraduate program deadlines are July 15, while master's program deadlines vary by institution."
+    },
+    "a8": {
+      "title": "MUTU International Education Wins Annual Best Study Abroad Service Award",
+      "excerpt": "MUTU International Education received the 2025 'Best Study Abroad Service Institution' award for its outstanding service quality and high customer satisfaction. Thank you to every student and parent for your trust."
+    },
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "Contact": {
+    "infoTitle": "Contact Information",
+    "infoDesc": "Feel free to contact us through the following channels. Our professional consultants will respond to your inquiry within 24 hours.",
+    "addressLabel": "Office Address",
+    "address": "XX Floor, XX Building, Zhongshan North Road, Gulou District, Nanjing, Jiangsu, China",
+    "phoneLabel": "Hotline",
+    "phone": "189-1268-6656 (Ms. Wu)",
+    "emailLabel": "Email",
+    "email": "haoanmuaxeng@163.com",
+    "wechatLabel": "WeChat",
+    "wechat": "Add WeChat: mutu_edu",
+    "hoursLabel": "Office Hours",
+    "hours": "Mon-Fri 9:00-18:00 / Sat 9:00-12:00",
+    "mapPlaceholder": "Map loading area",
+    "formTitle": "Send Us a Message",
+    "formDesc": "Fill out the form below and we'll get back to you as soon as possible.",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your name",
+    "emailFormLabel": "Email Address",
+    "emailFormPlaceholder": "Enter your email",
+    "phoneFormLabel": "Phone Number",
+    "phoneFormPlaceholder": "Enter your phone number",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Please describe your needs or questions...",
+    "submitButton": "Submit Message"
+  },
   "AdminSettings": {
     "title": "System Settings",
     "phoneCountryCodes": "Phone Country Codes",
