@@ -348,6 +348,411 @@
     "updateSuccess": "Erfolgreich aktualisiert",
     "saveError": "Speichern fehlgeschlagen"
   },
+  "About": {
+    "historyTitle": "15 Jahre Internationale Bildung",
+    "historyContent": "MUTU Internationale Bildung wurde 2011 gegründet und ist seit 15 Jahren auf Studienprogramme für Fremdsprachen spezialisiert. Als einzige offizielle Anmeldestelle des Sprachzentrums der Universität München in der Provinz Jiangsu haben wir stets unsere Servicephilosophie von 'Professionalität, Integrität und Effizienz' verfolgt und Hunderten von Studierenden geholfen, ihren Traum von einem Studium an renommierten Hochschulen zu verwirklichen. Von anfänglichen Deutschkursen bis hin zu umfassenden mehrsprachigen Studiendienstleistungen für Deutsch, Japanisch, Französisch und Koreanisch erweitern wir unser Angebot stetig.",
+    "missionTitle": "Unsere Mission",
+    "missionContent": "Jedem Studierenden mit dem Traum eines Auslandsstudiums professionelle, fürsorgliche Rundum-Dienstleistungen zu bieten und die am besten geeignete Hochschule zu finden.",
+    "visionTitle": "Unsere Vision",
+    "visionContent": "Die vertrauenswürdigste Marke für internationale Bildungsdienstleistungen in China zu werden, eine Brücke zwischen chinesischen Studierenden und Weltklasse-Universitäten zu bauen und den interkulturellen Bildungsaustausch zu fördern.",
+    "partnershipTitle": "Partnerschaft mit dem Sprachzentrum der LMU München",
+    "partnershipContent": "MUTU International ist die einzige offiziell anerkannte Anmeldestelle für das Sprachzentrum der Ludwig-Maximilians-Universität München (LMU) in der Provinz Jiangsu. Das Sprachzentrum der LMU ist eine der renommiertesten Deutschausbildungseinrichtungen Deutschlands. Durch unsere enge Partnerschaft bieten wir authentischen Deutschunterricht, Prüfungszertifizierung und einen direkten Weg zu deutschen Spitzenuniversitäten.",
+    "partnerBadge1": "Offizielles Prüfungszentrum",
+    "partnerBadge2": "Deutsch-Niveau-Zertifizierung",
+    "partnerBadge3": "Schnellweg zur Universität",
+    "stats": {
+      "years": "Jahre Erfahrung",
+      "cases": "Erfolgsgeschichten",
+      "partners": "Partnerinstitutionen",
+      "visaRate": "Visa-Genehmigungsrate"
+    },
+    "teamTitle": "Unser professionelles Team",
+    "team": {
+      "leader": "Frau Wu",
+      "leaderRole": "Gründerin / Leitende Studienberaterin",
+      "leaderDesc": "15 Jahre Erfahrung in der internationalen Bildung, Expertin für das deutsche Bildungssystem. Über 300 Studierende erfolgreich nach Deutschland vermittelt.",
+      "consultant": "Herr Li",
+      "consultantRole": "Senior-Studienberater",
+      "consultantDesc": "Masterabschluss im Ausland, 8 Jahre Beratungserfahrung. Spezialisiert auf Japan und Singapur mit präziser Hochschulzuordnung.",
+      "visa": "Frau Zhang",
+      "visaRole": "Visa-Expertin",
+      "visaDesc": "10 Jahre Erfahrung in der Visabearbeitung, vertraut mit Visabestimmungen verschiedener Länder. Visa-Genehmigungsrate von 98%."
+    },
+    "ctaTitle": "Starten Sie Ihr Auslandsstudium",
+    "ctaDesc": "Unser professionelles Team erstellt maßgeschneiderte Studienpläne und begleitet Sie von der Hochschulwahl bis zum Visum",
+    "ctaButton": "Jetzt beraten lassen"
+  },
+  "StudyAbroad": {
+    "overviewTitle": "Studienprogramme in mehreren Ländern",
+    "overviewContent": "MUTU International bietet Studiendienstleistungen für Deutschland, Japan, Frankreich, Südkorea und weitere Länder. Wir erstellen individuelle Studienpläne basierend auf dem akademischen Hintergrund, den Sprachkenntnissen und den Karrierezielen jedes Studierenden.",
+    "germanFocusTitle": "Deutschsprachiges Studienprogramm (Empfohlen)",
+    "germanFocusName": "LMU Sprachzentrum Direktprogramm",
+    "germanFocusDesc": "Gestützt auf unsere offizielle Partnerschaft mit dem LMU Sprachzentrum bieten wir einen vollständigen Weg vom Deutschlernen bis zur Einschreibung an deutschen Spitzenuniversitäten. Dieses Kernprogramm hat Hunderten von Studierenden den Zugang zu deutschen Top-Universitäten ermöglicht.",
+    "germanFocusF1": "Offiziell zertifizierte Deutschkurse",
+    "germanFocusF2": "Kleine Klassen, Premium-Unterricht",
+    "germanFocusF3": "LMU Sprachniveau-Prüfungen",
+    "germanFocusF4": "Bewerbungsberatung für deutsche Unis",
+    "germanFocusF5": "Vollständiger Visa-Service",
+    "germanFocusF6": "Flughafenabholung",
+    "programsTitle": "Programmvergleich",
+    "recommended": "Empfohlen",
+    "german": {
+      "title": "Studium in Deutschland",
+      "desc": "Genießen Sie gebührenfreie Weltklasse-Bildung mit führenden Programmen in Ingenieurwesen, Wirtschaft und Medizin. Ein Studium in Deutschland bietet hervorragendes Preis-Leistungs-Verhältnis und breite Karrierechancen.",
+      "f1": "Gebührenfreie öffentliche Universitäten",
+      "f2": "Weltweit führende Ingenieurstudiengänge",
+      "f3": "18 Monate Jobsuchvisum nach Abschluss",
+      "f4": "Freizügigkeit im Schengen-Raum"
+    },
+    "japanese": {
+      "title": "Studium in Japan",
+      "desc": "Asiens Spitzenbildungssystem mit zahlreichen Stipendien und einzigartigen Kulturerlebnissen. Ideal für Studierende mit Interesse an japanischer Sprache und Kultur.",
+      "f1": "Umfangreiche Stipendienprogramme",
+      "f2": "Einzigartige Programme in Animation, Design etc.",
+      "f3": "Vielfältige Nebenjobmöglichkeiten"
+    },
+    "french": {
+      "title": "Studium in Frankreich",
+      "desc": "Hochschulbildung in der Stadt der Romantik, mit weltbekannten Programmen in Wirtschaft, Kunst und Modedesign. Öffentliche Universitäten bieten niedrige Studiengebühren.",
+      "f1": "Weltbekannte Wirtschafts- und Kunstprogramme",
+      "f2": "Niedrige Studiengebühren an öffentlichen Unis",
+      "f3": "Reiche kulturelle und künstlerische Ressourcen"
+    },
+    "korean": {
+      "title": "Studium in Südkorea",
+      "desc": "Hohe Bildungsstandards mit moderaten Studienkosten und Nähe zu China. Starke K-Culture-Anziehungskraft, ideal für Studierende mit Interesse an der koreanischen Sprache und Kultur.",
+      "f1": "Relativ niedrige Studienkosten",
+      "f2": "Geografische Nähe",
+      "f3": "Umfangreiche Koreanischkurse"
+    },
+    "ctaTitle": "Wählen Sie das richtige Programm für sich",
+    "ctaDesc": "Jeder Studierende ist einzigartig — lassen Sie uns den besten Studienplan für Sie finden",
+    "ctaButton": "Kostenlose Beratung"
+  },
+  "Universities": {
+    "title": "Ausgewählte Partneruniversitäten",
+    "intro": "Wir haben enge Partnerschaften mit zahlreichen renommierten deutschen Universitäten aufgebaut und bieten Studierenden bequemere Bewerbungswege und höhere Zulassungsquoten. Nachfolgend einige unserer Partnerinstitutionen, darunter Volluniversitäten, Technische Universitäten und Fachhochschulen.",
+    "uni1": {
+      "name": "LMU München",
+      "location": "München, Bayern",
+      "programs": "Gesamtes Fächerspektrum; Stärken: Medizin, Jura, Naturwissenschaften",
+      "desc": "Eine deutsche Spitzenuniversität, QS-Weltranking Top 60, die renommierteste Volluniversität Bayerns."
+    },
+    "uni2": {
+      "name": "Technische Universität München",
+      "location": "München, Bayern",
+      "programs": "Ingenieurwesen, Informatik, Naturwissenschaften, Management",
+      "desc": "Eine der Exzellenzuniversitäten Deutschlands, Nr. 1 im Ingenieurwesen in Deutschland, mit hervorragendem globalen Arbeitgeberrenommee."
+    },
+    "uni3": {
+      "name": "Humboldt-Universität zu Berlin",
+      "location": "Berlin",
+      "programs": "Geisteswissenschaften, Sozialwissenschaften, Naturwissenschaften, Medizin",
+      "desc": "Eine der ältesten Universitäten Deutschlands, Wiege der Nobelpreisträger, mit tiefem akademischen Erbe."
+    },
+    "uni4": {
+      "name": "Universität Heidelberg",
+      "location": "Heidelberg, Baden-Württemberg",
+      "programs": "Medizin, Naturwissenschaften, Geistes- und Sozialwissenschaften",
+      "desc": "Deutschlands älteste Universität, weltweit renommiert in Medizin und Naturwissenschaften."
+    },
+    "uni5": {
+      "name": "Universität Hamburg",
+      "location": "Hamburg",
+      "programs": "Wirtschaftswissenschaften, Jura, Naturwissenschaften, Informatik",
+      "desc": "Die größte Volluniversität Norddeutschlands, in der zweitgrößten Stadt Deutschlands, hoch internationalisiert."
+    },
+    "uni6": {
+      "name": "RWTH Aachen",
+      "location": "Aachen, Nordrhein-Westfalen",
+      "programs": "Maschinenbau, Elektrotechnik, Informatik",
+      "desc": "Eine europäische Spitzen-Technische Universität und IDEA-League-Mitglied, deren Ingenieurabsolventen bei Arbeitgebern hoch geschätzt sind."
+    },
+    "adviceTitle": "Individuelle Hochschulberatung",
+    "adviceContent": "Die richtige Universität zu wählen ist ein entscheidender Schritt für den Studienerfolg im Ausland. Unsere erfahrenen Berater empfehlen die am besten passenden Hochschulen und Studiengänge basierend auf Ihren Leistungen, Sprachkenntnissen und Karrierezielen. Buchen Sie eine kostenlose Beratung.",
+    "ctaButton": "Beratung buchen"
+  },
+  "Requirements": {
+    "overviewTitle": "Bewerbungsvoraussetzungen nach Land",
+    "germany": {
+      "title": "Studium in Deutschland",
+      "r1": "Abitur oder gleichwertiger Abschluss (211/985 Unis bevorzugt)",
+      "r2": "Deutsch B1+ oder Englisch IELTS 6.0+",
+      "r3": "APS-Bescheinigung",
+      "r4": "Finanzierungsnachweis (ca. 10.332€/Jahr)"
+    },
+    "japan": {
+      "title": "Studium in Japan",
+      "r1": "12+ Jahre Schulbildung",
+      "r2": "JLPT N2+ oder EJU-Ergebnis",
+      "r3": "Nachweis der finanziellen Unterstützung"
+    },
+    "korea": {
+      "title": "Studium in Südkorea",
+      "r1": "Abitur oder höher",
+      "r2": "TOPIK Stufe 3+",
+      "r3": "Kontoauszug"
+    },
+    "langTitle": "Sprachanforderungen",
+    "langGerman": {
+      "title": "Deutschkenntnisse",
+      "desc": "Die meisten deutschsprachigen Studiengänge erfordern TestDaF 4x4 oder DSH-2. Studienkollegs erfordern in der Regel B1-Niveau. In Zusammenarbeit mit dem LMU-Sprachzentrum bieten wir Deutschkurse von Anfänger bis B2."
+    },
+    "langJapanese": {
+      "title": "Japanischkenntnisse",
+      "desc": "Sprachschulen erfordern in der Regel N5-N4, Direktbewerbungen für den Bachelor N2+, für den Master wird N1 empfohlen. Wir bieten ergänzende Japanischkurse und Prüfungsvorbereitung."
+    },
+    "docsTitle": "Checkliste der Bewerbungsunterlagen",
+    "doc1": "Gültiger Reisepass (6+ Monate Gültigkeit)",
+    "doc2": "Zeugnisse und Notenspiegel",
+    "doc3": "Sprachzertifikat",
+    "doc4": "Motivationsschreiben",
+    "doc5": "Empfehlungsschreiben (2)",
+    "doc6": "Finanzierungsnachweis",
+    "doc7": "APS-Bescheinigung (Deutschland)",
+    "doc8": "Passfotos",
+    "timelineTitle": "Bewerbungsprozess",
+    "step1": {
+      "title": "Kostenlose Beratung & Bewertung",
+      "desc": "Individuelle Bewertung des akademischen Hintergrunds mit maßgeschneidertem Studienplan."
+    },
+    "step2": {
+      "title": "Sprachtraining",
+      "desc": "Gezieltes Sprachtraining und Prüfungsvorbereitung entsprechend den Universitätsanforderungen."
+    },
+    "step3": {
+      "title": "Dokumentenvorbereitung",
+      "desc": "Unterstützung bei der Vorbereitung der Bewerbungsunterlagen — vollständig, korrekt und qualitativ hochwertig."
+    },
+    "step4": {
+      "title": "Universitätsbewerbung",
+      "desc": "Einreichung der Bewerbungen, Verfolgung des Fortschritts, zeitnahe Bearbeitung von Nachforderungen."
+    },
+    "step5": {
+      "title": "Visabearbeitung",
+      "desc": "Visaunterstützung nach Zulassung, Dokumentenvorbereitung und Terminvereinbarung für Interviews."
+    },
+    "step6": {
+      "title": "Vorbereitung vor der Abreise",
+      "desc": "Vorbereitungstraining, Flugbuchungsberatung, Flughafenabholung und weitere Dienstleistungen."
+    },
+    "ctaTitle": "Unsicher, ob Sie die Voraussetzungen erfüllen?",
+    "ctaDesc": "Wir bieten kostenlose Hintergrundbewertungen, um die beste Studienrichtung für Sie zu finden",
+    "ctaButton": "Kostenlose Bewertung"
+  },
+  "Cases": {
+    "title": "Erfolgsgeschichten unserer Studierenden",
+    "statCases": "Erfolgsgeschichten",
+    "statVisa": "Visa-Genehmigungsrate",
+    "statSchools": "Partnerhochschulen",
+    "s1": {
+      "name": "Student Wang",
+      "uni": "LMU München",
+      "program": "MSc Wirtschaftswissenschaften",
+      "quote": "Die Berater von MUTU haben mich von der Hochschulwahl bis zum Visum begleitet. Professionell und geduldig. Danke, dass Sie mir geholfen haben, meinen Traum vom Studium in Deutschland zu verwirklichen!"
+    },
+    "s2": {
+      "name": "Student Li",
+      "uni": "Technische Universität München",
+      "program": "MSc Maschinenbau",
+      "quote": "Meine Bachelor-Noten waren durchschnittlich, aber die Berater halfen mir mit präziser Positionierung und ich wurde an der TUM angenommen. Ein sehr professionelles Team!"
+    },
+    "s3": {
+      "name": "Student Zhang",
+      "uni": "Universität Tokio",
+      "program": "MSc Informatik",
+      "quote": "Ich habe Japanisch von Null angefangen, in zwei Jahren N1 bestanden und wurde an der Todai angenommen. Die Japanischkurse von MUTU sind ausgezeichnet."
+    },
+    "s4": {
+      "name": "Student Chen",
+      "uni": "Humboldt-Universität zu Berlin",
+      "program": "LLM Rechtswissenschaften",
+      "quote": "Die APS-Prüfung und Dokumentenvorbereitung waren sehr stressig, aber mit der Anleitung von MUTU habe ich beim ersten Versuch bestanden."
+    },
+    "s5": {
+      "name": "Student Zhao",
+      "uni": "Universität Heidelberg",
+      "program": "Medizinisches Studienkolleg",
+      "quote": "Deutsche Medizinbewerbungen sind sehr komplex, aber das MUTU-Team hat viel Erfahrung und der gesamte Prozess war viel reibungsloser als erwartet."
+    },
+    "s6": {
+      "name": "Student Liu",
+      "uni": "Seoul National University",
+      "program": "BSc Internationaler Handel",
+      "quote": "Von der Beratung bis zur Einschreibung dauerte es nur ein halbes Jahr. Sehr effizient. Auch nach der Ankunft in Korea kann ich mich jederzeit an die Berater wenden."
+    },
+    "ctaTitle": "Sie könnten unsere nächste Erfolgsgeschichte sein",
+    "ctaDesc": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
+    "ctaButton": "Starten Sie Ihre Reise"
+  },
+  "Visa": {
+    "processTitle": "Visumsantragsprozess",
+    "step1": {
+      "title": "Dokumentenbewertung",
+      "desc": "Der Visaberater bewertet die Situation des Studierenden, erstellt einen Plan zur Dokumentenvorbereitung und listet erforderliche Unterlagen auf."
+    },
+    "step2": {
+      "title": "Dokumentenvorbereitung",
+      "desc": "Unterstützung bei der Vorbereitung aller visarelevanten Unterlagen, einschließlich Übersetzung, Beglaubigung und Authentifizierung."
+    },
+    "step3": {
+      "title": "Formularausfüllung",
+      "desc": "Anleitung beim Ausfüllen der Visumsantragsformulare, Sicherstellung der Richtigkeit und Vermeidung häufiger Fehler."
+    },
+    "step4": {
+      "title": "Terminvereinbarung & Einreichung",
+      "desc": "Buchung von Terminen im Visazentrum oder in der Botschaft, mit simuliertem Interviewtraining."
+    },
+    "step5": {
+      "title": "Fortschrittsverfolgung",
+      "desc": "Verfolgung des Visumsantragsstatus nach Einreichung, prompte Bearbeitung von Nachforderungen."
+    },
+    "docsTitle": "Erforderliche Visumsunterlagen",
+    "doc1": "Gültiger Reisepass (Original und Kopien)",
+    "doc2": "Visumsantragsformular",
+    "doc3": "Passfotos (Botschaftsspezifikationen)",
+    "doc4": "Zulassungsbescheid der Universität",
+    "doc5": "Finanzierungsnachweis / Bürgschaft",
+    "doc6": "Versicherungsnachweis",
+    "doc7": "Sprachzertifikat",
+    "doc8": "Beglaubigte Zeugnisse",
+    "timelineTitle": "Bearbeitungszeitraum",
+    "timeline1": {
+      "title": "Dokumentenvorbereitung",
+      "time": "2-4 Wochen",
+      "desc": "Vorbereitung und Prüfung der Visumsunterlagen je nach individueller Situation"
+    },
+    "timeline2": {
+      "title": "Visumsprüfung",
+      "time": "4-8 Wochen",
+      "desc": "Die Botschaft prüft den Antrag; zusätzliche Unterlagen können angefordert werden"
+    },
+    "timeline3": {
+      "title": "Gesamtzeitraum",
+      "time": "6-12 Wochen",
+      "desc": "Empfehlung: Mindestens 3 Monate vor Studienbeginn mit der Vorbereitung beginnen"
+    },
+    "tipsTitle": "Wichtige Visa-Tipps",
+    "tip1": "Beginnen Sie mindestens 3 Monate vor Studienbeginn mit der Vorbereitung der Visumsunterlagen.",
+    "tip2": "Der Finanzierungsnachweis muss die Mindestanforderungen des Ziellandes erfüllen; Deutschland verlangt derzeit 10.332€ pro Jahr.",
+    "tip3": "Alle nicht-chinesischen und nicht-englischen Dokumente benötigen eine beglaubigte Übersetzung. Verwenden Sie seriöse Übersetzungsbüros.",
+    "tip4": "Bleiben Sie beim Interview selbstbewusst, antworten Sie ehrlich, lernen Sie keine Antworten auswendig und kleiden Sie sich angemessen.",
+    "tip5": "Bewahren Sie Kopien und digitale Versionen aller Antragsunterlagen auf, falls die Botschaft Nachreichungen verlangt.",
+    "ctaTitle": "Visa-Fragen? Überlassen Sie es uns",
+    "ctaDesc": "98% Visa-Genehmigungsrate — unser professionelles Visa-Team sorgt für Ihren Erfolg",
+    "ctaButton": "Visa-Service anfragen"
+  },
+  "Life": {
+    "guideTitle": "Leitfaden für das Leben im Ausland",
+    "guideIntro": "Ihr Auslandsstudium ist nicht nur akademische Weiterentwicklung — es ist eine lebensverändernde Erfahrung. Das Verständnis aller Aspekte des Lebens in Ihrem Zielland macht Ihr Auslandsstudium reibungsloser und bereichernder. Wir haben einen detaillierten Leitfaden zusammengestellt, der Ihnen hilft, sich schnell an das Leben im Ausland anzupassen.",
+    "housing": {
+      "title": "Unterkunft",
+      "desc": "In Deutschland können internationale Studierende Studentenwohnheime, Wohngemeinschaften (WG) oder private Mietwohnungen wählen. Studentenwohnheime kosten ca. 250-400€/Monat, sind aber begrenzt. WGs sind mit ca. 350-600€/Monat am beliebtesten. Wir helfen bei der Unterkunftssuche vor der Abreise."
+    },
+    "transport": {
+      "title": "Verkehr",
+      "desc": "Deutschland hat ein ausgezeichnetes öffentliches Verkehrssystem. Studierende können ein Semesterticket kaufen, das lokale Busse, U-Bahnen und Regionalzüge abdeckt. Die Deutsche Bahn bietet verschiedene Ermäßigungen, und die BahnCard 25/50 gewährt entsprechende Rabatte. Radfahren ist ebenfalls ein Hauptverkehrsmittel für deutsche Studierende."
+    },
+    "food": {
+      "title": "Essen & Trinken",
+      "desc": "Deutsche Universitätsmensen bieten günstige Mahlzeiten für ca. 2-5€. Supermärkte wie Aldi, Lidl und REWE bieten vielfältige Auswahl; Selbstkochen kostet ca. 200-300€/Monat. Asiatische Supermärkte sind zunehmend verfügbar. Deutschlands Bier- und Brotvielfalt ist einen Versuch wert."
+    },
+    "culture": {
+      "title": "Kulturelle Anpassung",
+      "desc": "Deutsche legen Wert auf Pünktlichkeit und Regeln, was anfangs gewöhnungsbedürftig sein kann. Universitäten haben in der Regel internationale Studierendenservices und vielfältige Vereine — ideale Möglichkeiten, Freunde zu finden und sich in die Kultur zu integrieren. Deutschlands Museen, Theater und Konzerte sind reichhaltig, viele mit Ermäßigungen für Studierende."
+    },
+    "cityTitle": "Beliebte Städteführer",
+    "munich": {
+      "name": "München",
+      "desc": "Hauptstadt Bayerns und drittgrößte Stadt Deutschlands. Sitz großer Technologieunternehmen wie BMW und Siemens. Hohe Lebensqualität mit weltberühmter Biergartenkultur.",
+      "h1": "Bierkultur",
+      "h2": "Hightech-Industrie",
+      "h3": "Alpen"
+    },
+    "berlin": {
+      "name": "Berlin",
+      "desc": "Deutschlands Hauptstadt und eine der lebendigsten Städte Europas. Kulturell vielfältig mit starker Kunstszene, relativ niedrigere Lebenshaltungskosten unter den deutschen Großstädten. Aktives Startup-Ökosystem.",
+      "h1": "Kulturelle Vielfalt",
+      "h2": "Kunsthauptstadt",
+      "h3": "Startup-Hub"
+    },
+    "hamburg": {
+      "name": "Hamburg",
+      "desc": "Zweitgrößte Stadt Deutschlands und wichtiger Hafenstadt. Blühende Medien- und Luftfahrtindustrie, wunderschöne Grünflächen und extrem hohe Lebensqualität. Heimat der berühmten Elbphilharmonie.",
+      "h1": "Hafenstadt",
+      "h2": "Medienindustrie",
+      "h3": "Elbphilharmonie"
+    },
+    "ctaTitle": "Möchten Sie mehr über das Leben im Ausland erfahren?",
+    "ctaDesc": "Buchen Sie eine Beratung — unsere im Ausland erfahrenen Berater teilen echte Studienerfahrungen",
+    "ctaButton": "Beratung buchen"
+  },
+  "News": {
+    "title": "Aktuelle Nachrichten",
+    "catPolicy": "Politische Neuigkeiten",
+    "catNews": "Institutionsnachrichten",
+    "catGuide": "Studienführer",
+    "a1": {
+      "title": "2026 Aktualisierung der deutschen Studienvisapolitik: Neues Online-Terminsystem",
+      "excerpt": "Die deutsche Botschaft in China hat die vollständige Einführung eines Online-Visa-Terminsystems angekündigt. Antragsteller können über die offizielle Website Einreichungstermine buchen, was die Wartezeiten erheblich verkürzt. Das neue System geht im Mai an den Start."
+    },
+    "a2": {
+      "title": "MUTU International: Frühlings-Intensiv-Deutschkurs 2026 — Anmeldung gestartet",
+      "excerpt": "Um der wachsenden Nachfrage gerecht zu werden, startet MUTU International im April einen Frühlings-Intensiv-Deutschkurs, unterrichtet von zertifizierten Lehrern des LMU-Sprachzentrums, begrenzt auf 30 Teilnehmer."
+    },
+    "a3": {
+      "title": "Unverzichtbar für Deutschland: Vollständige Erklärung des APS-Verfahrens",
+      "excerpt": "Die APS-Prüfung ist ein Pflichtschritt für chinesische Studierende bei Bewerbungen an deutschen Universitäten. Dieser Artikel erklärt die Dokumentenvorbereitung, den Interviewprozess und wichtige Tipps."
+    },
+    "a4": {
+      "title": "Japanische Einwanderungsbehörde lockert Studentenvisum-Prüfstandards",
+      "excerpt": "Japans Einwanderungsbehörde hat kürzlich gelockerte Visaprüfstandards für Studierende aus bestimmten Ländern angekündigt, was die Bearbeitungszeiten verkürzt und chinesischen Studierenden zugutekommt."
+    },
+    "a5": {
+      "title": "MUTU-Student Wang erfolgreich an der TU München zugelassen",
+      "excerpt": "Herzlichen Glückwunsch an MUTU-Student Wang für die Zulassung zum Masterprogramm Maschinenbau an der TUM und die erfolgreiche Erlangung eines deutschen Studienvisums."
+    },
+    "a6": {
+      "title": "Wie Sie die richtige deutsche Universität wählen: Ein vollständiger Leitfaden",
+      "excerpt": "Deutschland hat über 400 Hochschulen — wie finden Sie die richtige? Dieser Artikel analysiert Strategien zur Hochschulwahl anhand von Rankings, Studiengängen, Standort und Lebenshaltungskosten."
+    },
+    "a7": {
+      "title": "Deutsche Universitäten veröffentlichen Bewerbungszeitraum für WiSe 2026/27",
+      "excerpt": "Deutsche Hochschulen haben ihre Bewerbungsfristen für das Wintersemester 2026/27 veröffentlicht. Die meisten Bachelor-Bewerbungsfristen enden am 15. Juli; Master-Fristen variieren je nach Universität."
+    },
+    "a8": {
+      "title": "MUTU Internationale Bildung gewinnt Jahresauszeichnung als beste Studienberatung",
+      "excerpt": "MUTU Internationale Bildung erhielt die Auszeichnung 'Beste Studienberatung 2025' für hervorragende Servicequalität und hohe Kundenzufriedenheit. Vielen Dank für Ihr Vertrauen."
+    },
+    "prev": "Vorherige",
+    "next": "Nächste"
+  },
+  "Contact": {
+    "infoTitle": "Kontaktinformationen",
+    "infoDesc": "Kontaktieren Sie uns über die folgenden Kanäle. Unsere professionellen Berater antworten innerhalb von 24 Stunden.",
+    "addressLabel": "Büroadresse",
+    "address": "XX. Etage, XX Gebäude, Zhongshan Nord-Straße, Bezirk Gulou, Nanjing, Jiangsu, China",
+    "phoneLabel": "Hotline",
+    "phone": "189-1268-6656 (Frau Wu)",
+    "emailLabel": "E-Mail",
+    "email": "haoanmuaxeng@163.com",
+    "wechatLabel": "WeChat",
+    "wechat": "WeChat hinzufügen: mutu_edu",
+    "hoursLabel": "Öffnungszeiten",
+    "hours": "Mo-Fr 9:00-18:00 / Sa 9:00-12:00",
+    "mapPlaceholder": "Kartenbereich wird geladen",
+    "formTitle": "Nachricht senden",
+    "formDesc": "Füllen Sie das folgende Formular aus und wir melden uns so schnell wie möglich.",
+    "nameLabel": "Ihr Name",
+    "namePlaceholder": "Name eingeben",
+    "emailFormLabel": "E-Mail-Adresse",
+    "emailFormPlaceholder": "E-Mail eingeben",
+    "phoneFormLabel": "Telefonnummer",
+    "phoneFormPlaceholder": "Telefonnummer eingeben",
+    "messageLabel": "Nachricht",
+    "messagePlaceholder": "Bitte beschreiben Sie Ihre Anfrage oder Fragen...",
+    "submitButton": "Nachricht senden"
+  },
   "AdminSettings": {
     "title": "Systemeinstellungen",
     "phoneCountryCodes": "Telefonländercodes",
