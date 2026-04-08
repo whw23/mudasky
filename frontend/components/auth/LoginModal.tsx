@@ -34,7 +34,7 @@ function isPhoneNumber(value: string): boolean {
 
 /** 登录弹窗组件 */
 export function LoginModal() {
-  const { authModal, hideAuthModal, fetchUser, showRegisterModal } = useAuth()
+  const { authModal, hideAuthModal, fetchUser } = useAuth()
   const t = useTranslations('Auth')
 
   /* 通用状态 */
@@ -246,16 +246,6 @@ export function LoginModal() {
 
         <Separator />
 
-        {/* 注册链接 */}
-        <p className="text-center text-sm text-muted-foreground">
-          {t('noAccount')}
-          <button
-            className="text-primary hover:underline"
-            onClick={showRegisterModal}
-          >
-            {t('goRegister')}
-          </button>
-        </p>
       </DialogContent>
     </Dialog>
   )

@@ -36,7 +36,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function Header() {
   const pathname = usePathname()
-  const { user, logout, showLoginModal, showRegisterModal } = useAuth()
+  const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
@@ -80,15 +80,9 @@ export function Header() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <button onClick={showLoginModal} className="hover:underline text-xs md:text-sm">
-                  {tHeader("login")}
-                </button>
-                <span>|</span>
-                <button onClick={showRegisterModal} className="hover:underline text-xs md:text-sm">
-                  {tHeader("register")}
-                </button>
-              </div>
+              <button onClick={showLoginModal} className="hover:underline text-xs md:text-sm">
+                {tHeader("login")}
+              </button>
             )}
           </div>
         </div>

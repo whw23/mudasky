@@ -38,6 +38,7 @@ export function PasswordInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? t('passwordPlaceholder')}
         required={required}
+        className="pr-9 [&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden"
       />
       <button
         type="button"
