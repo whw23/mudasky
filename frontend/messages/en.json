@@ -247,7 +247,10 @@
     "disableFailed": "Failed to disable",
     "disableConfirmHint": "Enter your password to confirm disabling two-factor authentication",
     "password": "Password",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "save": "Save",
+    "passwordSet": "Set"
   },
   "AdminUsers": {
     "searchPlaceholder": "Search username or phone",

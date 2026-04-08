@@ -247,7 +247,10 @@
     "disableFailed": "無効化に失敗しました",
     "disableConfirmHint": "二段階認証を無効にするにはパスワードを入力してください",
     "password": "パスワード",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "edit": "変更",
+    "save": "保存",
+    "passwordSet": "設定済み"
   },
   "AdminUsers": {
     "searchPlaceholder": "ユーザー名または電話番号を検索",

@@ -247,7 +247,10 @@
     "disableFailed": "Deaktivierung fehlgeschlagen",
     "disableConfirmHint": "Geben Sie Ihr Passwort ein, um die Zwei-Faktor-Authentifizierung zu deaktivieren",
     "password": "Passwort",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "edit": "Ändern",
+    "save": "Speichern",
+    "passwordSet": "Eingestellt"
   },
   "AdminUsers": {
     "searchPlaceholder": "Benutzername oder Telefon suchen",
