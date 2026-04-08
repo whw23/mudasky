@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import UnauthorizedException
+
 from app.auth.models import RefreshToken, SmsCode
 
 
@@ -42,6 +44,24 @@ async def get_latest_sms_code(
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def verify_sms_code(
+    session: AsyncSession, phone: str, code: str
+) -> None:
+    """校验短信验证码。
+
+    验证通过后标记为已使用，失败则抛出异常。
+    """
+    sms_code = await get_latest_sms_code(session, phone)
+    if not sms_code:
+        raise UnauthorizedException(message="验证码无效或已过期")
+    sms_code.attempts += 1
+    if sms_code.code != code:
+        await session.commit()
+        raise UnauthorizedException(message="验证码不正确")
+    sms_code.is_used = True
+    await session.commit()
 
 
 async def count_recent_sms(

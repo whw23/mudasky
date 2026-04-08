@@ -203,17 +203,7 @@ class AuthService:
         self, phone: str, code: str
     ) -> None:
         """验证短信验证码，验证后标记为已使用。"""
-        sms_code = await repository.get_latest_sms_code(
-            self.session, phone
-        )
-        if not sms_code:
-            raise UnauthorizedException(message="验证码无效或已过期")
-        sms_code.attempts += 1
-        if sms_code.code != code:
-            await self.session.commit()
-            raise UnauthorizedException(message="验证码不正确")
-        sms_code.is_used = True
-        await self.session.commit()
+        await repository.verify_sms_code(self.session, phone, code)
 
     async def _login_by_sms(
         self, phone: str, code: str
