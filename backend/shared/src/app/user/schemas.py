@@ -5,7 +5,11 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+import re
+
+from pydantic import BaseModel, Field, field_validator
+
+PHONE_PATTERN = r"^\+\d{6,15}$"
 
 
 class UserCreate(BaseModel):
@@ -41,15 +45,31 @@ class UserAdminUpdate(BaseModel):
 class PasswordChange(BaseModel):
     """修改密码请求。需要手机号短信验证。"""
 
-    phone: str = Field(..., description="手机号")
+    phone: str = Field(..., description="手机号（含国家码）")
     code: str = Field(..., description="短信验证码")
     new_password: str = Field(..., min_length=6, description="新密码")
+
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v: str) -> str:
+        """校验手机号格式。"""
+        if not re.match(PHONE_PATTERN, v):
+            raise ValueError("手机号格式不正确")
+        return v
 
 
 class PhoneChange(BaseModel):
     """修改手机号请求。"""
 
-    new_phone: str = Field(..., max_length=20, description="新手机号")
+    new_phone: str = Field(..., max_length=20, description="新手机号（含国家码）")
+
+    @field_validator("new_phone")
+    @classmethod
+    def check_phone(cls, v: str) -> str:
+        """校验手机号格式。"""
+        if not re.match(PHONE_PATTERN, v):
+            raise ValueError("手机号格式不正确")
+        return v
     code: str = Field(..., description="短信验证码")
 
 

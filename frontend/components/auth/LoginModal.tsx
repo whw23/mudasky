@@ -24,11 +24,12 @@ import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SmsCodeButton } from './SmsCodeButton'
 import { PasswordInput } from './PasswordInput'
+import { PhoneInput, isValidPhone } from './PhoneInput'
 import { TwoFaForm } from './TwoFaForm'
 
-/** 判断输入是否为手机号格式 */
+/** 判断输入是否为手机号格式（以 + 开头或纯数字 5 位以上） */
 function isPhoneNumber(value: string): boolean {
-  return /^\d{5,}$/.test(value)
+  return /^\+?\d{5,}$/.test(value)
 }
 
 /** 登录弹窗组件 */
@@ -165,12 +166,10 @@ export function LoginModal() {
           <TabsContent value="sms">
             <form onSubmit={handleSmsLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="sms-phone">{t('phone')}</Label>
-                <Input
-                  id="sms-phone"
-                  type="tel"
+                <Label>{t('phone')}</Label>
+                <PhoneInput
                   value={smsPhone}
-                  onChange={(e) => setSmsPhone(e.target.value)}
+                  onChange={setSmsPhone}
                   placeholder={t('phonePlaceholder')}
                   required
                 />

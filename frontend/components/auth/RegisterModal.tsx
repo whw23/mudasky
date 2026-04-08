@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { SmsCodeButton } from './SmsCodeButton'
 import { PasswordInput } from './PasswordInput'
+import { PhoneInput } from './PhoneInput'
 
 /** 注册弹窗组件 */
 export function RegisterModal() {
@@ -90,12 +91,10 @@ export function RegisterModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 手机号 */}
           <div className="space-y-2">
-            <Label htmlFor="reg-phone">{t('phone')}</Label>
-            <Input
-              id="reg-phone"
-              type="tel"
+            <Label>{t('phone')}</Label>
+            <PhoneInput
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={setPhone}
               placeholder={t('phonePlaceholder')}
               required
             />

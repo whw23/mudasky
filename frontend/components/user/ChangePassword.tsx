@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
+import { PhoneInput } from '@/components/auth/PhoneInput'
 
 /** 修改密码表单 */
 export function ChangePassword() {
@@ -74,13 +75,11 @@ export function ChangePassword() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
-            <Label htmlFor="pwd-phone">{t('phone')}</Label>
-            <Input
-              id="pwd-phone"
-              type="tel"
+            <Label>{t('phone')}</Label>
+            <PhoneInput
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={user?.phone || t('phonePlaceholder')}
+              onChange={setPhone}
+              placeholder={t('phonePlaceholder')}
               required
             />
           </div>

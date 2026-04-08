@@ -16,10 +16,11 @@ import {
   CardTitle,
   CardContent,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
+import { PhoneInput } from '@/components/auth/PhoneInput'
 
 /** 修改手机号表单 */
 export function ChangePhone() {
@@ -60,12 +61,10 @@ export function ChangePhone() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
-            <Label htmlFor="new-phone">{t('newPhone')}</Label>
-            <Input
-              id="new-phone"
-              type="tel"
+            <Label>{t('newPhone')}</Label>
+            <PhoneInput
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={setPhone}
               placeholder={t('phonePlaceholder')}
               required
             />
