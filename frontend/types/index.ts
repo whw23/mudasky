@@ -54,15 +54,37 @@ export interface Article {
   updated_at: string | null
 }
 
+/** 文档分类枚举 */
+export type DocumentCategory =
+  | "transcript"
+  | "certificate"
+  | "passport"
+  | "language_test"
+  | "application"
+  | "other"
+
+/** 文档信息 */
 export interface Document {
   id: string
-  file_name: string
-  file_hash: string
-  mime_type: string
+  user_id: string
+  filename: string
+  original_name: string
   file_size: number
-  status: string
+  mime_type: string
+  category: DocumentCategory
   created_at: string
   updated_at: string | null
+}
+
+/** 文档列表响应（含存储用量） */
+export interface DocumentListResponse {
+  items: Document[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+  storage_used: number
+  storage_quota: number
 }
 
 export interface Category {
