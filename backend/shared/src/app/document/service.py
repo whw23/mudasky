@@ -4,109 +4,101 @@
 """
 
 import hashlib
-import uuid
+import logging
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.exceptions import (
     ConflictException,
     ForbiddenException,
     NotFoundException,
-    QuotaExceededException,
+)
+from app.core.storage import (
+    delete_file,
+    save_file,
+    validate_storage_quota,
 )
 from app.document import repository
-from app.document.models import Document
-from app.document.storage.local import LocalStorage
+from app.document.models import Document, DocumentCategory
 from app.user import repository as user_repo
 
+logger = logging.getLogger(__name__)
 
-class DocumentService:
-    """文档业务服务。"""
 
-    def __init__(self, session: AsyncSession) -> None:
-        """初始化服务，注入数据库会话。"""
-        self.session = session
-        self.storage = LocalStorage()
+async def upload_document(
+    session: AsyncSession,
+    user_id: str,
+    file: UploadFile,
+    category: DocumentCategory,
+) -> Document:
+    """上传文件。
 
-    async def upload(
-        self,
-        user_id: str,
-        file_name: str,
-        mime_type: str,
-        data: bytes,
-    ) -> Document:
-        """上传文件。
+    包含文件大小检查、配额检查、哈希去重、磁盘保存。
+    """
+    data = await file.read()
+    file_size = len(data)
+    original_name = file.filename or "untitled"
+    mime_type = file.content_type or "application/octet-stream"
 
-        包含文件大小检查、配额检查、哈希去重。
-        """
-        file_size = len(data)
-        self._check_file_size(file_size)
-        await self._check_quota(user_id, file_size)
+    # 配额校验
+    user = await user_repo.get_by_id(session, user_id)
+    if not user:
+        raise NotFoundException(message="用户不存在")
+    used = await repository.get_user_storage_used(session, user_id)
+    validate_storage_quota(used, file_size, user.storage_quota)
 
-        file_hash = hashlib.sha256(data).hexdigest()
-        existing = await repository.get_by_hash(
-            self.session, file_hash, user_id
-        )
-        if existing:
-            raise ConflictException(message="文件已存在")
+    # 哈希去重
+    file_hash = hashlib.sha256(data).hexdigest()
+    existing = await repository.get_by_hash(
+        session, file_hash, user_id
+    )
+    if existing:
+        raise ConflictException(message="文件已存在")
 
-        file_id = str(uuid.uuid4())
-        storage_path = f"{user_id}/{file_id}/{file_name}"
-        await self.storage.save(storage_path, data)
+    # 重置文件指针后通过 storage 模块保存
+    await file.seek(0)
+    relative_path, _ = await save_file(file, user_id, category.value)
 
-        doc = Document(
-            id=file_id,
-            file_name=file_name,
-            file_path=storage_path,
-            file_hash=file_hash,
-            mime_type=mime_type,
-            file_size=file_size,
-            uploader_id=user_id,
-        )
-        return await repository.create(self.session, doc)
+    doc = Document(
+        user_id=user_id,
+        filename=relative_path.rsplit("/", 1)[-1],
+        original_name=original_name,
+        file_path=relative_path,
+        file_size=file_size,
+        mime_type=mime_type,
+        category=category,
+        file_hash=file_hash,
+    )
+    return await repository.create(session, doc)
 
-    async def get_document(self, doc_id: str) -> Document:
-        """获取文档信息，不存在则抛出异常。"""
-        doc = await repository.get_by_id(self.session, doc_id)
-        if not doc:
-            raise NotFoundException(message="文档不存在")
-        return doc
 
-    async def list_user_documents(
-        self, user_id: str, offset: int, limit: int
-    ) -> tuple[list[Document], int]:
-        """分页查询用户的文档列表。"""
-        return await repository.list_by_user(
-            self.session, user_id, offset, limit
-        )
+async def list_documents(
+    session: AsyncSession, user_id: str, offset: int, limit: int
+) -> tuple[list[Document], int]:
+    """分页查询用户的文档列表。"""
+    return await repository.list_by_user(
+        session, user_id, offset, limit
+    )
 
-    async def delete_document(
-        self, doc_id: str, user_id: str
-    ) -> None:
-        """删除文档，检查所有权。"""
-        doc = await self.get_document(doc_id)
-        if doc.uploader_id != user_id:
-            raise ForbiddenException(message="无权删除此文档")
-        await self.storage.delete(doc.file_path)
-        await repository.delete(self.session, doc)
 
-    def _check_file_size(self, file_size: int) -> None:
-        """检查文件大小是否超限。"""
-        if file_size > settings.max_upload_size_bytes:
-            raise QuotaExceededException(
-                message=f"文件大小超过限制（{settings.MAX_UPLOAD_SIZE_MB}MB）"
-            )
+async def get_document(
+    session: AsyncSession, doc_id: str, user_id: str
+) -> Document:
+    """获取文档信息，检查所有权。"""
+    doc = await repository.get_by_id(session, doc_id)
+    if not doc:
+        raise NotFoundException(message="文档不存在")
+    if doc.user_id != user_id:
+        raise ForbiddenException(message="无权访问此文档")
+    return doc
 
-    async def _check_quota(
-        self, user_id: str, file_size: int
-    ) -> None:
-        """检查用户存储配额是否充足。"""
-        user = await user_repo.get_by_id(self.session, user_id)
-        if not user:
-            raise NotFoundException(message="用户不存在")
-        used = await repository.get_user_storage_used(
-            self.session, user_id
-        )
-        if used + file_size > user.storage_quota:
-            raise QuotaExceededException(message="存储配额不足")
+
+async def delete_document(
+    session: AsyncSession, doc_id: str, user_id: str
+) -> None:
+    """删除文档，检查所有权，同时删除磁盘文件和数据库记录。"""
+    doc = await get_document(session, doc_id, user_id)
+    await delete_file(doc.file_path)
+    await repository.delete(session, doc)
+    logger.info("文档已删除: id=%s, user=%s", doc_id, user_id)

@@ -25,12 +25,12 @@ async def get_by_id(
 
 
 async def get_by_hash(
-    session: AsyncSession, file_hash: str, uploader_id: str
+    session: AsyncSession, file_hash: str, user_id: str
 ) -> Document | None:
-    """根据文件哈希和上传者 ID 查询文档，用于去重。"""
+    """根据文件哈希和用户 ID 查询文档，用于去重。"""
     stmt = select(Document).where(
         Document.file_hash == file_hash,
-        Document.uploader_id == uploader_id,
+        Document.user_id == user_id,
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
@@ -40,9 +40,9 @@ async def get_user_storage_used(
     session: AsyncSession, user_id: str
 ) -> int:
     """计算用户已使用的存储空间（字节）。"""
-    stmt = select(func.coalesce(func.sum(Document.file_size), 0)).where(
-        Document.uploader_id == user_id
-    )
+    stmt = select(
+        func.coalesce(func.sum(Document.file_size), 0)
+    ).where(Document.user_id == user_id)
     result = await session.execute(stmt)
     return result.scalar_one()
 
@@ -54,15 +54,17 @@ async def list_by_user(
 
     返回文档列表和总数。
     """
-    count_stmt = select(func.count()).select_from(Document).where(
-        Document.uploader_id == user_id
+    count_stmt = (
+        select(func.count())
+        .select_from(Document)
+        .where(Document.user_id == user_id)
     )
     total_result = await session.execute(count_stmt)
     total = total_result.scalar_one()
 
     stmt = (
         select(Document)
-        .where(Document.uploader_id == user_id)
+        .where(Document.user_id == user_id)
         .order_by(Document.created_at.desc())
         .offset(offset)
         .limit(limit)
