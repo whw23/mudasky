@@ -6,6 +6,16 @@ local http = require("resty.http")
 local cjson = require("cjson.safe")
 local jwt = require("resty.jwt")
 local config = require("init")
+local rate_limit = require("rate_limit")
+
+-- IP 限流检查
+local client_ip = ngx.var.remote_addr
+if rate_limit.is_limited(client_ip, ngx.req.get_method(), ngx.var.uri) then
+  ngx.status = 429
+  ngx.header["Content-Type"] = "application/json"
+  ngx.say('{"code":"TOO_MANY_REQUESTS","message":"请求过于频繁，请稍后再试"}')
+  return
+end
 
 -- 读取请求体
 ngx.req.read_body()

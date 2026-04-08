@@ -4,6 +4,7 @@
 local jwt = require("resty.jwt")
 local cjson = require("cjson.safe")
 local config = require("init")
+local rate_limit = require("rate_limit")
 
 --- 返回 JSON 错误响应。
 local function reject(status, code)
@@ -20,8 +21,14 @@ if not string.find(uri, "^/api/") then
   return
 end
 
--- 公开路由放行
+-- IP 限流检查（在公开路由放行前执行，覆盖 sms-code 等接口）
 local method = ngx.req.get_method()
+local client_ip = ngx.var.remote_addr
+if rate_limit.is_limited(client_ip, method, uri) then
+  reject(429, "TOO_MANY_REQUESTS")
+end
+
+-- 公开路由放行
 if config.is_public(method, uri) then
   return
 end
