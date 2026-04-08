@@ -105,7 +105,8 @@
     "articleManagement": "文章管理",
     "groupManagement": "权限组管理",
     "categoryManagement": "分类管理",
-    "placeholder": "待实现"
+    "placeholder": "待实现",
+    "settings": "系统设置"
   },
   "User": {
     "title": "用户中心",
@@ -343,5 +344,27 @@
     "createSuccess": "创建成功",
     "updateSuccess": "更新成功",
     "saveError": "保存失败"
+  },
+  "AdminSettings": {
+    "title": "系统设置",
+    "phoneCountryCodes": "手机号国家码",
+    "phoneCountryCodesDesc": "管理用户可选的手机号国家码",
+    "code": "区号",
+    "codePlaceholder": "+86",
+    "country": "旗帜",
+    "countryPlaceholder": "🇨🇳",
+    "labelField": "名称",
+    "labelPlaceholder": "中国",
+    "digits": "位数",
+    "digitsPlaceholder": "11",
+    "add": "添加",
+    "delete": "删除",
+    "save": "保存",
+    "saving": "保存中...",
+    "saveSuccess": "保存成功",
+    "saveError": "保存失败",
+    "fetchError": "获取配置失败",
+    "noData": "暂无国家码",
+    "deleteConfirm": "确定删除 {code} 吗？"
   }
 }

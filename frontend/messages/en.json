@@ -105,7 +105,8 @@
     "articleManagement": "Article Management",
     "groupManagement": "Group Management",
     "categoryManagement": "Category Management",
-    "placeholder": "Coming Soon"
+    "placeholder": "Coming Soon",
+    "settings": "System Settings"
   },
   "User": {
     "title": "User Center",
@@ -343,5 +344,27 @@
     "createSuccess": "Created successfully",
     "updateSuccess": "Updated successfully",
     "saveError": "Failed to save"
+  },
+  "AdminSettings": {
+    "title": "System Settings",
+    "phoneCountryCodes": "Phone Country Codes",
+    "phoneCountryCodesDesc": "Manage available phone country codes for users",
+    "code": "Code",
+    "codePlaceholder": "+86",
+    "country": "Flag",
+    "countryPlaceholder": "🇨🇳",
+    "labelField": "Name",
+    "labelPlaceholder": "China",
+    "digits": "Digits",
+    "digitsPlaceholder": "11",
+    "add": "Add",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveSuccess": "Saved successfully",
+    "saveError": "Failed to save",
+    "fetchError": "Failed to fetch config",
+    "noData": "No country codes",
+    "deleteConfirm": "Delete {code}?"
   }
 }

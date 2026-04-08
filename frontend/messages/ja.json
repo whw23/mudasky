@@ -105,7 +105,8 @@
     "articleManagement": "記事管理",
     "groupManagement": "権限グループ管理",
     "categoryManagement": "カテゴリ管理",
-    "placeholder": "準備中"
+    "placeholder": "準備中",
+    "settings": "システム設定"
   },
   "User": {
     "title": "ユーザーセンター",
@@ -343,5 +344,27 @@
     "createSuccess": "作成しました",
     "updateSuccess": "更新しました",
     "saveError": "保存に失敗しました"
+  },
+  "AdminSettings": {
+    "title": "システム設定",
+    "phoneCountryCodes": "電話番号の国コード",
+    "phoneCountryCodesDesc": "ユーザーが選択できる国コードを管理",
+    "code": "国コード",
+    "codePlaceholder": "+86",
+    "country": "国旗",
+    "countryPlaceholder": "🇨🇳",
+    "labelField": "名前",
+    "labelPlaceholder": "中国",
+    "digits": "桁数",
+    "digitsPlaceholder": "11",
+    "add": "追加",
+    "delete": "削除",
+    "save": "保存",
+    "saving": "保存中...",
+    "saveSuccess": "保存しました",
+    "saveError": "保存に失敗しました",
+    "fetchError": "設定の取得に失敗しました",
+    "noData": "国コードがありません",
+    "deleteConfirm": "{code} を削除しますか？"
   }
 }

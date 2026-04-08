@@ -14,9 +14,11 @@ import {
   Shield,
   BookOpen,
   Tag,
+  Settings,
   ArrowLeft,
 } from "lucide-react"
 import { usePermissions } from "@/hooks/use-permissions"
+import { useAuth } from "@/hooks/use-auth"
 
 /** 菜单项类型 */
 interface MenuItem {
@@ -24,6 +26,7 @@ interface MenuItem {
   href: string
   icon: typeof LayoutDashboard
   permissions?: string[]
+  superuserOnly?: boolean
 }
 
 /** 侧边栏菜单键与路径映射 */
@@ -33,6 +36,7 @@ const MENU_KEYS: MenuItem[] = [
   { key: "groupManagement", href: "/admin/groups", icon: Shield, permissions: ["group:manage"] },
   { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
   { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },
+  { key: "settings", href: "/admin/settings", icon: Settings, superuserOnly: true },
 ]
 
 /** 后台管理侧边栏 */
@@ -40,10 +44,13 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const t = useTranslations("Admin")
   const { hasAnyPermission } = usePermissions()
+  const { user } = useAuth()
 
   /** 根据权限过滤菜单项 */
   const visibleItems = MENU_KEYS.filter(
-    (item) => !item.permissions || hasAnyPermission(...item.permissions)
+    (item) =>
+      (!item.permissions || hasAnyPermission(...item.permissions)) &&
+      (!item.superuserOnly || user?.is_superuser)
   )
 
   return (

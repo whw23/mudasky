@@ -105,7 +105,8 @@
     "articleManagement": "Artikelverwaltung",
     "groupManagement": "Gruppenverwaltung",
     "categoryManagement": "Kategorieverwaltung",
-    "placeholder": "In Vorbereitung"
+    "placeholder": "In Vorbereitung",
+    "settings": "Systemeinstellungen"
   },
   "User": {
     "title": "Benutzercenter",
@@ -343,5 +344,27 @@
     "createSuccess": "Erfolgreich erstellt",
     "updateSuccess": "Erfolgreich aktualisiert",
     "saveError": "Speichern fehlgeschlagen"
+  },
+  "AdminSettings": {
+    "title": "Systemeinstellungen",
+    "phoneCountryCodes": "Telefonländercodes",
+    "phoneCountryCodesDesc": "Verfügbare Telefonländercodes verwalten",
+    "code": "Code",
+    "codePlaceholder": "+86",
+    "country": "Flagge",
+    "countryPlaceholder": "🇨🇳",
+    "labelField": "Name",
+    "labelPlaceholder": "China",
+    "digits": "Ziffern",
+    "digitsPlaceholder": "11",
+    "add": "Hinzufügen",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "saving": "Speichern...",
+    "saveSuccess": "Erfolgreich gespeichert",
+    "saveError": "Speichern fehlgeschlagen",
+    "fetchError": "Konfiguration konnte nicht geladen werden",
+    "noData": "Keine Ländercodes",
+    "deleteConfirm": "{code} löschen?"
   }
 }
