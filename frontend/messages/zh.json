@@ -115,7 +115,8 @@
     "documents": "文档管理",
     "myArticles": "我的文章",
     "placeholder": "待实现",
-    "studentType": "学员",
+    "guestType": "游客",
+    "memberType": "会员",
     "staffType": "员工"
   },
   "Auth": {
@@ -251,7 +252,8 @@
   "AdminUsers": {
     "searchPlaceholder": "搜索用户名或手机号",
     "type_all": "全部",
-    "type_student": "学员",
+    "type_guest": "游客",
+    "type_member": "会员",
     "type_staff": "员工",
     "col_username": "用户名",
     "col_phone": "手机号",
@@ -292,7 +294,7 @@
     "forceLogoutSuccess": "已强制登出"
   },
   "Permissions": {
-    "student:manage": "管理学员",
+    "member:manage": "管理会员",
     "staff:manage": "管理内部员工",
     "group:manage": "管理权限组",
     "post:manage": "管理机构推文",

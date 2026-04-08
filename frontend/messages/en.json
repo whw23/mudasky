@@ -115,7 +115,8 @@
     "documents": "Documents",
     "myArticles": "My Articles",
     "placeholder": "Coming Soon",
-    "studentType": "Student",
+    "guestType": "Guest",
+    "memberType": "Member",
     "staffType": "Staff"
   },
   "Auth": {
@@ -251,7 +252,8 @@
   "AdminUsers": {
     "searchPlaceholder": "Search username or phone",
     "type_all": "All",
-    "type_student": "Student",
+    "type_guest": "Guest",
+    "type_member": "Member",
     "type_staff": "Staff",
     "col_username": "Username",
     "col_phone": "Phone",
@@ -292,7 +294,7 @@
     "forceLogoutSuccess": "User has been logged out"
   },
   "Permissions": {
-    "student:manage": "Manage Students",
+    "member:manage": "Manage Members",
     "staff:manage": "Manage Staff",
     "group:manage": "Manage Groups",
     "post:manage": "Manage Posts",

@@ -28,7 +28,7 @@ async def get_current_permissions(
 
 
 async def get_current_user_type(
-    x_user_type: str = Header("student"),
+    x_user_type: str = Header("guest"),
 ) -> str:
     """从网关注入的请求头获取当前用户类型。"""
     return x_user_type

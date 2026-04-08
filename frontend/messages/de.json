@@ -115,7 +115,8 @@
     "documents": "Dokumente",
     "myArticles": "Meine Artikel",
     "placeholder": "In Vorbereitung",
-    "studentType": "Student",
+    "guestType": "Gast",
+    "memberType": "Mitglied",
     "staffType": "Mitarbeiter"
   },
   "Auth": {
@@ -251,7 +252,8 @@
   "AdminUsers": {
     "searchPlaceholder": "Benutzername oder Telefon suchen",
     "type_all": "Alle",
-    "type_student": "Student",
+    "type_guest": "Gast",
+    "type_member": "Mitglied",
     "type_staff": "Mitarbeiter",
     "col_username": "Benutzername",
     "col_phone": "Telefon",
@@ -292,7 +294,7 @@
     "forceLogoutSuccess": "Benutzer wurde abgemeldet"
   },
   "Permissions": {
-    "student:manage": "Studenten verwalten",
+    "member:manage": "Mitglieder verwalten",
     "staff:manage": "Mitarbeiter verwalten",
     "group:manage": "Gruppen verwalten",
     "post:manage": "Beiträge verwalten",

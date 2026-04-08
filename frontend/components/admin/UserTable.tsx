@@ -19,7 +19,7 @@ interface UserTableProps {
 }
 
 /** 用户类型筛选选项 */
-const USER_TYPE_OPTIONS = ["all", "student", "staff"] as const
+const USER_TYPE_OPTIONS = ["all", "guest", "member", "staff"] as const
 
 /** 用户管理列表 */
 export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {

@@ -41,9 +41,9 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   const [newUserType, setNewUserType] = useState("")
   const [saving, setSaving] = useState(false)
 
-  const canManageStudent = hasPermission("student:manage")
+  const canManageMember = hasPermission("member:manage")
   const canManageStaff = hasPermission("staff:manage")
-  const canChangeType = canManageStudent && canManageStaff
+  const canChangeType = canManageMember && canManageStaff
 
   /** 加载用户详情 */
   const fetchUser = useCallback(async () => {
@@ -284,7 +284,8 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
                       onChange={(e) => setNewUserType(e.target.value)}
                       className="rounded-md border bg-background px-3 py-1.5 text-sm"
                     >
-                      <option value="student">{t("type_student")}</option>
+                      <option value="guest">{t("type_guest")}</option>
+                      <option value="member">{t("type_member")}</option>
                       <option value="staff">{t("type_staff")}</option>
                     </select>
                     <Button size="sm" disabled={saving} onClick={handleChangeType}>

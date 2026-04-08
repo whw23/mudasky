@@ -79,7 +79,6 @@ class AuthService:
             password_hash=password_hash,
         )
         user = await user_repo.create(self.session, user)
-        await self._assign_default_group(user.id)
         return user
 
     async def login(
@@ -179,18 +178,6 @@ class AuthService:
 
     # ---- 私有方法 ----
 
-    async def _assign_default_group(
-        self, user_id: str
-    ) -> None:
-        """为新用户分配默认权限组（student）。"""
-        student_group = await rbac_repo.get_group_by_name(
-            self.session, "student"
-        )
-        if student_group:
-            await rbac_repo.set_user_groups(
-                self.session, user_id, [student_group.id]
-            )
-
     async def _check_sms_rate_limit(self, phone: str) -> None:
         """检查短信发送频率限制。"""
         # 60 秒内不能重复发送
@@ -250,7 +237,6 @@ class AuthService:
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
-        await self._assign_default_group(user.id)
         return user
 
     async def _login_with_password(

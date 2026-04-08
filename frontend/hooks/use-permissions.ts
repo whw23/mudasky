@@ -9,7 +9,7 @@ import { useAuth } from './use-auth'
 
 /** 管理侧权限列表 */
 const ADMIN_PERMISSIONS = [
-  'student:manage',
+  'member:manage',
   'staff:manage',
   'group:manage',
   'post:manage',

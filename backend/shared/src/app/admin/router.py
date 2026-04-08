@@ -34,7 +34,7 @@ router = APIRouter(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -53,11 +53,12 @@ async def list_users(
 
     # 非超管且只有单一管理权限时，自动限定用户类型
     if not is_superuser:
-        has_student = "student:manage" in permissions
+        has_member = "member:manage" in permissions
         has_staff = "staff:manage" in permissions
-        if has_student and not has_staff:
-            user_type = "student"
-        elif has_staff and not has_student:
+        if has_member and not has_staff and not user_type:
+            # member:manage 可管理 member 和 guest，不限定具体类型
+            pass
+        elif has_staff and not has_member:
             user_type = "staff"
 
     svc = AdminService(session)
@@ -82,7 +83,7 @@ async def list_users(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -108,7 +109,7 @@ async def get_user(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -135,7 +136,7 @@ async def update_user(
     dependencies=[
         Depends(
             require_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -147,7 +148,7 @@ async def change_user_type(
     permissions: CurrentPermissions,
     is_superuser: IsSuperuser,
 ) -> UserResponse:
-    """修改用户类型（需同时拥有 student:manage 和 staff:manage）。"""
+    """修改用户类型（需同时拥有 member:manage 和 staff:manage）。"""
     svc = AdminService(session)
     target = await svc.get_user_model(user_id)
     await svc.check_target_permission(
@@ -162,7 +163,7 @@ async def change_user_type(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -190,7 +191,7 @@ async def reset_password(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],
@@ -219,7 +220,7 @@ async def assign_groups(
     dependencies=[
         Depends(
             require_any_permission(
-                "student:manage", "staff:manage"
+                "member:manage", "staff:manage"
             )
         )
     ],

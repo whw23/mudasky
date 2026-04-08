@@ -29,7 +29,7 @@ interface MenuItem {
 /** 侧边栏菜单键与路径映射 */
 const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["student:manage", "staff:manage"] },
+  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["member:manage", "staff:manage"] },
   { key: "groupManagement", href: "/admin/groups", icon: Shield, permissions: ["group:manage"] },
   { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
   { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },

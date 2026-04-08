@@ -39,7 +39,7 @@ class User(Base):
         String(64), nullable=True
     )
     user_type: Mapped[str] = mapped_column(
-        String(10), default="student", nullable=False
+        String(10), default="guest", nullable=False
     )
     is_superuser: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False

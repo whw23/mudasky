@@ -15,7 +15,7 @@ from app.user.models import User
 
 
 def _make_user(
-    user_type: str = "student",
+    user_type: str = "guest",
     is_superuser: bool = False,
     user_id: str = "user-1",
 ) -> User:
@@ -46,27 +46,33 @@ def service() -> AdminService:
 
 
 @pytest.mark.asyncio
-async def test_check_target_permission_student(service):
-    """拥有 student:manage 权限可以操作学生用户。"""
-    target = _make_user(user_type="student")
+async def test_check_target_permission_member(service):
+    """拥有 member:manage 权限可以操作会员和游客用户。"""
+    target_member = _make_user(user_type="member")
+    target_guest = _make_user(user_type="guest")
 
     # 不应抛出异常
     await service.check_target_permission(
-        target_user=target,
-        operator_permissions=["student:manage"],
+        target_user=target_member,
+        operator_permissions=["member:manage"],
+        is_superuser=False,
+    )
+    await service.check_target_permission(
+        target_user=target_guest,
+        operator_permissions=["member:manage"],
         is_superuser=False,
     )
 
 
 @pytest.mark.asyncio
 async def test_check_target_permission_staff_denied(service):
-    """student:manage 权限不能操作员工用户。"""
+    """member:manage 权限不能操作员工用户。"""
     target = _make_user(user_type="staff")
 
     with pytest.raises(ForbiddenException):
         await service.check_target_permission(
             target_user=target,
-            operator_permissions=["student:manage"],
+            operator_permissions=["member:manage"],
             is_superuser=False,
         )
 
@@ -106,11 +112,11 @@ async def test_change_user_type(
     mock_user_repo, mock_rbac_repo, service
 ):
     """修改用户类型为合法值。"""
-    user = _make_user(user_type="student", user_id="u1")
+    user = _make_user(user_type="guest", user_id="u1")
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_user_repo.update = AsyncMock()
     mock_rbac_repo.get_user_permissions = AsyncMock(
-        return_value=["student:manage"]
+        return_value=["member:manage"]
     )
     mock_rbac_repo.get_user_group_ids = AsyncMock(
         return_value=["g1"]

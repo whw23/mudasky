@@ -21,7 +21,7 @@ SUPERUSER_PASSWORD = "mudasky@12321."
 
 # 系统权限定义
 PERMISSIONS = [
-    ("student:manage", "管理学员"),
+    ("member:manage", "管理会员"),
     ("staff:manage", "管理内部员工"),
     ("group:manage", "管理权限组"),
     ("post:manage", "管理机构推文"),
@@ -53,11 +53,11 @@ GROUPS = [
         "留学顾问",
         True,
         False,
-        ["student:manage", "blog:manage", "document:manage"],
+        ["member:manage", "blog:manage", "document:manage"],
     ),
     (
-        "student",
-        "学员",
+        "member",
+        "会员",
         True,
         False,
         ["blog:write", "document:upload"],

@@ -37,7 +37,7 @@ class UserTypeChange(BaseModel):
     """修改用户类型请求。"""
 
     user_type: str = Field(
-        ..., description="用户类型（student 或 staff）"
+        ..., description="用户类型（guest、member 或 staff）"
     )
 
 

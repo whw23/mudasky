@@ -115,7 +115,8 @@
     "documents": "ドキュメント管理",
     "myArticles": "マイ記事",
     "placeholder": "準備中",
-    "studentType": "学生",
+    "guestType": "ゲスト",
+    "memberType": "会員",
     "staffType": "スタッフ"
   },
   "Auth": {
@@ -251,7 +252,8 @@
   "AdminUsers": {
     "searchPlaceholder": "ユーザー名または電話番号を検索",
     "type_all": "すべて",
-    "type_student": "学生",
+    "type_guest": "ゲスト",
+    "type_member": "会員",
     "type_staff": "スタッフ",
     "col_username": "ユーザー名",
     "col_phone": "電話番号",
@@ -292,7 +294,7 @@
     "forceLogoutSuccess": "強制ログアウトしました"
   },
   "Permissions": {
-    "student:manage": "学生管理",
+    "member:manage": "会員管理",
     "staff:manage": "スタッフ管理",
     "group:manage": "グループ管理",
     "post:manage": "投稿管理",

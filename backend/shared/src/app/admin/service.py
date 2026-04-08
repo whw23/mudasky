@@ -128,9 +128,9 @@ class AdminService:
         self, user_id: str, new_type: str
     ) -> UserResponse:
         """修改用户类型。"""
-        if new_type not in ("student", "staff"):
+        if new_type not in ("guest", "member", "staff"):
             raise ForbiddenException(
-                message="用户类型只能是 student 或 staff"
+                message="用户类型只能是 guest、member 或 staff"
             )
 
         user = await user_repo.get_by_id(
@@ -197,10 +197,10 @@ class AdminService:
                 message="不能管理超级管理员"
             )
 
-        if target_user.user_type == "student":
-            if "student:manage" not in operator_permissions:
+        if target_user.user_type in ("member", "guest"):
+            if "member:manage" not in operator_permissions:
                 raise ForbiddenException(
-                    message="没有管理学生的权限"
+                    message="没有管理会员的权限"
                 )
         elif target_user.user_type == "staff":
             if "staff:manage" not in operator_permissions:
