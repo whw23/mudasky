@@ -22,9 +22,8 @@ export function UserSidebar() {
   const t = useTranslations("User")
 
   return (
-    <aside className="w-60 shrink-0 border-r bg-gray-50">
-      <div className="p-4">
-        <Link
+    <div className="p-4">
+      <Link
           href="/"
           className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
         >
@@ -52,7 +51,6 @@ export function UserSidebar() {
             )
           })}
         </nav>
-      </div>
-    </aside>
+    </div>
   )
 }

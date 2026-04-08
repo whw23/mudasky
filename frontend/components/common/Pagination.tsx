@@ -27,11 +27,11 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         onClick={() => onPageChange(page - 1)}
       >
         <ChevronLeft className="size-4" />
-        {t("prev")}
+        <span className="hidden md:inline">{t("prev")}</span>
       </Button>
 
-      <span className="px-3 text-sm text-muted-foreground">
-        {t("pageInfo", { page, totalPages })}
+      <span className="px-2 md:px-3 text-xs md:text-sm text-muted-foreground">
+        {page} / {totalPages}
       </span>
 
       <Button
@@ -40,7 +40,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
       >
-        {t("next")}
+        <span className="hidden md:inline">{t("next")}</span>
         <ChevronRight className="size-4" />
       </Button>
     </div>
