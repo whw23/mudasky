@@ -14,6 +14,7 @@ class CountryCodeItem(BaseModel):
     country: str = Field(..., description="国旗 emoji,如 🇨🇳")
     label: str = Field(..., description="国家名称,如 中国")
     digits: int = Field(..., ge=6, le=15, description="号码位数")
+    enabled: bool = Field(True, description="是否启用")
 
     @field_validator("code")
     @classmethod

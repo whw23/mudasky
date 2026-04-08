@@ -349,6 +349,7 @@
     "title": "システム設定",
     "phoneCountryCodes": "電話番号の国コード",
     "phoneCountryCodesDesc": "ユーザーが選択できる国コードを管理",
+    "enabled": "有効",
     "code": "国コード",
     "codePlaceholder": "+86",
     "country": "国旗",

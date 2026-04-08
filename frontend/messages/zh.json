@@ -349,6 +349,7 @@
     "title": "系统设置",
     "phoneCountryCodes": "手机号国家码",
     "phoneCountryCodesDesc": "管理用户可选的手机号国家码",
+    "enabled": "启用",
     "code": "区号",
     "codePlaceholder": "+86",
     "country": "旗帜",

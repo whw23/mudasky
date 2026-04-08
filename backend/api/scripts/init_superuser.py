@@ -173,14 +173,14 @@ async def init_system_config(session) -> None:
         session.add(SystemConfig(
             key="phone_country_codes",
             value=[
-                {"code": "+86", "country": "🇨🇳", "label": "中国", "digits": 11},
-                {"code": "+81", "country": "🇯🇵", "label": "日本", "digits": 10},
-                {"code": "+49", "country": "🇩🇪", "label": "德国", "digits": 10},
-                {"code": "+65", "country": "🇸🇬", "label": "新加坡", "digits": 8},
-                {"code": "+1", "country": "🇺🇸", "label": "US/CA", "digits": 10},
-                {"code": "+44", "country": "🇬🇧", "label": "英国", "digits": 10},
-                {"code": "+82", "country": "🇰🇷", "label": "韩国", "digits": 10},
-                {"code": "+33", "country": "🇫🇷", "label": "法国", "digits": 9},
+                {"code": "+86", "country": "🇨🇳", "label": "中国", "digits": 11, "enabled": True},
+                {"code": "+81", "country": "🇯🇵", "label": "日本", "digits": 10, "enabled": False},
+                {"code": "+49", "country": "🇩🇪", "label": "德国", "digits": 10, "enabled": False},
+                {"code": "+65", "country": "🇸🇬", "label": "新加坡", "digits": 8, "enabled": False},
+                {"code": "+1", "country": "🇺🇸", "label": "US/CA", "digits": 10, "enabled": False},
+                {"code": "+44", "country": "🇬🇧", "label": "英国", "digits": 10, "enabled": False},
+                {"code": "+82", "country": "🇰🇷", "label": "韩国", "digits": 10, "enabled": False},
+                {"code": "+33", "country": "🇫🇷", "label": "法国", "digits": 9, "enabled": False},
             ],
             description="启用的手机号国家码列表",
         ))

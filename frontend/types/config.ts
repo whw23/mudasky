@@ -8,4 +8,5 @@ export interface CountryCode {
   country: string
   label: string
   digits: number
+  enabled: boolean
 }

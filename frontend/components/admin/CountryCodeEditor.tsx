@@ -36,7 +36,7 @@ export function CountryCodeEditor() {
   }, [t])
 
   /** 更新某行某字段 */
-  function updateItem(index: number, field: keyof CountryCode, value: string | number): void {
+  function updateItem(index: number, field: keyof CountryCode, value: string | number | boolean): void {
     setItems((prev) => prev.map((item, i) =>
       i === index ? { ...item, [field]: value } : item
     ))
@@ -44,7 +44,7 @@ export function CountryCodeEditor() {
 
   /** 添加空行 */
   function addItem(): void {
-    setItems((prev) => [...prev, { code: '+', country: '', label: '', digits: 10 }])
+    setItems((prev) => [...prev, { code: '+', country: '', label: '', digits: 10, enabled: true }])
   }
 
   /** 删除行 */
@@ -81,7 +81,8 @@ export function CountryCodeEditor() {
         ) : (
           <div className="space-y-2">
             {/* 表头 */}
-            <div className="grid grid-cols-[100px_80px_1fr_80px_40px] gap-2 text-xs font-medium text-muted-foreground">
+            <div className="grid grid-cols-[50px_100px_80px_1fr_80px_40px] gap-2 text-xs font-medium text-muted-foreground">
+              <span>{t('enabled')}</span>
               <span>{t('code')}</span>
               <span>{t('country')}</span>
               <span>{t('labelField')}</span>
@@ -90,7 +91,13 @@ export function CountryCodeEditor() {
             </div>
             {/* 数据行 */}
             {items.map((item, i) => (
-              <div key={i} className="grid grid-cols-[100px_80px_1fr_80px_40px] gap-2 items-center">
+              <div key={i} className="grid grid-cols-[50px_100px_80px_1fr_80px_40px] gap-2 items-center">
+                <input
+                  type="checkbox"
+                  checked={item.enabled}
+                  onChange={(e) => updateItem(i, 'enabled', e.target.checked)}
+                  className="size-4 accent-primary"
+                />
                 <Input
                   value={item.code}
                   onChange={(e) => updateItem(i, 'code', e.target.value)}

@@ -11,7 +11,7 @@ import type { CountryCode } from '@/types/config'
 
 /** 默认国家码（兜底） */
 const DEFAULT_COUNTRY_CODES: CountryCode[] = [
-  { code: '+86', country: '🇨🇳', label: '中国', digits: 11 },
+  { code: '+86', country: '🇨🇳', label: '中国', digits: 11, enabled: true },
 ]
 
 interface ConfigContextType {
@@ -31,7 +31,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     api.get('/config/phone_country_codes')
       .then((res) => {
         if (Array.isArray(res.data.value)) {
-          setCountryCodes(res.data.value)
+          const enabled = res.data.value.filter((c: CountryCode) => c.enabled)
+          setCountryCodes(enabled.length > 0 ? enabled : DEFAULT_COUNTRY_CODES)
         }
       })
       .catch(() => {

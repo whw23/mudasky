@@ -349,6 +349,7 @@
     "title": "Systemeinstellungen",
     "phoneCountryCodes": "Telefonländercodes",
     "phoneCountryCodesDesc": "Verfügbare Telefonländercodes verwalten",
+    "enabled": "An",
     "code": "Code",
     "codePlaceholder": "+86",
     "country": "Flagge",
