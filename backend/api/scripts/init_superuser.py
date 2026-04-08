@@ -131,7 +131,10 @@ async def init_superuser(session) -> None:
     existing = result.scalar_one_or_none()
 
     if existing:
-        logger.info("超级管理员已存在，跳过创建")
+        # 确保密码与配置一致（Docker/本地环境切换时 hash 可能不兼容）
+        existing.password_hash = hash_password(SUPERUSER_PASSWORD)
+        await session.flush()
+        logger.info("超级管理员已存在，密码已同步")
         return
 
     superuser = User(
