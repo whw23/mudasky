@@ -87,7 +87,7 @@ export function PhoneInput({
   const maxDigits = currentCountry?.digits ?? 10
 
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-1.5 w-full">
       <select
         value={countryCode}
         onChange={(e) => handleCodeChange(e.target.value)}

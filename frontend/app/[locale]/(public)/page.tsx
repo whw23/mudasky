@@ -63,7 +63,7 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-8 md:grid-cols-4">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-3xl font-bold text-foreground">
+              <div className="text-2xl md:text-3xl font-bold text-foreground">
                 {stat.value}
               </div>
               <div className="mt-1 text-sm text-muted-foreground">
@@ -75,12 +75,12 @@ export default async function HomePage() {
       </section>
 
       {/* 关于我们 */}
-      <section className="mx-auto max-w-7xl px-4 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <div className="text-center">
           <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {t("aboutUsTag")}
           </h2>
-          <h3 className="mt-2 text-3xl font-bold">{t("aboutUsTitle")}</h3>
+          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("aboutUsTitle")}</h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
         <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">
@@ -89,13 +89,13 @@ export default async function HomePage() {
       </section>
 
       {/* 精选服务 */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-10 md:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="text-center">
             <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {t("servicesTag")}
             </h2>
-            <h3 className="mt-2 text-3xl font-bold">{t("servicesTitle")}</h3>
+            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("servicesTitle")}</h3>
             <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -122,15 +122,15 @@ export default async function HomePage() {
       </section>
 
       {/* 热门留学国家 */}
-      <section className="mx-auto max-w-7xl px-4 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <div className="text-center">
           <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {t("destinationsTag")}
           </h2>
-          <h3 className="mt-2 text-3xl font-bold">{t("destinationsTitle")}</h3>
+          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("destinationsTitle")}</h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
           {countries.map((country) => (
             <div
               key={country.key}
@@ -154,14 +154,14 @@ export default async function HomePage() {
       </section>
 
       {/* 最新资讯 */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-10 md:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 {t("newsTag")}
               </h2>
-              <h3 className="mt-2 text-3xl font-bold">{t("newsTitle")}</h3>
+              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("newsTitle")}</h3>
             </div>
             <Link
               href="/news"
@@ -190,9 +190,9 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t bg-white py-16">
+      <section className="border-t bg-white py-10 md:py-16">
         <div className="mx-auto max-w-7xl px-4 text-center">
-          <h3 className="text-3xl font-bold">{t("ctaTitle")}</h3>
+          <h3 className="text-2xl md:text-3xl font-bold">{t("ctaTitle")}</h3>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
             {t("ctaDescription")}
           </p>
