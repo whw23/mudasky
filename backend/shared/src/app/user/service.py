@@ -102,9 +102,22 @@ class UserService:
     ) -> User:
         """修改用户手机号。
 
-        检查新手机号唯一性。验证码校验由上层处理。
+        通过短信验证码验证新手机号后修改。
         """
         user = await self.get_user(user_id)
+        # 校验验证码
+        sms_code = await auth_repo.get_latest_sms_code(
+            self.session, data.new_phone
+        )
+        if not sms_code:
+            raise UnauthorizedException(message="验证码无效或已过期")
+        sms_code.attempts += 1
+        if sms_code.code != data.code:
+            await self.session.commit()
+            raise UnauthorizedException(message="验证码不正确")
+        sms_code.is_used = True
+        await self.session.commit()
+        # 检查唯一性
         existing = await repository.get_by_phone(
             self.session, data.new_phone
         )
