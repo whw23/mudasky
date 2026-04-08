@@ -21,8 +21,19 @@ services:
       - "3000:3000"
     environment:
       - CI=true
-      - WATCHPACK_POLLING=true
-    command: ["sh", "-c", "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev --hostname 0.0.0.0"]
+    command: ["sh", "-c", "corepack enable && corepack prepare pnpm@latest --activate && pnpm approve-builds @parcel/watcher @swc/core && pnpm install && rm -rf .next && pnpm dev --hostname 0.0.0.0"]
+    volumes:
+      - ./frontend/app:/app/app
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+      - ./frontend/hooks:/app/hooks
+      - ./frontend/contexts:/app/contexts
+      - ./frontend/types:/app/types
+      - ./frontend/i18n:/app/i18n
+      - ./frontend/messages:/app/messages
+      - ./frontend/public:/app/public
+      - ./frontend/next.config.ts:/app/next.config.ts
+      - ./frontend/proxy.ts:/app/proxy.ts
     develop:
       watch:
         - action: sync
