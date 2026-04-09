@@ -119,7 +119,8 @@ async def get_university(
     svc = UniversityService(session)
     university = await svc.get_university(university_id)
     result = UniversityResponse.model_validate(university)
-    seed = f"uni:{university_id}:{university.updated_at.isoformat()}"
+    ts = university.updated_at.isoformat() if university.updated_at else ""
+    seed = f"uni:{university_id}:{ts}"
     if set_cache_headers(response, seed, 3600, if_none_match):
         return response  # type: ignore[return-value]
     return result

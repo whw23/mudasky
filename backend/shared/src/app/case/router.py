@@ -75,7 +75,8 @@ async def get_case(
     svc = CaseService(session)
     case = await svc.get_case(case_id)
     result = CaseResponse.model_validate(case)
-    seed = f"case:{case_id}:{case.updated_at.isoformat()}"
+    ts = case.updated_at.isoformat() if case.updated_at else ""
+    seed = f"case:{case_id}:{ts}"
     if set_cache_headers(response, seed, 1800, if_none_match):
         return response  # type: ignore[return-value]
     return result
