@@ -80,8 +80,6 @@ end
 
 -- 注入请求头（强制覆盖，防伪造）
 ngx.req.set_header("X-User-Id", payload.sub)
-ngx.req.set_header("X-User-Type", payload.user_type or "student")
-ngx.req.set_header("X-Is-Superuser", tostring(payload.is_superuser or false))
 
 -- permissions 数组转逗号分隔字符串
 local perms = payload.permissions or {}
