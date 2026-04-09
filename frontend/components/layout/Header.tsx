@@ -13,6 +13,7 @@ import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 
 /** 导航菜单键与路径映射 */
@@ -35,7 +36,12 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href)
 }
 
-export function Header() {
+interface HeaderProps {
+  editable?: boolean
+  onEdit?: (section: string) => void
+}
+
+export function Header({ editable, onEdit }: HeaderProps) {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
@@ -44,6 +50,16 @@ export function Header() {
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
+  /** 将内容包裹在可编辑叠加层中 */
+  function wrapEditable(content: React.ReactNode, section: string, label: string) {
+    if (!editable) return content
+    return (
+      <EditableOverlay onClick={() => onEdit?.(section)} label={label}>
+        {content}
+      </EditableOverlay>
+    )
+  }
 
   /** 监听滚动，滚动后启用毛玻璃背景 */
   useEffect(() => {
@@ -71,21 +87,33 @@ export function Header() {
       <div className="text-foreground/60">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs">
           {/* 左侧：标语（桌面）/ 品牌名（移动） */}
-          <span className="hidden md:inline tracking-wide">
-            {siteInfo.tagline || tHeader("tagline")}
-          </span>
-          <span className="md:hidden font-medium text-foreground/70">
-            {siteInfo.brand_name || tHeader("brandName")}
-          </span>
+          {wrapEditable(
+            <span className="hidden md:inline tracking-wide">
+              {siteInfo.tagline || tHeader("tagline")}
+            </span>,
+            "tagline",
+            "编辑标语"
+          )}
+          {wrapEditable(
+            <span className="md:hidden font-medium text-foreground/70">
+              {siteInfo.brand_name || tHeader("brandName")}
+            </span>,
+            "brand",
+            "编辑品牌名称"
+          )}
 
           <div className="flex items-center gap-3 md:gap-4">
             {/* 热线电话（仅桌面） */}
-            <span className="hidden md:flex items-center gap-1.5">
-              <Phone className="size-3" />
-              {siteInfo.hotline
-                ? `服务热线：${siteInfo.hotline} | ${siteInfo.hotline_contact}`
-                : tHeader("hotline")}
-            </span>
+            {wrapEditable(
+              <span className="hidden md:flex items-center gap-1.5">
+                <Phone className="size-3" />
+                {siteInfo.hotline
+                  ? `服务热线：${siteInfo.hotline} | ${siteInfo.hotline_contact}`
+                  : tHeader("hotline")}
+              </span>,
+              "hotline",
+              "编辑热线"
+            )}
 
             <LocaleSwitcher />
 
@@ -135,12 +163,16 @@ export function Header() {
       <nav>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* 品牌名 */}
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-wide text-foreground"
-          >
-            {siteInfo.brand_name || tHeader("brandName")}
-          </Link>
+          {wrapEditable(
+            <Link
+              href="/"
+              className="text-lg font-bold tracking-wide text-foreground"
+            >
+              {siteInfo.brand_name || tHeader("brandName")}
+            </Link>,
+            "brand",
+            "编辑品牌名称"
+          )}
 
           {/* 桌面导航 */}
           <ul className="hidden md:flex items-center gap-0.5">
