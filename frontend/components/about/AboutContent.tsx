@@ -3,64 +3,107 @@
 /**
  * 关于页面动态内容区块。
  * 从系统配置获取公司历史、使命、愿景和合作内容。
+ * 编辑模式下支持点击编辑各区块。
  */
 
 import { useTranslations } from 'next-intl'
 import { Award, Globe } from 'lucide-react'
-import { useConfig } from '@/contexts/ConfigContext'
+import { useLocalizedConfig } from '@/contexts/ConfigContext'
+import { EditableOverlay } from '@/components/admin/EditableOverlay'
+
+interface EditableProps {
+  editable?: boolean
+  onEdit?: () => void
+}
 
 /** 公司历史区块 */
-export function HistorySection() {
+export function HistorySection({ editable, onEdit }: EditableProps) {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
 
-  return (
+  const content = (
     <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">
       {aboutInfo.history || t('historyContent')}
     </p>
   )
+
+  if (editable) {
+    return (
+      <EditableOverlay onClick={() => onEdit?.()} label="编辑公司历史">
+        {content}
+      </EditableOverlay>
+    )
+  }
+
+  return content
 }
 
 /** 使命愿景区块 */
-export function MissionVisionSection() {
+export function MissionVisionSection({ editable, onEdit }: EditableProps) {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
+
+  const missionContent = (
+    <div className="rounded-lg border bg-white p-8">
+      <Award className="h-10 w-10 text-primary" />
+      <h3 className="mt-4 text-xl font-bold">{t('missionTitle')}</h3>
+      <p className="mt-3 leading-relaxed text-muted-foreground">
+        {aboutInfo.mission || t('missionContent')}
+      </p>
+    </div>
+  )
+
+  const visionContent = (
+    <div className="rounded-lg border bg-white p-8">
+      <Globe className="h-10 w-10 text-primary" />
+      <h3 className="mt-4 text-xl font-bold">{t('visionTitle')}</h3>
+      <p className="mt-3 leading-relaxed text-muted-foreground">
+        {aboutInfo.vision || t('visionContent')}
+      </p>
+    </div>
+  )
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <div className="rounded-lg border bg-white p-8">
-        <Award className="h-10 w-10 text-primary" />
-        <h3 className="mt-4 text-xl font-bold">{t('missionTitle')}</h3>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          {aboutInfo.mission || t('missionContent')}
-        </p>
-      </div>
-      <div className="rounded-lg border bg-white p-8">
-        <Globe className="h-10 w-10 text-primary" />
-        <h3 className="mt-4 text-xl font-bold">{t('visionTitle')}</h3>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          {aboutInfo.vision || t('visionContent')}
-        </p>
-      </div>
+      {editable ? (
+        <EditableOverlay onClick={() => onEdit?.()} label="编辑使命与愿景">
+          {missionContent}
+        </EditableOverlay>
+      ) : missionContent}
+      {editable ? (
+        <EditableOverlay onClick={() => onEdit?.()} label="编辑使命与愿景">
+          {visionContent}
+        </EditableOverlay>
+      ) : visionContent}
     </div>
   )
 }
 
 /** 合作介绍区块 */
-export function PartnershipSection() {
+export function PartnershipSection({ editable, onEdit }: EditableProps) {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
 
-  return (
+  const content = (
     <p className="leading-relaxed text-muted-foreground">
       {aboutInfo.partnership || t('partnershipContent')}
     </p>
   )
+
+  if (editable) {
+    return (
+      <EditableOverlay onClick={() => onEdit?.()} label="编辑合作介绍">
+        {content}
+      </EditableOverlay>
+    )
+  }
+
+  return content
 }
 
 /** 关于页面统计区块 */
 export function AboutStatsSection() {
-  const { homepageStats } = useConfig()
+  const { homepageStats } = useLocalizedConfig()
 
   return (
     <section className="border-y bg-white">

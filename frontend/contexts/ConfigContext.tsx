@@ -6,7 +6,9 @@
  */
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useLocale } from 'next-intl'
 import api from '@/lib/api'
+import { getLocalizedValue } from '@/lib/i18n-config'
 import type { CountryCode, ContactInfo, SiteInfo, HomepageStat, AboutInfo } from '@/types/config'
 
 /** 默认国家码（兜底） */
@@ -26,7 +28,6 @@ const DEFAULT_CONTACT_INFO: ContactInfo = {
 /** 默认品牌信息（兜底） */
 const DEFAULT_SITE_INFO: SiteInfo = {
   brand_name: '慕大国际教育',
-  brand_name_en: 'MUTU International Education',
   tagline: '慕大国际教育 \u00B7 专注国际教育 专注出国服务',
   hotline: '189-1268-6656',
   hotline_contact: '吴老师',
@@ -133,7 +134,67 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   )
 }
 
-/** 获取系统配置 */
+/** 获取系统配置（原始数据，编辑用） */
 export function useConfig(): ConfigContextType {
   return useContext(ConfigContext)
+}
+
+/** 已解析语言的配置类型（展示用） */
+interface LocalizedConfigType {
+  countryCodes: CountryCode[]
+  siteInfo: {
+    brand_name: string
+    tagline: string
+    hotline: string
+    hotline_contact: string
+    logo_url: string
+    favicon_url: string
+    wechat_qr_url: string
+    icp_filing: string
+  }
+  contactInfo: {
+    address: string
+    phone: string
+    email: string
+    wechat: string
+    office_hours: string
+  }
+  homepageStats: { value: string; label: string }[]
+  aboutInfo: {
+    history: string
+    mission: string
+    vision: string
+    partnership: string
+  }
+}
+
+/** 获取已解析为当前语言的配置（展示用） */
+export function useLocalizedConfig(): LocalizedConfigType {
+  const config = useConfig()
+  const locale = useLocale()
+
+  return {
+    countryCodes: config.countryCodes,
+    siteInfo: {
+      ...config.siteInfo,
+      brand_name: getLocalizedValue(config.siteInfo.brand_name, locale),
+      tagline: getLocalizedValue(config.siteInfo.tagline, locale),
+      hotline_contact: getLocalizedValue(config.siteInfo.hotline_contact, locale),
+    },
+    contactInfo: {
+      ...config.contactInfo,
+      address: getLocalizedValue(config.contactInfo.address, locale),
+      office_hours: getLocalizedValue(config.contactInfo.office_hours, locale),
+    },
+    homepageStats: config.homepageStats.map((s) => ({
+      ...s,
+      label: getLocalizedValue(s.label, locale),
+    })),
+    aboutInfo: {
+      history: getLocalizedValue(config.aboutInfo.history, locale),
+      mission: getLocalizedValue(config.aboutInfo.mission, locale),
+      vision: getLocalizedValue(config.aboutInfo.vision, locale),
+      partnership: getLocalizedValue(config.aboutInfo.partnership, locale),
+    },
+  }
 }

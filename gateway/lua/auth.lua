@@ -28,6 +28,21 @@ if rate_limit.is_limited(client_ip, method, uri) then
   reject(429, "TOO_MANY_REQUESTS")
 end
 
+-- 从 Cookie 读取语言偏好，注入 X-User-Locale（公开路由也需要）
+local locale = "zh"
+local cookie_str = ngx.var.http_cookie
+if cookie_str then
+  for pair in string.gmatch(cookie_str, "[^;]+") do
+    local trimmed = string.gsub(pair, "^%s+", "")
+    local k, v = string.match(trimmed, "^(.-)=(.+)$")
+    if k == "NEXT_INTL_LOCALE" then
+      locale = v
+      break
+    end
+  end
+end
+ngx.req.set_header("X-User-Locale", locale)
+
 -- 公开路由放行
 if config.is_public(method, uri) then
   return
