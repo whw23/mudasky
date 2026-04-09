@@ -1,4 +1,6 @@
 import { Banner } from "@/components/layout/Banner"
+import { ArticleSection } from "@/components/content/ArticleSection"
+import { fetchArticlesByCategorySlug } from "@/lib/content-api"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import {
@@ -13,6 +15,9 @@ import {
 export default async function StudyAbroadPage() {
   const p = await getTranslations("Pages")
   const t = await getTranslations("StudyAbroad")
+  const n = await getTranslations("News")
+
+  const articles = await fetchArticlesByCategorySlug("study-abroad")
 
   const programs = [
     {
@@ -149,6 +154,14 @@ export default async function StudyAbroadPage() {
           ))}
         </div>
       </section>
+
+      {/* 相关文章 */}
+      <ArticleSection
+        articles={articles}
+        title={n("relatedArticles")}
+        emptyText={n("noContent")}
+        readMoreText={n("readMore")}
+      />
 
       {/* CTA */}
       <section className="bg-gray-50 py-10 md:py-16">

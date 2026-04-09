@@ -1,4 +1,6 @@
 import { Banner } from "@/components/layout/Banner"
+import { ArticleSection } from "@/components/content/ArticleSection"
+import { fetchArticlesByCategorySlug } from "@/lib/content-api"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import {
@@ -13,6 +15,9 @@ import {
 export default async function RequirementsPage() {
   const p = await getTranslations("Pages")
   const t = await getTranslations("Requirements")
+  const n = await getTranslations("News")
+
+  const articles = await fetchArticlesByCategorySlug("requirements")
 
   const steps = [
     { num: "01", title: t("step1.title"), desc: t("step1.desc") },
@@ -180,6 +185,14 @@ export default async function RequirementsPage() {
           </div>
         </div>
       </section>
+
+      {/* 相关文章 */}
+      <ArticleSection
+        articles={articles}
+        title={n("relatedArticles")}
+        emptyText={n("noContent")}
+        readMoreText={n("readMore")}
+      />
 
       {/* CTA */}
       <section className="border-t bg-white py-10 md:py-16">
