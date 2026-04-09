@@ -1,7 +1,7 @@
 """RBAC 权限领域业务逻辑层。
 
-处理权限查询、权限组管理、用户权限分配等业务。
-用户与权限组为一对多关系。
+处理权限查询、角色管理、用户权限分配等业务。
+用户与角色为一对多关系。
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,13 +12,16 @@ from app.core.exceptions import (
     NotFoundException,
 )
 from app.rbac import repository
-from app.rbac.models import PermissionGroup
+from app.rbac.models import Role
 from app.rbac.schemas import (
-    GroupCreate,
-    GroupResponse,
-    GroupUpdate,
     PermissionResponse,
+    RoleCreate,
+    RoleResponse,
+    RoleUpdate,
 )
+
+# 受保护的角色名称，不允许删除
+PROTECTED_ROLE_NAMES = {"superuser", "visitor"}
 
 
 class RbacService:
@@ -35,79 +38,76 @@ class RbacService:
             PermissionResponse.model_validate(p) for p in perms
         ]
 
-    async def list_groups(self) -> list[GroupResponse]:
-        """查询所有权限组，包含权限和用户数量。"""
-        rows = await repository.list_groups(self.session)
-        result: list[GroupResponse] = []
-        for group, user_count in rows:
-            resp = GroupResponse.model_validate(group)
+    async def list_roles(self) -> list[RoleResponse]:
+        """查询所有角色，包含权限和用户数量。"""
+        rows = await repository.list_roles(self.session)
+        result: list[RoleResponse] = []
+        for role, user_count in rows:
+            resp = RoleResponse.model_validate(role)
             resp.user_count = user_count
             result.append(resp)
         return result
 
-    async def get_group(self, group_id: str) -> GroupResponse:
-        """查询权限组详情，不存在则抛出异常。"""
-        group = await repository.get_group_by_id(
-            self.session, group_id
+    async def get_role(self, role_id: str) -> RoleResponse:
+        """查询角色详情，不存在则抛出异常。"""
+        role = await repository.get_role_by_id(
+            self.session, role_id
         )
-        if not group:
-            raise NotFoundException(message="权限组不存在")
-        return GroupResponse.model_validate(group)
+        if not role:
+            raise NotFoundException(message="角色不存在")
+        return RoleResponse.model_validate(role)
 
-    async def create_group(
-        self, data: GroupCreate
-    ) -> GroupResponse:
-        """创建权限组。
+    async def create_role(
+        self, data: RoleCreate
+    ) -> RoleResponse:
+        """创建角色。
 
         检查名称唯一性，关联指定权限。
         """
-        existing = await repository.get_group_by_name(
+        existing = await repository.get_role_by_name(
             self.session, data.name
         )
         if existing:
-            raise ConflictException(message="权限组名称已存在")
+            raise ConflictException(message="角色名称已存在")
 
         permissions = await repository.get_permissions_by_ids(
             self.session, data.permission_ids
         )
 
-        group = PermissionGroup(
+        role = Role(
             name=data.name,
             description=data.description,
             permissions=permissions,
         )
-        await repository.create_group(self.session, group)
-        return GroupResponse.model_validate(group)
+        await repository.create_role(self.session, role)
+        return RoleResponse.model_validate(role)
 
-    async def update_group(
-        self, group_id: str, data: GroupUpdate
-    ) -> GroupResponse:
-        """更新权限组。
-
-        系统权限组不允许修改名称。
-        """
-        group = await repository.get_group_by_id(
-            self.session, group_id
+    async def update_role(
+        self, role_id: str, data: RoleUpdate
+    ) -> RoleResponse:
+        """更新角色。"""
+        role = await repository.get_role_by_id(
+            self.session, role_id
         )
-        if not group:
-            raise NotFoundException(message="权限组不存在")
+        if not role:
+            raise NotFoundException(message="角色不存在")
 
         if data.name is not None:
-            if group.is_system:
+            if role.name in PROTECTED_ROLE_NAMES:
                 raise ForbiddenException(
-                    message="系统权限组不允许修改名称"
+                    message="受保护角色不允许修改名称"
                 )
-            existing = await repository.get_group_by_name(
+            existing = await repository.get_role_by_name(
                 self.session, data.name
             )
-            if existing and existing.id != group_id:
+            if existing and existing.id != role_id:
                 raise ConflictException(
-                    message="权限组名称已存在"
+                    message="角色名称已存在"
                 )
-            group.name = data.name
+            role.name = data.name
 
         if data.description is not None:
-            group.description = data.description
+            role.description = data.description
 
         if data.permission_ids is not None:
             permissions = (
@@ -115,26 +115,26 @@ class RbacService:
                     self.session, data.permission_ids
                 )
             )
-            group.permissions = permissions
+            role.permissions = permissions
 
-        await repository.update_group(self.session, group)
-        return GroupResponse.model_validate(group)
+        await repository.update_role(self.session, role)
+        return RoleResponse.model_validate(role)
 
-    async def delete_group(self, group_id: str) -> None:
-        """删除权限组。
+    async def delete_role(self, role_id: str) -> None:
+        """删除角色。
 
-        系统权限组不允许删除。
+        受保护角色（superuser、visitor）不允许删除。
         """
-        group = await repository.get_group_by_id(
-            self.session, group_id
+        role = await repository.get_role_by_id(
+            self.session, role_id
         )
-        if not group:
-            raise NotFoundException(message="权限组不存在")
-        if group.is_system:
+        if not role:
+            raise NotFoundException(message="角色不存在")
+        if role.name in PROTECTED_ROLE_NAMES:
             raise ForbiddenException(
-                message="系统权限组不允许删除"
+                message="受保护角色不允许删除"
             )
-        await repository.delete_group(self.session, group_id)
+        await repository.delete_role(self.session, role_id)
 
     async def get_user_permissions(
         self, user_id: str
@@ -144,42 +144,29 @@ class RbacService:
             self.session, user_id
         )
 
-    async def get_user_group_id(
+    async def get_user_role_id(
         self, user_id: str
     ) -> str | None:
-        """查询用户所属权限组 ID。"""
-        return await repository.get_user_group_id(
+        """查询用户所属角色 ID。"""
+        return await repository.get_user_role_id(
             self.session, user_id
         )
 
-    async def assign_user_group(
+    async def assign_user_role(
         self,
         user_id: str,
-        group_id: str | None,
-        operator_permissions: list[str],
-        is_superuser: bool,
+        role_id: str | None,
     ) -> None:
-        """分配用户权限组（单个）。
-
-        非超级管理员且没有 group:manage 权限时，
-        只能分配自己也拥有的权限对应的权限组。
-        """
-        if group_id and not is_superuser and (
-            "group:manage" not in operator_permissions
-        ):
-            group = await repository.get_group_by_id(
-                self.session, group_id
+        """分配用户角色（单个）。"""
+        if role_id:
+            role = await repository.get_role_by_id(
+                self.session, role_id
             )
-            if not group:
+            if not role:
                 raise NotFoundException(
-                    message="权限组不存在"
+                    message="角色不存在"
                 )
-            for perm in group.permissions:
-                if perm.code not in operator_permissions:
-                    raise ForbiddenException(
-                        message="不能分配超出自身权限的权限组"
-                    )
 
-        await repository.set_user_group(
-            self.session, user_id, group_id
+        await repository.set_user_role(
+            self.session, user_id, role_id
         )
