@@ -20,10 +20,9 @@ export const test = base.extend<{
     const page = await context.newPage()
 
     /* TODO: 实现完整登录流程
-     * 当前暂时跳过登录直接访问管理页面
+     * 当前暂时跳过登录，让各测试自行导航到目标页面
      * 需要配合后端测试环境提供免登录访问或测试用户
      */
-    await page.goto("/zh/admin/categories")
 
     await use(page)
     await context.close()
