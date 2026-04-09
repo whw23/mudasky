@@ -112,6 +112,23 @@ export interface Category {
   created_at: string
 }
 
+/** 合作院校 */
+export interface University {
+  id: string
+  name: string
+  name_en: string | null
+  country: string
+  city: string
+  logo_url: string | null
+  description: string | null
+  programs: string[]
+  website: string | null
+  is_featured: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string | null
+}
+
 export interface PaginatedResponse<T> {
   items: T[]
   total: number

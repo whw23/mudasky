@@ -26,6 +26,10 @@ from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 from app.document.router import router as document_router
 from app.rbac.router import router as rbac_router
+from app.university.router import (
+    admin_router as university_admin_router,
+    public_router as university_public_router,
+)
 from app.user.router import router as user_router
 
 setup_logging()
@@ -134,6 +138,8 @@ api.include_router(document_router)
 api.include_router(admin_router)
 api.include_router(rbac_router)
 api.include_router(config_router)
+api.include_router(university_public_router)
+api.include_router(university_admin_router)
 
 
 @api.get("/health")

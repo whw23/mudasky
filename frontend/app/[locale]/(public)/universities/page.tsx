@@ -8,49 +8,42 @@ import {
   ArrowRight,
 } from "lucide-react"
 
+/** 院校类型 */
+interface UniversityItem {
+  id: string
+  name: string
+  name_en: string | null
+  country: string
+  city: string
+  logo_url: string | null
+  description: string | null
+  programs: string[]
+  website: string | null
+  is_featured: boolean
+}
+
+/** 从后端获取合作院校列表 */
+async function fetchUniversities(): Promise<UniversityItem[]> {
+  try {
+    const backendUrl = process.env.INTERNAL_API_URL ?? "http://api:8000"
+    const res = await fetch(
+      `${backendUrl}/api/universities?page_size=100`,
+      { next: { revalidate: 60 } },
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.items ?? []
+  } catch {
+    return []
+  }
+}
+
 /** 院校选择页面 */
 export default async function UniversitiesPage() {
   const p = await getTranslations("Pages")
   const t = await getTranslations("Universities")
 
-  const universities = [
-    {
-      name: t("uni1.name"),
-      location: t("uni1.location"),
-      programs: t("uni1.programs"),
-      desc: t("uni1.desc"),
-    },
-    {
-      name: t("uni2.name"),
-      location: t("uni2.location"),
-      programs: t("uni2.programs"),
-      desc: t("uni2.desc"),
-    },
-    {
-      name: t("uni3.name"),
-      location: t("uni3.location"),
-      programs: t("uni3.programs"),
-      desc: t("uni3.desc"),
-    },
-    {
-      name: t("uni4.name"),
-      location: t("uni4.location"),
-      programs: t("uni4.programs"),
-      desc: t("uni4.desc"),
-    },
-    {
-      name: t("uni5.name"),
-      location: t("uni5.location"),
-      programs: t("uni5.programs"),
-      desc: t("uni5.desc"),
-    },
-    {
-      name: t("uni6.name"),
-      location: t("uni6.location"),
-      programs: t("uni6.programs"),
-      desc: t("uni6.desc"),
-    },
-  ]
+  const universities = await fetchUniversities()
 
   return (
     <>
@@ -78,27 +71,52 @@ export default async function UniversitiesPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {universities.map((uni) => (
               <div
-                key={uni.name}
+                key={uni.id}
                 className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
               >
-                {/* Logo 占位 */}
+                {/* Logo */}
                 <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-                  <Building2 className="h-8 w-8 text-gray-400 transition-colors group-hover:text-primary" />
+                  {uni.logo_url ? (
+                    <img
+                      src={uni.logo_url}
+                      alt={uni.name}
+                      className="h-12 w-12 object-contain"
+                    />
+                  ) : (
+                    <Building2 className="h-8 w-8 text-gray-400 transition-colors group-hover:text-primary" />
+                  )}
                 </div>
                 <h4 className="mt-4 text-lg font-bold transition-colors group-hover:text-primary">
                   {uni.name}
                 </h4>
+                {uni.name_en && (
+                  <p className="text-xs text-muted-foreground">{uni.name_en}</p>
+                )}
                 <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" />
-                  {uni.location}
+                  {uni.city}, {uni.country}
                 </div>
-                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                  <GraduationCap className="h-4 w-4" />
-                  {uni.programs}
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {uni.desc}
-                </p>
+                {uni.programs.length > 0 && (
+                  <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                    <GraduationCap className="h-4 w-4" />
+                    {uni.programs.join(", ")}
+                  </div>
+                )}
+                {uni.description && (
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {uni.description}
+                  </p>
+                )}
+                {uni.website && (
+                  <a
+                    href={uni.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-xs text-primary hover:underline"
+                  >
+                    {uni.website}
+                  </a>
+                )}
               </div>
             ))}
           </div>

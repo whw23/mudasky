@@ -43,6 +43,7 @@ _M.public_prefixes = {
   { method = "GET", prefix = "/api/content/articles" },
   { method = "GET", prefix = "/api/cases" },
   { method = "GET", prefix = "/api/config/" },
+  { method = "GET", prefix = "/api/universities" },
 }
 
 --- 检查路由是否公开。

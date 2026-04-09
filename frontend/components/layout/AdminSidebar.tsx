@@ -15,6 +15,7 @@ import {
   BookOpen,
   Tag,
   Trophy,
+  GraduationCap,
   Settings,
   ArrowLeft,
 } from "lucide-react"
@@ -38,6 +39,7 @@ const MENU_KEYS: MenuItem[] = [
   { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
   { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["post:manage"] },
   { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },
+  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["post:manage"] },
   { key: "settings", href: "/admin/settings", icon: Settings, superuserOnly: true },
 ]
 
