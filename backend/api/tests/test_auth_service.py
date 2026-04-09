@@ -21,6 +21,7 @@ AUTH_REPO = "app.auth.service.repository"
 USER_REPO = "app.auth.service.user_repo"
 RBAC_REPO = "app.auth.service.rbac_repo"
 SMS_SEND = "app.auth.service.send_sms_code"
+DECRYPT_PW = "app.auth.service.decrypt_password"
 
 
 @pytest.fixture
@@ -33,11 +34,12 @@ def service(mock_session) -> AuthService:
 
 
 @pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="secret123")
 @patch(SMS_SEND, new_callable=AsyncMock)
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_register_success(
-    mock_repo, mock_user_repo, mock_sms, service, sample_user
+    mock_repo, mock_user_repo, mock_sms, mock_decrypt, service, sample_user
 ):
     """注册成功：验证码通过、手机号未注册。"""
     mock_repo.verify_sms_code = AsyncMock()
@@ -51,7 +53,8 @@ async def test_register_success(
         phone="+8613900139000",
         code="123456",
         username="newuser",
-        password="secret123",
+        encrypted_password="encrypted_data",
+        nonce="test_nonce",
     )
 
     assert result.phone == "+8613900139000"
@@ -80,10 +83,11 @@ async def test_register_phone_already_exists(
 
 
 @pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="correct")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_username_password_success(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """用户名密码登录成功。"""
     user = sample_user(
@@ -97,7 +101,9 @@ async def test_login_username_password_success(
         "app.auth.service.verify_password", return_value=True
     ):
         result_user, step = await service.login(
-            username="testuser", password="correct"
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
         )
 
     assert result_user == user
@@ -105,10 +111,11 @@ async def test_login_username_password_success(
 
 
 @pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="wrong")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_wrong_password(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """密码错误应抛出 UnauthorizedException。"""
     user = sample_user(password_hash="hashed")
@@ -119,15 +126,18 @@ async def test_login_wrong_password(
     ):
         with pytest.raises(UnauthorizedException):
             await service.login(
-                username="testuser", password="wrong"
+                username="testuser",
+                encrypted_password="enc",
+                nonce="n",
             )
 
 
 @pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="any")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_inactive_user(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """已禁用用户登录应抛出 UnauthorizedException。"""
     user = sample_user(is_active=False, password_hash="hashed")
@@ -135,7 +145,9 @@ async def test_login_inactive_user(
 
     with pytest.raises(UnauthorizedException):
         await service.login(
-            username="testuser", password="any"
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
         )
 
 
@@ -205,11 +217,12 @@ async def test_send_code_rate_limited(
 
 
 @pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="correct")
 @patch(SMS_SEND, new_callable=AsyncMock)
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_2fa_required(
-    mock_repo, mock_user_repo, mock_sms, service, sample_user
+    mock_repo, mock_user_repo, mock_sms, mock_decrypt, service, sample_user
 ):
     """二步验证启用时返回 2fa_required。"""
     user = sample_user(
@@ -230,7 +243,9 @@ async def test_login_2fa_required(
     ), patch("app.auth.service.settings") as mock_settings:
         mock_settings.DEBUG = True
         result_user, step = await service.login(
-            username="testuser", password="correct"
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
         )
 
     assert result_user == user

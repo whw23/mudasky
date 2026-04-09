@@ -285,22 +285,14 @@ class TestResetPassword:
         self.mock_svc.reset_password.return_value = None
         resp = await client.put(
             "/admin/users/target-001/password",
-            json={"password": "newpassword123"},
+            json={
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "密码重置成功"
-
-    async def test_reset_password_short(
-        self, client, superuser_headers
-    ):
-        """密码过短返回 422。"""
-        resp = await client.put(
-            "/admin/users/target-001/password",
-            json={"password": "123"},
-            headers=superuser_headers,
-        )
-        assert resp.status_code == 422
 
     async def test_reset_password_forbidden(
         self, client, user_headers
@@ -308,7 +300,10 @@ class TestResetPassword:
         """普通用户无权重置密码。"""
         resp = await client.put(
             "/admin/users/target-001/password",
-            json={"password": "newpassword123"},
+            json={
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
             headers=user_headers,
         )
         assert resp.status_code == 403

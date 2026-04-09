@@ -7,6 +7,7 @@ import pyotp
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository as auth_repo
+from app.core.crypto import decrypt_password
 from app.core.exceptions import (
     ConflictException,
     NotFoundException,
@@ -85,7 +86,8 @@ class UserService:
         if user.phone != data.phone:
             raise ConflictException(message="手机号与当前账号不匹配")
         await auth_repo.verify_sms_code(self.session, data.phone, data.code)
-        user.password_hash = hash_password(data.new_password)
+        password = decrypt_password(data.encrypted_password, data.nonce)
+        user.password_hash = hash_password(password)
         await repository.update(self.session, user)
 
     async def change_phone(

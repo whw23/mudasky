@@ -55,10 +55,11 @@ async def test_get_user_response_success(
 
 
 @pytest.mark.asyncio
+@patch("app.user.service.decrypt_password", return_value="newpass123")
 @patch(AUTH_REPO)
 @patch(USER_REPO)
 async def test_change_password_success(
-    mock_repo, mock_auth_repo, service, sample_user
+    mock_repo, mock_auth_repo, mock_decrypt, service, sample_user
 ):
     """修改密码成功。"""
     user = sample_user(phone="+8613800138000")
@@ -69,7 +70,8 @@ async def test_change_password_success(
     data = PasswordChange(
         phone="+8613800138000",
         code="123456",
-        new_password="newpass123",
+        encrypted_password="enc_data",
+        nonce="test_nonce",
     )
 
     with patch("app.user.service.hash_password", return_value="new_hash"):
@@ -91,7 +93,8 @@ async def test_change_password_phone_mismatch(
     data = PasswordChange(
         phone="+8613900139000",
         code="123456",
-        new_password="newpass123",
+        encrypted_password="enc_data",
+        nonce="test_nonce",
     )
 
     with pytest.raises(ConflictException):

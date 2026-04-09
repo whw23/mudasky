@@ -63,7 +63,8 @@ async def register(
         phone=data.phone,
         code=data.code,
         username=data.username,
-        password=data.password,
+        encrypted_password=data.encrypted_password,
+        nonce=data.nonce,
     )
     user_resp = await svc.build_user_response(user)
     return AuthResponse(user=user_resp)
@@ -78,7 +79,8 @@ async def login(
     user, step = await svc.login(
         phone=data.phone,
         username=data.username,
-        password=data.password,
+        encrypted_password=data.encrypted_password,
+        nonce=data.nonce,
         code=data.code,
         totp=data.totp,
         sms_code_2fa=data.sms_code_2fa,

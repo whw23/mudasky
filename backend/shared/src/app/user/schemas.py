@@ -47,7 +47,10 @@ class PasswordChange(BaseModel):
 
     phone: str = Field(..., description="手机号（含国家码）")
     code: str = Field(..., description="短信验证码")
-    new_password: str = Field(..., min_length=6, description="新密码")
+    encrypted_password: str = Field(
+        ..., description="RSA 加密后的新密码（Base64，bcrypt 限制最大 72 字节）"
+    )
+    nonce: str = Field(..., description="一次性 nonce")
 
     @field_validator("phone")
     @classmethod

@@ -7,6 +7,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository as auth_repo
+from app.core.crypto import decrypt_password
 from app.core.exceptions import ForbiddenException, NotFoundException
 from app.core.security import hash_password
 from app.rbac import repository as rbac_repo
@@ -145,7 +146,10 @@ class AdminService:
         return await self._build_user_response(user)
 
     async def reset_password(
-        self, user_id: str, new_password: str
+        self,
+        user_id: str,
+        encrypted_password: str,
+        nonce: str,
     ) -> None:
         """重置用户密码。"""
         user = await user_repo.get_by_id(
@@ -154,7 +158,8 @@ class AdminService:
         if not user:
             raise NotFoundException(message="用户不存在")
 
-        user.password_hash = hash_password(new_password)
+        password = decrypt_password(encrypted_password, nonce)
+        user.password_hash = hash_password(password)
         await user_repo.update(self.session, user)
 
     async def assign_group(

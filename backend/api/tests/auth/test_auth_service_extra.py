@@ -20,6 +20,7 @@ AUTH_REPO = "app.auth.service.repository"
 USER_REPO = "app.auth.service.user_repo"
 RBAC_REPO = "app.auth.service.rbac_repo"
 SMS_SEND = "app.auth.service.send_sms_code"
+DECRYPT_PW = "app.auth.service.decrypt_password"
 
 
 @pytest.fixture
@@ -85,10 +86,11 @@ async def test_login_no_credentials(service):
 # ---- login: phone + password ----
 
 
+@patch(DECRYPT_PW, return_value="correct")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_phone_password_success(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """手机号 + 密码登录成功。"""
     user = sample_user(
@@ -100,48 +102,57 @@ async def test_login_phone_password_success(
 
     with patch("app.auth.service.verify_password", return_value=True):
         result_user, step = await service.login(
-            phone="+8613800138000", password="correct"
+            phone="+8613800138000",
+            encrypted_password="enc",
+            nonce="n",
         )
 
     assert result_user == user
     assert step is None
 
 
+@patch(DECRYPT_PW, return_value="any")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_phone_not_found(
-    mock_repo, mock_user_repo, service
+    mock_repo, mock_user_repo, mock_decrypt, service
 ):
     """手机号不存在抛出异常。"""
     mock_user_repo.get_by_phone = AsyncMock(return_value=None)
 
     with pytest.raises(NotFoundException):
         await service.login(
-            phone="+8613800138000", password="any"
+            phone="+8613800138000",
+            encrypted_password="enc",
+            nonce="n",
         )
 
 
+@patch(DECRYPT_PW, return_value="any")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_username_not_found(
-    mock_repo, mock_user_repo, service
+    mock_repo, mock_user_repo, mock_decrypt, service
 ):
     """用户名不存在抛出异常。"""
     mock_user_repo.get_by_username = AsyncMock(return_value=None)
 
     with pytest.raises(NotFoundException):
         await service.login(
-            username="nonexistent", password="any"
+            username="nonexistent",
+            encrypted_password="enc",
+            nonce="n",
         )
 
 
 # ---- login: 无密码 ----
 
 
+@patch(DECRYPT_PW, return_value="any")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_no_password_hash(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """用户未设置密码抛出异常。"""
     user = sample_user(password_hash=None)
@@ -149,7 +160,9 @@ async def test_login_no_password_hash(
 
     with pytest.raises(UnauthorizedException):
         await service.login(
-            username="testuser", password="any"
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
         )
 
 
@@ -214,10 +227,11 @@ async def test_login_sms_inactive_user(
 # ---- 2FA: TOTP 验证 ----
 
 
+@patch(DECRYPT_PW, return_value="correct")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_2fa_totp_success(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """TOTP 二步验证成功。"""
     import pyotp
@@ -235,17 +249,21 @@ async def test_login_2fa_totp_success(
 
     with patch("app.auth.service.verify_password", return_value=True):
         result_user, step = await service.login(
-            username="testuser", password="correct", totp=totp_code
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
+            totp=totp_code,
         )
 
     assert result_user == user
     assert step is None
 
 
+@patch(DECRYPT_PW, return_value="correct")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_2fa_totp_wrong_code(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """TOTP 验证码不正确抛出异常。"""
     import pyotp
@@ -265,7 +283,8 @@ async def test_login_2fa_totp_wrong_code(
         ):
             await service.login(
                 username="testuser",
-                password="correct",
+                encrypted_password="enc",
+                nonce="n",
                 totp="000000",
             )
 
@@ -273,10 +292,11 @@ async def test_login_2fa_totp_wrong_code(
 # ---- 2FA: SMS 备选 ----
 
 
+@patch(DECRYPT_PW, return_value="correct")
 @patch(USER_REPO)
 @patch(AUTH_REPO)
 async def test_login_2fa_sms_code(
-    mock_repo, mock_user_repo, service, sample_user
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
 ):
     """二步验证使用短信验证码。"""
     user = sample_user(
@@ -290,7 +310,8 @@ async def test_login_2fa_sms_code(
     with patch("app.auth.service.verify_password", return_value=True):
         result_user, step = await service.login(
             username="testuser",
-            password="correct",
+            encrypted_password="enc",
+            nonce="n",
             sms_code_2fa="654321",
         )
 

@@ -46,7 +46,12 @@ class RegisterRequest(BaseModel):
     username: str | None = Field(
         None, max_length=50, description="用户名"
     )
-    password: str | None = Field(None, description="密码")
+    encrypted_password: str | None = Field(
+        None, description="RSA 加密后的密码（Base64）"
+    )
+    nonce: str | None = Field(
+        None, description="一次性 nonce"
+    )
 
 
 class LoginRequest(BaseModel):
@@ -72,7 +77,12 @@ class LoginRequest(BaseModel):
     username: str | None = Field(
         None, max_length=50, description="用户名"
     )
-    password: str | None = Field(None, description="密码")
+    encrypted_password: str | None = Field(
+        None, description="RSA 加密后的密码（Base64）"
+    )
+    nonce: str | None = Field(
+        None, description="一次性 nonce"
+    )
     code: str | None = Field(
         None, max_length=6, description="短信验证码"
     )

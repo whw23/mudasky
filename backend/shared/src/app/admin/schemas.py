@@ -20,9 +20,10 @@ __all__ = [
 class PasswordReset(BaseModel):
     """重置密码请求。"""
 
-    password: str = Field(
-        ..., min_length=6, description="新密码"
+    encrypted_password: str = Field(
+        ..., description="RSA 加密后的新密码（Base64）"
     )
+    nonce: str = Field(..., description="一次性 nonce")
 
 
 class GroupAssignment(BaseModel):

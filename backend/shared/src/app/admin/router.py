@@ -181,7 +181,9 @@ async def reset_password(
     await svc.check_target_permission(
         target, permissions, is_superuser
     )
-    await svc.reset_password(user_id, data.password)
+    await svc.reset_password(
+        user_id, data.encrypted_password, data.nonce
+    )
     return MessageResponse(message="密码重置成功")
 
 

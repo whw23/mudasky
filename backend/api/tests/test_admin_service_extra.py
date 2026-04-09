@@ -206,27 +206,29 @@ async def test_change_user_type_not_found(
 # ---- reset_password ----
 
 
+@patch("app.admin.service.decrypt_password", return_value="newpassword")
 @patch(USER_REPO)
-async def test_reset_password_success(mock_user_repo, service):
+async def test_reset_password_success(mock_user_repo, mock_decrypt, service):
     """重置用户密码。"""
     user = _make_user()
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_user_repo.update = AsyncMock()
 
     with patch("app.admin.service.hash_password", return_value="new_hash"):
-        await service.reset_password("user-1", "newpassword")
+        await service.reset_password("user-1", "enc_data", "test_nonce")
 
     assert user.password_hash == "new_hash"
     mock_user_repo.update.assert_awaited_once()
 
 
+@patch("app.admin.service.decrypt_password", return_value="newpass")
 @patch(USER_REPO)
-async def test_reset_password_not_found(mock_user_repo, service):
+async def test_reset_password_not_found(mock_user_repo, mock_decrypt, service):
     """重置不存在用户的密码。"""
     mock_user_repo.get_by_id = AsyncMock(return_value=None)
 
     with pytest.raises(NotFoundException):
-        await service.reset_password("nonexistent", "newpass")
+        await service.reset_password("nonexistent", "enc_data", "nonce")
 
 
 # ---- assign_groups ----
