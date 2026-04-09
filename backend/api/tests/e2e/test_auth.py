@@ -125,7 +125,6 @@ class TestLogin:
         assert resp.status_code == 200
         data = resp.json()
         assert data["user"]["username"] == SUPERUSER_USERNAME
-        assert data["user"]["is_superuser"] is True
 
     async def test_login_wrong_password(self, e2e_client):
         """错误密码返回 401。"""

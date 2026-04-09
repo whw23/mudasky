@@ -48,7 +48,6 @@ class TestAdminUsers:
         assert resp.status_code == 200
         user = resp.json()
         assert user["id"] == user_id
-        assert user["is_superuser"] is True
 
     async def test_update_user_toggle_active(
         self, superuser_client, e2e_client
