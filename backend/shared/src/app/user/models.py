@@ -3,11 +3,17 @@
 定义用户表结构，包含手机号、用户名、密码、双因素认证等字段。
 """
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from app.rbac.models import PermissionGroup
 
 from app.core.config import settings
 from app.core.database import Base
