@@ -208,23 +208,17 @@ export default function DashboardPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">{t("quickActions")}</h2>
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/documents">
-              <Upload className="mr-2 size-4" />
-              {t("uploadDocument")}
-            </Link>
+          <Button render={<Link href="/documents" />}>
+            <Upload className="mr-2 size-4" />
+            {t("uploadDocument")}
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/articles">
-              <PenLine className="mr-2 size-4" />
-              {t("writeArticle")}
-            </Link>
+          <Button variant="outline" render={<Link href="/articles" />}>
+            <PenLine className="mr-2 size-4" />
+            {t("writeArticle")}
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/profile">
-              <UserCog className="mr-2 size-4" />
-              {t("editProfile")}
-            </Link>
+          <Button variant="outline" render={<Link href="/profile" />}>
+            <UserCog className="mr-2 size-4" />
+            {t("editProfile")}
           </Button>
         </div>
       </div>

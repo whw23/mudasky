@@ -191,23 +191,17 @@ export default function AdminDashboardPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">{t("quickActions")}</h2>
         <div className="flex flex-wrap gap-3">
-          <Button asChild>
-            <Link href="/admin/users">
-              <UserCog className="mr-2 size-4" />
-              {t("manageUsers")}
-            </Link>
+          <Button render={<Link href="/admin/users" />}>
+            <UserCog className="mr-2 size-4" />
+            {t("manageUsers")}
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/articles">
-              <FileEdit className="mr-2 size-4" />
-              {t("manageArticles")}
-            </Link>
+          <Button variant="outline" render={<Link href="/admin/articles" />}>
+            <FileEdit className="mr-2 size-4" />
+            {t("manageArticles")}
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/admin/settings">
-              <Settings className="mr-2 size-4" />
-              {t("systemSettings")}
-            </Link>
+          <Button variant="outline" render={<Link href="/admin/settings" />}>
+            <Settings className="mr-2 size-4" />
+            {t("systemSettings")}
           </Button>
         </div>
       </div>
