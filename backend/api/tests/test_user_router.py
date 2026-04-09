@@ -17,12 +17,10 @@ def _make_user_response() -> dict:
         "id": "user-1",
         "phone": "+8613800138000",
         "username": "testuser",
-        "user_type": "student",
-        "is_superuser": False,
         "is_active": True,
         "permissions": [],
-        "group_id": None,
-        "group_name": None,
+        "role_id": None,
+        "role_name": None,
         "two_factor_enabled": False,
         "two_factor_method": None,
         "storage_quota": 104857600,
@@ -37,8 +35,6 @@ def _make_user_model(**kwargs) -> MagicMock:
     user.id = kwargs.get("id", "user-1")
     user.phone = kwargs.get("phone", "+8613800138000")
     user.username = kwargs.get("username", "testuser")
-    user.user_type = kwargs.get("user_type", "student")
-    user.is_superuser = kwargs.get("is_superuser", False)
     user.is_active = kwargs.get("is_active", True)
     user.two_factor_enabled = kwargs.get(
         "two_factor_enabled", False
@@ -46,8 +42,8 @@ def _make_user_model(**kwargs) -> MagicMock:
     user.two_factor_method = kwargs.get(
         "two_factor_method", None
     )
-    user.group_id = kwargs.get("group_id", None)
-    user.group_name = kwargs.get("group_name", None)
+    user.role_id = kwargs.get("role_id", None)
+    user.role_name = kwargs.get("role_name", None)
     user.storage_quota = kwargs.get("storage_quota", 104857600)
     user.created_at = kwargs.get(
         "created_at", datetime.now(timezone.utc)

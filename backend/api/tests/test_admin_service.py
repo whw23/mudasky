@@ -1,6 +1,6 @@
 """Admin Service 单元测试。
 
-测试 AdminService 的目标用户权限检查、用户类型修改等业务逻辑。
+测试 AdminService 的用户管理业务逻辑。
 使用 mock 隔离数据库层。
 """
 
@@ -10,25 +10,21 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.admin.service import AdminService
-from app.core.exceptions import ForbiddenException
 from app.user.models import User
 
 
 def _make_user(
-    user_type: str = "guest",
-    is_superuser: bool = False,
     user_id: str = "user-1",
+    is_active: bool = True,
 ) -> User:
     """创建模拟 User 对象。"""
     u = MagicMock(spec=User)
     u.id = user_id
     u.phone = "13800000001"
     u.username = "testuser"
-    u.user_type = user_type
-    u.is_superuser = is_superuser
-    u.is_active = True
+    u.is_active = is_active
     u.two_factor_enabled = False
-    u.group_id = None
+    u.role_id = None
     u.storage_quota = 104857600
     u.created_at = datetime.now(timezone.utc)
     u.updated_at = None
@@ -47,83 +43,21 @@ def service() -> AdminService:
 
 
 @pytest.mark.asyncio
-async def test_check_target_permission_member(service):
-    """拥有 member:manage 权限可以操作会员和游客用户。"""
-    target_member = _make_user(user_type="member")
-    target_guest = _make_user(user_type="guest")
-
-    # 不应抛出异常
-    await service.check_target_permission(
-        target_user=target_member,
-        operator_permissions=["member:manage"],
-        is_superuser=False,
-    )
-    await service.check_target_permission(
-        target_user=target_guest,
-        operator_permissions=["member:manage"],
-        is_superuser=False,
-    )
-
-
-@pytest.mark.asyncio
-async def test_check_target_permission_staff_denied(service):
-    """member:manage 权限不能操作员工用户。"""
-    target = _make_user(user_type="staff")
-
-    with pytest.raises(ForbiddenException):
-        await service.check_target_permission(
-            target_user=target,
-            operator_permissions=["member:manage"],
-            is_superuser=False,
-        )
-
-
-@pytest.mark.asyncio
-async def test_check_target_permission_superuser_bypass(service):
-    """超级管理员可以操作任何用户。"""
-    target = _make_user(user_type="staff")
-
-    # 不应抛出异常
-    await service.check_target_permission(
-        target_user=target,
-        operator_permissions=[],
-        is_superuser=True,
-    )
-
-
-@pytest.mark.asyncio
-async def test_check_target_permission_superuser_target(service):
-    """即使有 staff:manage，也不能管理超级管理员。"""
-    target = _make_user(
-        user_type="staff", is_superuser=True
-    )
-
-    with pytest.raises(ForbiddenException):
-        await service.check_target_permission(
-            target_user=target,
-            operator_permissions=["staff:manage"],
-            is_superuser=False,
-        )
-
-
-@pytest.mark.asyncio
 @patch(RBAC_REPO)
 @patch(USER_REPO)
-async def test_change_user_type(
+async def test_get_user_success(
     mock_user_repo, mock_rbac_repo, service
 ):
-    """修改用户类型为合法值。"""
-    user = _make_user(user_type="guest", user_id="u1")
+    """获取用户详情。"""
+    user = _make_user(user_id="u1")
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
-    mock_user_repo.update = AsyncMock()
     mock_rbac_repo.get_user_permissions = AsyncMock(
-        return_value=["member:manage"]
+        return_value=["admin.user.list"]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
-        return_value="组1"
+    mock_rbac_repo.get_user_role_name = AsyncMock(
+        return_value="角色1"
     )
 
-    result = await service.change_user_type("u1", "staff")
+    result = await service.get_user("u1")
 
-    assert result.user_type == "staff"
-    mock_user_repo.update.assert_awaited_once()
+    assert result.id == "u1"

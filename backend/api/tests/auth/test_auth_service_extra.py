@@ -67,9 +67,10 @@ async def test_register_no_password_no_username(
     new_user = sample_user(phone="+8613900139000")
     mock_user_repo.create = AsyncMock(return_value=new_user)
 
-    result = await service.register(
-        phone="+8613900139000", code="123456"
-    )
+    with patch.object(service, "_get_visitor_role", return_value=None):
+        result = await service.register(
+            phone="+8613900139000", code="123456"
+        )
 
     assert result.phone == "+8613900139000"
 
@@ -435,7 +436,7 @@ async def test_build_user_response(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=["user:read"]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
+    mock_rbac_repo.get_user_role_name = AsyncMock(
         return_value="组1"
     )
 
@@ -443,7 +444,7 @@ async def test_build_user_response(
 
     assert result.id == "user-1"
     assert "user:read" in result.permissions
-    assert result.group_id == user.group_id
+    assert result.role_id == user.role_id
 
 
 # ---- send_code: 每小时上限 ----

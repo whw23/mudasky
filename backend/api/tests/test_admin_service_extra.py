@@ -1,7 +1,7 @@
 """AdminService 补充测试。
 
 覆盖 list_users、get_user、update_user、reset_password、
-assign_groups、force_logout、get_user_model 等未覆盖分支。
+assign_role、force_logout、get_user_model 等未覆盖分支。
 """
 
 from datetime import datetime, timezone
@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.admin.service import AdminService
-from app.core.exceptions import ForbiddenException, NotFoundException
+from app.core.exceptions import NotFoundException
 from app.user.models import User
 from app.user.schemas import UserAdminUpdate
 
@@ -20,8 +20,6 @@ AUTH_REPO = "app.admin.service.auth_repo"
 
 
 def _make_user(
-    user_type: str = "guest",
-    is_superuser: bool = False,
     user_id: str = "user-1",
     is_active: bool = True,
 ) -> MagicMock:
@@ -30,11 +28,9 @@ def _make_user(
     u.id = user_id
     u.phone = "13800000001"
     u.username = "testuser"
-    u.user_type = user_type
-    u.is_superuser = is_superuser
     u.is_active = is_active
     u.two_factor_enabled = False
-    u.group_id = None
+    u.role_id = None
     u.storage_quota = 104857600
     u.created_at = datetime.now(timezone.utc)
     u.updated_at = None
@@ -71,12 +67,11 @@ async def test_list_users_no_filter(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
+    mock_rbac_repo.get_user_role_name = AsyncMock(
         return_value=None
     )
 
     users, total = await service.list_users(
-        user_type_filter=None,
         search=None,
         offset=0,
         limit=10,
@@ -88,10 +83,10 @@ async def test_list_users_no_filter(
 
 @patch(RBAC_REPO)
 @patch(USER_REPO)
-async def test_list_users_with_filter_and_search(
+async def test_list_users_with_search(
     mock_user_repo, mock_rbac_repo, service
 ):
-    """分页查询（按类型和搜索词）。"""
+    """分页查询（按搜索词）。"""
     mock_result_count = MagicMock()
     mock_result_count.scalar_one.return_value = 0
     mock_result_list = MagicMock()
@@ -104,7 +99,6 @@ async def test_list_users_with_filter_and_search(
     )
 
     users, total = await service.list_users(
-        user_type_filter="staff",
         search="张三",
         offset=0,
         limit=10,
@@ -126,10 +120,10 @@ async def test_get_user_success(
     user = _make_user(user_id="u1")
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_rbac_repo.get_user_permissions = AsyncMock(
-        return_value=["user:read"]
+        return_value=["admin.user.list"]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
-        return_value="组1"
+    mock_rbac_repo.get_user_role_name = AsyncMock(
+        return_value="角色1"
     )
 
     result = await service.get_user("u1")
@@ -161,7 +155,7 @@ async def test_update_user_success(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
+    mock_rbac_repo.get_user_role_name = AsyncMock(
         return_value=None
     )
 
@@ -181,26 +175,6 @@ async def test_update_user_not_found(mock_user_repo, service):
     data = UserAdminUpdate(is_active=True)
     with pytest.raises(NotFoundException):
         await service.update_user("nonexistent", data)
-
-
-# ---- change_user_type: 非法类型 ----
-
-
-async def test_change_user_type_invalid(service):
-    """非法用户类型抛出异常。"""
-    with pytest.raises(ForbiddenException):
-        await service.change_user_type("u1", "admin")
-
-
-@patch(USER_REPO)
-async def test_change_user_type_not_found(
-    mock_user_repo, service
-):
-    """修改不存在用户的类型。"""
-    mock_user_repo.get_by_id = AsyncMock(return_value=None)
-
-    with pytest.raises(NotFoundException):
-        await service.change_user_type("nonexistent", "staff")
 
 
 # ---- reset_password ----
@@ -231,30 +205,30 @@ async def test_reset_password_not_found(mock_user_repo, mock_decrypt, service):
         await service.reset_password("nonexistent", "enc_data", "nonce")
 
 
-# ---- assign_groups ----
+# ---- assign_role ----
 
 
 @patch(RBAC_REPO)
 @patch(USER_REPO)
-async def test_assign_groups_success(
+async def test_assign_role_success(
     mock_user_repo, mock_rbac_repo, service
 ):
-    """分配用户权限组。"""
+    """分配用户角色。"""
     user = _make_user()
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_name = AsyncMock(
-        return_value="组1"
+    mock_rbac_repo.get_user_role_name = AsyncMock(
+        return_value="角色1"
     )
 
     with patch("app.admin.service.RbacService") as MockRbac:
         mock_rbac_svc = AsyncMock()
         MockRbac.return_value = mock_rbac_svc
 
-        result = await service.assign_group(
-            "user-1", "g1", ["group:manage"], False
+        result = await service.assign_role(
+            "user-1", "r1"
         )
 
     assert result.id == "user-1"
@@ -262,10 +236,10 @@ async def test_assign_groups_success(
 
 @patch(RBAC_REPO)
 @patch(USER_REPO)
-async def test_assign_groups_user_not_found(
+async def test_assign_role_user_not_found(
     mock_user_repo, mock_rbac_repo, service
 ):
-    """分配权限组时用户不存在。"""
+    """分配角色时用户不存在。"""
     mock_user_repo.get_by_id = AsyncMock(return_value=None)
 
     with patch("app.admin.service.RbacService") as MockRbac:
@@ -273,8 +247,8 @@ async def test_assign_groups_user_not_found(
         MockRbac.return_value = mock_rbac_svc
 
         with pytest.raises(NotFoundException):
-            await service.assign_group(
-                "nonexistent", "g1", [], False
+            await service.assign_role(
+                "nonexistent", "r1"
             )
 
 
@@ -289,19 +263,6 @@ async def test_force_logout(mock_auth_repo, service):
     await service.force_logout("user-1")
 
     mock_auth_repo.revoke_user_refresh_tokens.assert_awaited_once()
-
-
-# ---- check_target_permission: member 无权限 ----
-
-
-async def test_check_target_no_member_manage(service):
-    """无 member:manage 权限不能管理会员。"""
-    target = _make_user(user_type="member")
-
-    with pytest.raises(ForbiddenException):
-        await service.check_target_permission(
-            target, operator_permissions=[], is_superuser=False
-        )
 
 
 # ---- get_user_model ----
