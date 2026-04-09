@@ -1,4 +1,5 @@
 import { Banner } from "@/components/layout/Banner"
+import { StatsSection } from "@/components/home/StatsSection"
 import {
   GraduationCap,
   Globe,
@@ -40,13 +41,6 @@ export default async function HomePage() {
     },
   ]
 
-  const stats = [
-    { value: "15+", label: t("stats.years") },
-    { value: "500+", label: t("stats.cases") },
-    { value: "50+", label: t("stats.partners") },
-    { value: "98%", label: t("stats.visaRate") },
-  ]
-
   const countries = [
     { key: "germany", name: t("germany") },
     { key: "japan", name: t("japan") },
@@ -59,20 +53,7 @@ export default async function HomePage() {
       <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
 
       {/* 数据统计 */}
-      <section className="border-b bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-8 md:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-foreground">
-                {stat.value}
-              </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <StatsSection />
 
       {/* 关于我们 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

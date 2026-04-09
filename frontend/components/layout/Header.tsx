@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
+import { useConfig } from "@/contexts/ConfigContext"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 
 /** 导航菜单键与路径映射 */
@@ -38,6 +39,7 @@ export function Header() {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
+  const { siteInfo } = useConfig()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
@@ -70,17 +72,19 @@ export function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs">
           {/* 左侧：标语（桌面）/ 品牌名（移动） */}
           <span className="hidden md:inline tracking-wide">
-            {tHeader("tagline")}
+            {siteInfo.tagline || tHeader("tagline")}
           </span>
           <span className="md:hidden font-medium text-foreground/70">
-            {tHeader("brandName")}
+            {siteInfo.brand_name || tHeader("brandName")}
           </span>
 
           <div className="flex items-center gap-3 md:gap-4">
             {/* 热线电话（仅桌面） */}
             <span className="hidden md:flex items-center gap-1.5">
               <Phone className="size-3" />
-              {tHeader("hotline")}
+              {siteInfo.hotline
+                ? `服务热线：${siteInfo.hotline} | ${siteInfo.hotline_contact}`
+                : tHeader("hotline")}
             </span>
 
             <LocaleSwitcher />
@@ -135,7 +139,7 @@ export function Header() {
             href="/"
             className="text-lg font-bold tracking-wide text-foreground"
           >
-            {tHeader("brandName")}
+            {siteInfo.brand_name || tHeader("brandName")}
           </Link>
 
           {/* 桌面导航 */}

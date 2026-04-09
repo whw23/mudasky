@@ -32,7 +32,7 @@ const SERVICE_LINKS = [
 export function Footer() {
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
-  const { contactInfo } = useConfig()
+  const { contactInfo, siteInfo } = useConfig()
 
   return (
     <footer className="border-t border-border/40 bg-muted/50">
@@ -41,7 +41,7 @@ export function Footer() {
         {/* 栏 1：品牌简介 + 联系方式 */}
         <div className="sm:col-span-2 lg:col-span-1">
           <h3 className="mb-3 text-lg font-bold tracking-wide text-foreground">
-            {t("brandName")}
+            {siteInfo.brand_name || t("brandName")}
           </h3>
           <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
             {t("description")}
@@ -101,9 +101,17 @@ export function Footer() {
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
             {t("followUs")}
           </h3>
-          <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
-            {t("qrPlaceholder")}
-          </div>
+          {siteInfo.wechat_qr_url ? (
+            <img
+              src={siteInfo.wechat_qr_url}
+              alt={t("wechatQr")}
+              className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
+            />
+          ) : (
+            <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
+              {t("qrPlaceholder")}
+            </div>
+          )}
           <p className="mt-2 text-xs text-muted-foreground">
             {t("wechatQr")}
           </p>
@@ -112,7 +120,7 @@ export function Footer() {
 
       {/* 底部版权栏 */}
       <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-        {t("copyright")} | {t("icp")}
+        {t("copyright")} | {siteInfo.icp_filing || t("icp")}
       </div>
     </footer>
   )

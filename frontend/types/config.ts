@@ -19,3 +19,30 @@ export interface ContactInfo {
   wechat: string
   office_hours: string
 }
+
+/** 品牌信息配置 */
+export interface SiteInfo {
+  brand_name: string
+  brand_name_en: string
+  tagline: string
+  hotline: string
+  hotline_contact: string
+  logo_url: string
+  favicon_url: string
+  wechat_qr_url: string
+  icp_filing: string
+}
+
+/** 首页统计条目 */
+export interface HomepageStat {
+  value: string
+  label: string
+}
+
+/** 关于我们页面内容 */
+export interface AboutInfo {
+  history: string
+  mission: string
+  vision: string
+  partnership: string
+}

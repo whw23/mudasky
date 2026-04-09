@@ -210,6 +210,71 @@ async def init_system_config(session) -> None:
     else:
         print("  - contact_info 已存在，跳过")
 
+    # site_info
+    existing_site = await session.execute(
+        select(SystemConfig).where(SystemConfig.key == "site_info")
+    )
+    if not existing_site.scalar_one_or_none():
+        session.add(SystemConfig(
+            key="site_info",
+            value={
+                "brand_name": "慕大国际教育",
+                "brand_name_en": "MUTU International Education",
+                "tagline": "慕大国际教育 · 专注国际教育 专注出国服务",
+                "hotline": "189-1268-6656",
+                "hotline_contact": "吴老师",
+                "logo_url": "",
+                "favicon_url": "",
+                "wechat_qr_url": "",
+                "icp_filing": "",
+            },
+            description="品牌信息配置",
+        ))
+        await session.flush()
+        print("  ✓ site_info 已初始化")
+    else:
+        print("  - site_info 已存在，跳过")
+
+    # homepage_stats
+    existing_stats = await session.execute(
+        select(SystemConfig).where(SystemConfig.key == "homepage_stats")
+    )
+    if not existing_stats.scalar_one_or_none():
+        session.add(SystemConfig(
+            key="homepage_stats",
+            value=[
+                {"value": "15+", "label": "年办学经验"},
+                {"value": "500+", "label": "成功案例"},
+                {"value": "50+", "label": "合作院校"},
+                {"value": "98%", "label": "签证通过率"},
+            ],
+            description="首页统计数字",
+        ))
+        await session.flush()
+        print("  ✓ homepage_stats 已初始化")
+    else:
+        print("  - homepage_stats 已存在，跳过")
+
+    # about_info
+    existing_about = await session.execute(
+        select(SystemConfig).where(SystemConfig.key == "about_info")
+    )
+    if not existing_about.scalar_one_or_none():
+        session.add(SystemConfig(
+            key="about_info",
+            value={
+                "history": "慕大国际教育成立于2011年，专注于小语种留学项目运营已15年。作为慕尼黑大学语言中心江苏省唯一指定招生考点，我们始终秉承\"专业、诚信、高效\"的服务理念，为数百位学子成功圆梦海外名校。从最初的德语培训到如今涵盖德语、日语、法语、韩语等多语种留学服务，我们不断拓展业务版图，致力于成为中国领先的国际教育服务机构。",
+                "mission": "让每一位有留学梦想的学子都能获得专业、贴心的一站式留学服务，帮助学生找到最适合自己的海外学府，实现人生价值的飞跃。",
+                "vision": "成为中国最值得信赖的国际教育服务品牌，打通中国学子与世界名校之间的桥梁，推动中外教育文化交流与融合。",
+                "partnership": "慕大国际是慕尼黑大学语言中心（Sprachenzentrum der LMU München）在江苏省的唯一官方指定招生考点。慕尼黑大学语言中心是德国最权威的德语培训机构之一，其德语课程受到全球认可。通过与慕尼黑大学语言中心的深度合作，我们为学生提供原汁原味的德语教学、考试认证以及直通德国名校的绿色通道。",
+            },
+            description="关于我们页面内容",
+        ))
+        await session.flush()
+        print("  ✓ about_info 已初始化")
+    else:
+        print("  - about_info 已存在，跳过")
+
 
 async def main() -> None:
     """执行全部初始化任务。"""

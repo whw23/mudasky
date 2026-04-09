@@ -62,10 +62,61 @@ class ContactInfoValue(BaseModel):
     office_hours: str = Field("", description="办公时间")
 
 
+class SiteInfoValue(BaseModel):
+    """品牌信息配置值验证。"""
+
+    brand_name: str = Field(..., description="品牌中文名")
+    brand_name_en: str = Field("", description="品牌英文名")
+    tagline: str = Field("", description="品牌标语")
+    hotline: str = Field("", description="服务热线")
+    hotline_contact: str = Field("", description="热线联系人")
+    logo_url: str = Field("", description="Logo 图片地址")
+    favicon_url: str = Field("", description="Favicon 地址")
+    wechat_qr_url: str = Field("", description="微信二维码图片地址")
+    icp_filing: str = Field("", description="ICP 备案号")
+
+
+class HomepageStatItem(BaseModel):
+    """首页统计条目。"""
+
+    value: str = Field(..., description="统计数值,如 15+")
+    label: str = Field(..., description="统计标签,如 年办学经验")
+
+
+class HomepageStatsValue(BaseModel):
+    """homepage_stats 配置值验证。"""
+
+    items: list[HomepageStatItem]
+
+    @model_validator(mode="before")
+    @classmethod
+    def wrap_list(cls, data: Any) -> Any:
+        """接收原始 list 并包装为 dict。"""
+        if isinstance(data, list):
+            return {"items": data}
+        return data
+
+    def to_list(self) -> list[dict]:
+        """转为存储格式。"""
+        return [item.model_dump() for item in self.items]
+
+
+class AboutInfoValue(BaseModel):
+    """关于我们页面内容配置值验证。"""
+
+    history: str = Field(..., description="公司历史介绍")
+    mission: str = Field(..., description="使命")
+    vision: str = Field(..., description="愿景")
+    partnership: str = Field("", description="合作介绍")
+
+
 # 配置键 → 验证器映射
 CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "phone_country_codes": PhoneCountryCodesValue,
     "contact_info": ContactInfoValue,
+    "site_info": SiteInfoValue,
+    "homepage_stats": HomepageStatsValue,
+    "about_info": AboutInfoValue,
 }
 
 

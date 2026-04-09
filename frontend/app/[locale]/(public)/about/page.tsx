@@ -1,9 +1,13 @@
 import { Banner } from "@/components/layout/Banner"
+import {
+  HistorySection,
+  MissionVisionSection,
+  PartnershipSection,
+  AboutStatsSection,
+} from "@/components/about/AboutContent"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import {
-  Award,
-  Users,
   GraduationCap,
   Globe,
   Handshake,
@@ -14,13 +18,6 @@ import {
 export default async function AboutPage() {
   const p = await getTranslations("Pages")
   const t = await getTranslations("About")
-
-  const stats = [
-    { value: "15+", label: t("stats.years") },
-    { value: "500+", label: t("stats.cases") },
-    { value: "50+", label: t("stats.partners") },
-    { value: "98%", label: t("stats.visaRate") },
-  ]
 
   const team = [
     {
@@ -58,30 +55,13 @@ export default async function AboutPage() {
           </h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
-        <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">
-          {t("historyContent")}
-        </p>
+        <HistorySection />
       </section>
 
       {/* 使命愿景 */}
       <section className="bg-gray-50 py-10 md:py-16">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-lg border bg-white p-8">
-              <Award className="h-10 w-10 text-primary" />
-              <h3 className="mt-4 text-xl font-bold">{t("missionTitle")}</h3>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
-                {t("missionContent")}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-white p-8">
-              <Globe className="h-10 w-10 text-primary" />
-              <h3 className="mt-4 text-xl font-bold">{t("visionTitle")}</h3>
-              <p className="mt-3 leading-relaxed text-muted-foreground">
-                {t("visionContent")}
-              </p>
-            </div>
-          </div>
+          <MissionVisionSection />
         </div>
       </section>
 
@@ -97,9 +77,7 @@ export default async function AboutPage() {
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
         <div className="mx-auto mt-8 max-w-4xl rounded-lg border bg-gray-50 p-8 md:p-12">
-          <p className="leading-relaxed text-muted-foreground">
-            {t("partnershipContent")}
-          </p>
+          <PartnershipSection />
           <div className="mt-6 flex flex-wrap gap-3">
             <span className="rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
               {t("partnerBadge1")}
@@ -115,20 +93,7 @@ export default async function AboutPage() {
       </section>
 
       {/* 数据统计 */}
-      <section className="border-y bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-10 md:grid-cols-4 md:py-14">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary">
-                {stat.value}
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <AboutStatsSection />
 
       {/* 团队介绍 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
