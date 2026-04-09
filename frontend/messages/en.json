@@ -773,7 +773,19 @@
     "saveError": "Failed to save",
     "fetchError": "Failed to fetch config",
     "noData": "No country codes",
-    "deleteConfirm": "Delete {code}?"
+    "deleteConfirm": "Delete {code}?",
+    "contactInfo": "Contact Info",
+    "contactInfoDesc": "Manage website contact information",
+    "contactAddress": "Address",
+    "contactAddressPlaceholder": "Enter office address",
+    "contactPhone": "Phone",
+    "contactPhonePlaceholder": "Enter phone number",
+    "contactEmail": "Email",
+    "contactEmailPlaceholder": "Enter email address",
+    "contactWechat": "WeChat",
+    "contactWechatPlaceholder": "Enter WeChat ID",
+    "contactOfficeHours": "Office Hours",
+    "contactOfficeHoursPlaceholder": "e.g. Mon-Fri 9:00-18:00"
   },
   "AdminArticles": {
     "status_all": "All",

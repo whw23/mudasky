@@ -6,6 +6,7 @@
 
 import { useTranslations } from 'next-intl'
 import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
+import { ContactInfoEditor } from '@/components/admin/ContactInfoEditor'
 
 export default function AdminSettingsPage() {
   const t = useTranslations('AdminSettings')
@@ -14,6 +15,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('title')}</h1>
       <CountryCodeEditor />
+      <ContactInfoEditor />
     </div>
   )
 }

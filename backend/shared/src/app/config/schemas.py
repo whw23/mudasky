@@ -52,9 +52,20 @@ class PhoneCountryCodesValue(BaseModel):
         return [item.model_dump() for item in self.items]
 
 
+class ContactInfoValue(BaseModel):
+    """联系方式配置值验证。"""
+
+    address: str = Field(..., description="地址")
+    phone: str = Field(..., description="电话")
+    email: str = Field(..., description="邮箱")
+    wechat: str = Field("", description="微信号")
+    office_hours: str = Field("", description="办公时间")
+
+
 # 配置键 → 验证器映射
 CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "phone_country_codes": PhoneCountryCodesValue,
+    "contact_info": ContactInfoValue,
 }
 
 

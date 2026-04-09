@@ -773,7 +773,19 @@
     "saveError": "Speichern fehlgeschlagen",
     "fetchError": "Konfiguration konnte nicht geladen werden",
     "noData": "Keine Ländercodes",
-    "deleteConfirm": "{code} löschen?"
+    "deleteConfirm": "{code} löschen?",
+    "contactInfo": "Kontaktinformationen",
+    "contactInfoDesc": "Kontaktinformationen der Website verwalten",
+    "contactAddress": "Adresse",
+    "contactAddressPlaceholder": "Büroadresse eingeben",
+    "contactPhone": "Telefon",
+    "contactPhonePlaceholder": "Telefonnummer eingeben",
+    "contactEmail": "E-Mail",
+    "contactEmailPlaceholder": "E-Mail-Adresse eingeben",
+    "contactWechat": "WeChat",
+    "contactWechatPlaceholder": "WeChat-ID eingeben",
+    "contactOfficeHours": "Öffnungszeiten",
+    "contactOfficeHoursPlaceholder": "z.B. Mo-Fr 9:00-18:00"
   },
   "AdminArticles": {
     "status_all": "Alle",

@@ -10,6 +10,7 @@
 import { Phone, Mail } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
+import { useConfig } from "@/contexts/ConfigContext"
 
 /** 快速链接：导航键 + 路径 */
 const QUICK_LINKS = [
@@ -31,6 +32,7 @@ const SERVICE_LINKS = [
 export function Footer() {
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
+  const { contactInfo } = useConfig()
 
   return (
     <footer className="border-t border-border/40 bg-muted/50">
@@ -47,11 +49,11 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <Phone className="size-4 shrink-0 text-primary" />
-              <span>{t("phone")}</span>
+              <span>{contactInfo.phone || t("phone")}</span>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0 text-primary" />
-              <span>{t("email")}</span>
+              <span>{contactInfo.email || t("email")}</span>
             </li>
           </ul>
         </div>

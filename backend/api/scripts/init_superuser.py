@@ -169,6 +169,7 @@ async def init_system_config(session) -> None:
     """初始化系统配置。"""
     from app.config.models import SystemConfig
 
+    # phone_country_codes
     existing = await session.execute(
         select(SystemConfig).where(SystemConfig.key == "phone_country_codes")
     )
@@ -191,6 +192,27 @@ async def init_system_config(session) -> None:
         print("  ✓ phone_country_codes 已初始化")
     else:
         print("  - phone_country_codes 已存在，跳过")
+
+    # contact_info
+    existing_contact = await session.execute(
+        select(SystemConfig).where(SystemConfig.key == "contact_info")
+    )
+    if not existing_contact.scalar_one_or_none():
+        session.add(SystemConfig(
+            key="contact_info",
+            value={
+                "address": "江苏省南京市xx区xx路xx号",
+                "phone": "189-1268-6656",
+                "email": "info@mutu-edu.com",
+                "wechat": "mutu_edu",
+                "office_hours": "周一至周五 9:00-18:00",
+            },
+            description="联系方式配置",
+        ))
+        await session.flush()
+        print("  ✓ contact_info 已初始化")
+    else:
+        print("  - contact_info 已存在，跳过")
 
 
 async def main() -> None:

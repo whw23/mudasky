@@ -773,7 +773,19 @@
     "saveError": "保存失败",
     "fetchError": "获取配置失败",
     "noData": "暂无国家码",
-    "deleteConfirm": "确定删除 {code} 吗？"
+    "deleteConfirm": "确定删除 {code} 吗？",
+    "contactInfo": "联系方式",
+    "contactInfoDesc": "管理网站显示的联系方式信息",
+    "contactAddress": "地址",
+    "contactAddressPlaceholder": "请输入办公地址",
+    "contactPhone": "电话",
+    "contactPhonePlaceholder": "请输入联系电话",
+    "contactEmail": "邮箱",
+    "contactEmailPlaceholder": "请输入邮箱地址",
+    "contactWechat": "微信号",
+    "contactWechatPlaceholder": "请输入微信号",
+    "contactOfficeHours": "办公时间",
+    "contactOfficeHoursPlaceholder": "如：周一至周五 9:00-18:00"
   },
   "AdminArticles": {
     "status_all": "全部",

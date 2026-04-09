@@ -10,3 +10,12 @@ export interface CountryCode {
   digits: number
   enabled: boolean
 }
+
+/** 联系方式配置 */
+export interface ContactInfo {
+  address: string
+  phone: string
+  email: string
+  wechat: string
+  office_hours: string
+}

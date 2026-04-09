@@ -773,7 +773,19 @@
     "saveError": "保存に失敗しました",
     "fetchError": "設定の取得に失敗しました",
     "noData": "国コードがありません",
-    "deleteConfirm": "{code} を削除しますか？"
+    "deleteConfirm": "{code} を削除しますか？",
+    "contactInfo": "連絡先情報",
+    "contactInfoDesc": "ウェブサイトに表示する連絡先情報を管理",
+    "contactAddress": "住所",
+    "contactAddressPlaceholder": "オフィスの住所を入力",
+    "contactPhone": "電話番号",
+    "contactPhonePlaceholder": "電話番号を入力",
+    "contactEmail": "メール",
+    "contactEmailPlaceholder": "メールアドレスを入力",
+    "contactWechat": "WeChat",
+    "contactWechatPlaceholder": "WeChat IDを入力",
+    "contactOfficeHours": "営業時間",
+    "contactOfficeHoursPlaceholder": "例：月〜金 9:00-18:00"
   },
   "AdminArticles": {
     "status_all": "すべて",
