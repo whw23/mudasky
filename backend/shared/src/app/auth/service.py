@@ -19,6 +19,7 @@ from app.core.exceptions import (
     UnauthorizedException,
 )
 from app.core.config import settings
+from app.core.crypto import decrypt_password
 from app.core.security import hash_password, verify_password
 from app.rbac import repository as rbac_repo
 from app.user import repository as user_repo
@@ -56,7 +57,8 @@ class AuthService:
         phone: str,
         code: str,
         username: str | None = None,
-        password: str | None = None,
+        encrypted_password: str | None = None,
+        nonce: str | None = None,
     ) -> User:
         """用户注册。
 
@@ -72,6 +74,9 @@ class AuthService:
             )
             if existing_name:
                 raise ConflictException(message="用户名已被使用")
+        password = None
+        if encrypted_password and nonce:
+            password = decrypt_password(encrypted_password, nonce)
         password_hash = hash_password(password) if password else None
         user = User(
             phone=phone,
@@ -85,7 +90,8 @@ class AuthService:
         self,
         phone: str | None = None,
         username: str | None = None,
-        password: str | None = None,
+        encrypted_password: str | None = None,
+        nonce: str | None = None,
         code: str | None = None,
         totp: str | None = None,
         sms_code_2fa: str | None = None,
@@ -97,6 +103,10 @@ class AuthService:
         2. 用户名 + 密码：需检查二步验证
         3. 手机号 + 密码：需检查二步验证
         """
+        # 解密密码
+        password = None
+        if encrypted_password and nonce:
+            password = decrypt_password(encrypted_password, nonce)
         if phone and code and not password:
             return await self._login_by_sms(phone, code)
         if username and password:

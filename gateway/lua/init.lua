@@ -34,6 +34,7 @@ _M.public_routes = {
   ["POST:/api/auth/register"] = true,
   ["POST:/api/auth/login"] = true,
   ["POST:/api/auth/refresh"] = true,
+  ["GET:/api/auth/public-key"] = true,
   ["GET:/api/health"] = true,
   ["GET:/api/content/categories"] = true,
 }

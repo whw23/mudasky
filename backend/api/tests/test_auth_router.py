@@ -121,7 +121,8 @@ class TestRegister:
                 "phone": "+8613800138000",
                 "code": "123456",
                 "username": "newuser",
-                "password": "password123",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
             },
         )
         assert resp.status_code == 200
@@ -200,7 +201,8 @@ class TestLogin:
             "/auth/login",
             json={
                 "username": "testuser",
-                "password": "password123",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
             },
         )
         assert resp.status_code == 200
@@ -216,7 +218,8 @@ class TestLogin:
             "/auth/login",
             json={
                 "username": "testuser",
-                "password": "wrong",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
             },
         )
         assert resp.status_code == 401
@@ -227,10 +230,13 @@ class TestRefreshTokenHash:
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 AuthService。"""
+        """模拟 AuthService 和内部密钥。"""
         with patch(
             "app.auth.router.AuthService"
-        ) as mock_cls:
+        ) as mock_cls, patch(
+            "app.core.config.settings"
+        ) as mock_settings:
+            mock_settings.INTERNAL_SECRET = "x"
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
             yield

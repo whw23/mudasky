@@ -9,6 +9,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
+import { encryptPassword } from '@/lib/crypto'
 import {
   Dialog,
   DialogContent,
@@ -68,7 +69,11 @@ export function RegisterModal() {
     try {
       const payload: Record<string, string> = { phone, code }
       if (username) payload.username = username
-      if (password) payload.password = password
+      if (password) {
+        const encrypted = await encryptPassword(password)
+        payload.encrypted_password = encrypted.encrypted_password
+        payload.nonce = encrypted.nonce
+      }
 
       await api.post('/auth/register', payload)
       await fetchUser()

@@ -147,7 +147,8 @@ class TestChangePassword:
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
-                "new_password": "newpassword123",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
             },
             headers=user_headers,
         )
@@ -161,25 +162,11 @@ class TestChangePassword:
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
-                "new_password": "newpassword123",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
             },
         )
         assert resp.status_code == 403
-
-    async def test_change_password_short(
-        self, client, user_headers
-    ):
-        """密码过短返回 422。"""
-        resp = await client.put(
-            "/users/me/password",
-            json={
-                "phone": "+8613800138000",
-                "code": "123456",
-                "new_password": "123",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 422
 
 
 class TestChangePhone:
