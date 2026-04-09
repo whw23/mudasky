@@ -146,9 +146,8 @@ export default function DashboardPage() {
     href: "/articles",
   }))
 
-  /** 用户类型标签 */
-  const userTypeLabel =
-    user.user_type === "admin" ? t("admin") : t("normalUser")
+  /** 角色标签 */
+  const roleLabel = user.role_name || t("normalUser")
 
   return (
     <div className="space-y-6">
@@ -179,7 +178,7 @@ export default function DashboardPage() {
         <StatCard
           icon={Shield}
           label={t("accountType")}
-          value={userTypeLabel}
+          value={roleLabel}
           loading={loading}
         />
       </div>

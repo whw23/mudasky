@@ -15,10 +15,9 @@ import { Separator } from "@/components/ui/separator"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
-import { usePermissions } from "@/hooks/use-permissions"
 import api from "@/lib/api"
 import { encryptPassword } from "@/lib/crypto"
-import type { User, PermissionGroup } from "@/types"
+import type { User, Role } from "@/types"
 
 interface UserDrawerProps {
   userId: string | null
@@ -30,20 +29,14 @@ interface UserDrawerProps {
 /** 用户详情与操作抽屉 */
 export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps) {
   const t = useTranslations("AdminUsers")
-  const { hasPermission, hasAnyPermission } = usePermissions()
 
   const [user, setUser] = useState<User | null>(null)
-  const [groups, setGroups] = useState<PermissionGroup[]>([])
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("")
+  const [roles, setRoles] = useState<Role[]>([])
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("")
   const [storageQuota, setStorageQuota] = useState<number>(0)
   const [password, setPassword] = useState("")
   const [passwordConfirm, setPasswordConfirm] = useState("")
-  const [newUserType, setNewUserType] = useState("")
   const [saving, setSaving] = useState(false)
-
-  const canManageMember = hasPermission("member:manage")
-  const canManageStaff = hasPermission("staff:manage")
-  const canChangeType = canManageMember && canManageStaff
 
   /** 加载用户详情 */
   const fetchUser = useCallback(async () => {
@@ -51,19 +44,18 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
     try {
       const { data } = await api.get<User>(`/admin/users/${userId}`)
       setUser(data)
-      setSelectedGroupId(data.group_id || "")
+      setSelectedRoleId(data.role_id || "")
       setStorageQuota(data.storage_quota)
-      setNewUserType(data.user_type)
     } catch {
       toast.error(t("fetchError"))
     }
   }, [userId, t])
 
-  /** 加载权限组列表 */
-  const fetchGroups = useCallback(async () => {
+  /** 加载角色列表 */
+  const fetchRoles = useCallback(async () => {
     try {
-      const { data } = await api.get<PermissionGroup[]>("/groups")
-      setGroups(data)
+      const { data } = await api.get<Role[]>("/roles")
+      setRoles(data)
     } catch {
       /* 忽略 */
     }
@@ -72,11 +64,11 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   useEffect(() => {
     if (open && userId) {
       fetchUser()
-      fetchGroups()
+      fetchRoles()
       setPassword("")
       setPasswordConfirm("")
     }
-  }, [open, userId, fetchUser, fetchGroups])
+  }, [open, userId, fetchUser, fetchRoles])
 
   /** 通用操作包装 */
   const runAction = async (action: () => Promise<void>, successMsg: string) => {
@@ -101,10 +93,10 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
     )
   }
 
-  /** 保存分组 */
-  const handleSaveGroup = () => {
+  /** 保存角色 */
+  const handleSaveRole = () => {
     runAction(
-      () => api.put(`/admin/users/${userId}/groups`, { group_id: selectedGroupId || null }),
+      () => api.put(`/admin/users/${userId}/role`, { role_id: selectedRoleId || null }),
       t("saveGroupsSuccess"),
     )
   }
@@ -130,15 +122,6 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
         nonce: encrypted.nonce,
       }),
       t("resetPasswordSuccess"),
-    )
-  }
-
-  /** 修改用户类型 */
-  const handleChangeType = () => {
-    if (!newUserType || newUserType === user?.user_type) return
-    runAction(
-      () => api.patch(`/admin/users/${userId}/type`, { user_type: newUserType }),
-      t("changeTypeSuccess"),
     )
   }
 
@@ -174,8 +157,6 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
                 <span>{user.username ?? "-"}</span>
                 <span className="text-muted-foreground">{t("col_phone")}</span>
                 <span>{user.phone ?? "-"}</span>
-                <span className="text-muted-foreground">{t("col_type")}</span>
-                <span>{t(`type_${user.user_type}`)}</span>
                 <span className="text-muted-foreground">{t("col_status")}</span>
                 <span>{t(user.is_active ? "status_active" : "status_inactive")}</span>
                 <span className="text-muted-foreground">{t("col_createdAt")}</span>
@@ -200,22 +181,22 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             <Separator />
 
-            {/* 分组分配 */}
+            {/* 角色分配 */}
             <section className="space-y-2">
               <h3 className="text-sm font-medium">{t("assignGroups")}</h3>
               <select
-                value={selectedGroupId}
-                onChange={(e) => setSelectedGroupId(e.target.value)}
+                value={selectedRoleId}
+                onChange={(e) => setSelectedRoleId(e.target.value)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring"
               >
                 <option value="">{t("noGroup")}</option>
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
+                {roles.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
                   </option>
                 ))}
               </select>
-              <Button size="sm" disabled={saving} onClick={handleSaveGroup}>
+              <Button size="sm" disabled={saving} onClick={handleSaveRole}>
                 {t("saveGroups")}
               </Button>
             </section>
@@ -267,30 +248,6 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
                 </Button>
               </div>
             </section>
-
-            {/* 修改用户类型 */}
-            {canChangeType && (
-              <>
-                <Separator />
-                <section className="space-y-2">
-                  <h3 className="text-sm font-medium">{t("changeType")}</h3>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={newUserType}
-                      onChange={(e) => setNewUserType(e.target.value)}
-                      className="rounded-md border bg-background px-3 py-1.5 text-sm"
-                    >
-                      <option value="guest">{t("type_guest")}</option>
-                      <option value="member">{t("type_member")}</option>
-                      <option value="staff">{t("type_staff")}</option>
-                    </select>
-                    <Button size="sm" disabled={saving} onClick={handleChangeType}>
-                      {t("save")}
-                    </Button>
-                  </div>
-                </section>
-              </>
-            )}
 
             <Separator />
 

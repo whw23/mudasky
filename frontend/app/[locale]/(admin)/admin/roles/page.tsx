@@ -1,20 +1,20 @@
 "use client"
 
 /**
- * 权限组管理页面。
+ * 角色管理页面。
  */
 
 import { useTranslations } from "next-intl"
-import { GroupList } from "@/components/admin/GroupList"
+import { RoleList } from "@/components/admin/RoleList"
 
-/** 权限组管理页面 */
-export default function AdminGroupsPage() {
+/** 角色管理页面 */
+export default function AdminRolesPage() {
   const t = useTranslations("AdminGroups")
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">{t("title")}</h1>
-      <GroupList />
+      <RoleList />
     </div>
   )
 }

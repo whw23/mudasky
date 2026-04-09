@@ -2,7 +2,7 @@
 
 /**
  * 后台管理侧边栏
- * 包含仪表盘、用户管理、权限组管理、文章管理、分类管理导航
+ * 包含仪表盘、用户管理、角色管理、文章管理、分类管理等导航
  * 根据用户权限过滤菜单项
  */
 
@@ -20,7 +20,6 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { usePermissions } from "@/hooks/use-permissions"
-import { useAuth } from "@/hooks/use-auth"
 
 /** 菜单项类型 */
 interface MenuItem {
@@ -28,33 +27,30 @@ interface MenuItem {
   href: string
   icon: typeof LayoutDashboard
   permissions?: string[]
-  superuserOnly?: boolean
 }
 
 /** 侧边栏菜单键与路径映射 */
 const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["member:manage", "staff:manage"] },
-  { key: "groupManagement", href: "/admin/groups", icon: Shield, permissions: ["group:manage"] },
-  { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
-  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["post:manage"] },
-  { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },
-  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["post:manage"] },
-  { key: "settings", href: "/admin/settings", icon: Settings, superuserOnly: true },
+  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin.user.*"] },
+  { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin.role.*"] },
+  { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["admin.content.*"] },
+  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["admin.case.*"] },
+  { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["admin.category.*"] },
+  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["admin.university.*"] },
+  { key: "settings", href: "/admin/settings", icon: Settings, permissions: ["admin.settings.*"] },
 ]
 
 /** 后台管理侧边栏 */
 export function AdminSidebar() {
   const pathname = usePathname()
   const t = useTranslations("Admin")
-  const { hasAnyPermission } = usePermissions()
-  const { user } = useAuth()
+  const { hasPermission } = usePermissions()
 
   /** 根据权限过滤菜单项 */
   const visibleItems = MENU_KEYS.filter(
     (item) =>
-      (!item.permissions || hasAnyPermission(...item.permissions)) &&
-      (!item.superuserOnly || user?.is_superuser)
+      !item.permissions || item.permissions.some((p) => hasPermission(p))
   )
 
   return (

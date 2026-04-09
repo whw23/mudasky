@@ -482,25 +482,14 @@ export function ProfileInfo() {
 
           <Separator />
 
-          {/* 用户类型（只读） */}
-          <div className="space-y-1">
-            <Label className="text-sm font-medium">{t('userType')}</Label>
-            <span className="inline-block rounded-full bg-muted px-3 py-0.5 text-xs font-medium">
-              {user.user_type}
-            </span>
-          </div>
-
-          {/* 权限组（只读） */}
-          {user.group_name && (
-            <>
-              <Separator />
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">{t('groups')}</Label>
-                <span className="inline-block rounded-full bg-muted px-3 py-0.5 text-xs font-medium">
-                  {user.group_name}
-                </span>
-              </div>
-            </>
+          {/* 角色（只读） */}
+          {user.role_name && (
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">{t('role')}</Label>
+              <span className="inline-block rounded-full bg-muted px-3 py-0.5 text-xs font-medium">
+                {user.role_name}
+              </span>
+            </div>
           )}
         </CardContent>
       </Card>
