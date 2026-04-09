@@ -140,7 +140,8 @@ async def test_create_group(session):
     await create_group(session, group)
 
     session.add.assert_called_once_with(group)
-    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()
+    session.refresh.assert_awaited_once_with(group)
 
 
 async def test_update_group(session):
@@ -149,7 +150,8 @@ async def test_update_group(session):
 
     await update_group(session, group)
 
-    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()
+    session.refresh.assert_awaited_once_with(group)
 
 
 async def test_delete_group(session):
@@ -157,7 +159,7 @@ async def test_delete_group(session):
     await delete_group(session, "group-1")
 
     session.execute.assert_awaited_once()
-    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()
 
 
 # ---- user permissions / groups ----
@@ -269,7 +271,7 @@ async def test_set_user_group_with_group(session):
     await set_user_group(session, "user-1", "group-1")
 
     assert user_mock.group_id == "group-1"
-    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()
 
 
 async def test_set_user_group_clear(session):
@@ -282,4 +284,4 @@ async def test_set_user_group_clear(session):
     await set_user_group(session, "user-1", None)
 
     assert user_mock.group_id is None
-    session.flush.assert_awaited_once()
+    session.commit.assert_awaited_once()

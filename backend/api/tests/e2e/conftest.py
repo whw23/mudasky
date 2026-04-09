@@ -91,9 +91,9 @@ async def e2e_client(wait_for_healthy):
         yield client
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def superuser_client(wait_for_healthy):
-    """已用超级管理员登录的 client。"""
+    """已用超级管理员登录的 client（session 级别，只登录一次）。"""
     async with httpx.AsyncClient(
         base_url=E2E_BASE_URL,
         headers=CSRF_HEADER,

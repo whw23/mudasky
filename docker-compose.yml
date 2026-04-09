@@ -6,6 +6,11 @@ services:
     ports:
       - "80:80"
     env_file: env/gateway.env
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_started
 
   frontend:
     build:

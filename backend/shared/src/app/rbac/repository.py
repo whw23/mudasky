@@ -93,14 +93,16 @@ async def create_group(
 ) -> None:
     """创建权限组。"""
     session.add(group)
-    await session.flush()
+    await session.commit()
+    await session.refresh(group)
 
 
 async def update_group(
     session: AsyncSession, group: PermissionGroup
 ) -> None:
     """更新权限组。"""
-    await session.flush()
+    await session.commit()
+    await session.refresh(group)
 
 
 async def delete_group(
@@ -112,7 +114,7 @@ async def delete_group(
         .where(PermissionGroup.id == group_id)
     )
     await session.execute(stmt)
-    await session.flush()
+    await session.commit()
 
 
 async def get_user_permissions(
@@ -175,4 +177,4 @@ async def set_user_group(
     user = result.scalar_one_or_none()
     if user:
         user.group_id = group_id
-        await session.flush()
+        await session.commit()

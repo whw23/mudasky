@@ -54,7 +54,8 @@ class TestAdminUsers:
         self, superuser_client, e2e_client
     ):
         """创建测试用户 -> 禁用 -> 验证 -> 恢复 -> 清理。"""
-        phone = "+8613900000088"
+        import random
+        phone = f"+86139{random.randint(10000000, 99999999)}"
 
         # 1. 注册测试用户
         sms_resp = await e2e_client.post(
@@ -70,7 +71,7 @@ class TestAdminUsers:
             json={
                 "phone": phone,
                 "code": code,
-                "username": "e2e_admin_test_user",
+                "username": f"e2e_admin_{phone[-6:]}",
                 **encrypted,
             },
         )

@@ -53,7 +53,8 @@ class TestRegister:
 
     async def test_register_and_login(self, e2e_client, superuser_client):
         """注册新用户 -> 登录 -> 验证 -> 清理。"""
-        phone = "+8613900000099"
+        import random
+        phone = f"+86139{random.randint(10000000, 99999999)}"
 
         # 1. 发送验证码
         sms_resp = await e2e_client.post(
@@ -70,19 +71,19 @@ class TestRegister:
             json={
                 "phone": phone,
                 "code": code,
-                "username": "e2e_test_user",
+                "username": f"e2e_user_{phone[-6:]}",
                 **encrypted,
             },
         )
         assert reg_resp.status_code == 200
         user_data = reg_resp.json()
-        assert user_data["user"]["username"] == "e2e_test_user"
+        assert user_data["user"]["username"] == f"e2e_user_{phone[-6:]}"
         user_id = user_data["user"]["id"]
 
         # 3. 注册后 cookie 已设置，可以访问 /users/me
         me_resp = await e2e_client.get("/api/users/me")
         assert me_resp.status_code == 200
-        assert me_resp.json()["username"] == "e2e_test_user"
+        assert me_resp.json()["username"] == f"e2e_user_{phone[-6:]}"
 
         # 4. 用新用户密码登录（新 client）
         async with httpx.AsyncClient(
@@ -95,7 +96,7 @@ class TestRegister:
             login_resp = await login_client.post(
                 "/api/auth/login",
                 json={
-                    "username": "e2e_test_user",
+                    "username": f"e2e_user_{phone[-6:]}",
                     **encrypted2,
                 },
             )
