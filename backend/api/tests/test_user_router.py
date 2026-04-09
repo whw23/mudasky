@@ -21,8 +21,8 @@ def _make_user_response() -> dict:
         "is_superuser": False,
         "is_active": True,
         "permissions": [],
-        "group_ids": [],
-        "group_names": [],
+        "group_id": None,
+        "group_name": None,
         "two_factor_enabled": False,
         "two_factor_method": None,
         "storage_quota": 104857600,
@@ -46,6 +46,8 @@ def _make_user_model(**kwargs) -> MagicMock:
     user.two_factor_method = kwargs.get(
         "two_factor_method", None
     )
+    user.group_id = kwargs.get("group_id", None)
+    user.group_name = kwargs.get("group_name", None)
     user.storage_quota = kwargs.get("storage_quota", 104857600)
     user.created_at = kwargs.get(
         "created_at", datetime.now(timezone.utc)

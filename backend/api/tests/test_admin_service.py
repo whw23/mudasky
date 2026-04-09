@@ -28,6 +28,7 @@ def _make_user(
     u.is_superuser = is_superuser
     u.is_active = True
     u.two_factor_enabled = False
+    u.group_id = None
     u.storage_quota = 104857600
     u.created_at = datetime.now(timezone.utc)
     u.updated_at = None
@@ -118,8 +119,8 @@ async def test_change_user_type(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=["member:manage"]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=["g1"]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value="组1"
     )
 
     result = await service.change_user_type("u1", "staff")

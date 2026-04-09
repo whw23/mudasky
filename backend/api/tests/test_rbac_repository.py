@@ -15,12 +15,12 @@ from app.rbac.repository import (
     get_group_by_id,
     get_group_by_name,
     get_permissions_by_ids,
-    get_user_group_ids,
-    get_user_group_names,
+    get_user_group_id,
+    get_user_group_name,
     get_user_permissions,
     list_groups,
     list_permissions,
-    set_user_groups,
+    set_user_group,
     update_group,
 )
 
@@ -174,11 +174,17 @@ async def test_get_user_permissions_normal(session):
     group.auto_include_all = False
     group.permissions = [perm1, perm2]
 
-    mock_result = MagicMock()
-    mock_scalars = MagicMock()
-    mock_scalars.all.return_value = [group]
-    mock_result.scalars.return_value = mock_scalars
-    session.execute.return_value = mock_result
+    # 第一次查询 User.group_id
+    group_id_result = MagicMock()
+    group_id_result.scalar_one_or_none.return_value = "group-1"
+
+    # 第二次查询 get_group_by_id
+    group_result = MagicMock()
+    group_result.scalar_one_or_none.return_value = group
+
+    session.execute = AsyncMock(
+        side_effect=[group_id_result, group_result]
+    )
 
     result = await get_user_permissions(session, "user-1")
 
@@ -191,13 +197,15 @@ async def test_get_user_permissions_auto_include_all(session):
     group.auto_include_all = True
     group.permissions = []
 
-    # 用户权限组查询
-    group_result = MagicMock()
-    group_scalars = MagicMock()
-    group_scalars.all.return_value = [group]
-    group_result.scalars.return_value = group_scalars
+    # 第一次查询 User.group_id
+    group_id_result = MagicMock()
+    group_id_result.scalar_one_or_none.return_value = "group-1"
 
-    # 所有权限查询
+    # 第二次查询 get_group_by_id
+    group_by_id_result = MagicMock()
+    group_by_id_result.scalar_one_or_none.return_value = group
+
+    # 第三次查询 list_permissions（所有权限）
     perm = MagicMock(spec=Permission)
     perm.code = "admin:all"
     all_perms_result = MagicMock()
@@ -206,7 +214,11 @@ async def test_get_user_permissions_auto_include_all(session):
     all_perms_result.scalars.return_value = all_perms_scalars
 
     session.execute = AsyncMock(
-        side_effect=[group_result, all_perms_result]
+        side_effect=[
+            group_id_result,
+            group_by_id_result,
+            all_perms_result,
+        ]
     )
 
     result = await get_user_permissions(session, "user-1")
@@ -217,9 +229,7 @@ async def test_get_user_permissions_auto_include_all(session):
 async def test_get_user_permissions_no_groups(session):
     """用户无权限组返回空列表。"""
     mock_result = MagicMock()
-    mock_scalars = MagicMock()
-    mock_scalars.all.return_value = []
-    mock_result.scalars.return_value = mock_scalars
+    mock_result.scalar_one_or_none.return_value = None
     session.execute.return_value = mock_result
 
     result = await get_user_permissions(session, "user-1")
@@ -227,45 +237,49 @@ async def test_get_user_permissions_no_groups(session):
     assert result == []
 
 
-async def test_get_user_group_ids(session):
+async def test_get_user_group_id(session):
     """查询用户所属权限组 ID。"""
-    row1 = ("group-1",)
-    row2 = ("group-2",)
     mock_result = MagicMock()
-    mock_result.all.return_value = [row1, row2]
+    mock_result.scalar_one_or_none.return_value = "group-1"
     session.execute.return_value = mock_result
 
-    result = await get_user_group_ids(session, "user-1")
+    result = await get_user_group_id(session, "user-1")
 
-    assert result == ["group-1", "group-2"]
+    assert result == "group-1"
 
 
-async def test_get_user_group_names(session):
+async def test_get_user_group_name(session):
     """查询用户所属权限组名称。"""
-    row1 = ("管理员组",)
-    row2 = ("编辑组",)
     mock_result = MagicMock()
-    mock_result.all.return_value = [row1, row2]
+    mock_result.scalar_one_or_none.return_value = "管理员组"
     session.execute.return_value = mock_result
 
-    result = await get_user_group_names(session, "user-1")
+    result = await get_user_group_name(session, "user-1")
 
-    assert result == ["管理员组", "编辑组"]
+    assert result == "管理员组"
 
 
-async def test_set_user_groups_with_groups(session):
+async def test_set_user_group_with_group(session):
     """设置用户权限组（有新组）。"""
-    await set_user_groups(session, "user-1", ["group-1", "group-2"])
+    user_mock = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = user_mock
+    session.execute.return_value = mock_result
 
-    # 应该有两次 execute: 删除旧关联 + 插入新关联
-    assert session.execute.await_count == 2
+    await set_user_group(session, "user-1", "group-1")
+
+    assert user_mock.group_id == "group-1"
     session.flush.assert_awaited_once()
 
 
-async def test_set_user_groups_empty(session):
-    """设置用户权限组（清空所有组）。"""
-    await set_user_groups(session, "user-1", [])
+async def test_set_user_group_clear(session):
+    """设置用户权限组（清空组）。"""
+    user_mock = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = user_mock
+    session.execute.return_value = mock_result
 
-    # 只有一次 execute: 删除旧关联
-    session.execute.assert_awaited_once()
+    await set_user_group(session, "user-1", None)
+
+    assert user_mock.group_id is None
     session.flush.assert_awaited_once()

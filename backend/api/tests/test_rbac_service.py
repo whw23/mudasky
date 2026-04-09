@@ -215,25 +215,25 @@ async def test_get_user_permissions_auto_include_all(
 
 @pytest.mark.asyncio
 @patch(REPO)
-async def test_assign_user_groups_superuser(mock_repo, service):
+async def test_assign_user_group_superuser(mock_repo, service):
     """超级管理员可以分配任意权限组，跳过约束检查。"""
-    mock_repo.set_user_groups = AsyncMock()
+    mock_repo.set_user_group = AsyncMock()
 
-    await service.assign_user_groups(
+    await service.assign_user_group(
         user_id="user-1",
-        group_ids=["g1", "g2"],
+        group_id="g1",
         operator_permissions=[],
         is_superuser=True,
     )
 
-    mock_repo.set_user_groups.assert_awaited_once_with(
-        service.session, "user-1", ["g1", "g2"]
+    mock_repo.set_user_group.assert_awaited_once_with(
+        service.session, "user-1", "g1"
     )
 
 
 @pytest.mark.asyncio
 @patch(REPO)
-async def test_assign_user_groups_constraint(mock_repo, service):
+async def test_assign_user_group_constraint(mock_repo, service):
     """非超级管理员且无 group:manage 时，不能分配超出自身权限的组。"""
     perm_admin = _make_permission("admin:manage")
     group_with_admin = _make_group(
@@ -246,9 +246,9 @@ async def test_assign_user_groups_constraint(mock_repo, service):
     )
 
     with pytest.raises(ForbiddenException):
-        await service.assign_user_groups(
+        await service.assign_user_group(
             user_id="user-1",
-            group_ids=["g-admin"],
+            group_id="g-admin",
             operator_permissions=["user:read"],
             is_superuser=False,
         )

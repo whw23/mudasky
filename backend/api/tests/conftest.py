@@ -92,6 +92,7 @@ def sample_user() -> MagicMock:
             "two_factor_method", None
         )
         user.totp_secret = kwargs.get("totp_secret", None)
+        user.group_id = kwargs.get("group_id", None)
         user.storage_quota = kwargs.get(
             "storage_quota", 104857600
         )

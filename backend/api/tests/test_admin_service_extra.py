@@ -34,6 +34,7 @@ def _make_user(
     u.is_superuser = is_superuser
     u.is_active = is_active
     u.two_factor_enabled = False
+    u.group_id = None
     u.storage_quota = 104857600
     u.created_at = datetime.now(timezone.utc)
     u.updated_at = None
@@ -70,8 +71,8 @@ async def test_list_users_no_filter(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=[]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value=None
     )
 
     users, total = await service.list_users(
@@ -127,8 +128,8 @@ async def test_get_user_success(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=["user:read"]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=["g1"]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value="组1"
     )
 
     result = await service.get_user("u1")
@@ -160,8 +161,8 @@ async def test_update_user_success(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=[]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value=None
     )
 
     data = UserAdminUpdate(is_active=False, storage_quota=500)
@@ -242,16 +243,16 @@ async def test_assign_groups_success(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=["g1"]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value="组1"
     )
 
     with patch("app.admin.service.RbacService") as MockRbac:
         mock_rbac_svc = AsyncMock()
         MockRbac.return_value = mock_rbac_svc
 
-        result = await service.assign_groups(
-            "user-1", ["g1"], ["group:manage"], False
+        result = await service.assign_group(
+            "user-1", "g1", ["group:manage"], False
         )
 
     assert result.id == "user-1"
@@ -270,8 +271,8 @@ async def test_assign_groups_user_not_found(
         MockRbac.return_value = mock_rbac_svc
 
         with pytest.raises(NotFoundException):
-            await service.assign_groups(
-                "nonexistent", ["g1"], [], False
+            await service.assign_group(
+                "nonexistent", "g1", [], False
             )
 
 

@@ -414,15 +414,15 @@ async def test_build_user_response(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=["user:read"]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=["group-1"]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value="组1"
     )
 
     result = await service.build_user_response(user)
 
     assert result.id == "user-1"
     assert "user:read" in result.permissions
-    assert "group-1" in result.group_ids
+    assert result.group_id == user.group_id
 
 
 # ---- send_code: 每小时上限 ----

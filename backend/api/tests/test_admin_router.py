@@ -21,8 +21,8 @@ def _make_user_response(**kwargs) -> dict:
         "is_superuser": kwargs.get("is_superuser", False),
         "is_active": kwargs.get("is_active", True),
         "permissions": kwargs.get("permissions", []),
-        "group_ids": kwargs.get("group_ids", []),
-        "group_names": kwargs.get("group_names", []),
+        "group_id": kwargs.get("group_id", None),
+        "group_name": kwargs.get("group_name", None),
         "two_factor_enabled": kwargs.get(
             "two_factor_enabled", False
         ),
@@ -337,15 +337,15 @@ class TestAssignGroups:
         self.mock_svc.check_target_permission.return_value = (
             None
         )
-        self.mock_svc.assign_groups.return_value = (
+        self.mock_svc.assign_group.return_value = (
             _make_user_response(
-                group_ids=["group-001"],
-                group_names=["编辑组"],
+                group_id="group-001",
+                group_name="编辑组",
             )
         )
         resp = await client.put(
             "/admin/users/target-001/groups",
-            json={"group_ids": ["group-001"]},
+            json={"group_id": "group-001"},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -356,7 +356,7 @@ class TestAssignGroups:
         """普通用户无权分配权限组。"""
         resp = await client.put(
             "/admin/users/target-001/groups",
-            json={"group_ids": ["group-001"]},
+            json={"group_id": "group-001"},
             headers=user_headers,
         )
         assert resp.status_code == 403

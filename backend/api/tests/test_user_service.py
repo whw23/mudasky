@@ -38,11 +38,8 @@ async def test_get_user_response_success(
     mock_rbac_repo.get_user_permissions = AsyncMock(
         return_value=["user:read", "doc:read"]
     )
-    mock_rbac_repo.get_user_group_ids = AsyncMock(
-        return_value=["group-1"]
-    )
-    mock_rbac_repo.get_user_group_names = AsyncMock(
-        return_value=["学生组"]
+    mock_rbac_repo.get_user_group_name = AsyncMock(
+        return_value="学生组"
     )
 
     result = await service.get_user_response("user-001")
@@ -50,8 +47,8 @@ async def test_get_user_response_success(
     assert result.id == "user-001"
     assert "user:read" in result.permissions
     assert "doc:read" in result.permissions
-    assert "group-1" in result.group_ids
-    assert "学生组" in result.group_names
+    assert result.group_id == user.group_id
+    assert result.group_name == "学生组"
 
 
 # ---- change_password ----
