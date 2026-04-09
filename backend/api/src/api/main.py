@@ -12,7 +12,7 @@ from typing import Any
 from fastapi import FastAPI
 
 # RBAC 模型需在其他领域模块之前导入，确保关系映射正确注册
-from app.rbac.models import Permission, PermissionGroup  # noqa: F401
+from app.rbac.models import Permission, Role  # noqa: F401
 import app.config.models  # noqa: F401 — 注册 ORM 映射
 from app.admin.router import router as admin_router
 from app.case.admin_router import admin_router as case_admin_router

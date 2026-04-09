@@ -23,16 +23,10 @@ async def client():
 
 @pytest.fixture
 def superuser_headers():
-    """超级管理员请求头。"""
+    """超级管理员请求头（拥有通配符权限）。"""
     return {
         "X-User-Id": "admin-1",
-        "X-User-Permissions": (
-            "member:manage,staff:manage,group:manage,"
-            "post:manage,blog:manage,blog:write,"
-            "category:manage,document:manage,document:upload"
-        ),
-        "X-User-Type": "staff",
-        "X-Is-Superuser": "true",
+        "X-User-Permissions": "*",
     }
 
 
@@ -42,11 +36,9 @@ def staff_headers():
     return {
         "X-User-Id": "staff-1",
         "X-User-Permissions": (
-            "member:manage,blog:write,blog:manage,"
-            "post:manage,category:manage"
+            "admin.user.*,admin.content.*,"
+            "admin.category.*,user_center.article.create"
         ),
-        "X-User-Type": "staff",
-        "X-Is-Superuser": "false",
     }
 
 
@@ -56,8 +48,6 @@ def user_headers():
     return {
         "X-User-Id": "user-1",
         "X-User-Permissions": "",
-        "X-User-Type": "guest",
-        "X-Is-Superuser": "false",
     }
 
 
@@ -82,8 +72,6 @@ def sample_user() -> MagicMock:
         user.password_hash = kwargs.get(
             "password_hash", "hashed_pw"
         )
-        user.user_type = kwargs.get("user_type", "student")
-        user.is_superuser = kwargs.get("is_superuser", False)
         user.is_active = kwargs.get("is_active", True)
         user.two_factor_enabled = kwargs.get(
             "two_factor_enabled", False
@@ -92,7 +80,7 @@ def sample_user() -> MagicMock:
             "two_factor_method", None
         )
         user.totp_secret = kwargs.get("totp_secret", None)
-        user.group_id = kwargs.get("group_id", None)
+        user.role_id = kwargs.get("role_id", None)
         user.storage_quota = kwargs.get(
             "storage_quota", 104857600
         )

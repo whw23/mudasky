@@ -158,7 +158,9 @@ async def list_my_articles(
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
-        Depends(require_permission("blog:write"))
+        Depends(
+            require_permission("user_center.article.create")
+        )
     ],
 )
 async def create_article(

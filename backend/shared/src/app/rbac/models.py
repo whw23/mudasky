@@ -1,17 +1,17 @@
 """RBAC 权限领域 ORM 模型。
 
-定义权限、权限组模型，实现基于权限组的访问控制。
+定义权限、角色模型，实现基于角色的访问控制。
 关联关系在本模块底部统一配置，避免循环导入。
 """
 
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.rbac.tables import group_permission
+from app.rbac.tables import role_permission
 
 
 class Permission(Base):
@@ -27,15 +27,18 @@ class Permission(Base):
     code: Mapped[str] = mapped_column(
         String(50), unique=True, index=True, nullable=False
     )
+    name_key: Mapped[str] = mapped_column(
+        String(100), nullable=False, default=""
+    )
     description: Mapped[str] = mapped_column(
         String(200), nullable=False
     )
 
 
-class PermissionGroup(Base):
-    """权限组模型。"""
+class Role(Base):
+    """角色模型。"""
 
-    __tablename__ = "permission_group"
+    __tablename__ = "role"
 
     id: Mapped[str] = mapped_column(
         String(36),
@@ -47,12 +50,6 @@ class PermissionGroup(Base):
     )
     description: Mapped[str] = mapped_column(
         String(200), nullable=False, default=""
-    )
-    is_system: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
-    auto_include_all: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -67,6 +64,6 @@ class PermissionGroup(Base):
 
     permissions: Mapped[list["Permission"]] = relationship(
         "Permission",
-        secondary=group_permission,
+        secondary=role_permission,
         lazy="selectin",
     )

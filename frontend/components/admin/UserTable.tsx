@@ -8,7 +8,6 @@
 import { useEffect, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Pagination } from "@/components/common/Pagination"
 import api from "@/lib/api"
 import type { User, PaginatedResponse } from "@/types"
@@ -17,9 +16,6 @@ interface UserTableProps {
   onSelectUser: (userId: string) => void
   refreshKey: number
 }
-
-/** 用户类型筛选选项 */
-const USER_TYPE_OPTIONS = ["all", "guest", "member", "staff"] as const
 
 /** 用户管理列表 */
 export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
@@ -31,7 +27,6 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [userType, setUserType] = useState<string>("all")
   const [loading, setLoading] = useState(false)
 
   /** 搜索防抖 */
@@ -40,10 +35,10 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
     return () => clearTimeout(timer)
   }, [search])
 
-  /** 搜索或筛选变化时重置页码 */
+  /** 搜索变化时重置页码 */
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, userType])
+  }, [debouncedSearch])
 
   /** 获取用户列表 */
   const fetchUsers = useCallback(async () => {
@@ -51,7 +46,6 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
     try {
       const params: Record<string, string | number> = { page, page_size: 20 }
       if (debouncedSearch) params.search = debouncedSearch
-      if (userType !== "all") params.user_type = userType
       const { data } = await api.get<PaginatedResponse<User>>("/admin/users", { params })
       setUsers(data.items)
       setTotal(data.total)
@@ -61,7 +55,7 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, userType])
+  }, [page, debouncedSearch])
 
   useEffect(() => {
     fetchUsers()
@@ -74,7 +68,7 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* 搜索和筛选 */}
+      {/* 搜索 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Input
           placeholder={t("searchPlaceholder")}
@@ -82,15 +76,6 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <Tabs value={userType} onValueChange={setUserType}>
-          <TabsList>
-            {USER_TYPE_OPTIONS.map((type) => (
-              <TabsTrigger key={type} value={type}>
-                {t(`type_${type}`)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
       </div>
 
       {/* 表格 */}
@@ -100,22 +85,21 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
             <tr className="border-b bg-muted/50">
               <th className="px-4 py-3 text-left font-medium">{t("col_username")}</th>
               <th className="px-4 py-3 text-left font-medium">{t("col_phone")}</th>
-              <th className="px-4 py-3 text-left font-medium">{t("col_type")}</th>
               <th className="px-4 py-3 text-left font-medium">{t("col_status")}</th>
-              <th className="px-4 py-3 text-left font-medium">{t("col_groups")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_role")}</th>
               <th className="px-4 py-3 text-left font-medium">{t("col_createdAt")}</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   {t("loading")}
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                   {t("noData")}
                 </td>
               </tr>
@@ -129,11 +113,6 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
                   <td className="px-4 py-3">{user.username ?? "-"}</td>
                   <td className="px-4 py-3">{user.phone ?? "-"}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                      {t(`type_${user.user_type}`)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs ${
                         user.is_active
@@ -145,9 +124,9 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {user.group_name ? (
+                    {user.role_name ? (
                       <span className="text-xs text-muted-foreground">
-                        {user.group_name}
+                        {user.role_name}
                       </span>
                     ) : (
                       "-"

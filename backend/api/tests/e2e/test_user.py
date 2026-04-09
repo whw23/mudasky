@@ -14,8 +14,7 @@ class TestGetMe:
         data = resp.json()
         assert "id" in data
         assert "username" in data
-        assert "user_type" in data
-        assert data["is_superuser"] is True
+        assert "role_name" in data
         assert data["is_active"] is True
 
     async def test_get_me_unauthenticated(self, e2e_client):

@@ -27,38 +27,43 @@ async def get_current_permissions(
     return [p for p in x_user_permissions.split(",") if p]
 
 
-async def get_current_user_type(
-    x_user_type: str = Header("guest"),
-) -> str:
-    """从网关注入的请求头获取当前用户类型。"""
-    return x_user_type
-
-
-async def get_is_superuser(
-    x_is_superuser: str = Header("false"),
+def has_permission(
+    user_perms: list[str], required: str
 ) -> bool:
-    """从网关注入的请求头获取当前用户是否为超级管理员。"""
-    return x_is_superuser.lower() == "true"
+    """检查用户权限列表是否满足所需权限，支持通配符。
+
+    通配符规则：
+    - "*" 匹配所有权限
+    - "admin.*" 匹配 admin 下所有权限
+    - 精确匹配
+    """
+    for perm in user_perms:
+        if perm == "*":
+            return True
+        if perm.endswith(".*"):
+            prefix = perm[:-1]
+            if required.startswith(prefix):
+                return True
+        if perm == required:
+            return True
+    return False
 
 
 def require_permission(*perms: str):
     """创建权限校验依赖，要求用户拥有全部指定权限。
 
-    超级管理员跳过校验。
+    支持通配符匹配。
     """
 
     async def check_permissions(
         permissions: Annotated[
             list[str], Depends(get_current_permissions)
         ],
-        is_superuser: Annotated[
-            bool, Depends(get_is_superuser)
-        ],
     ) -> list[str]:
         """校验当前用户是否拥有全部指定权限。"""
-        if is_superuser:
-            return permissions
-        if not all(p in permissions for p in perms):
+        if not all(
+            has_permission(permissions, p) for p in perms
+        ):
             raise ForbiddenException(message="权限不足")
         return permissions
 
@@ -68,39 +73,22 @@ def require_permission(*perms: str):
 def require_any_permission(*perms: str):
     """创建权限校验依赖，要求用户拥有任一指定权限。
 
-    超级管理员跳过校验。
+    支持通配符匹配。
     """
 
     async def check_any_permission(
         permissions: Annotated[
             list[str], Depends(get_current_permissions)
         ],
-        is_superuser: Annotated[
-            bool, Depends(get_is_superuser)
-        ],
     ) -> list[str]:
         """校验当前用户是否拥有任一指定权限。"""
-        if is_superuser:
-            return permissions
-        if not any(p in permissions for p in perms):
+        if not any(
+            has_permission(permissions, p) for p in perms
+        ):
             raise ForbiddenException(message="权限不足")
         return permissions
 
     return check_any_permission
-
-
-def require_superuser():
-    """创建超级管理员校验依赖。"""
-
-    async def check_superuser(
-        is_superuser: Annotated[bool, Depends(get_is_superuser)],
-    ) -> bool:
-        """校验当前用户是否为超级管理员。"""
-        if not is_superuser:
-            raise ForbiddenException(message="需要超级管理员权限")
-        return True
-
-    return check_superuser
 
 
 # 类型别名
@@ -109,7 +97,3 @@ CurrentUserId = Annotated[str, Depends(get_current_user_id)]
 CurrentPermissions = Annotated[
     list[str], Depends(get_current_permissions)
 ]
-CurrentUserType = Annotated[
-    str, Depends(get_current_user_type)
-]
-IsSuperuser = Annotated[bool, Depends(get_is_superuser)]

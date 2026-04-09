@@ -4,15 +4,13 @@ export interface User {
   id: string
   phone: string | null
   username: string | null
-  user_type: string
   is_active: boolean
-  is_superuser: boolean
   two_factor_enabled: boolean
   two_factor_method: string | null
   storage_quota: number
   permissions: string[]
-  group_id: string | null
-  group_name: string | null
+  role_id: string | null
+  role_name: string | null
   created_at: string
   updated_at: string | null
 }
@@ -21,23 +19,15 @@ export interface User {
 export interface Permission {
   id: string
   code: string
+  name_key: string
   description: string
 }
 
-/** 权限分类（用于树形展示） */
-export interface PermissionCategory {
-  key: string
-  label: string
-  permissions: string[]
-}
-
-/** 权限组定义 */
-export interface PermissionGroup {
+/** 角色定义 */
+export interface Role {
   id: string
   name: string
   description: string
-  is_system: boolean
-  auto_include_all: boolean
   permissions: Permission[]
   user_count: number
   created_at: string

@@ -49,13 +49,14 @@ async def test_register_success(
     new_user = sample_user(phone="+8613900139000")
     mock_user_repo.create = AsyncMock(return_value=new_user)
 
-    result = await service.register(
-        phone="+8613900139000",
-        code="123456",
-        username="newuser",
-        encrypted_password="encrypted_data",
-        nonce="test_nonce",
-    )
+    with patch.object(service, "_get_visitor_role", return_value=None):
+        result = await service.register(
+            phone="+8613900139000",
+            code="123456",
+            username="newuser",
+            encrypted_password="encrypted_data",
+            nonce="test_nonce",
+        )
 
     assert result.phone == "+8613900139000"
     mock_repo.verify_sms_code.assert_awaited_once()
