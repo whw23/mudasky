@@ -186,7 +186,7 @@ async def init_system_config(session) -> None:
             description="启用的手机号国家码列表",
         ))
         await session.flush()
-        print("  ✓ phone_country_codes 已初始化")
+        print("  + phone_country_codes 已初始化")
     else:
         print("  - phone_country_codes 已存在，跳过")
 
@@ -207,7 +207,7 @@ async def init_system_config(session) -> None:
             description="联系方式配置",
         ))
         await session.flush()
-        print("  ✓ contact_info 已初始化")
+        print("  + contact_info 已初始化")
     else:
         print("  - contact_info 已存在，跳过")
 
@@ -232,7 +232,7 @@ async def init_system_config(session) -> None:
             description="品牌信息配置",
         ))
         await session.flush()
-        print("  ✓ site_info 已初始化")
+        print("  + site_info 已初始化")
     else:
         print("  - site_info 已存在，跳过")
 
@@ -252,7 +252,7 @@ async def init_system_config(session) -> None:
             description="首页统计数字",
         ))
         await session.flush()
-        print("  ✓ homepage_stats 已初始化")
+        print("  + homepage_stats 已初始化")
     else:
         print("  - homepage_stats 已存在，跳过")
 
@@ -272,7 +272,7 @@ async def init_system_config(session) -> None:
             description="关于我们页面内容",
         ))
         await session.flush()
-        print("  ✓ about_info 已初始化")
+        print("  + about_info 已初始化")
     else:
         print("  - about_info 已存在，跳过")
 
@@ -307,7 +307,7 @@ async def init_categories(session) -> None:
         logger.info("创建分类: %s (%s)", name, slug)
 
     await session.flush()
-    print("  ✓ 内容分类已初始化")
+    print("  + 内容分类已初始化")
 
 
 async def main() -> None:
