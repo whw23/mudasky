@@ -1,26 +1,15 @@
 services:
-  gateway:
-    environment:
-      - BACKEND_URL=http://host.docker.internal:8000
+  api:
     volumes:
-      - ./gateway/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-      - ./gateway/conf.d/server.conf:/etc/nginx/conf.d/server.conf:ro
-      - ./gateway/dev/upstream.conf:/etc/nginx/conf.d/upstream.conf:ro
-      - ./gateway/dev/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./gateway/lua/:/usr/local/openresty/nginx/lua/:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    develop:
-      watch:
-        - action: sync+restart
-          path: ./gateway/lua/
-          target: /usr/local/openresty/nginx/lua/
-        - action: sync+restart
-          path: ./gateway/conf.d/server.conf
-          target: /etc/nginx/conf.d/server.conf
-        - action: sync+restart
-          path: ./gateway/nginx.conf
-          target: /usr/local/openresty/nginx/conf/nginx.conf
+      - ./backend:/app
+
+  frontend:
+    build:
+      dockerfile: ../docker/frontend.dev.Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
 
   db:
     ports:

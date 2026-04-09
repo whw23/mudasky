@@ -8,18 +8,12 @@ services:
     env_file: env/gateway.env
 
   frontend:
-    image: node:22-alpine
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: ["sh", "-c", "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm start"]
-    environment:
-      - CI=true
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
     depends_on:
       api:
         condition: service_healthy
-    profiles: ["deploy"]
 
   api:
     build:
@@ -37,7 +31,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    profiles: ["deploy"]
 
   worker:
     build:
