@@ -2,6 +2,9 @@ services:
   api:
     volumes:
       - ./backend:/app
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+      - WATCHFILES_POLL_DELAY_MS=1000
 
   frontend:
     build:
@@ -10,6 +13,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
+    environment:
+      - WATCHPACK_POLLING=1000
 
   db:
     ports:

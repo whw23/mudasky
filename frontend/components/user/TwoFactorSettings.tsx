@@ -151,6 +151,7 @@ export function TwoFactorSettings() {
                   onChange={(e) => setTotpCode(e.target.value)}
                   placeholder={t('totpPlaceholder')}
                   maxLength={6}
+                  autoComplete="one-time-code"
                   required
                 />
               </div>

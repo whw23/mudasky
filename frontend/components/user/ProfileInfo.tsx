@@ -314,6 +314,7 @@ export function ProfileInfo() {
                   onChange={(e) => setPhoneCode(e.target.value)}
                   placeholder={t('codePlaceholder')}
                   maxLength={6}
+                  autoComplete="one-time-code"
                   required
                 />
                 <SmsCodeButton phone={newPhone} />
@@ -338,6 +339,7 @@ export function ProfileInfo() {
                     onChange={(e) => setPwdCode(e.target.value)}
                     placeholder={t('codePlaceholder')}
                     maxLength={6}
+                    autoComplete="one-time-code"
                     required
                   />
                   <SmsCodeButton phone={user.phone!} />
@@ -431,6 +433,7 @@ export function ProfileInfo() {
                         onChange={(e) => setTotpCode(e.target.value)}
                         placeholder={t('totpPlaceholder')}
                         maxLength={6}
+                        autoComplete="one-time-code"
                         required
                       />
                       <Button type="submit" size="sm" disabled={loading}>
@@ -449,6 +452,7 @@ export function ProfileInfo() {
                         onChange={(e) => setSms2faCode(e.target.value)}
                         placeholder={t('codePlaceholder')}
                         maxLength={6}
+                        autoComplete="one-time-code"
                         required
                       />
                       <SmsCodeButton phone={user.phone!} />
@@ -524,6 +528,7 @@ export function ProfileInfo() {
                   onChange={(e) => setDisableCode(e.target.value)}
                   placeholder={t('codePlaceholder')}
                   maxLength={6}
+                  autoComplete="one-time-code"
                   required
                 />
                 <SmsCodeButton phone={user.phone!} />

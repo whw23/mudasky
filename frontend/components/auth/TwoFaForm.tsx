@@ -65,6 +65,7 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
             onChange={(e) => setTotpCode(e.target.value)}
             placeholder={t('totpPlaceholder')}
             maxLength={6}
+            autoComplete="one-time-code"
             required
           />
         </div>
@@ -78,6 +79,7 @@ export function TwoFaForm({ phone, loading, error, onSubmit }: TwoFaFormProps) {
               onChange={(e) => setSmsCode2fa(e.target.value)}
               placeholder={t('codePlaceholder')}
               maxLength={6}
+              autoComplete="one-time-code"
               required
             />
             <SmsCodeButton phone={phone} disabled={!phone} />

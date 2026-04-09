@@ -191,6 +191,7 @@ export function LoginModal() {
                     onChange={(e) => setSmsCode(e.target.value)}
                     placeholder={t('codePlaceholder')}
                     maxLength={6}
+                    autoComplete="one-time-code"
                     required
                   />
                   <SmsCodeButton phone={smsPhone} />

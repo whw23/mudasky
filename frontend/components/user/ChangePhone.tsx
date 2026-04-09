@@ -78,6 +78,7 @@ export function ChangePhone() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder={t('codePlaceholder')}
                 maxLength={6}
+                autoComplete="one-time-code"
                 required
               />
               <SmsCodeButton phone={phone} />
