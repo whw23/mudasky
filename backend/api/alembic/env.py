@@ -14,6 +14,7 @@ from app.core.database import Base
 from app.rbac.models import Permission, PermissionGroup  # noqa: F401
 from app.user.models import User  # noqa: F401
 from app.auth.models import SmsCode, RefreshToken  # noqa: F401
+from app.case.models import SuccessCase  # noqa: F401
 from app.content.models import Article, Category  # noqa: F401
 from app.document.models import Document  # noqa: F401
 from app.worker.models import Task  # noqa: F401

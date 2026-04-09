@@ -87,6 +87,21 @@ export interface DocumentListResponse {
   storage_quota: number
 }
 
+/** 成功案例 */
+export interface SuccessCase {
+  id: string
+  student_name: string
+  university: string
+  program: string
+  year: number
+  testimonial: string | null
+  avatar_url: string | null
+  is_featured: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string | null
+}
+
 export interface Category {
   id: string
   name: string
