@@ -42,6 +42,36 @@ class GroupUpdate(BaseModel):
     )
 
 
+# 权限分模块分类（用于前端树形展示）
+PERMISSION_CATEGORIES: list[dict] = [
+    {
+        "key": "user_management",
+        "label": "用户管理",
+        "permissions": ["member:manage", "staff:manage"],
+    },
+    {
+        "key": "content_management",
+        "label": "内容管理",
+        "permissions": [
+            "post:manage",
+            "blog:manage",
+            "blog:write",
+            "category:manage",
+        ],
+    },
+    {
+        "key": "document_management",
+        "label": "文档管理",
+        "permissions": ["document:manage", "document:upload"],
+    },
+    {
+        "key": "system_management",
+        "label": "系统管理",
+        "permissions": ["group:manage"],
+    },
+]
+
+
 class GroupResponse(BaseModel):
     """权限组信息响应。"""
 

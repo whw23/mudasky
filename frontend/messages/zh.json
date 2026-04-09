@@ -348,7 +348,17 @@
     "saving": "保存中...",
     "createSuccess": "创建成功",
     "updateSuccess": "更新成功",
-    "saveError": "保存失败"
+    "saveError": "保存失败",
+    "systemRoles": "系统角色",
+    "customRoles": "自定义角色",
+    "viewPermissions": "查看权限",
+    "allPermissionsIncluded": "该角色自动包含所有权限"
+  },
+  "PermissionCategories": {
+    "user_management": "用户管理",
+    "content_management": "内容管理",
+    "document_management": "文档管理",
+    "system_management": "系统管理"
   },
   "About": {
     "historyTitle": "15年专注国际教育",

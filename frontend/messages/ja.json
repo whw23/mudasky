@@ -348,7 +348,17 @@
     "saving": "保存中...",
     "createSuccess": "作成しました",
     "updateSuccess": "更新しました",
-    "saveError": "保存に失敗しました"
+    "saveError": "保存に失敗しました",
+    "systemRoles": "システムロール",
+    "customRoles": "カスタムロール",
+    "viewPermissions": "権限を表示",
+    "allPermissionsIncluded": "このロールはすべての権限を自動的に含みます"
+  },
+  "PermissionCategories": {
+    "user_management": "ユーザー管理",
+    "content_management": "コンテンツ管理",
+    "document_management": "ドキュメント管理",
+    "system_management": "システム管理"
   },
   "About": {
     "historyTitle": "国際教育15年の実績",

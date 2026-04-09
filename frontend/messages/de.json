@@ -348,7 +348,17 @@
     "saving": "Speichern...",
     "createSuccess": "Erfolgreich erstellt",
     "updateSuccess": "Erfolgreich aktualisiert",
-    "saveError": "Speichern fehlgeschlagen"
+    "saveError": "Speichern fehlgeschlagen",
+    "systemRoles": "Systemrollen",
+    "customRoles": "Benutzerdefinierte Rollen",
+    "viewPermissions": "Berechtigungen anzeigen",
+    "allPermissionsIncluded": "Diese Rolle enthält automatisch alle Berechtigungen"
+  },
+  "PermissionCategories": {
+    "user_management": "Benutzerverwaltung",
+    "content_management": "Inhaltsverwaltung",
+    "document_management": "Dokumentenverwaltung",
+    "system_management": "Systemverwaltung"
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",

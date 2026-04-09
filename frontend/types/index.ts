@@ -24,6 +24,13 @@ export interface Permission {
   description: string
 }
 
+/** 权限分类（用于树形展示） */
+export interface PermissionCategory {
+  key: string
+  label: string
+  permissions: string[]
+}
+
 /** 权限组定义 */
 export interface PermissionGroup {
   id: string

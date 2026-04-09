@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from app.core.dependencies import DbSession, require_permission
 from app.rbac.schemas import (
+    PERMISSION_CATEGORIES,
     GroupCreate,
     GroupResponse,
     GroupUpdate,
@@ -35,6 +36,16 @@ async def list_permissions(
     """查询所有权限列表。"""
     svc = RbacService(session)
     return await svc.list_permissions()
+
+
+@router.get(
+    "/permissions/categories",
+    response_model=list[dict],
+    dependencies=[Depends(require_permission("group:manage"))],
+)
+async def list_permission_categories() -> list[dict]:
+    """查询权限分类列表（用于前端树形展示）。"""
+    return PERMISSION_CATEGORIES
 
 
 @router.get(

@@ -348,7 +348,17 @@
     "saving": "Saving...",
     "createSuccess": "Created successfully",
     "updateSuccess": "Updated successfully",
-    "saveError": "Failed to save"
+    "saveError": "Failed to save",
+    "systemRoles": "System Roles",
+    "customRoles": "Custom Roles",
+    "viewPermissions": "View Permissions",
+    "allPermissionsIncluded": "This role automatically includes all permissions"
+  },
+  "PermissionCategories": {
+    "user_management": "User Management",
+    "content_management": "Content Management",
+    "document_management": "Document Management",
+    "system_management": "System Management"
   },
   "About": {
     "historyTitle": "15 Years of International Education",
