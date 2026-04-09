@@ -480,6 +480,14 @@
       "programs": "Maschinenbau, Elektrotechnik, Informatik",
       "desc": "Eine europäische Spitzen-Technische Universität und IDEA-League-Mitglied, deren Ingenieurabsolventen bei Arbeitgebern hoch geschätzt sind."
     },
+    "searchPlaceholder": "Universität, Stadt suchen...",
+    "countryFilter": "Nach Land filtern",
+    "allCountries": "Alle Länder",
+    "reset": "Zurücksetzen",
+    "loading": "Laden...",
+    "noResults": "Keine Universitäten gefunden",
+    "noResultsHint": "Versuchen Sie, Ihre Suche oder Filter anzupassen",
+    "totalCount": "{count} Universitäten",
     "adviceTitle": "Individuelle Hochschulberatung",
     "adviceContent": "Die richtige Universität zu wählen ist ein entscheidender Schritt für den Studienerfolg im Ausland. Unsere erfahrenen Berater empfehlen die am besten passenden Hochschulen und Studiengänge basierend auf Ihren Leistungen, Sprachkenntnissen und Karrierezielen. Buchen Sie eine kostenlose Beratung.",
     "ctaButton": "Beratung buchen"

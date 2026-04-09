@@ -100,6 +100,8 @@ class UniversityService:
         limit: int,
         country: str | None = None,
         is_featured: bool | None = None,
+        search: str | None = None,
+        program: str | None = None,
     ) -> tuple[list[University], int]:
         """分页查询院校列表。"""
         return await repository.list_universities(
@@ -108,4 +110,14 @@ class UniversityService:
             limit,
             country,
             is_featured,
+            search,
+            program,
+        )
+
+    async def get_distinct_countries(
+        self,
+    ) -> list[str]:
+        """获取所有院校的去重国家列表。"""
+        return await repository.get_distinct_countries(
+            self.session
         )

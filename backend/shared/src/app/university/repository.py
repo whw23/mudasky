@@ -3,7 +3,7 @@
 封装所有院校相关的数据库操作。
 """
 
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.university.models import University
@@ -32,10 +32,13 @@ async def list_universities(
     limit: int,
     country: str | None = None,
     is_featured: bool | None = None,
+    search: str | None = None,
+    program: str | None = None,
 ) -> tuple[list[University], int]:
     """分页查询院校列表。
 
-    可按国家和推荐状态过滤。返回院校列表和总数。
+    可按国家、推荐状态、关键词和专业过滤。
+    返回院校列表和总数。
     """
     conditions = []
     if country:
@@ -43,6 +46,25 @@ async def list_universities(
     if is_featured is not None:
         conditions.append(
             University.is_featured == is_featured
+        )
+    if search:
+        pattern = f"%{search}%"
+        conditions.append(
+            or_(
+                University.name.ilike(pattern),
+                University.name_en.ilike(pattern),
+                University.city.ilike(pattern),
+                University.description.ilike(pattern),
+            )
+        )
+    if program:
+        conditions.append(
+            University.programs.op("@>")(
+                func.cast(
+                    f'["{program}"]',
+                    University.programs.type,
+                )
+            )
         )
 
     base_filter = True  # noqa: E712
@@ -73,6 +95,18 @@ async def list_universities(
     universities = list(result.scalars().all())
 
     return universities, total
+
+
+async def get_distinct_countries(
+    session: AsyncSession,
+) -> list[str]:
+    """获取所有院校的去重国家列表。"""
+    stmt = (
+        select(distinct(University.country))
+        .order_by(University.country.asc())
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
 
 
 async def update_university(

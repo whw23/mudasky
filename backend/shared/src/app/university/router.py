@@ -58,8 +58,13 @@ async def list_universities(
     page_size: int = 20,
     country: str | None = None,
     is_featured: bool | None = None,
+    search: str | None = None,
+    program: str | None = None,
 ) -> PaginatedResponse[UniversityResponse]:
-    """分页查询合作院校列表。"""
+    """分页查询合作院校列表。
+
+    支持按关键词搜索和专业过滤。
+    """
     params = PaginationParams(
         page=page, page_size=page_size
     )
@@ -69,8 +74,22 @@ async def list_universities(
         params.page_size,
         country,
         is_featured,
+        search,
+        program,
     )
     return _build_paginated(universities, total, params)
+
+
+@public_router.get(
+    "/countries",
+    response_model=list[str],
+)
+async def list_countries(
+    session: DbSession,
+) -> list[str]:
+    """获取所有院校的去重国家列表。"""
+    svc = UniversityService(session)
+    return await svc.get_distinct_countries()
 
 
 @public_router.get(

@@ -480,6 +480,14 @@
       "programs": "Mechanical Engineering, Electrical Engineering, Computer Science",
       "desc": "A top European technical university and IDEA League member, whose engineering graduates are highly sought by employers."
     },
+    "searchPlaceholder": "Search university name, city...",
+    "countryFilter": "Filter by country",
+    "allCountries": "All countries",
+    "reset": "Reset",
+    "loading": "Loading...",
+    "noResults": "No universities found",
+    "noResultsHint": "Try adjusting your search or filters",
+    "totalCount": "{count} universities",
     "adviceTitle": "Personalized University Selection",
     "adviceContent": "Choosing the right university is a crucial step to study abroad success. Our senior consultants will recommend the best-matching institutions and programs based on your academic performance, language level, professional interests, and career plans. Book a free consultation and let us help you find your ideal study destination.",
     "ctaButton": "Book a Consultation"

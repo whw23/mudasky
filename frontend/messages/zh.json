@@ -480,6 +480,14 @@
       "programs": "机械工程、电气工程、计算机科学",
       "desc": "欧洲顶尖理工大学，IDEA联盟成员，工科毕业生深受企业青睐。"
     },
+    "searchPlaceholder": "搜索院校名称、城市...",
+    "countryFilter": "按国家筛选",
+    "allCountries": "全部国家",
+    "reset": "重置",
+    "loading": "加载中...",
+    "noResults": "没有找到匹配的院校",
+    "noResultsHint": "尝试调整搜索条件或筛选项",
+    "totalCount": "共 {count} 所院校",
     "adviceTitle": "个性化选校建议",
     "adviceContent": "选择合适的大学是留学成功的关键一步。我们的资深顾问会根据你的学术成绩、语言水平、专业兴趣和职业规划，为你量身推荐最匹配的院校和专业。预约免费咨询，让我们帮你找到理想的留学目的地。",
     "ctaButton": "预约选校咨询"
