@@ -10,10 +10,12 @@ from fastapi import APIRouter, Header
 from app.auth.schemas import (
     AuthResponse,
     LoginRequest,
+    PublicKeyResponse,
     RegisterRequest,
     SmsCodeRequest,
 )
 from app.auth.service import AuthService
+from app.core.crypto import generate_nonce, get_public_key_pem
 from app.core.dependencies import DbSession
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -30,6 +32,15 @@ class SmsCodeResponse(BaseModel):
 
     message: str
     code: str | None = None
+
+
+@router.get("/public-key", response_model=PublicKeyResponse)
+async def get_public_key() -> PublicKeyResponse:
+    """获取 RSA 公钥和一次性 nonce。"""
+    return PublicKeyResponse(
+        public_key=get_public_key_pem(),
+        nonce=generate_nonce(),
+    )
 
 
 @router.post("/sms-code", response_model=SmsCodeResponse)

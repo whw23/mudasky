@@ -93,3 +93,10 @@ class AuthResponse(BaseModel):
 
     user: UserResponse
     step: str | None = None
+
+
+class PublicKeyResponse(BaseModel):
+    """公钥响应。"""
+
+    public_key: str
+    nonce: str
