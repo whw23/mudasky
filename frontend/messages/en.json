@@ -737,7 +737,12 @@
       "excerpt": "MUTU International Education received the 2025 'Best Study Abroad Service Institution' award for its outstanding service quality and high customer satisfaction. Thank you to every student and parent for your trust."
     },
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "all": "All",
+    "readMore": "Read More",
+    "backToList": "Back to List",
+    "noContent": "No content yet, stay tuned",
+    "relatedArticles": "Related Articles"
   },
   "Contact": {
     "infoTitle": "Contact Information",

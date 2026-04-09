@@ -737,7 +737,12 @@
       "excerpt": "MUTU Internationale Bildung erhielt die Auszeichnung 'Beste Studienberatung 2025' für hervorragende Servicequalität und hohe Kundenzufriedenheit. Vielen Dank für Ihr Vertrauen."
     },
     "prev": "Vorherige",
-    "next": "Nächste"
+    "next": "Nächste",
+    "all": "Alle",
+    "readMore": "Weiterlesen",
+    "backToList": "Zurück zur Liste",
+    "noContent": "Noch keine Inhalte, bleiben Sie dran",
+    "relatedArticles": "Verwandte Artikel"
   },
   "Contact": {
     "infoTitle": "Kontaktinformationen",
