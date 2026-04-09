@@ -1,5 +1,6 @@
 """系统配置业务逻辑层。"""
 
+from datetime import datetime
 from typing import Any
 
 from pydantic import ValidationError
@@ -22,6 +23,15 @@ class ConfigService:
         if not config:
             raise NotFoundException(message=f"配置项 {key} 不存在")
         return ConfigResponse.model_validate(config)
+
+    async def get_value_with_timestamp(
+        self, key: str
+    ) -> tuple[ConfigResponse, datetime]:
+        """获取单个配置值及更新时间（用于 ETag 计算）。"""
+        config = await repository.get_by_key(self.session, key)
+        if not config:
+            raise NotFoundException(message=f"配置项 {key} 不存在")
+        return ConfigResponse.model_validate(config), config.updated_at
 
     async def list_all(self) -> list[ConfigDetailResponse]:
         """获取所有配置。"""

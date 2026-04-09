@@ -3,7 +3,7 @@
 提供文章和分类的公开、用户 API 端点。
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Header, Response, status
 
 from app.content.schemas import (
     ArticleCreate,
@@ -12,6 +12,7 @@ from app.content.schemas import (
     CategoryResponse,
 )
 from app.content.service import ContentService
+from app.core.cache import set_cache_headers
 from app.core.dependencies import (
     CurrentUserId,
     DbSession,
@@ -64,6 +65,8 @@ async def _category_list_with_counts(
 )
 async def list_published_articles(
     session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
     page: int = 1,
     page_size: int = 20,
     category_id: str | None = None,
@@ -74,9 +77,13 @@ async def list_published_articles(
     articles, total = await svc.list_published(
         params.offset, params.page_size, category_id
     )
-    return _build_paginated(
+    result = _build_paginated(
         articles, total, params, ArticleResponse
     )
+    seed = f"article:list:{page}:{page_size}:{category_id}:{total}"
+    if set_cache_headers(response, seed, 600, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
 
 
 @router.get(
@@ -84,7 +91,10 @@ async def list_published_articles(
     response_model=ArticleResponse,
 )
 async def get_published_article(
-    article_id: str, session: DbSession
+    article_id: str,
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
 ) -> ArticleResponse:
     """获取已发布文章详情。"""
     svc = ContentService(session)
@@ -93,7 +103,12 @@ async def get_published_article(
         from app.core.exceptions import NotFoundException
 
         raise NotFoundException(message="文章不存在")
-    return ArticleResponse.model_validate(article)
+    result = ArticleResponse.model_validate(article)
+    ts = article.updated_at.isoformat() if article.updated_at else ""
+    seed = f"article:{article_id}:{ts}"
+    if set_cache_headers(response, seed, 600, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
 
 
 @router.get(
@@ -102,10 +117,16 @@ async def get_published_article(
 )
 async def list_categories(
     session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
 ) -> list[CategoryResponse]:
     """查询所有分类。"""
     svc = ContentService(session)
-    return await _category_list_with_counts(svc)
+    categories = await _category_list_with_counts(svc)
+    seed = f"categories:{len(categories)}:{','.join(c.id for c in categories)}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return categories
 
 
 # ---- 用户端点（需要认证） ----

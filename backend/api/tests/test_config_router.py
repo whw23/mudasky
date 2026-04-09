@@ -3,6 +3,7 @@
 覆盖公开配置查询和管理员配置管理端点。
 """
 
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -23,21 +24,25 @@ class TestGetConfig:
 
     async def test_get_existing_config(self, client):
         """查询存在的配置项返回 200。"""
-        self.mock_svc.get_value.return_value = {
-            "key": "phone_country_codes",
-            "value": [{"code": "+86", "country": "🇨🇳"}],
-            "description": "国家码列表",
-        }
+        self.mock_svc.get_value_with_timestamp.return_value = (
+            {
+                "key": "phone_country_codes",
+                "value": [{"code": "+86", "country": "🇨🇳"}],
+                "description": "国家码列表",
+            },
+            datetime(2026, 1, 1, tzinfo=timezone.utc),
+        )
         resp = await client.get("/config/phone_country_codes")
         assert resp.status_code == 200
         data = resp.json()
         assert data["key"] == "phone_country_codes"
+        assert "ETag" in resp.headers
 
     async def test_get_nonexistent_config(self, client):
         """查询不存在的配置项返回 404。"""
         from app.core.exceptions import NotFoundException
 
-        self.mock_svc.get_value.side_effect = (
+        self.mock_svc.get_value_with_timestamp.side_effect = (
             NotFoundException(message="配置项 nonexistent 不存在")
         )
         resp = await client.get("/config/nonexistent")

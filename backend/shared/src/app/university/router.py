@@ -3,8 +3,9 @@
 提供院校的公开查询和管理员管理 API 端点。
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Header, Response, status
 
+from app.core.cache import set_cache_headers
 from app.core.dependencies import (
     DbSession,
     require_permission,
@@ -54,6 +55,8 @@ def _build_paginated(
 )
 async def list_universities(
     session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
     page: int = 1,
     page_size: int = 20,
     country: str | None = None,
@@ -77,7 +80,11 @@ async def list_universities(
         search,
         program,
     )
-    return _build_paginated(universities, total, params)
+    result = _build_paginated(universities, total, params)
+    seed = f"uni:list:{page}:{page_size}:{country}:{is_featured}:{search}:{program}:{total}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
 
 
 @public_router.get(
@@ -86,10 +93,16 @@ async def list_universities(
 )
 async def list_countries(
     session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
 ) -> list[str]:
     """获取所有院校的去重国家列表。"""
     svc = UniversityService(session)
-    return await svc.get_distinct_countries()
+    countries = await svc.get_distinct_countries()
+    seed = f"uni:countries:{','.join(countries)}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return countries
 
 
 @public_router.get(
@@ -97,12 +110,19 @@ async def list_countries(
     response_model=UniversityResponse,
 )
 async def get_university(
-    university_id: str, session: DbSession
+    university_id: str,
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
 ) -> UniversityResponse:
     """获取院校详情。"""
     svc = UniversityService(session)
     university = await svc.get_university(university_id)
-    return UniversityResponse.model_validate(university)
+    result = UniversityResponse.model_validate(university)
+    seed = f"uni:{university_id}:{university.updated_at.isoformat()}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
 
 
 # ---- 管理员路由 ----

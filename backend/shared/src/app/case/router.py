@@ -3,10 +3,11 @@
 提供成功案例的公开 API 端点。
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header, Response
 
 from app.case.schemas import CaseResponse
 from app.case.service import CaseService
+from app.core.cache import set_cache_headers
 from app.core.dependencies import DbSession
 from app.core.pagination import PaginatedResponse, PaginationParams
 
@@ -38,6 +39,8 @@ def _build_paginated(
 )
 async def list_cases(
     session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
     page: int = 1,
     page_size: int = 20,
     year: int | None = None,
@@ -49,9 +52,13 @@ async def list_cases(
     cases, total = await svc.list_cases(
         params.offset, params.page_size, year, featured
     )
-    return _build_paginated(
+    result = _build_paginated(
         cases, total, params, CaseResponse
     )
+    seed = f"case:list:{page}:{page_size}:{year}:{featured}:{total}"
+    if set_cache_headers(response, seed, 1800, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
 
 
 @router.get(
@@ -59,9 +66,16 @@ async def list_cases(
     response_model=CaseResponse,
 )
 async def get_case(
-    case_id: str, session: DbSession
+    case_id: str,
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
 ) -> CaseResponse:
     """获取成功案例详情。"""
     svc = CaseService(session)
     case = await svc.get_case(case_id)
-    return CaseResponse.model_validate(case)
+    result = CaseResponse.model_validate(case)
+    seed = f"case:{case_id}:{case.updated_at.isoformat()}"
+    if set_cache_headers(response, seed, 1800, if_none_match):
+        return response  # type: ignore[return-value]
+    return result
