@@ -1,14 +1,15 @@
 """RBAC 权限领域数据访问层。
 
 封装所有权限、权限组相关的数据库操作。
+用户与权限组为一对多关系（user.group_id）。
 """
 
-from sqlalchemy import delete, func, insert, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.rbac.models import Permission, PermissionGroup
-from app.rbac.tables import group_permission, user_group
+from app.user.models import User
 
 
 async def list_permissions(
@@ -34,17 +35,14 @@ async def get_permissions_by_ids(
 async def list_groups(
     session: AsyncSession,
 ) -> list[tuple[PermissionGroup, int]]:
-    """查询所有权限组，包含权限列表和用户数量。
-
-    返回 (权限组, 用户数量) 元组列表。
-    """
-    # 用户数量子查询
+    """查询所有权限组，包含权限列表和用户数量。"""
     user_count_subq = (
         select(
-            user_group.c.group_id,
-            func.count(user_group.c.user_id).label("user_count"),
+            User.group_id,
+            func.count(User.id).label("user_count"),
         )
-        .group_by(user_group.c.group_id)
+        .where(User.group_id.isnot(None))
+        .group_by(User.group_id)
         .subquery()
     )
 
@@ -122,76 +120,59 @@ async def get_user_permissions(
 ) -> list[str]:
     """查询用户的所有权限码。
 
-    遍历用户所属权限组，如果权限组 auto_include_all 为 True，
-    则包含所有权限码；否则收集该组关联的权限码。结果去重。
+    通过 user.group_id 查找权限组，如果 auto_include_all 为 True，
+    则包含所有权限码；否则返回该组关联的权限码。
     """
-    # 查询用户所属的权限组
-    group_stmt = (
-        select(PermissionGroup)
-        .join(
-            user_group,
-            PermissionGroup.id == user_group.c.group_id,
-        )
-        .where(user_group.c.user_id == user_id)
-        .options(selectinload(PermissionGroup.permissions))
+    stmt = (
+        select(User.group_id)
+        .where(User.id == user_id)
     )
-    result = await session.execute(group_stmt)
-    groups = list(result.scalars().all())
+    result = await session.execute(stmt)
+    group_id = result.scalar_one_or_none()
 
-    # 检查是否有 auto_include_all 的组
-    has_all = any(g.auto_include_all for g in groups)
-    if has_all:
+    if not group_id:
+        return []
+
+    group = await get_group_by_id(session, group_id)
+    if not group:
+        return []
+
+    if group.auto_include_all:
         all_perms = await list_permissions(session)
         return [p.code for p in all_perms]
 
-    # 收集各组权限码并去重
-    codes: set[str] = set()
-    for group in groups:
-        for perm in group.permissions:
-            codes.add(perm.code)
-    return list(codes)
+    return [p.code for p in group.permissions]
 
 
-async def get_user_group_ids(
+async def get_user_group_id(
     session: AsyncSession, user_id: str
-) -> list[str]:
-    """查询用户所属的权限组 ID 列表。"""
-    stmt = select(user_group.c.group_id).where(
-        user_group.c.user_id == user_id
-    )
+) -> str | None:
+    """查询用户所属的权限组 ID。"""
+    stmt = select(User.group_id).where(User.id == user_id)
     result = await session.execute(stmt)
-    return [row[0] for row in result.all()]
+    return result.scalar_one_or_none()
 
 
-async def get_user_group_names(
+async def get_user_group_name(
     session: AsyncSession, user_id: str
-) -> list[str]:
-    """查询用户所属的权限组名称列表。"""
+) -> str | None:
+    """查询用户所属的权限组名称。"""
     stmt = (
         select(PermissionGroup.name)
-        .join(user_group, PermissionGroup.id == user_group.c.group_id)
-        .where(user_group.c.user_id == user_id)
+        .join(User, User.group_id == PermissionGroup.id)
+        .where(User.id == user_id)
     )
     result = await session.execute(stmt)
-    return [row[0] for row in result.all()]
+    return result.scalar_one_or_none()
 
 
-async def set_user_groups(
-    session: AsyncSession, user_id: str, group_ids: list[str]
+async def set_user_group(
+    session: AsyncSession, user_id: str, group_id: str | None
 ) -> None:
-    """设置用户的权限组，先删除旧关联再插入新关联。"""
-    # 删除旧关联
-    del_stmt = delete(user_group).where(
-        user_group.c.user_id == user_id
-    )
-    await session.execute(del_stmt)
-
-    # 插入新关联
-    if group_ids:
-        values = [
-            {"user_id": user_id, "group_id": gid}
-            for gid in group_ids
-        ]
-        await session.execute(insert(user_group).values(values))
-
-    await session.flush()
+    """设置用户的权限组。"""
+    stmt = select(User).where(User.id == user_id)
+    result = await session.execute(stmt)
+    user = result.scalar_one_or_none()
+    if user:
+        user.group_id = group_id
+        await session.flush()

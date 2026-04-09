@@ -11,7 +11,7 @@ from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.rbac.tables import group_permission, user_group
+from app.rbac.tables import group_permission
 
 
 class Permission(Base):
@@ -70,20 +70,3 @@ class PermissionGroup(Base):
         secondary=group_permission,
         lazy="selectin",
     )
-    users: Mapped[list["User"]] = relationship(
-        "User",
-        secondary=user_group,
-        back_populates="groups",
-        lazy="selectin",
-    )
-
-
-# 在两个类都定义后，将 groups 关系注入到 User 模型
-from app.user.models import User  # noqa: E402
-
-User.groups = relationship(
-    "PermissionGroup",
-    secondary=user_group,
-    back_populates="users",
-    lazy="selectin",
-)

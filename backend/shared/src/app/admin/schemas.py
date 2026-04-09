@@ -28,8 +28,8 @@ class PasswordReset(BaseModel):
 class GroupAssignment(BaseModel):
     """分配权限组请求。"""
 
-    group_ids: list[str] = Field(
-        ..., description="权限组 ID 列表"
+    group_id: str | None = Field(
+        None, description="权限组 ID（null 表示取消分配）"
     )
 
 

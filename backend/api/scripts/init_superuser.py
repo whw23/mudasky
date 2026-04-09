@@ -11,7 +11,7 @@ from sqlalchemy import select
 from app.core.database import async_session_factory
 from app.core.security import hash_password
 from app.rbac.models import Permission, PermissionGroup
-from app.rbac.tables import group_permission, user_group
+from app.rbac.tables import group_permission
 from app.user.models import User
 
 logger = logging.getLogger(__name__)
@@ -155,12 +155,8 @@ async def init_superuser(session) -> None:
     admin_group = group_result.scalar_one_or_none()
 
     if admin_group:
-        await session.execute(
-            user_group.insert().values(
-                user_id=superuser.id,
-                group_id=admin_group.id,
-            )
-        )
+        superuser.group_id = admin_group.id
+        await session.flush()
 
     logger.info("超级管理员创建成功: %s", SUPERUSER_USERNAME)
 

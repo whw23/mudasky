@@ -196,21 +196,21 @@ async def reset_password(
         )
     ],
 )
-async def assign_groups(
+async def assign_group(
     user_id: str,
     data: GroupAssignment,
     session: DbSession,
     permissions: CurrentPermissions,
     is_superuser: IsSuperuser,
 ) -> UserResponse:
-    """分配用户权限组。"""
+    """分配用户权限组（单个）。"""
     svc = AdminService(session)
     target = await svc.get_user_model(user_id)
     await svc.check_target_permission(
         target, permissions, is_superuser
     )
-    return await svc.assign_groups(
-        user_id, data.group_ids, permissions, is_superuser
+    return await svc.assign_group(
+        user_id, data.group_id, permissions, is_superuser
     )
 
 

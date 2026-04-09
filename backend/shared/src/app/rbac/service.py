@@ -1,6 +1,7 @@
 """RBAC 权限领域业务逻辑层。
 
 处理权限查询、权限组管理、用户权限分配等业务。
+用户与权限组为一对多关系。
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,7 +67,6 @@ class RbacService:
         if existing:
             raise ConflictException(message="权限组名称已存在")
 
-        # 查询权限实体
         permissions = await repository.get_permissions_by_ids(
             self.session, data.permission_ids
         )
@@ -92,13 +92,11 @@ class RbacService:
         if not group:
             raise NotFoundException(message="权限组不存在")
 
-        # 系统权限组不允许改名
         if data.name is not None:
             if group.is_system:
                 raise ForbiddenException(
                     message="系统权限组不允许修改名称"
                 )
-            # 检查名称唯一性
             existing = await repository.get_group_by_name(
                 self.session, data.name
             )
@@ -146,44 +144,42 @@ class RbacService:
             self.session, user_id
         )
 
-    async def get_user_group_ids(
+    async def get_user_group_id(
         self, user_id: str
-    ) -> list[str]:
-        """查询用户所属权限组 ID 列表。"""
-        return await repository.get_user_group_ids(
+    ) -> str | None:
+        """查询用户所属权限组 ID。"""
+        return await repository.get_user_group_id(
             self.session, user_id
         )
 
-    async def assign_user_groups(
+    async def assign_user_group(
         self,
         user_id: str,
-        group_ids: list[str],
+        group_id: str | None,
         operator_permissions: list[str],
         is_superuser: bool,
     ) -> None:
-        """分配用户权限组。
+        """分配用户权限组（单个）。
 
         非超级管理员且没有 group:manage 权限时，
         只能分配自己也拥有的权限对应的权限组。
         """
-        if not is_superuser and (
+        if group_id and not is_superuser and (
             "group:manage" not in operator_permissions
         ):
-            # 检查待分配权限组的权限是否超出操作者权限
-            for gid in group_ids:
-                group = await repository.get_group_by_id(
-                    self.session, gid
+            group = await repository.get_group_by_id(
+                self.session, group_id
+            )
+            if not group:
+                raise NotFoundException(
+                    message="权限组不存在"
                 )
-                if not group:
-                    raise NotFoundException(
-                        message=f"权限组 {gid} 不存在"
+            for perm in group.permissions:
+                if perm.code not in operator_permissions:
+                    raise ForbiddenException(
+                        message="不能分配超出自身权限的权限组"
                     )
-                for perm in group.permissions:
-                    if perm.code not in operator_permissions:
-                        raise ForbiddenException(
-                            message="不能分配超出自身权限的权限组"
-                        )
 
-        await repository.set_user_groups(
-            self.session, user_id, group_ids
+        await repository.set_user_group(
+            self.session, user_id, group_id
         )

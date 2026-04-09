@@ -11,8 +11,8 @@ export interface User {
   two_factor_method: string | null
   storage_quota: number
   permissions: string[]
-  group_ids: string[]
-  group_names: string[]
+  group_id: string | null
+  group_name: string | null
   created_at: string
   updated_at: string | null
 }

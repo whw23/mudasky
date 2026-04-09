@@ -83,8 +83,8 @@ class UserResponse(BaseModel):
     is_superuser: bool
     is_active: bool
     permissions: list[str] = []
-    group_ids: list[str] = []
-    group_names: list[str] = []
+    group_id: str | None = None
+    group_name: str | None = None
     two_factor_enabled: bool
     two_factor_method: str | None = None
     storage_quota: int

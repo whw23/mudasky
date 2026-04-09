@@ -30,7 +30,7 @@ class AdminService:
         permissions = await rbac_repo.get_user_permissions(
             self.session, user.id
         )
-        group_ids = await rbac_repo.get_user_group_ids(
+        group_name = await rbac_repo.get_user_group_name(
             self.session, user.id
         )
         return UserResponse(
@@ -43,7 +43,8 @@ class AdminService:
             two_factor_enabled=user.two_factor_enabled,
             storage_quota=user.storage_quota,
             permissions=permissions,
-            group_ids=group_ids,
+            group_id=user.group_id,
+            group_name=group_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -156,17 +157,17 @@ class AdminService:
         user.password_hash = hash_password(new_password)
         await user_repo.update(self.session, user)
 
-    async def assign_groups(
+    async def assign_group(
         self,
         user_id: str,
-        group_ids: list[str],
+        group_id: str | None,
         operator_permissions: list[str],
         is_superuser: bool,
     ) -> UserResponse:
-        """分配用户权限组，委托 RbacService 做约束检查。"""
+        """分配用户权限组（单个），委托 RbacService 做约束检查。"""
         rbac_svc = RbacService(self.session)
-        await rbac_svc.assign_user_groups(
-            user_id, group_ids, operator_permissions, is_superuser
+        await rbac_svc.assign_user_group(
+            user_id, group_id, operator_permissions, is_superuser
         )
 
         user = await user_repo.get_by_id(

@@ -11,7 +11,6 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -34,7 +33,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
   const [user, setUser] = useState<User | null>(null)
   const [groups, setGroups] = useState<PermissionGroup[]>([])
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("")
   const [storageQuota, setStorageQuota] = useState<number>(0)
   const [password, setPassword] = useState("")
   const [passwordConfirm, setPasswordConfirm] = useState("")
@@ -51,7 +50,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
     try {
       const { data } = await api.get<User>(`/admin/users/${userId}`)
       setUser(data)
-      setSelectedGroupIds(data.group_ids)
+      setSelectedGroupId(data.group_id || "")
       setStorageQuota(data.storage_quota)
       setNewUserType(data.user_type)
     } catch {
@@ -102,9 +101,9 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   }
 
   /** 保存分组 */
-  const handleSaveGroups = () => {
+  const handleSaveGroup = () => {
     runAction(
-      () => api.put(`/admin/users/${userId}/groups`, { group_ids: selectedGroupIds }),
+      () => api.put(`/admin/users/${userId}/groups`, { group_id: selectedGroupId || null }),
       t("saveGroupsSuccess"),
     )
   }
@@ -144,15 +143,6 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
     runAction(
       () => api.delete(`/admin/users/${userId}/tokens`),
       t("forceLogoutSuccess"),
-    )
-  }
-
-  /** 切换分组选中状态 */
-  const toggleGroup = (groupId: string) => {
-    setSelectedGroupIds((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
     )
   }
 
@@ -208,18 +198,19 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
             {/* 分组分配 */}
             <section className="space-y-2">
               <h3 className="text-sm font-medium">{t("assignGroups")}</h3>
-              <div className="space-y-2">
+              <select
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="">{t("noGroup")}</option>
                 {groups.map((group) => (
-                  <label key={group.id} className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={selectedGroupIds.includes(group.id)}
-                      onCheckedChange={() => toggleGroup(group.id)}
-                    />
-                    <span>{group.name}</span>
-                  </label>
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
                 ))}
-              </div>
-              <Button size="sm" disabled={saving} onClick={handleSaveGroups}>
+              </select>
+              <Button size="sm" disabled={saving} onClick={handleSaveGroup}>
                 {t("saveGroups")}
               </Button>
             </section>

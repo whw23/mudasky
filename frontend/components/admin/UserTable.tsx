@@ -145,9 +145,9 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {user.group_ids.length > 0 ? (
+                    {user.group_name ? (
                       <span className="text-xs text-muted-foreground">
-                        {user.group_ids.length} {t("groups")}
+                        {user.group_name}
                       </span>
                     ) : (
                       "-"
