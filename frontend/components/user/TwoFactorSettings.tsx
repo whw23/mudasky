@@ -11,6 +11,7 @@ import { ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
+import { encryptPassword } from '@/lib/crypto'
 import {
   Card,
   CardHeader,
@@ -93,8 +94,10 @@ export function TwoFactorSettings() {
     e.preventDefault()
     setDisabling(true)
     try {
+      const encrypted = await encryptPassword(disablePassword)
       await api.post('/users/me/2fa/disable', {
-        password: disablePassword,
+        encrypted_password: encrypted.encrypted_password,
+        nonce: encrypted.nonce,
       })
       toast.success(t('twoFaDisabled'))
       setShowDisableDialog(false)

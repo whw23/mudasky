@@ -11,6 +11,7 @@ import { Pencil, Check, X, ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
+import { encryptPassword } from '@/lib/crypto'
 import {
   Card,
   CardHeader,
@@ -169,10 +170,12 @@ export function ProfileInfo() {
     }
     setLoading(true)
     try {
+      const encrypted = await encryptPassword(newPassword)
       await api.put('/users/me/password', {
         phone: user!.phone,
         code: pwdCode,
-        new_password: newPassword,
+        encrypted_password: encrypted.encrypted_password,
+        nonce: encrypted.nonce,
       })
       cancelEdit()
       toast.success(t('passwordChanged'))

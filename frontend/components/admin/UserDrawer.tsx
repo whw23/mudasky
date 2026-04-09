@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { usePermissions } from "@/hooks/use-permissions"
 import api from "@/lib/api"
+import { encryptPassword } from "@/lib/crypto"
 import type { User, PermissionGroup } from "@/types"
 
 interface UserDrawerProps {
@@ -117,13 +118,17 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   }
 
   /** 重置密码 */
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!password || password !== passwordConfirm) {
       toast.error(t("passwordMismatch"))
       return
     }
+    const encrypted = await encryptPassword(password)
     runAction(
-      () => api.put(`/admin/users/${userId}/password`, { password }),
+      () => api.put(`/admin/users/${userId}/password`, {
+        encrypted_password: encrypted.encrypted_password,
+        nonce: encrypted.nonce,
+      }),
       t("resetPasswordSuccess"),
     )
   }

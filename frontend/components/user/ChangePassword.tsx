@@ -9,6 +9,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { encryptPassword } from '@/lib/crypto'
 import { useAuth } from '@/hooks/use-auth'
 import {
   Card,
@@ -53,10 +54,12 @@ export function ChangePassword() {
 
     setLoading(true)
     try {
+      const { encrypted_password, nonce } = await encryptPassword(newPassword)
       await api.put('/users/me/password', {
         phone,
         code,
-        new_password: newPassword,
+        encrypted_password,
+        nonce,
       })
       toast.success(t('passwordChanged'))
       resetForm()

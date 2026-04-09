@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { setKeepLogin } from '@/lib/api'
+import { encryptPassword } from '@/lib/crypto'
 import {
   Dialog,
   DialogContent,
@@ -112,19 +113,26 @@ export function LoginModal() {
   /** 账号密码登录（自动判断用户名或手机号） */
   async function handleAccountLogin(e: FormEvent): Promise<void> {
     e.preventDefault()
+    const { encrypted_password, nonce } = await encryptPassword(accountPwd)
     if (isPhoneNumber(account)) {
-      await doLogin({ phone: account, password: accountPwd })
+      await doLogin({ phone: account, encrypted_password, nonce })
     } else {
-      await doLogin({ username: account, password: accountPwd })
+      await doLogin({ username: account, encrypted_password, nonce })
     }
   }
 
-  /** 二步验证提交 */
-  function handleTwoFaSubmit(data: Record<string, string | undefined>): void {
+  /** 二步验证提交（重新加密密码，因为原 nonce 已被消费） */
+  async function handleTwoFaSubmit(data: Record<string, string | undefined>): Promise<void> {
     if (!pendingPayload) return
     const payload: Record<string, string> = { ...pendingPayload }
     for (const [k, v] of Object.entries(data)) {
       if (v) payload[k] = v
+    }
+    /* 重新获取公钥并加密密码，因为原 nonce 已被消费 */
+    if (accountPwd) {
+      const { encrypted_password, nonce } = await encryptPassword(accountPwd)
+      payload.encrypted_password = encrypted_password
+      payload.nonce = nonce
     }
     doLogin(payload)
   }
