@@ -7,12 +7,12 @@
 
 import { useTranslations } from 'next-intl'
 import { Award, Globe } from 'lucide-react'
-import { useConfig } from '@/contexts/ConfigContext'
+import { useLocalizedConfig } from '@/contexts/ConfigContext'
 
 /** 公司历史区块 */
 export function HistorySection() {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
 
   return (
     <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">
@@ -24,7 +24,7 @@ export function HistorySection() {
 /** 使命愿景区块 */
 export function MissionVisionSection() {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -49,7 +49,7 @@ export function MissionVisionSection() {
 /** 合作介绍区块 */
 export function PartnershipSection() {
   const t = useTranslations('About')
-  const { aboutInfo } = useConfig()
+  const { aboutInfo } = useLocalizedConfig()
 
   return (
     <p className="leading-relaxed text-muted-foreground">
@@ -60,7 +60,7 @@ export function PartnershipSection() {
 
 /** 关于页面统计区块 */
 export function AboutStatsSection() {
-  const { homepageStats } = useConfig()
+  const { homepageStats } = useLocalizedConfig()
 
   return (
     <section className="border-y bg-white">

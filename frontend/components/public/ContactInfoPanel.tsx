@@ -7,12 +7,12 @@
 
 import { useTranslations } from 'next-intl'
 import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'
-import { useConfig } from '@/contexts/ConfigContext'
+import { useLocalizedConfig } from '@/contexts/ConfigContext'
 
 /** 联系信息面板 */
 export function ContactInfoPanel() {
   const t = useTranslations('Contact')
-  const { contactInfo } = useConfig()
+  const { contactInfo } = useLocalizedConfig()
 
   const infoItems = [
     {

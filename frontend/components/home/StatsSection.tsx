@@ -5,11 +5,11 @@
  * 从系统配置获取统计数据，支持管理后台动态修改。
  */
 
-import { useConfig } from '@/contexts/ConfigContext'
+import { useLocalizedConfig } from '@/contexts/ConfigContext'
 
 /** 首页统计区块 */
 export function StatsSection() {
-  const { homepageStats } = useConfig()
+  const { homepageStats } = useLocalizedConfig()
 
   return (
     <section className="border-b bg-white">

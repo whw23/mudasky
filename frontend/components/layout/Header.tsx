@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
-import { useConfig } from "@/contexts/ConfigContext"
+import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 
 /** 导航菜单键与路径映射 */
@@ -39,7 +39,7 @@ export function Header() {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
-  const { siteInfo } = useConfig()
+  const { siteInfo } = useLocalizedConfig()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
