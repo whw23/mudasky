@@ -41,6 +41,7 @@ _M.public_routes = {
 --- 公开路由前缀（用于动态路由）。
 _M.public_prefixes = {
   { method = "GET", prefix = "/api/content/articles" },
+  { method = "GET", prefix = "/api/cases" },
   { method = "GET", prefix = "/api/config/" },
 }
 

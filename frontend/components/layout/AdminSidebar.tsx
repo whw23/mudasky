@@ -14,6 +14,7 @@ import {
   Shield,
   BookOpen,
   Tag,
+  Trophy,
   Settings,
   ArrowLeft,
 } from "lucide-react"
@@ -35,6 +36,7 @@ const MENU_KEYS: MenuItem[] = [
   { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["member:manage", "staff:manage"] },
   { key: "groupManagement", href: "/admin/groups", icon: Shield, permissions: ["group:manage"] },
   { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["post:manage", "blog:manage"] },
+  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["post:manage"] },
   { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["category:manage"] },
   { key: "settings", href: "/admin/settings", icon: Settings, superuserOnly: true },
 ]
