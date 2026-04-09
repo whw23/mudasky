@@ -158,7 +158,7 @@ class AuthService:
         permissions = await rbac_repo.get_user_permissions(
             self.session, user.id
         )
-        group_ids = await rbac_repo.get_user_group_ids(
+        group_name = await rbac_repo.get_user_group_name(
             self.session, user.id
         )
         return UserResponse(
@@ -171,7 +171,8 @@ class AuthService:
             two_factor_enabled=user.two_factor_enabled,
             storage_quota=user.storage_quota,
             permissions=permissions,
-            group_ids=group_ids,
+            group_id=user.group_id,
+            group_name=group_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
