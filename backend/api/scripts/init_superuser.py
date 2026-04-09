@@ -1,6 +1,6 @@
 """初始化系统基础数据。
 
-首次启动时自动创建权限、权限组和超级管理员，如已存在则跳过。
+首次启动时自动创建权限、角色和超级管理员，如已存在则跳过。
 """
 
 import asyncio
@@ -11,8 +11,8 @@ from sqlalchemy import select
 from app.content.models import Category
 from app.core.database import async_session_factory
 from app.core.security import hash_password
-from app.rbac.models import Permission, PermissionGroup
-from app.rbac.tables import group_permission
+from app.rbac.models import Permission, Role
+from app.rbac.tables import role_permission
 from app.user.models import User
 
 logger = logging.getLogger(__name__)
@@ -33,34 +33,26 @@ PERMISSIONS = [
     ("document:upload", "上传个人文档"),
 ]
 
-# 系统权限组定义：(name, description, is_system, auto_include_all, [permission_codes])
-GROUPS = [
+# 系统角色定义：(name, description, [permission_codes])
+ROLES = [
     (
         "global_admin",
         "全局管理员",
-        True,
-        True,
-        [],  # auto_include_all=True，无需显式关联
+        [],  # 全局管理员拥有所有权限，无需显式关联
     ),
     (
         "content_editor",
         "内容编辑",
-        True,
-        False,
         ["post:manage", "blog:manage", "category:manage"],
     ),
     (
         "student_advisor",
         "留学顾问",
-        True,
-        False,
         ["member:manage", "blog:manage", "document:manage"],
     ),
     (
         "member",
         "会员",
-        True,
-        False,
         ["blog:write", "document:upload"],
     ),
 ]
@@ -82,28 +74,21 @@ async def init_permissions(session) -> None:
         logger.info("创建权限: %s", code)
 
 
-async def init_groups(session) -> None:
-    """初始化系统权限组。已存在的权限组跳过。"""
-    for name, description, is_system, auto_include_all, perm_codes in GROUPS:
-        stmt = select(PermissionGroup).where(
-            PermissionGroup.name == name
-        )
+async def init_roles(session) -> None:
+    """初始化系统角色。已存在的角色跳过。"""
+    for name, description, perm_codes in ROLES:
+        stmt = select(Role).where(Role.name == name)
         result = await session.execute(stmt)
         existing = result.scalar_one_or_none()
 
         if existing:
-            logger.debug("权限组已存在，跳过: %s", name)
+            logger.debug("角色已存在，跳过: %s", name)
             continue
 
-        group = PermissionGroup(
-            name=name,
-            description=description,
-            is_system=is_system,
-            auto_include_all=auto_include_all,
-        )
-        session.add(group)
+        role = Role(name=name, description=description)
+        session.add(role)
 
-        # 先 flush 以获取 group.id
+        # 先 flush 以获取 role.id
         await session.flush()
 
         # 关联权限
@@ -116,18 +101,18 @@ async def init_groups(session) -> None:
 
             for perm in permissions:
                 await session.execute(
-                    group_permission.insert().values(
-                        group_id=group.id,
+                    role_permission.insert().values(
+                        role_id=role.id,
                         permission_id=perm.id,
                     )
                 )
 
-        logger.info("创建权限组: %s", name)
+        logger.info("创建角色: %s", name)
 
 
 async def init_superuser(session) -> None:
-    """检查并创建超级管理员，分配 global_admin 权限组。"""
-    stmt = select(User).where(User.is_superuser.is_(True))
+    """检查并创建超级管理员，分配 global_admin 角色。"""
+    stmt = select(User).where(User.username == SUPERUSER_USERNAME)
     result = await session.execute(stmt)
     existing = result.scalar_one_or_none()
 
@@ -141,22 +126,18 @@ async def init_superuser(session) -> None:
     superuser = User(
         username=SUPERUSER_USERNAME,
         password_hash=hash_password(SUPERUSER_PASSWORD),
-        user_type="staff",
-        is_superuser=True,
         is_active=True,
     )
     session.add(superuser)
     await session.flush()
 
-    # 分配 global_admin 权限组
-    group_stmt = select(PermissionGroup).where(
-        PermissionGroup.name == "global_admin"
-    )
-    group_result = await session.execute(group_stmt)
-    admin_group = group_result.scalar_one_or_none()
+    # 分配 global_admin 角色
+    role_stmt = select(Role).where(Role.name == "global_admin")
+    role_result = await session.execute(role_stmt)
+    admin_role = role_result.scalar_one_or_none()
 
-    if admin_group:
-        superuser.group_id = admin_group.id
+    if admin_role:
+        superuser.role_id = admin_role.id
         await session.flush()
 
     logger.info("超级管理员创建成功: %s", SUPERUSER_USERNAME)
@@ -314,7 +295,7 @@ async def main() -> None:
     """执行全部初始化任务。"""
     async with async_session_factory() as session:
         await init_permissions(session)
-        await init_groups(session)
+        await init_roles(session)
         await init_superuser(session)
         print("初始化系统配置...")
         await init_system_config(session)

@@ -7,14 +7,14 @@ from sqlalchemy import Column, ForeignKey, String, Table
 
 from app.core.database import Base
 
-# 权限组-权限关联表
-group_permission = Table(
-    "group_permission",
+# 角色-权限关联表
+role_permission = Table(
+    "role_permission",
     Base.metadata,
     Column(
-        "group_id",
+        "role_id",
         String(36),
-        ForeignKey("permission_group.id", ondelete="CASCADE"),
+        ForeignKey("role.id", ondelete="CASCADE"),
         primary_key=True,
     ),
     Column(

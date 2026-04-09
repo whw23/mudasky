@@ -13,7 +13,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from app.rbac.models import PermissionGroup
+    from app.rbac.models import Role
 
 from app.core.config import settings
 from app.core.database import Base
@@ -47,24 +47,18 @@ class User(Base):
     totp_secret: Mapped[str | None] = mapped_column(
         String(64), nullable=True
     )
-    user_type: Mapped[str] = mapped_column(
-        String(10), default="guest", nullable=False
-    )
-    group_id: Mapped[str | None] = mapped_column(
+    role_id: Mapped[str | None] = mapped_column(
         String(36),
-        ForeignKey("permission_group.id", ondelete="SET NULL"),
+        ForeignKey("role.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
-    )
-    is_superuser: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
     )
 
-    group: Mapped["PermissionGroup | None"] = relationship(
-        "PermissionGroup", lazy="selectin"
+    role: Mapped["Role | None"] = relationship(
+        "Role", lazy="selectin"
     )
     storage_quota: Mapped[int] = mapped_column(
         Integer,
