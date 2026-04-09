@@ -16,7 +16,6 @@ from app.content.schemas import (
 from app.content.service import ContentService
 from app.core.dependencies import (
     DbSession,
-    require_any_permission,
     require_permission,
 )
 from app.core.pagination import PaginatedResponse, PaginationParams
@@ -30,7 +29,7 @@ admin_router = APIRouter(
     "/categories",
     response_model=list[CategoryResponse],
     dependencies=[
-        Depends(require_permission("category:manage"))
+        Depends(require_permission("admin.category.*"))
     ],
 )
 async def admin_list_categories(
@@ -46,7 +45,7 @@ async def admin_list_categories(
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
-        Depends(require_permission("category:manage"))
+        Depends(require_permission("admin.category.create"))
     ],
 )
 async def admin_create_category(
@@ -62,7 +61,7 @@ async def admin_create_category(
     "/categories/{category_id}",
     response_model=CategoryResponse,
     dependencies=[
-        Depends(require_permission("category:manage"))
+        Depends(require_permission("admin.category.edit"))
     ],
 )
 async def admin_update_category(
@@ -80,7 +79,9 @@ async def admin_update_category(
     "/categories/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[
-        Depends(require_permission("category:manage"))
+        Depends(
+            require_permission("admin.category.delete")
+        )
     ],
 )
 async def admin_delete_category(
@@ -95,11 +96,7 @@ async def admin_delete_category(
     "/articles",
     response_model=PaginatedResponse[ArticleResponse],
     dependencies=[
-        Depends(
-            require_any_permission(
-                "post:manage", "blog:manage"
-            )
-        )
+        Depends(require_permission("admin.content.*"))
     ],
 )
 async def admin_list_articles(
@@ -123,11 +120,7 @@ async def admin_list_articles(
     "/articles/{article_id}",
     response_model=ArticleResponse,
     dependencies=[
-        Depends(
-            require_any_permission(
-                "post:manage", "blog:manage"
-            )
-        )
+        Depends(require_permission("admin.content.edit"))
     ],
 )
 async def admin_update_article(
@@ -146,9 +139,7 @@ async def admin_update_article(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[
         Depends(
-            require_any_permission(
-                "post:manage", "blog:manage"
-            )
+            require_permission("admin.content.delete")
         )
     ],
 )

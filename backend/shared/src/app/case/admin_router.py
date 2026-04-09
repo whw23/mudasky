@@ -19,7 +19,7 @@ admin_router = APIRouter(
     response_model=CaseResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.case.create"))
     ],
 )
 async def admin_create_case(
@@ -35,7 +35,7 @@ async def admin_create_case(
     "/{case_id}",
     response_model=CaseResponse,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.case.edit"))
     ],
 )
 async def admin_update_case(
@@ -53,7 +53,7 @@ async def admin_update_case(
     "/{case_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.case.delete"))
     ],
 )
 async def admin_delete_case(

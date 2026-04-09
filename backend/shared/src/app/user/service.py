@@ -34,26 +34,24 @@ class UserService:
         return user
 
     async def get_user_response(self, user_id: str) -> UserResponse:
-        """获取用户信息响应，包含权限和权限组。"""
+        """获取用户信息响应，包含权限和角色。"""
         user = await self.get_user(user_id)
         permissions = await rbac_repo.get_user_permissions(
             self.session, user_id
         )
-        group_name = await rbac_repo.get_user_group_name(
+        role_name = await rbac_repo.get_user_role_name(
             self.session, user_id
         )
         return UserResponse(
             id=user.id,
             phone=user.phone,
             username=user.username,
-            user_type=user.user_type,
-            is_superuser=user.is_superuser,
             is_active=user.is_active,
             two_factor_enabled=user.two_factor_enabled,
             storage_quota=user.storage_quota,
             permissions=permissions,
-            group_id=user.group_id,
-            group_name=group_name,
+            role_id=user.role_id,
+            role_name=role_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )

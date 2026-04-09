@@ -138,7 +138,7 @@ admin_router = APIRouter(
     response_model=UniversityResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.university.*"))
     ],
 )
 async def admin_create_university(
@@ -154,7 +154,7 @@ async def admin_create_university(
     "/{university_id}",
     response_model=UniversityResponse,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.university.*"))
     ],
 )
 async def admin_update_university(
@@ -174,7 +174,7 @@ async def admin_update_university(
     "/{university_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[
-        Depends(require_permission("post:manage"))
+        Depends(require_permission("admin.university.*"))
     ],
 )
 async def admin_delete_university(

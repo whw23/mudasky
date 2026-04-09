@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository as auth_repo
 from app.core.crypto import decrypt_password
-from app.core.exceptions import ForbiddenException, NotFoundException
+from app.core.exceptions import NotFoundException
 from app.core.security import hash_password
 from app.rbac import repository as rbac_repo
 from app.rbac.service import RbacService
@@ -27,48 +27,36 @@ class AdminService:
     async def _build_user_response(
         self, user: User
     ) -> UserResponse:
-        """构建包含权限和权限组的用户响应。"""
+        """构建包含权限和角色的用户响应。"""
         permissions = await rbac_repo.get_user_permissions(
             self.session, user.id
         )
-        group_name = await rbac_repo.get_user_group_name(
+        role_name = await rbac_repo.get_user_role_name(
             self.session, user.id
         )
         return UserResponse(
             id=user.id,
             phone=user.phone,
             username=user.username,
-            user_type=user.user_type,
-            is_superuser=user.is_superuser,
             is_active=user.is_active,
             two_factor_enabled=user.two_factor_enabled,
             storage_quota=user.storage_quota,
             permissions=permissions,
-            group_id=user.group_id,
-            group_name=group_name,
+            role_id=user.role_id,
+            role_name=role_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
 
     async def list_users(
         self,
-        user_type_filter: str | None,
         search: str | None,
         offset: int,
         limit: int,
     ) -> tuple[list[UserResponse], int]:
-        """分页查询用户列表，支持按类型和关键词筛选。"""
+        """分页查询用户列表，支持按关键词筛选。"""
         base_query = select(User)
         count_query = select(func.count()).select_from(User)
-
-        # 按用户类型筛选
-        if user_type_filter:
-            base_query = base_query.where(
-                User.user_type == user_type_filter
-            )
-            count_query = count_query.where(
-                User.user_type == user_type_filter
-            )
 
         # 按手机号或用户名模糊搜索
         if search:
@@ -100,7 +88,7 @@ class AdminService:
         return user_responses, total
 
     async def get_user(self, user_id: str) -> UserResponse:
-        """获取用户详情，包含权限和权限组信息。"""
+        """获取用户详情，包含权限和角色信息。"""
         user = await user_repo.get_by_id(
             self.session, user_id
         )
@@ -126,25 +114,6 @@ class AdminService:
         await user_repo.update(self.session, user)
         return await self._build_user_response(user)
 
-    async def change_user_type(
-        self, user_id: str, new_type: str
-    ) -> UserResponse:
-        """修改用户类型。"""
-        if new_type not in ("guest", "member", "staff"):
-            raise ForbiddenException(
-                message="用户类型只能是 guest、member 或 staff"
-            )
-
-        user = await user_repo.get_by_id(
-            self.session, user_id
-        )
-        if not user:
-            raise NotFoundException(message="用户不存在")
-
-        user.user_type = new_type
-        await user_repo.update(self.session, user)
-        return await self._build_user_response(user)
-
     async def reset_password(
         self,
         user_id: str,
@@ -162,18 +131,14 @@ class AdminService:
         user.password_hash = hash_password(password)
         await user_repo.update(self.session, user)
 
-    async def assign_group(
+    async def assign_role(
         self,
         user_id: str,
-        group_id: str | None,
-        operator_permissions: list[str],
-        is_superuser: bool,
+        role_id: str | None,
     ) -> UserResponse:
-        """分配用户权限组（单个），委托 RbacService 做约束检查。"""
+        """分配用户角色（单个），委托 RbacService 做约束检查。"""
         rbac_svc = RbacService(self.session)
-        await rbac_svc.assign_user_group(
-            user_id, group_id, operator_permissions, is_superuser
-        )
+        await rbac_svc.assign_user_role(user_id, role_id)
 
         user = await user_repo.get_by_id(
             self.session, user_id
@@ -187,32 +152,6 @@ class AdminService:
         await auth_repo.revoke_user_refresh_tokens(
             self.session, user_id
         )
-
-    async def check_target_permission(
-        self,
-        target_user: User,
-        operator_permissions: list[str],
-        is_superuser: bool,
-    ) -> None:
-        """检查操作者是否有权管理目标用户。"""
-        if is_superuser:
-            return
-
-        if target_user.is_superuser:
-            raise ForbiddenException(
-                message="不能管理超级管理员"
-            )
-
-        if target_user.user_type in ("member", "guest"):
-            if "member:manage" not in operator_permissions:
-                raise ForbiddenException(
-                    message="没有管理会员的权限"
-                )
-        elif target_user.user_type == "staff":
-            if "staff:manage" not in operator_permissions:
-                raise ForbiddenException(
-                    message="没有管理员工的权限"
-                )
 
     async def get_user_model(
         self, user_id: str

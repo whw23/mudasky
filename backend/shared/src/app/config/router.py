@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Header, Response
 from app.config.schemas import ConfigDetailResponse, ConfigResponse, ConfigUpdateRequest
 from app.config.service import ConfigService
 from app.core.cache import set_cache_headers
-from app.core.dependencies import DbSession, require_superuser
+from app.core.dependencies import DbSession, require_permission
 
 router = APIRouter(tags=["config"])
 
@@ -32,12 +32,14 @@ async def get_config(
 @router.get(
     "/admin/config",
     response_model=list[ConfigDetailResponse],
-    dependencies=[Depends(require_superuser())],
+    dependencies=[
+        Depends(require_permission("admin.settings.view"))
+    ],
 )
 async def list_configs(
     session: DbSession,
 ) -> list[ConfigDetailResponse]:
-    """获取所有配置（仅超级管理员）。"""
+    """获取所有配置（需要系统设置查看权限）。"""
     svc = ConfigService(session)
     return await svc.list_all()
 
@@ -45,13 +47,15 @@ async def list_configs(
 @router.put(
     "/admin/config/{key}",
     response_model=ConfigResponse,
-    dependencies=[Depends(require_superuser())],
+    dependencies=[
+        Depends(require_permission("admin.settings.edit"))
+    ],
 )
 async def update_config(
     key: str,
     data: ConfigUpdateRequest,
     session: DbSession,
 ) -> ConfigResponse:
-    """更新配置值（仅超级管理员）。"""
+    """更新配置值（需要系统设置编辑权限）。"""
     svc = ConfigService(session)
     return await svc.update_value(key, data.value)

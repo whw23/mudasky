@@ -20,56 +20,119 @@ logger = logging.getLogger(__name__)
 SUPERUSER_USERNAME = "mudasky"
 SUPERUSER_PASSWORD = "mudasky@12321."
 
-# 系统权限定义
+# 系统权限定义：(code, name_key, description)
 PERMISSIONS = [
-    ("member:manage", "管理会员"),
-    ("staff:manage", "管理内部员工"),
-    ("group:manage", "管理权限组"),
-    ("post:manage", "管理机构推文"),
-    ("blog:manage", "管理学生博客"),
-    ("blog:write", "发布个人博客"),
-    ("category:manage", "管理分类"),
-    ("document:manage", "管理用户文档"),
-    ("document:upload", "上传个人文档"),
+    # 用户中心 - 个人资料
+    ("user_center.profile.view", "permission.user_center.profile.view", "查看个人资料"),
+    ("user_center.profile.edit", "permission.user_center.profile.edit", "编辑个人资料"),
+    ("user_center.profile.password", "permission.user_center.profile.password", "修改密码"),
+    ("user_center.profile.phone", "permission.user_center.profile.phone", "修改手机号"),
+    # 用户中心 - 双因素认证
+    ("user_center.two_factor.totp", "permission.user_center.two_factor.totp", "TOTP 双因素认证"),
+    ("user_center.two_factor.sms", "permission.user_center.two_factor.sms", "短信双因素认证"),
+    ("user_center.two_factor.disable", "permission.user_center.two_factor.disable", "关闭双因素认证"),
+    # 用户中心 - 文档
+    ("user_center.document.upload", "permission.user_center.document.upload", "上传文档"),
+    ("user_center.document.list", "permission.user_center.document.list", "查看文档列表"),
+    ("user_center.document.delete", "permission.user_center.document.delete", "删除文档"),
+    # 用户中心 - 文章
+    ("user_center.article.create", "permission.user_center.article.create", "创建文章"),
+    ("user_center.article.edit", "permission.user_center.article.edit", "编辑文章"),
+    ("user_center.article.delete", "permission.user_center.article.delete", "删除文章"),
+    # 管理后台 - 用户管理
+    ("admin.user.list", "permission.admin.user.list", "查看用户列表"),
+    ("admin.user.edit", "permission.admin.user.edit", "编辑用户"),
+    ("admin.user.toggle_active", "permission.admin.user.toggle_active", "启用/禁用用户"),
+    ("admin.user.reset_password", "permission.admin.user.reset_password", "重置用户密码"),
+    ("admin.user.assign_role", "permission.admin.user.assign_role", "分配用户角色"),
+    # 管理后台 - 内容管理
+    ("admin.content.list", "permission.admin.content.list", "查看内容列表"),
+    ("admin.content.edit", "permission.admin.content.edit", "编辑内容"),
+    ("admin.content.delete", "permission.admin.content.delete", "删除内容"),
+    # 管理后台 - 分类管理
+    ("admin.category.create", "permission.admin.category.create", "创建分类"),
+    ("admin.category.edit", "permission.admin.category.edit", "编辑分类"),
+    ("admin.category.delete", "permission.admin.category.delete", "删除分类"),
+    # 管理后台 - 案例管理
+    ("admin.case.create", "permission.admin.case.create", "创建成功案例"),
+    ("admin.case.edit", "permission.admin.case.edit", "编辑成功案例"),
+    ("admin.case.delete", "permission.admin.case.delete", "删除成功案例"),
+    # 管理后台 - 院校管理
+    ("admin.university.create", "permission.admin.university.create", "创建合作院校"),
+    ("admin.university.edit", "permission.admin.university.edit", "编辑合作院校"),
+    ("admin.university.delete", "permission.admin.university.delete", "删除合作院校"),
+    # 管理后台 - 角色管理
+    ("admin.role.list", "permission.admin.role.list", "查看角色列表"),
+    ("admin.role.create", "permission.admin.role.create", "创建角色"),
+    ("admin.role.edit", "permission.admin.role.edit", "编辑角色"),
+    ("admin.role.delete", "permission.admin.role.delete", "删除角色"),
+    # 管理后台 - 系统设置
+    ("admin.settings.view", "permission.admin.settings.view", "查看系统设置"),
+    ("admin.settings.edit", "permission.admin.settings.edit", "编辑系统设置"),
+    # 通配符权限
+    ("*", "permission.all", "所有权限"),
+    ("admin.*", "permission.admin.all", "所有管理后台权限"),
+    ("user_center.*", "permission.user_center.all", "所有用户中心权限"),
+    ("admin.user.*", "permission.admin.user.all", "所有用户管理权限"),
+    ("admin.content.*", "permission.admin.content.all", "所有内容管理权限"),
+    ("admin.category.*", "permission.admin.category.all", "所有分类管理权限"),
+    ("admin.case.*", "permission.admin.case.all", "所有案例管理权限"),
+    ("admin.university.*", "permission.admin.university.all", "所有院校管理权限"),
+    ("admin.role.*", "permission.admin.role.all", "所有角色管理权限"),
+    ("admin.settings.*", "permission.admin.settings.all", "所有系统设置权限"),
+    ("user_center.profile.*", "permission.user_center.profile.all", "所有个人资料权限"),
+    ("user_center.two_factor.*", "permission.user_center.two_factor.all", "所有双因素认证权限"),
+    ("user_center.document.*", "permission.user_center.document.all", "所有文档权限"),
+    ("user_center.article.*", "permission.user_center.article.all", "所有文章权限"),
 ]
 
 # 系统角色定义：(name, description, [permission_codes])
 ROLES = [
     (
-        "global_admin",
-        "全局管理员",
-        [],  # 全局管理员拥有所有权限，无需显式关联
+        "superuser",
+        "超级管理员",
+        ["*"],
     ),
     (
-        "content_editor",
-        "内容编辑",
-        ["post:manage", "blog:manage", "category:manage"],
+        "website_admin",
+        "网站管理员",
+        ["admin.*", "user_center.*"],
     ),
     (
         "student_advisor",
         "留学顾问",
-        ["member:manage", "blog:manage", "document:manage"],
+        ["admin.user.*", "admin.content.*", "admin.case.*", "user_center.*"],
     ),
     (
-        "member",
-        "会员",
-        ["blog:write", "document:upload"],
+        "student",
+        "学员",
+        ["user_center.*"],
+    ),
+    (
+        "visitor",
+        "访客",
+        ["user_center.profile.view"],
     ),
 ]
 
 
 async def init_permissions(session) -> None:
     """初始化系统权限。已存在的权限跳过。"""
-    for code, description in PERMISSIONS:
+    for code, name_key, description in PERMISSIONS:
         stmt = select(Permission).where(Permission.code == code)
         result = await session.execute(stmt)
         existing = result.scalar_one_or_none()
 
         if existing:
+            # 更新 name_key（迁移时可能缺少）
+            if existing.name_key != name_key:
+                existing.name_key = name_key
             logger.debug("权限已存在，跳过: %s", code)
             continue
 
-        permission = Permission(code=code, description=description)
+        permission = Permission(
+            code=code, name_key=name_key, description=description
+        )
         session.add(permission)
         logger.info("创建权限: %s", code)
 
@@ -111,7 +174,7 @@ async def init_roles(session) -> None:
 
 
 async def init_superuser(session) -> None:
-    """检查并创建超级管理员，分配 global_admin 角色。"""
+    """检查并创建超级管理员，分配 superuser 角色。"""
     stmt = select(User).where(User.username == SUPERUSER_USERNAME)
     result = await session.execute(stmt)
     existing = result.scalar_one_or_none()
@@ -123,22 +186,19 @@ async def init_superuser(session) -> None:
         logger.info("超级管理员已存在，密码已同步")
         return
 
+    # 查找 superuser 角色
+    role_stmt = select(Role).where(Role.name == "superuser")
+    role_result = await session.execute(role_stmt)
+    admin_role = role_result.scalar_one_or_none()
+
     superuser = User(
         username=SUPERUSER_USERNAME,
         password_hash=hash_password(SUPERUSER_PASSWORD),
         is_active=True,
+        role_id=admin_role.id if admin_role else None,
     )
     session.add(superuser)
     await session.flush()
-
-    # 分配 global_admin 角色
-    role_stmt = select(Role).where(Role.name == "global_admin")
-    role_result = await session.execute(role_stmt)
-    admin_role = role_result.scalar_one_or_none()
-
-    if admin_role:
-        superuser.role_id = admin_role.id
-        await session.flush()
 
     logger.info("超级管理员创建成功: %s", SUPERUSER_USERNAME)
 

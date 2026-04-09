@@ -11,8 +11,7 @@ __all__ = [
     "UserAdminUpdate",
     "UserResponse",
     "PasswordReset",
-    "GroupAssignment",
-    "UserTypeChange",
+    "RoleAssignment",
     "MessageResponse",
 ]
 
@@ -26,19 +25,11 @@ class PasswordReset(BaseModel):
     nonce: str = Field(..., description="一次性 nonce")
 
 
-class GroupAssignment(BaseModel):
-    """分配权限组请求。"""
+class RoleAssignment(BaseModel):
+    """分配角色请求。"""
 
-    group_id: str | None = Field(
-        None, description="权限组 ID（null 表示取消分配）"
-    )
-
-
-class UserTypeChange(BaseModel):
-    """修改用户类型请求。"""
-
-    user_type: str = Field(
-        ..., description="用户类型（guest、member 或 staff）"
+    role_id: str | None = Field(
+        None, description="角色 ID（null 表示取消分配）"
     )
 
 

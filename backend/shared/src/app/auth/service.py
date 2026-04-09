@@ -7,6 +7,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 import pyotp
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository
@@ -22,6 +23,7 @@ from app.core.config import settings
 from app.core.crypto import decrypt_password
 from app.core.security import hash_password, verify_password
 from app.rbac import repository as rbac_repo
+from app.rbac.models import Role
 from app.user import repository as user_repo
 from app.user.models import User
 from app.user.schemas import UserResponse
@@ -63,6 +65,7 @@ class AuthService:
         """用户注册。
 
         验证短信验证码后创建用户，可选设置用户名和密码。
+        自动分配 visitor 角色。
         """
         await repository.verify_sms_code(self.session, phone, code)
         existing = await user_repo.get_by_phone(self.session, phone)
@@ -78,10 +81,15 @@ class AuthService:
         if encrypted_password and nonce:
             password = decrypt_password(encrypted_password, nonce)
         password_hash = hash_password(password) if password else None
+
+        # 查找 visitor 角色
+        visitor_role = await self._get_visitor_role()
+
         user = User(
             phone=phone,
             username=username,
             password_hash=password_hash,
+            role_id=visitor_role.id if visitor_role else None,
         )
         user = await user_repo.create(self.session, user)
         return user
@@ -164,30 +172,34 @@ class AuthService:
     async def build_user_response(
         self, user: User
     ) -> UserResponse:
-        """构建包含权限和权限组的用户响应。"""
+        """构建包含权限和角色的用户响应。"""
         permissions = await rbac_repo.get_user_permissions(
             self.session, user.id
         )
-        group_name = await rbac_repo.get_user_group_name(
+        role_name = await rbac_repo.get_user_role_name(
             self.session, user.id
         )
         return UserResponse(
             id=user.id,
             phone=user.phone,
             username=user.username,
-            user_type=user.user_type,
-            is_superuser=user.is_superuser,
             is_active=user.is_active,
             two_factor_enabled=user.two_factor_enabled,
             storage_quota=user.storage_quota,
             permissions=permissions,
-            group_id=user.group_id,
-            group_name=group_name,
+            role_id=user.role_id,
+            role_name=role_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
 
     # ---- 私有方法 ----
+
+    async def _get_visitor_role(self) -> Role | None:
+        """查找 visitor 角色。"""
+        stmt = select(Role).where(Role.name == "visitor")
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def _check_sms_rate_limit(self, phone: str) -> None:
         """检查短信发送频率限制。"""
@@ -228,7 +240,14 @@ class AuthService:
         """手机号验证码登录时自动注册新用户。"""
         from app.core.config import settings
 
-        user = User(phone=phone, storage_quota=settings.default_storage_quota_bytes)
+        # 查找 visitor 角色
+        visitor_role = await self._get_visitor_role()
+
+        user = User(
+            phone=phone,
+            storage_quota=settings.default_storage_quota_bytes,
+            role_id=visitor_role.id if visitor_role else None,
+        )
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
