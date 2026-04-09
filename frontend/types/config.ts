@@ -2,6 +2,8 @@
  * 系统配置相关类型定义。
  */
 
+import type { LocalizedField } from "@/lib/i18n-config"
+
 /** 国家码条目 */
 export interface CountryCode {
   code: string
@@ -13,20 +15,19 @@ export interface CountryCode {
 
 /** 联系方式配置 */
 export interface ContactInfo {
-  address: string
+  address: LocalizedField
   phone: string
   email: string
   wechat: string
-  office_hours: string
+  office_hours: LocalizedField
 }
 
 /** 品牌信息配置 */
 export interface SiteInfo {
-  brand_name: string
-  brand_name_en: string
-  tagline: string
+  brand_name: LocalizedField
+  tagline: LocalizedField
   hotline: string
-  hotline_contact: string
+  hotline_contact: LocalizedField
   logo_url: string
   favicon_url: string
   wechat_qr_url: string
@@ -36,13 +37,13 @@ export interface SiteInfo {
 /** 首页统计条目 */
 export interface HomepageStat {
   value: string
-  label: string
+  label: LocalizedField
 }
 
 /** 关于我们页面内容 */
 export interface AboutInfo {
-  history: string
-  mission: string
-  vision: string
-  partnership: string
+  history: LocalizedField
+  mission: LocalizedField
+  vision: LocalizedField
+  partnership: LocalizedField
 }
