@@ -299,55 +299,81 @@
     "forceLogoutSuccess": "已强制登出"
   },
   "Permissions": {
-    "user_center": "用户中心",
-    "user_center.profile": "个人资料",
-    "user_center.profile.view": "查看个人信息",
-    "user_center.profile.edit": "编辑个人信息",
-    "user_center.profile.password": "修改密码",
-    "user_center.profile.phone": "修改手机号",
-    "user_center.two_factor": "两步验证",
-    "user_center.two_factor.totp": "TOTP 验证",
-    "user_center.two_factor.sms": "短信验证",
-    "user_center.two_factor.disable": "关闭两步验证",
-    "user_center.document": "文档管理",
-    "user_center.document.upload": "上传文档",
-    "user_center.document.list": "查看文档列表",
-    "user_center.document.delete": "删除文档",
-    "user_center.article": "文章管理",
-    "user_center.article.create": "创建文章",
-    "user_center.article.edit": "编辑文章",
-    "user_center.article.delete": "删除文章",
-    "admin": "管理后台",
-    "admin.user": "用户管理",
-    "admin.user.list": "查看用户列表",
-    "admin.user.edit": "编辑用户",
-    "admin.user.toggle_active": "启用/禁用用户",
-    "admin.user.reset_password": "重置用户密码",
-    "admin.user.assign_role": "分配用户角色",
-    "admin.content": "内容管理",
-    "admin.content.list": "查看内容列表",
-    "admin.content.edit": "编辑内容",
-    "admin.content.delete": "删除内容",
-    "admin.category": "分类管理",
-    "admin.category.create": "创建分类",
-    "admin.category.edit": "编辑分类",
-    "admin.category.delete": "删除分类",
-    "admin.case": "案例管理",
-    "admin.case.create": "创建案例",
-    "admin.case.edit": "编辑案例",
-    "admin.case.delete": "删除案例",
-    "admin.university": "院校管理",
-    "admin.university.create": "创建院校",
-    "admin.university.edit": "编辑院校",
-    "admin.university.delete": "删除院校",
-    "admin.role": "角色管理",
-    "admin.role.list": "查看角色列表",
-    "admin.role.create": "创建角色",
-    "admin.role.edit": "编辑角色",
-    "admin.role.delete": "删除角色",
-    "admin.settings": "系统设置",
-    "admin.settings.view": "查看系统设置",
-    "admin.settings.edit": "编辑系统设置"
+    "user_center": {
+      "_label": "用户中心",
+      "profile": {
+        "_label": "个人资料",
+        "view": "查看个人信息",
+        "edit": "编辑个人信息",
+        "password": "修改密码",
+        "phone": "修改手机号"
+      },
+      "two_factor": {
+        "_label": "两步验证",
+        "totp": "TOTP 验证",
+        "sms": "短信验证",
+        "disable": "关闭两步验证"
+      },
+      "document": {
+        "_label": "文档管理",
+        "upload": "上传文档",
+        "list": "查看文档列表",
+        "delete": "删除文档"
+      },
+      "article": {
+        "_label": "文章管理",
+        "create": "创建文章",
+        "edit": "编辑文章",
+        "delete": "删除文章"
+      }
+    },
+    "admin": {
+      "_label": "管理后台",
+      "user": {
+        "_label": "用户管理",
+        "list": "查看用户列表",
+        "edit": "编辑用户",
+        "toggle_active": "启用/禁用用户",
+        "reset_password": "重置用户密码",
+        "assign_role": "分配用户角色"
+      },
+      "content": {
+        "_label": "内容管理",
+        "list": "查看内容列表",
+        "edit": "编辑内容",
+        "delete": "删除内容"
+      },
+      "category": {
+        "_label": "分类管理",
+        "create": "创建分类",
+        "edit": "编辑分类",
+        "delete": "删除分类"
+      },
+      "case": {
+        "_label": "案例管理",
+        "create": "创建案例",
+        "edit": "编辑案例",
+        "delete": "删除案例"
+      },
+      "university": {
+        "_label": "院校管理",
+        "create": "创建院校",
+        "edit": "编辑院校",
+        "delete": "删除院校"
+      },
+      "role": {
+        "_label": "角色管理",
+        "list": "查看角色列表",
+        "create": "创建角色",
+        "edit": "编辑角色",
+        "delete": "删除角色"
+      },
+      "settings": {
+        "_label": "系统设置",
+        "view": "查看系统设置",
+        "edit": "编辑系统设置"
+      }
+    }
   },
   "AdminGroups": {
     "title": "角色管理",

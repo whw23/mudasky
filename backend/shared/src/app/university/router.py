@@ -134,6 +134,29 @@ admin_router = APIRouter(
 )
 
 
+@admin_router.get(
+    "",
+    response_model=PaginatedResponse[UniversityResponse],
+    dependencies=[
+        Depends(require_permission("admin.university.*"))
+    ],
+)
+async def admin_list_universities(
+    session: DbSession,
+    page_size: int = 100,
+) -> PaginatedResponse[UniversityResponse]:
+    """管理员获取院校列表。"""
+    svc = UniversityService(session)
+    universities, total = await svc.list_universities(0, page_size)
+    return PaginatedResponse(
+        items=[UniversityResponse.model_validate(u) for u in universities],
+        total=total,
+        page=1,
+        page_size=page_size,
+        total_pages=1,
+    )
+
+
 @admin_router.post(
     "",
     response_model=UniversityResponse,

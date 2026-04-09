@@ -1,62 +1,52 @@
 /**
  * 案例管理 E2E 测试。
- * 测试页面加载和UI交互（不依赖后端认证）。
+ * 覆盖：CRUD 完整流程 + 反向验证。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin, clickAndWaitDialog } from "../fixtures/base"
+
+const TS = Date.now()
+const STUDENT = `E2E学生${TS}`
+const STUDENT_EDITED = `E2E学生改${TS}`
 
 test.describe("案例管理", () => {
-  test("页面加载并展示添加按钮", async ({ adminPage }) => {
-    await adminPage.goto("/admin/cases")
+  test("完整 CRUD 流程", async ({ adminPage }) => {
+    /* 监听所有 API 请求，打印失败的 */
+    adminPage.on("response", (response) => {
+      if (response.url().includes("/api/") && response.status() >= 400) {
+        console.log(`API ERROR: ${response.status()} ${response.url()}`)
+      }
+    })
+
+    await gotoAdmin(adminPage, "/admin/cases")
     await expect(adminPage.getByRole("heading", { name: "案例管理" })).toBeVisible()
-    await expect(adminPage.getByRole("button", { name: "添加案例" })).toBeVisible()
-  })
 
-  test("打开添加案例对话框", async ({ adminPage }) => {
-    await adminPage.goto("/admin/cases")
-    await adminPage.waitForLoadState("networkidle")
+    /* === 创建案例 === */
+    await clickAndWaitDialog(adminPage, "添加案例")
+    await adminPage.getByPlaceholder("请输入学生姓名").fill(STUDENT)
+    await adminPage.getByPlaceholder("请输入录取大学").fill("东京大学")
+    await adminPage.getByPlaceholder("请输入录取专业").fill("计算机科学")
+    await adminPage.getByRole("dialog").getByRole("button", { name: "保存" }).click()
 
-    await adminPage.getByRole("button", { name: "添加案例" }).click()
-    await adminPage.waitForSelector('role=dialog', { state: 'visible', timeout: 10000 })
+    /* 等待 dialog 关闭或者 30 秒超时 */
+    await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 30_000 })
+    await expect(adminPage.getByText(STUDENT)).toBeVisible({ timeout: 30_000 })
 
-    /* 验证对话框标题和字段 */
-    await expect(adminPage.getByRole("heading", { name: "添加案例" })).toBeVisible()
-    await expect(adminPage.getByPlaceholder("请输入学生姓名")).toBeVisible()
-    await expect(adminPage.getByPlaceholder("请输入录取大学")).toBeVisible()
-    await expect(adminPage.getByPlaceholder("请输入录取专业")).toBeVisible()
-    await expect(adminPage.getByRole("button", { name: "保存" })).toBeVisible()
-    await expect(adminPage.getByRole("button", { name: "取消" })).toBeVisible()
-  })
-
-  test("取消按钮关闭对话框", async ({ adminPage }) => {
-    await adminPage.goto("/admin/cases")
-    await adminPage.waitForLoadState("networkidle")
-
-    await adminPage.getByRole("button", { name: "添加案例" }).click()
-    await adminPage.waitForSelector('role=dialog', { state: 'visible', timeout: 10000 })
-
-    await adminPage.getByRole("button", { name: "取消" }).click()
-    await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 5000 })
-  })
-
-  test("表单字段可以填写", async ({ adminPage }) => {
-    await adminPage.goto("/admin/cases")
-    await adminPage.waitForLoadState("networkidle")
-
-    await adminPage.getByRole("button", { name: "添加案例" }).click()
-    await adminPage.waitForSelector('role=dialog', { state: 'visible', timeout: 10000 })
-
-    /* 填写表单字段 */
+    /* === 编辑案例 === */
+    const row = adminPage.locator("tr", { hasText: STUDENT })
+    await row.getByRole("button", { name: "编辑" }).click()
+    await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 15_000 })
     const nameInput = adminPage.getByPlaceholder("请输入学生姓名")
-    await nameInput.fill("测试学生")
-    await expect(nameInput).toHaveValue("测试学生")
+    await nameInput.clear()
+    await nameInput.fill(STUDENT_EDITED)
+    await adminPage.getByRole("dialog").getByRole("button", { name: "保存" }).click()
+    await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 30_000 })
+    await expect(adminPage.getByText(STUDENT_EDITED)).toBeVisible({ timeout: 30_000 })
 
-    const universityInput = adminPage.getByPlaceholder("请输入录取大学")
-    await universityInput.fill("测试大学")
-    await expect(universityInput).toHaveValue("测试大学")
-
-    const programInput = adminPage.getByPlaceholder("请输入录取专业")
-    await programInput.fill("测试专业")
-    await expect(programInput).toHaveValue("测试专业")
+    /* === 删除案例 === */
+    adminPage.on("dialog", (dialog) => dialog.accept())
+    const editedRow = adminPage.locator("tr", { hasText: STUDENT_EDITED })
+    await editedRow.getByRole("button", { name: "删除" }).click()
+    await expect(adminPage.getByText(STUDENT_EDITED)).toBeHidden({ timeout: 30_000 })
   })
 })

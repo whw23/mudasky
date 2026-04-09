@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from "react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useMessages } from "next-intl"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -151,6 +151,30 @@ function toPermissionCodes(
   return result
 }
 
+/**
+ * 从嵌套 messages 对象中按 dot-separated key 取值。
+ * 叶子节点返回字符串，分支节点返回 _label。
+ */
+function resolvePermLabel(
+  messages: Record<string, unknown>,
+  key: string,
+): string {
+  const parts = key.split(".")
+  let current: unknown = messages
+  for (const part of parts) {
+    if (current && typeof current === "object" && part in current) {
+      current = (current as Record<string, unknown>)[part]
+    } else {
+      return key
+    }
+  }
+  if (typeof current === "string") return current
+  if (current && typeof current === "object" && "_label" in current) {
+    return (current as Record<string, string>)._label
+  }
+  return key
+}
+
 /** 角色创建/编辑对话框 */
 export function RoleDialog({
   role,
@@ -159,7 +183,8 @@ export function RoleDialog({
   onSave,
 }: RoleDialogProps) {
   const t = useTranslations("AdminGroups")
-  const tp = useTranslations("Permissions")
+  const messages = useMessages()
+  const permMessages = (messages as Record<string, unknown>).Permissions as Record<string, unknown> ?? {}
   const isEdit = !!role
 
   const [name, setName] = useState("")
@@ -178,16 +203,10 @@ export function RoleDialog({
     }
   }, [])
 
-  /** 权限翻译辅助函数，缺失时返回 key */
+  /** 权限翻译辅助函数 */
   const translatePerm = useCallback(
-    (key: string): string => {
-      try {
-        return tp(key)
-      } catch {
-        return key
-      }
-    },
-    [tp],
+    (key: string): string => resolvePermLabel(permMessages, key),
+    [permMessages],
   )
 
   /** 构建权限树 */
@@ -249,23 +268,15 @@ export function RoleDialog({
     }
     setSaving(true)
     try {
-      const permissionCodes = toPermissionCodes(
-        tree,
-        selectedIds,
-        permissions,
-      )
+      const payload = {
+        name,
+        description,
+        permission_ids: [...selectedIds],
+      }
       if (isEdit) {
-        await api.patch(`/roles/${role.id}`, {
-          name,
-          description,
-          permissions: permissionCodes,
-        })
+        await api.patch(`/roles/${role.id}`, payload)
       } else {
-        await api.post("/roles", {
-          name,
-          description,
-          permissions: permissionCodes,
-        })
+        await api.post("/roles", payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()
