@@ -215,6 +215,39 @@ export function RoleDialog({
     [permissions, translatePerm],
   )
 
+  /**
+   * 将角色的通配符权限展开为叶子权限 ID 集合。
+   * 如 `admin.*` → 所有以 `admin.` 开头的叶子权限 ID。
+   */
+  const expandWildcardPermissions = useCallback(
+    (rolePerms: Permission[], allPerms: Permission[]): Set<string> => {
+      const ids = new Set<string>()
+      /* 过滤出叶子权限（非通配符） */
+      const leafPerms = allPerms.filter(
+        (p) => !p.code.endsWith(".*") && p.code !== "*",
+      )
+
+      for (const rp of rolePerms) {
+        if (rp.code === "*") {
+          /* 全部权限 */
+          for (const lp of leafPerms) ids.add(lp.id)
+        } else if (rp.code.endsWith(".*")) {
+          /* 通配符：匹配前缀 */
+          const prefix = rp.code.slice(0, -2) + "."
+          for (const lp of leafPerms) {
+            if (lp.code.startsWith(prefix)) ids.add(lp.id)
+          }
+        } else {
+          /* 具体权限 */
+          const match = leafPerms.find((lp) => lp.code === rp.code)
+          if (match) ids.add(match.id)
+        }
+      }
+      return ids
+    },
+    [],
+  )
+
   /** 打开对话框时初始化表单 */
   useEffect(() => {
     if (!open) return
@@ -222,13 +255,18 @@ export function RoleDialog({
     if (role) {
       setName(role.name)
       setDescription(role.description)
-      setSelectedIds(new Set(role.permissions.map((p) => p.id)))
     } else {
       setName("")
       setDescription("")
       setSelectedIds(new Set())
     }
   }, [open, role, fetchPermissions])
+
+  /** 权限列表加载后，展开角色的通配符权限 */
+  useEffect(() => {
+    if (!open || !role || permissions.length === 0) return
+    setSelectedIds(expandWildcardPermissions(role.permissions, permissions))
+  }, [open, role, permissions, expandWildcardPermissions])
 
   /** 切换单个叶子权限 */
   const togglePermission = (id: string) => {
