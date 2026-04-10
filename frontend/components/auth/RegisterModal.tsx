@@ -12,6 +12,7 @@ import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -93,92 +94,94 @@ export function RegisterModal() {
           <DialogTitle>{t('registerTitle')}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* 手机号 */}
-          <div className="space-y-2">
-            <Label>{t('phone')}</Label>
-            <PhoneInput
-              value={phone}
-              onChange={setPhone}
-              placeholder={t('phonePlaceholder')}
-              required
-            />
-          </div>
-
-          {/* 验证码 */}
-          <div className="space-y-2">
-            <Label htmlFor="reg-code">{t('code')}</Label>
-            <div className="flex gap-2">
-              <Input
-                id="reg-code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder={t('codePlaceholder')}
-                maxLength={6}
-                autoComplete="one-time-code"
+        <DialogBody>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 手机号 */}
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('phone')}</Label>
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
+                placeholder={t('phonePlaceholder')}
                 required
               />
-              <SmsCodeButton phone={phone} />
             </div>
-          </div>
 
-          {/* 用户名（可选） */}
-          <div className="space-y-2">
-            <Label htmlFor="reg-username">
-              {t('username')} <span className="text-muted-foreground">{t('optional')}</span>
-            </Label>
-            <Input
-              id="reg-username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={t('usernamePlaceholder')}
-            />
-          </div>
-
-          {/* 密码（可选） */}
-          <div className="space-y-2">
-            <Label htmlFor="reg-password">
-              {t('password')} <span className="text-muted-foreground">{t('optional')}</span>
-            </Label>
-            <PasswordInput
-              id="reg-password"
-              value={password}
-              onChange={setPassword}
-            />
-          </div>
-
-          {/* 确认密码 */}
-          {password && (
+            {/* 验证码 */}
             <div className="space-y-2">
-              <Label htmlFor="reg-confirm-password">{t('confirmPassword')}</Label>
-              <PasswordInput
-                id="reg-confirm-password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                placeholder={t('confirmPasswordPlaceholder')}
+              <Label htmlFor="reg-code" className="text-xs uppercase tracking-wide text-muted-foreground">{t('code')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="reg-code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder={t('codePlaceholder')}
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                  required
+                />
+                <SmsCodeButton phone={phone} />
+              </div>
+            </div>
+
+            {/* 用户名（可选） */}
+            <div className="space-y-2">
+              <Label htmlFor="reg-username" className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t('username')} <span className="text-muted-foreground">{t('optional')}</span>
+              </Label>
+              <Input
+                id="reg-username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={t('usernamePlaceholder')}
               />
             </div>
-          )}
 
-          {/* 错误提示 */}
-          {error && <p className="text-sm text-destructive">{error}</p>}
+            {/* 密码（可选） */}
+            <div className="space-y-2">
+              <Label htmlFor="reg-password" className="text-xs uppercase tracking-wide text-muted-foreground">
+                {t('password')} <span className="text-muted-foreground">{t('optional')}</span>
+              </Label>
+              <PasswordInput
+                id="reg-password"
+                value={password}
+                onChange={setPassword}
+              />
+            </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t('registerLoading') : t('registerButton')}
-          </Button>
-        </form>
+            {/* 确认密码 */}
+            {password && (
+              <div className="space-y-2">
+                <Label htmlFor="reg-confirm-password" className="text-xs uppercase tracking-wide text-muted-foreground">{t('confirmPassword')}</Label>
+                <PasswordInput
+                  id="reg-confirm-password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  placeholder={t('confirmPasswordPlaceholder')}
+                />
+              </div>
+            )}
 
-        <Separator />
+            {/* 错误提示 */}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <p className="text-center text-sm text-muted-foreground">
-          {t('hasAccount')}
-          <button
-            className="text-primary hover:underline"
-            onClick={showLoginModal}
-          >
-            {t('goLogin')}
-          </button>
-        </p>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? t('registerLoading') : t('registerButton')}
+            </Button>
+          </form>
+
+          <Separator />
+
+          <p className="text-center text-sm text-muted-foreground">
+            {t('hasAccount')}
+            <button
+              className="text-primary hover:underline"
+              onClick={showLoginModal}
+            >
+              {t('goLogin')}
+            </button>
+          </p>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )
