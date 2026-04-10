@@ -404,7 +404,17 @@
     "saving": "Speichern...",
     "createSuccess": "Erfolgreich erstellt",
     "updateSuccess": "Erfolgreich aktualisiert",
-    "saveError": "Speichern fehlgeschlagen"
+    "saveError": "Speichern fehlgeschlagen",
+    "col_drag": "",
+    "col_name": "Rollenname",
+    "col_description": "Beschreibung",
+    "col_type": "Typ",
+    "col_permissions": "Berechtigungen",
+    "col_users": "Benutzer",
+    "col_actions": "Aktionen",
+    "builtin": "Integriert",
+    "custom": "Benutzerdefiniert",
+    "reorderError": "Neuordnung fehlgeschlagen"
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",

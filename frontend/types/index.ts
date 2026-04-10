@@ -28,6 +28,8 @@ export interface Role {
   id: string
   name: string
   description: string
+  is_builtin: boolean
+  sort_order: number
   permissions: Permission[]
   user_count: number
   created_at: string

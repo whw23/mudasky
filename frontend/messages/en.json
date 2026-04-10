@@ -404,7 +404,17 @@
     "saving": "Saving...",
     "createSuccess": "Created successfully",
     "updateSuccess": "Updated successfully",
-    "saveError": "Failed to save"
+    "saveError": "Failed to save",
+    "col_drag": "",
+    "col_name": "Role",
+    "col_description": "Description",
+    "col_type": "Type",
+    "col_permissions": "Permissions",
+    "col_users": "Users",
+    "col_actions": "Actions",
+    "builtin": "Built-in",
+    "custom": "Custom",
+    "reorderError": "Reorder failed"
   },
   "About": {
     "historyTitle": "15 Years of International Education",
