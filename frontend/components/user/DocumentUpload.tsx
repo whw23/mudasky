@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -130,7 +131,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           <DialogDescription>{t("uploadDesc")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           {/* 拖拽上传区域 */}
           <div
             onClick={() => fileInputRef.current?.click()}
@@ -164,7 +165,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
 
           {/* 分类选择 */}
           <div className="space-y-2">
-            <Label>{t("category")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("category")}</Label>
             <select
               value={category}
               onChange={(e) =>
@@ -179,7 +180,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               ))}
             </select>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button
