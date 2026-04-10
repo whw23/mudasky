@@ -16,6 +16,7 @@ from app.rbac.models import Role
 from app.rbac.schemas import (
     PermissionResponse,
     RoleCreate,
+    RoleReorder,
     RoleResponse,
     RoleUpdate,
 )
@@ -74,10 +75,13 @@ class RbacService:
             self.session, data.permission_ids
         )
 
+        max_order = await repository.get_max_sort_order(self.session)
+
         role = Role(
             name=data.name,
             description=data.description,
             permissions=permissions,
+            sort_order=max_order + 1,
         )
         await repository.create_role(self.session, role)
         return RoleResponse.model_validate(role)
@@ -135,6 +139,11 @@ class RbacService:
                 message="受保护角色不允许删除"
             )
         await repository.delete_role(self.session, role_id)
+
+    async def reorder_roles(self, data: RoleReorder) -> None:
+        """批量更新角色排序。"""
+        items = [(item.id, item.sort_order) for item in data.items]
+        await repository.bulk_update_sort_order(self.session, items)
 
     async def get_user_permissions(
         self, user_id: str
