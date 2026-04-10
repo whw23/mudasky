@@ -55,30 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setLoading(false))
   }, [fetchUser])
 
-  /** 监听 session 过期事件，清除用户并跳转首页弹出登录 */
+  /** 监听 session 过期事件，清除用户并跳转首页 */
   useEffect(() => {
     const handleExpired = () => {
       setUser(null)
-      /* 如果已在首页，直接弹登录窗；否则跳转首页后通过 URL 参数触发 */
-      if (window.location.pathname === '/' || window.location.pathname.match(/^\/[a-z]{2}$/)) {
-        setAuthModal('login')
-      } else {
-        window.location.href = '/?login=1'
+      if (window.location.pathname !== '/' && !window.location.pathname.match(/^\/[a-z]{2}$/)) {
+        window.location.href = '/'
       }
     }
     window.addEventListener('auth:session-expired', handleExpired)
     return () => window.removeEventListener('auth:session-expired', handleExpired)
-  }, [])
-
-  /** 首页 URL 带 ?login=1 时自动弹出登录窗口 */
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('login') === '1') {
-      setAuthModal('login')
-      /* 清除 URL 参数 */
-      window.history.replaceState({}, '', window.location.pathname)
-    }
   }, [])
 
   /** 退出登录 */
