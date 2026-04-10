@@ -112,6 +112,7 @@
     "placeholder": "In Vorbereitung",
     "settings": "Systemeinstellungen",
     "universityManagement": "Universitätsverwaltung",
+    "generalSettings": "Allgemeine Einstellungen",
     "webSettings": "Web-Einstellungen"
   },
   "User": {
@@ -415,6 +416,15 @@
     "builtin": "Integriert",
     "custom": "Benutzerdefiniert",
     "reorderError": "Neuordnung fehlgeschlagen"
+  },
+  "AdminGeneral": {
+    "title": "Allgemeine Einstellungen",
+    "faviconTitle": "Favicon",
+    "faviconDesc": "Symbol in der Browser-Registerkarte",
+    "countryCodeTitle": "Ländercodes",
+    "countryCodeDesc": "Verfügbare Telefon-Ländercodes für Anmeldung und Registrierung",
+    "saveSuccess": "Erfolgreich gespeichert",
+    "saveError": "Speichern fehlgeschlagen"
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",

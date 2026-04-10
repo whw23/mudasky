@@ -112,6 +112,7 @@
     "placeholder": "Coming Soon",
     "settings": "System Settings",
     "universityManagement": "University Management",
+    "generalSettings": "General Settings",
     "webSettings": "Web Settings"
   },
   "User": {
@@ -415,6 +416,15 @@
     "builtin": "Built-in",
     "custom": "Custom",
     "reorderError": "Reorder failed"
+  },
+  "AdminGeneral": {
+    "title": "General Settings",
+    "faviconTitle": "Favicon",
+    "faviconDesc": "Icon displayed in the browser tab",
+    "countryCodeTitle": "Country Codes",
+    "countryCodeDesc": "Phone country codes available for login and registration",
+    "saveSuccess": "Saved successfully",
+    "saveError": "Save failed"
   },
   "About": {
     "historyTitle": "15 Years of International Education",

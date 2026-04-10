@@ -112,6 +112,7 @@
     "placeholder": "準備中",
     "settings": "システム設定",
     "universityManagement": "大学管理",
+    "generalSettings": "一般設定",
     "webSettings": "ウェブ設定"
   },
   "User": {
@@ -404,6 +405,15 @@
     "saving": "保存中...",
     "createSuccess": "作成しました",
     "updateSuccess": "更新しました",
+    "saveError": "保存に失敗しました"
+  },
+  "AdminGeneral": {
+    "title": "一般設定",
+    "faviconTitle": "ファビコン",
+    "faviconDesc": "ブラウザタブに表示されるアイコン",
+    "countryCodeTitle": "国コード管理",
+    "countryCodeDesc": "ログインと登録に使用可能な電話番号の国コード",
+    "saveSuccess": "保存しました",
     "saveError": "保存に失敗しました"
   },
   "About": {

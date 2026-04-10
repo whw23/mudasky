@@ -112,6 +112,7 @@
     "placeholder": "待实现",
     "settings": "系统设置",
     "universityManagement": "院校管理",
+    "generalSettings": "通用配置",
     "webSettings": "网页设置"
   },
   "User": {
@@ -415,6 +416,15 @@
     "builtin": "内置",
     "custom": "自定义",
     "reorderError": "排序更新失败"
+  },
+  "AdminGeneral": {
+    "title": "通用配置",
+    "faviconTitle": "网站图标",
+    "faviconDesc": "浏览器标签页显示的图标",
+    "countryCodeTitle": "国家码管理",
+    "countryCodeDesc": "登录和注册时可用的手机号国家码",
+    "saveSuccess": "保存成功",
+    "saveError": "保存失败"
   },
   "About": {
     "historyTitle": "15年专注国际教育",
