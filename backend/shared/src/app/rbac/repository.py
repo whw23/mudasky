@@ -58,10 +58,28 @@ async def list_roles(
             Role.id == user_count_subq.c.role_id,
         )
         .options(selectinload(Role.permissions))
-        .order_by(Role.name)
+        .order_by(Role.sort_order)
     )
     result = await session.execute(stmt)
     return [(row[0], row[1]) for row in result.all()]
+
+
+async def get_max_sort_order(session: AsyncSession) -> int:
+    """查询当前最大排序值。"""
+    stmt = select(func.coalesce(func.max(Role.sort_order), -1))
+    result = await session.execute(stmt)
+    return result.scalar_one()
+
+
+async def bulk_update_sort_order(session: AsyncSession, items: list[tuple[str, int]]) -> None:
+    """批量更新角色排序。"""
+    for role_id, sort_order in items:
+        stmt = select(Role).where(Role.id == role_id)
+        result = await session.execute(stmt)
+        role = result.scalar_one_or_none()
+        if role:
+            role.sort_order = sort_order
+    await session.commit()
 
 
 async def get_role_by_id(
