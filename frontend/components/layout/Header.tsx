@@ -145,7 +145,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
                 onClick={showLoginModal}
                 className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
               >
-                {tHeader("login")}
+                {tHeader("loginOrRegister")}
               </button>
             )}
           </div>
