@@ -332,7 +332,7 @@ export function ProfileInfo() {
             <form onSubmit={savePassword} className="space-y-3 max-w-md">
               <div className="space-y-1">
                 <Label className="text-xs">{t('smsCode')}</Label>
-                <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
+                <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone ?? '' })}</p>
                 <div className="flex gap-2">
                   <Input
                     value={pwdCode}
@@ -445,7 +445,7 @@ export function ProfileInfo() {
                 {twoFaMode === 'sms' && (
                   /* 短信验证确认 */
                   <form onSubmit={confirmSms} className="space-y-3">
-                    <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
+                    <p className="text-xs text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone ?? '' })}</p>
                     <div className="flex gap-2">
                       <Input
                         value={sms2faCode}
@@ -509,7 +509,7 @@ export function ProfileInfo() {
             <DialogTitle>{t('disableTwoFa')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleDisable2fa} className="space-y-4">
-            <p className="text-sm text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone })}</p>
+            <p className="text-sm text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone ?? '' })}</p>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Input

@@ -165,6 +165,8 @@ export function TiptapEditor({
     },
   })
 
+  if (!editor) return null
+
   return (
     <div className="overflow-hidden rounded-lg border">
       <Toolbar editor={editor} />
