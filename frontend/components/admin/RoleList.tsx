@@ -30,6 +30,9 @@ import { RoleDialog } from "@/components/admin/RoleDialog"
 import api from "@/lib/api"
 import type { Role } from "@/types"
 
+/** 表格列定义：grid-template-columns */
+const GRID_COLS = "grid-cols-[40px_1fr_1fr_80px_80px_80px_120px]"
+
 /** 可排序的表格行 */
 function SortableRow({
   role,
@@ -60,23 +63,23 @@ function SortableRow({
   }
 
   return (
-    <tr
+    <div
       ref={setNodeRef}
       style={style}
-      className="border-b transition-colors hover:bg-muted/30"
+      className={`grid ${GRID_COLS} items-center border-b transition-colors hover:bg-muted/30`}
     >
-      <td
+      <div
         className="px-4 py-3 text-muted-foreground cursor-grab"
         {...attributes}
         {...listeners}
       >
         ⠿
-      </td>
-      <td className="px-4 py-3 font-semibold">{role.name}</td>
-      <td className="px-4 py-3 text-muted-foreground">
+      </div>
+      <div className="px-4 py-3 font-semibold">{role.name}</div>
+      <div className="px-4 py-3 text-muted-foreground">
         {role.description}
-      </td>
-      <td className="px-4 py-3">
+      </div>
+      <div className="px-4 py-3">
         {role.is_builtin ? (
           <span className="rounded-full px-2 py-0.5 text-xs bg-secondary text-muted-foreground">
             {t("builtin")}
@@ -86,14 +89,14 @@ function SortableRow({
             {t("custom")}
           </span>
         )}
-      </td>
-      <td className="px-4 py-3 text-muted-foreground">
+      </div>
+      <div className="px-4 py-3 text-muted-foreground">
         {role.permissions.length}
-      </td>
-      <td className="px-4 py-3 text-muted-foreground">
+      </div>
+      <div className="px-4 py-3 text-muted-foreground">
         {role.user_count}
-      </td>
-      <td className="px-4 py-3">
+      </div>
+      <div className="px-4 py-3">
         {isSuperuser ? (
           <span className="text-muted-foreground">—</span>
         ) : (
@@ -114,8 +117,8 @@ function SortableRow({
             </Button>
           </div>
         )}
-      </td>
-    </tr>
+      </div>
+    </div>
   )
 }
 
@@ -232,45 +235,41 @@ export function RoleList() {
             items={roles.map((r) => r.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium w-10">
-                      {t("col_drag")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_name")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_description")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_type")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_permissions")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_users")}
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      {t("col_actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roles.map((role) => (
-                    <SortableRow
-                      key={role.id}
-                      role={role}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      t={t}
-                    />
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-x-auto rounded-lg border text-sm">
+              {/* 表头 */}
+              <div className={`grid ${GRID_COLS} border-b bg-muted/50`}>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_drag")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_name")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_description")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_type")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_permissions")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_users")}
+                </div>
+                <div className="px-4 py-3 font-medium">
+                  {t("col_actions")}
+                </div>
+              </div>
+              {/* 数据行 */}
+              {roles.map((role) => (
+                <SortableRow
+                  key={role.id}
+                  role={role}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  t={t}
+                />
+              ))}
             </div>
           </SortableContext>
         )}
