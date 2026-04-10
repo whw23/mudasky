@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Users,
   Shield,
+  Wrench,
   Settings,
   ArrowLeft,
 } from "lucide-react"
@@ -30,6 +31,7 @@ const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin.user.*"] },
   { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin.role.*"] },
+  { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin.settings.*"] },
   { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin.settings.*"] },
 ]
 
