@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import type { University } from "@/types"
@@ -124,10 +124,10 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
           <DialogDescription>{t(isEdit ? "editDesc" : "createDesc")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           {/* 校名 */}
           <div className="space-y-1">
-            <Label>{t("name")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("name")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -137,7 +137,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
 
           {/* 英文名 */}
           <div className="space-y-1">
-            <Label>{t("nameEn")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("nameEn")}</Label>
             <Input
               value={nameEn}
               onChange={(e) => setNameEn(e.target.value)}
@@ -148,7 +148,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
           {/* 国家 + 城市 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label>{t("country")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("country")}</Label>
               <Input
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
@@ -156,7 +156,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
               />
             </div>
             <div className="space-y-1">
-              <Label>{t("city")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("city")}</Label>
               <Input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
@@ -167,7 +167,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
 
           {/* 简介 */}
           <div className="space-y-1">
-            <Label>{t("description")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("description")}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -178,7 +178,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
 
           {/* 开设项目 */}
           <div className="space-y-1">
-            <Label>{t("programs")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("programs")}</Label>
             <Input
               value={programs}
               onChange={(e) => setPrograms(e.target.value)}
@@ -188,7 +188,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
 
           {/* 官网 */}
           <div className="space-y-1">
-            <Label>{t("website")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("website")}</Label>
             <Input
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
@@ -198,7 +198,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
 
           {/* Logo URL */}
           <div className="space-y-1">
-            <Label>{t("logoUrl")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("logoUrl")}</Label>
             <Input
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
@@ -210,10 +210,10 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <Switch checked={isFeatured} onCheckedChange={setIsFeatured} />
-              <Label>{t("isFeatured")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("isFeatured")}</Label>
             </div>
             <div className="space-y-1">
-              <Label>{t("sortOrder")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("sortOrder")}</Label>
               <Input
                 type="number"
                 value={sortOrder}
@@ -221,14 +221,14 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
               />
             </div>
           </div>
+        </DialogBody>
 
-          {/* 操作按钮 */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
-            <Button disabled={saving} onClick={handleSave}>
-              {saving ? t("saving") : t("save")}
-            </Button>
-          </div>
+        {/* 操作按钮 */}
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button disabled={saving} onClick={handleSave}>
+            {saving ? t("saving") : t("save")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
