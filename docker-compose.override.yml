@@ -15,10 +15,12 @@ services:
       - /app/.next
 
   gateway:
+    entrypoint: ["sh", "/usr/local/openresty/nginx/dev-entrypoint.sh"]
     volumes:
       - ./gateway/lua:/usr/local/openresty/nginx/lua
       - ./gateway/conf.d:/etc/nginx/conf.d
       - ./gateway/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./gateway/dev-entrypoint.sh:/usr/local/openresty/nginx/dev-entrypoint.sh
 
   db:
     ports:
