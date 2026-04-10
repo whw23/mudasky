@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Dialog, DialogContent, DialogHeader,
+  Dialog, DialogContent, DialogHeader, DialogBody,
   DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
@@ -332,7 +332,7 @@ export function RoleDialog({
         if (!isOpen) onClose()
       }}
     >
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>
             {t(isEdit ? "editTitle" : "createTitle")}
@@ -342,47 +342,49 @@ export function RoleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* 名称 */}
-          <div className="space-y-1">
-            <Label>{t("name")}</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("namePlaceholder")}
-            />
-          </div>
-
-          {/* 描述 */}
-          <div className="space-y-1">
-            <Label>{t("description")}</Label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("descriptionPlaceholder")}
-            />
+        <DialogBody className="space-y-4 overflow-y-auto max-h-[60vh]">
+          {/* 名称 + 描述 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("name")}</Label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("namePlaceholder")}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("description")}</Label>
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t("descriptionPlaceholder")}
+              />
+            </div>
           </div>
 
           {/* 权限树 */}
           <div className="space-y-2">
-            <Label>{t("permissions")}</Label>
-            <PermissionTree
-              tree={tree}
-              selectedIds={selectedIds}
-              onToggleLeaf={togglePermission}
-              onToggleBranch={toggleBranch}
-            />
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("permissions")}</Label>
+            <div className="rounded-lg border max-h-[280px] overflow-y-auto">
+              <PermissionTree
+                tree={tree}
+                selectedIds={selectedIds}
+                onToggleLeaf={togglePermission}
+                onToggleBranch={toggleBranch}
+              />
+            </div>
           </div>
+        </DialogBody>
 
-          {/* 操作按钮 */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
-              {t("cancel")}
-            </Button>
-            <Button disabled={saving} onClick={handleSave}>
-              {saving ? t("saving") : t("save")}
-            </Button>
-          </div>
+        {/* 操作按钮 */}
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
+          <Button variant="outline" size="sm" onClick={onClose} disabled={saving}>
+            {t("cancel")}
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={saving}>
+            {saving ? t("saving") : t("save")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -402,7 +404,7 @@ function PermissionTree({
   onToggleBranch: (node: TreeNode) => void
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 p-3">
       {tree.map((node) => (
         <BranchNode
           key={node.key}
