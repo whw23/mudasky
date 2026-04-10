@@ -10,6 +10,7 @@ from app.core.dependencies import DbSession, require_permission
 from app.rbac.schemas import (
     PermissionResponse,
     RoleCreate,
+    RoleReorder,
     RoleResponse,
     RoleUpdate,
 )
@@ -68,6 +69,18 @@ async def create_role(
     """创建角色。"""
     svc = RbacService(session)
     return await svc.create_role(data)
+
+
+@router.patch(
+    "/roles/reorder",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_permission("admin.role.edit"))],
+)
+async def reorder_roles(data: RoleReorder, session: DbSession) -> MessageResponse:
+    """批量更新角色排序。"""
+    svc = RbacService(session)
+    await svc.reorder_roles(data)
+    return MessageResponse(message="排序已更新")
 
 
 @router.get(
