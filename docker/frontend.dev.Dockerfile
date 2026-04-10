@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev", "--webpack"]
+CMD ["sh", "/app/dev-entrypoint.sh"]
