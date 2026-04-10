@@ -239,10 +239,12 @@ export default function WebSettingsPage() {
     <div className="mx-auto max-w-6xl">
       <h1 className="mb-6 text-2xl font-bold">网页设置</h1>
 
-      {/* 预览容器 */}
-      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+      {/* 预览容器 — 禁用原有交互，仅编辑按钮可点击 */}
+      <div className="preview-container overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_button]:pointer-events-none [&_.group]:pointer-events-auto [&_.preview-nav]:pointer-events-auto">
         <Header editable hideNav onEdit={handleHeaderEdit} />
-        <PreviewNavBar activePage={activePage} onPageChange={setActivePage} />
+        <div className="preview-nav">
+          <PreviewNavBar activePage={activePage} onPageChange={setActivePage} />
+        </div>
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>
