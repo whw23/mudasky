@@ -31,6 +31,8 @@ def _make_role(
     name: str,
     role_id: str = "",
     permissions: list | None = None,
+    is_builtin: bool = False,
+    sort_order: int = 0,
 ) -> Role:
     """创建模拟 Role 对象。"""
     r = MagicMock(spec=Role)
@@ -38,6 +40,8 @@ def _make_role(
     r.name = name
     r.description = f"{name} 描述"
     r.permissions = permissions or []
+    r.is_builtin = is_builtin
+    r.sort_order = sort_order
     r.created_at = datetime.now(timezone.utc)
     r.updated_at = None
     return r
@@ -74,14 +78,12 @@ async def test_list_permissions(mock_repo, service):
 @pytest.mark.asyncio
 @patch(REPO)
 async def test_create_role(mock_repo, service):
-    """创建角色并关联权限。"""
+    """创建角色并关联权限，自动设置 sort_order。"""
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
     perm = _make_permission("admin.user.list")
-    mock_repo.get_permissions_by_ids = AsyncMock(
-        return_value=[perm]
-    )
+    mock_repo.get_permissions_by_ids = AsyncMock(return_value=[perm])
+    mock_repo.get_max_sort_order = AsyncMock(return_value=4)
 
-    # create_role 被调用后，模拟数据库填充默认字段
     async def _fake_create(session, role):
         role.id = "new-role-id"
         role.created_at = datetime.now(timezone.utc)
@@ -97,6 +99,8 @@ async def test_create_role(mock_repo, service):
     result = await service.create_role(data)
 
     assert result.name == "测试角色"
+    assert result.sort_order == 5
+    mock_repo.get_max_sort_order.assert_awaited_once()
     mock_repo.create_role.assert_awaited_once()
 
 
@@ -223,4 +227,25 @@ async def test_assign_user_role(mock_repo, service):
 
     mock_repo.set_user_role.assert_awaited_once_with(
         service.session, "user-1", "r1"
+    )
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_reorder_roles(mock_repo, service):
+    """批量更新角色排序。"""
+    mock_repo.bulk_update_sort_order = AsyncMock()
+
+    from app.rbac.schemas import RoleReorder
+
+    data = RoleReorder(items=[
+        {"id": "r1", "sort_order": 0},
+        {"id": "r2", "sort_order": 1},
+        {"id": "r3", "sort_order": 2},
+    ])
+    await service.reorder_roles(data)
+
+    mock_repo.bulk_update_sort_order.assert_awaited_once_with(
+        service.session,
+        [("r1", 0), ("r2", 1), ("r3", 2)],
     )
