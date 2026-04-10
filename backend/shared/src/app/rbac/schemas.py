@@ -49,9 +49,22 @@ class RoleResponse(BaseModel):
     id: str
     name: str
     description: str
+    is_builtin: bool = False
+    sort_order: int = 0
     permissions: list[PermissionResponse]
     user_count: int = 0
     created_at: datetime
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class ReorderItem(BaseModel):
+    """单个排序项。"""
+    id: str
+    sort_order: int
+
+
+class RoleReorder(BaseModel):
+    """角色排序请求。"""
+    items: list[ReorderItem] = Field(..., description="角色 ID 与新排序值列表")
