@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -508,34 +509,36 @@ export function ProfileInfo() {
           <DialogHeader>
             <DialogTitle>{t('disableTwoFa')}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleDisable2fa} className="space-y-4">
-            <p className="text-sm text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone ?? '' })}</p>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  value={disableCode}
-                  onChange={(e) => setDisableCode(e.target.value)}
-                  placeholder={t('codePlaceholder')}
-                  maxLength={6}
-                  autoComplete="one-time-code"
-                  required
-                />
-                <SmsCodeButton phone={user.phone!} />
+          <DialogBody>
+            <form onSubmit={handleDisable2fa} className="space-y-4">
+              <p className="text-sm text-muted-foreground">{t('smsCodeSentTo', { phone: user.phone ?? '' })}</p>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    value={disableCode}
+                    onChange={(e) => setDisableCode(e.target.value)}
+                    placeholder={t('codePlaceholder')}
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                    required
+                  />
+                  <SmsCodeButton phone={user.phone!} />
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => { setShowDisableDialog(false); setDisableCode('') }}
-              >
-                {t('cancel')}
-              </Button>
-              <Button type="submit" variant="destructive" disabled={loading}>
-                {loading ? t('saving') : t('confirmDisable')}
-              </Button>
-            </div>
-          </form>
+              <div className="flex justify-end gap-2 border-t px-5 py-3 -mx-5 -mb-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setShowDisableDialog(false); setDisableCode('') }}
+                >
+                  {t('cancel')}
+                </Button>
+                <Button type="submit" variant="destructive" disabled={loading}>
+                  {loading ? t('saving') : t('confirmDisable')}
+                </Button>
+              </div>
+            </form>
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </>
