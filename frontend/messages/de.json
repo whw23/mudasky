@@ -953,7 +953,10 @@
     "deleteSuccess": "Erfolgreich gelöscht",
     "deleteError": "Löschen fehlgeschlagen",
     "operationError": "Vorgang fehlgeschlagen",
-    "totalCount": "{count} Artikel gesamt"
+    "totalCount": "{count} Artikel gesamt",
+    "createArticle": "Artikel erstellen",
+    "editArticle": "Artikel bearbeiten",
+    "edit": "Bearbeiten"
   },
   "AdminCategories": {
     "createCategory": "Kategorie erstellen",

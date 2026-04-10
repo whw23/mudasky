@@ -953,7 +953,10 @@
     "deleteSuccess": "Deleted successfully",
     "deleteError": "Failed to delete",
     "operationError": "Operation failed",
-    "totalCount": "{count} articles total"
+    "totalCount": "{count} articles total",
+    "createArticle": "New Article",
+    "editArticle": "Edit Article",
+    "edit": "Edit"
   },
   "AdminCategories": {
     "createCategory": "Create Category",

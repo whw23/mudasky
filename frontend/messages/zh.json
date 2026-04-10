@@ -953,7 +953,10 @@
     "deleteSuccess": "删除成功",
     "deleteError": "删除失败",
     "operationError": "操作失败",
-    "totalCount": "共 {count} 篇文章"
+    "totalCount": "共 {count} 篇文章",
+    "createArticle": "写文章",
+    "editArticle": "编辑文章",
+    "edit": "编辑"
   },
   "AdminCategories": {
     "createCategory": "创建分类",

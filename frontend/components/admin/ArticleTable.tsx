@@ -17,8 +17,13 @@ import type { Article, PaginatedResponse } from "@/types"
 /** 状态筛选选项 */
 const STATUS_OPTIONS = ["all", "draft", "published"] as const
 
+interface ArticleTableProps {
+  onEdit?: (article: Article) => void
+  refreshKey?: number
+}
+
 /** 管理员文章列表 */
-export function ArticleTable() {
+export function ArticleTable({ onEdit, refreshKey }: ArticleTableProps) {
   const t = useTranslations("AdminArticles")
 
   const [articles, setArticles] = useState<Article[]>([])
@@ -55,7 +60,7 @@ export function ArticleTable() {
 
   useEffect(() => {
     fetchArticles()
-  }, [fetchArticles])
+  }, [fetchArticles, refreshKey])
 
   /** 切换发布状态 */
   const togglePublish = async (article: Article) => {
@@ -169,6 +174,11 @@ export function ArticleTable() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
+                      {onEdit && (
+                        <Button variant="ghost" size="sm" onClick={() => onEdit(article)}>
+                          {t("edit")}
+                        </Button>
+                      )}
                       <Button variant="ghost" size="sm" onClick={() => togglePublish(article)}>
                         {t(article.status === "published" ? "unpublish" : "publish")}
                       </Button>

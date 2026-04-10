@@ -2,19 +2,18 @@
 
 /**
  * 用户中心侧边栏
- * 包含仪表盘、个人资料、文档管理、我的文章导航
+ * 包含仪表盘、个人资料、文档管理导航
  */
 
 import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
-import { LayoutDashboard, User, FileText, BookOpen, ArrowLeft } from "lucide-react"
+import { LayoutDashboard, User, FileText, ArrowLeft } from "lucide-react"
 
 /** 侧边栏菜单键与路径映射 */
 const MENU_KEYS = [
   { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
   { key: "profile", href: "/profile", icon: User },
   { key: "documents", href: "/documents", icon: FileText },
-  { key: "myArticles", href: "/articles", icon: BookOpen },
 ] as const
 
 export function UserSidebar() {

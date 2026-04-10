@@ -953,7 +953,10 @@
     "deleteSuccess": "削除しました",
     "deleteError": "削除に失敗しました",
     "operationError": "操作に失敗しました",
-    "totalCount": "全 {count} 件"
+    "totalCount": "全 {count} 件",
+    "createArticle": "記事作成",
+    "editArticle": "記事編集",
+    "edit": "編集"
   },
   "AdminCategories": {
     "createCategory": "カテゴリ作成",
