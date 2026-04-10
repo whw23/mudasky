@@ -2,20 +2,20 @@
   "cookies": [
     {
       "name": "refresh_token",
-      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoicmVmcmVzaCIsInN1YiI6IjcwODVhYTQzLWE2ZGUtNDhiMS1hMTZhLTk3OWMyZWMzOTBmZSIsImlhdCI6MTc3NTc2NDk0NCwiZXhwIjoxNzc4MzU2OTQ0fQ.3jjIvm5GnNLxD5DvsTu6oSGPvinxqp0iCBW8VAkalJI",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDg1YWE0My1hNmRlLTQ4YjEtYTE2YS05NzljMmVjMzkwZmUiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc3NTc4MDk3OCwiZXhwIjoxNzc4MzcyOTc4fQ.jTGEnQrpU3l_3g2RWNE8OOr4dvIRuiQW09qqPrG-Jc0",
       "domain": "localhost",
       "path": "/api/auth/refresh",
-      "expires": 1778356944.305051,
+      "expires": 1778372979.009715,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Strict"
     },
     {
       "name": "access_token",
-      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwZXJtaXNzaW9ucyI6WyIqIl0sInR5cGUiOiJhY2Nlc3MiLCJpc19hY3RpdmUiOnRydWUsInN1YiI6IjcwODVhYTQzLWE2ZGUtNDhiMS1hMTZhLTk3OWMyZWMzOTBmZSIsImlhdCI6MTc3NTc2NDk0NCwiZXhwIjoxNzc1NzY1ODQ0fQ.5-j6I5SiZ8MHfM-Cx24A7dCelexcfJiDE_GBikLk9vA",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDg1YWE0My1hNmRlLTQ4YjEtYTE2YS05NzljMmVjMzkwZmUiLCJpc19hY3RpdmUiOnRydWUsImV4cCI6MTc3NTc4MTg3OCwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc3NTc4MDk3OCwicGVybWlzc2lvbnMiOlsiKiJdfQ.3WinGwPm8ldvh9wJ-cEqiB6ZNWImnxqgoIzNV454DU4",
       "domain": "localhost",
       "path": "/",
-      "expires": 1775765844.303585,
+      "expires": 1775781879.006337,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Strict"

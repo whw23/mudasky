@@ -16,6 +16,7 @@ export default defineConfig({
   retries: 1,
   workers: 1,
   globalSetup: "./global-setup.ts",
+  globalTeardown: "./global-teardown.ts",
   use: {
     baseURL: "http://localhost",
     locale: "zh-CN",
