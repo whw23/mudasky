@@ -5,6 +5,7 @@ import {
   PartnershipSection,
   AboutStatsSection,
 } from "@/components/about/AboutContent"
+import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import {
@@ -124,6 +125,9 @@ export default async function AboutPage() {
           ))}
         </div>
       </section>
+
+      {/* 联系方式 */}
+      <ContactInfoSection />
 
       {/* CTA */}
       <section className="bg-gray-50 py-10 md:py-16">
