@@ -12,8 +12,7 @@
     "cases": "Success Cases",
     "visa": "Visa Service",
     "life": "Campus Life",
-    "news": "News & Policy",
-    "contact": "Contact Us"
+    "news": "News & Policy"
   },
   "Header": {
     "tagline": "MUTU International Education · Focused on Study Abroad Services",
@@ -112,7 +111,8 @@
     "categoryManagement": "Category Management",
     "placeholder": "Coming Soon",
     "settings": "System Settings",
-    "universityManagement": "University Management"
+    "universityManagement": "University Management",
+    "webSettings": "Web Settings"
   },
   "User": {
     "title": "User Center",

@@ -12,8 +12,7 @@
     "cases": "成功事例",
     "visa": "ビザ申請",
     "life": "留学生活",
-    "news": "ニュース",
-    "contact": "お問い合わせ"
+    "news": "ニュース"
   },
   "Header": {
     "tagline": "慕大国際教育 · 国際教育に専念 留学サービスに専念",
@@ -112,7 +111,8 @@
     "categoryManagement": "カテゴリ管理",
     "placeholder": "準備中",
     "settings": "システム設定",
-    "universityManagement": "大学管理"
+    "universityManagement": "大学管理",
+    "webSettings": "ウェブ設定"
   },
   "User": {
     "title": "ユーザーセンター",
