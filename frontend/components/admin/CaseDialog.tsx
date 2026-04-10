@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import api from "@/lib/api"
 import type { SuccessCase } from "@/types"
 
@@ -108,10 +110,10 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
           <DialogDescription>{t(isEdit ? "editDesc" : "createDesc")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           {/* 学生姓名 */}
           <div className="space-y-1">
-            <Label>{t("studentName")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("studentName")}</Label>
             <Input
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
@@ -121,7 +123,7 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
 
           {/* 大学 */}
           <div className="space-y-1">
-            <Label>{t("university")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("university")}</Label>
             <Input
               value={university}
               onChange={(e) => setUniversity(e.target.value)}
@@ -131,7 +133,7 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
 
           {/* 专业 */}
           <div className="space-y-1">
-            <Label>{t("program")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("program")}</Label>
             <Input
               value={program}
               onChange={(e) => setProgram(e.target.value)}
@@ -142,7 +144,7 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
           {/* 年份和排序 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label>{t("year")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("year")}</Label>
               <Input
                 type="number"
                 value={year}
@@ -150,7 +152,7 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
               />
             </div>
             <div className="space-y-1">
-              <Label>{t("sortOrder")}</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("sortOrder")}</Label>
               <Input
                 type="number"
                 value={sortOrder}
@@ -161,9 +163,8 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
 
           {/* 感言 */}
           <div className="space-y-1">
-            <Label>{t("testimonial")}</Label>
-            <textarea
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("testimonial")}</Label>
+            <Textarea
               rows={3}
               value={testimonial}
               onChange={(e) => setTestimonial(e.target.value)}
@@ -173,23 +174,21 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
 
           {/* 推荐 */}
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="is_featured"
               checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              onCheckedChange={(checked) => setIsFeatured(checked === true)}
             />
-            <Label htmlFor="is_featured">{t("isFeatured")}</Label>
+            <Label htmlFor="is_featured" className="text-xs uppercase tracking-wide text-muted-foreground">{t("isFeatured")}</Label>
           </div>
+        </DialogBody>
 
-          {/* 操作按钮 */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
-            <Button disabled={saving} onClick={handleSave}>
-              {saving ? t("saving") : t("save")}
-            </Button>
-          </div>
+        {/* 操作按钮 */}
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button disabled={saving} onClick={handleSave}>
+            {saving ? t("saving") : t("save")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
