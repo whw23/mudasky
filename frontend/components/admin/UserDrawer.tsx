@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import { encryptPassword } from "@/lib/crypto"
@@ -141,17 +141,17 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("userDetail")}</DialogTitle>
           <DialogDescription>{t("userDetailDesc")}</DialogDescription>
         </DialogHeader>
 
         {user && (
-          <div className="space-y-5">
+          <DialogBody className="space-y-5 overflow-y-auto max-h-[60vh]">
             {/* 基本信息 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("basicInfo")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("basicInfo")}</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">{t("col_username")}</span>
                 <span>{user.username ?? "-"}</span>
@@ -168,7 +168,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             {/* 切换激活状态 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("toggleActive")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("toggleActive")}</h3>
               <Button
                 variant={user.is_active ? "destructive" : "default"}
                 size="sm"
@@ -183,11 +183,11 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             {/* 角色分配 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("assignGroups")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("assignGroups")}</h3>
               <select
                 value={selectedRoleId}
                 onChange={(e) => setSelectedRoleId(e.target.value)}
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring"
+                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <option value="">{t("noGroup")}</option>
                 {roles.map((role) => (
@@ -205,7 +205,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             {/* 存储配额 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("storageQuota")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("storageQuota")}</h3>
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
@@ -225,7 +225,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             {/* 重置密码 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("resetPassword")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("resetPassword")}</h3>
               <div className="space-y-2">
                 <div>
                   <Label>{t("newPassword")}</Label>
@@ -253,7 +253,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
 
             {/* 强制登出 */}
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">{t("forceLogout")}</h3>
+              <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("forceLogout")}</h3>
               <Button
                 variant="destructive"
                 size="sm"
@@ -263,7 +263,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
                 {t("forceLogout")}
               </Button>
             </section>
-          </div>
+          </DialogBody>
         )}
       </DialogContent>
     </Dialog>
