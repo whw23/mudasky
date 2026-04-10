@@ -81,6 +81,7 @@ class RbacService:
             name=data.name,
             description=data.description,
             permissions=permissions,
+            is_builtin=False,
             sort_order=max_order + 1,
         )
         await repository.create_role(self.session, role)
