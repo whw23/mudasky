@@ -13,6 +13,7 @@ import { setKeepLogin } from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -145,12 +146,14 @@ export function LoginModal() {
           <DialogHeader>
             <DialogTitle>{t('twoFaTitle')}</DialogTitle>
           </DialogHeader>
-          <TwoFaForm
-            phone={pendingPayload?.phone || ''}
-            loading={loading}
-            error={error}
-            onSubmit={handleTwoFaSubmit}
-          />
+          <DialogBody>
+            <TwoFaForm
+              phone={pendingPayload?.phone || ''}
+              loading={loading}
+              error={error}
+              onSubmit={handleTwoFaSubmit}
+            />
+          </DialogBody>
         </DialogContent>
       </Dialog>
     )
@@ -164,97 +167,98 @@ export function LoginModal() {
           <DialogTitle>{t('loginTitle')}</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="sms" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
-            <TabsTrigger value="account">{t('tabAccount')}</TabsTrigger>
-          </TabsList>
+        <DialogBody>
+          <Tabs defaultValue="sms" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
+              <TabsTrigger value="account">{t('tabAccount')}</TabsTrigger>
+            </TabsList>
 
-          {/* 手机验证码登录 */}
-          <TabsContent value="sms">
-            <form onSubmit={handleSmsLogin} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label>{t('phone')}</Label>
-                <PhoneInput
-                  value={smsPhone}
-                  onChange={setSmsPhone}
-                  placeholder={t('phonePlaceholder')}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sms-login-code">{t('code')}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="sms-login-code"
-                    value={smsCode}
-                    onChange={(e) => setSmsCode(e.target.value)}
-                    placeholder={t('codePlaceholder')}
-                    maxLength={6}
-                    autoComplete="one-time-code"
+            {/* 手机验证码登录 */}
+            <TabsContent value="sms">
+              <form onSubmit={handleSmsLogin} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t('phone')}</Label>
+                  <PhoneInput
+                    value={smsPhone}
+                    onChange={setSmsPhone}
+                    placeholder={t('phonePlaceholder')}
                     required
                   />
-                  <SmsCodeButton phone={smsPhone} />
                 </div>
-              </div>
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('loginLoading') : t('loginOrRegister')}
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                {t('autoRegisterHint')}
-              </p>
-            </form>
-          </TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="sms-login-code" className="text-xs uppercase tracking-wide text-muted-foreground">{t('code')}</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="sms-login-code"
+                      value={smsCode}
+                      onChange={(e) => setSmsCode(e.target.value)}
+                      placeholder={t('codePlaceholder')}
+                      maxLength={6}
+                      autoComplete="one-time-code"
+                      required
+                    />
+                    <SmsCodeButton phone={smsPhone} />
+                  </div>
+                </div>
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? t('loginLoading') : t('loginOrRegister')}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  {t('autoRegisterHint')}
+                </p>
+              </form>
+            </TabsContent>
 
-          {/* 账号密码登录 */}
-          <TabsContent value="account">
-            <form onSubmit={handleAccountLogin} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-account">{t('account')}</Label>
-                <Input
-                  id="login-account"
-                  value={account}
-                  onChange={(e) => setAccount(e.target.value)}
-                  placeholder={t('accountPlaceholder')}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="login-account-pwd">{t('password')}</Label>
-                <PasswordInput
-                  id="login-account-pwd"
-                  value={accountPwd}
-                  onChange={setAccountPwd}
-                  required
-                />
-              </div>
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('loginLoading') : t('loginButton')}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+            {/* 账号密码登录 */}
+            <TabsContent value="account">
+              <form onSubmit={handleAccountLogin} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-account" className="text-xs uppercase tracking-wide text-muted-foreground">{t('account')}</Label>
+                  <Input
+                    id="login-account"
+                    value={account}
+                    onChange={(e) => setAccount(e.target.value)}
+                    placeholder={t('accountPlaceholder')}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-account-pwd" className="text-xs uppercase tracking-wide text-muted-foreground">{t('password')}</Label>
+                  <PasswordInput
+                    id="login-account-pwd"
+                    value={accountPwd}
+                    onChange={setAccountPwd}
+                    required
+                  />
+                </div>
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? t('loginLoading') : t('loginButton')}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
-        {/* 保持登录 */}
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="keep-login"
-            checked={keepLoginChecked}
-            onCheckedChange={handleKeepLoginChange}
-          />
-          <Label htmlFor="keep-login" className="text-sm font-normal">
-            {t('keepLogin')}
-          </Label>
-        </div>
+          {/* 保持登录 */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="keep-login"
+              checked={keepLoginChecked}
+              onCheckedChange={handleKeepLoginChange}
+            />
+            <Label htmlFor="keep-login" className="text-sm font-normal">
+              {t('keepLogin')}
+            </Label>
+          </div>
 
-        <Separator />
-
+          <Separator />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )
