@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import type { Category } from "@/types"
@@ -86,10 +86,10 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
           <DialogDescription>{t(isEdit ? "editDesc" : "createDesc")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           {/* 名称 */}
           <div className="space-y-1">
-            <Label>{t("name")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("name")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -99,7 +99,7 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
 
           {/* 标识 */}
           <div className="space-y-1">
-            <Label>{t("slug")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("slug")}</Label>
             <Input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
@@ -109,7 +109,7 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
 
           {/* 描述 */}
           <div className="space-y-1">
-            <Label>{t("description")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("description")}</Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -119,21 +119,21 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
 
           {/* 排序 */}
           <div className="space-y-1">
-            <Label>{t("sortOrder")}</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("sortOrder")}</Label>
             <Input
               type="number"
               value={sortOrder}
               onChange={(e) => setSortOrder(Number(e.target.value))}
             />
           </div>
+        </DialogBody>
 
-          {/* 操作按钮 */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
-            <Button disabled={saving} onClick={handleSave}>
-              {saving ? t("saving") : t("save")}
-            </Button>
-          </div>
+        {/* 操作按钮 */}
+        <div className="flex justify-end gap-2 border-t px-5 py-3">
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button disabled={saving} onClick={handleSave}>
+            {saving ? t("saving") : t("save")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
