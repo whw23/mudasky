@@ -207,58 +207,58 @@ export function RoleList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={handleCreate}>
-          {t("createGroup")}
-        </Button>
-      </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button onClick={handleCreate}>
+            {t("createGroup")}
+          </Button>
+        </div>
 
-      {loading ? (
-        <p className="py-8 text-center text-muted-foreground">
-          {t("loading")}
-        </p>
-      ) : roles.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground">
-          {t("noData")}
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium w-10">
-                  {t("col_drag")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_name")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_description")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_type")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_permissions")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_users")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("col_actions")}
-                </th>
-              </tr>
-            </thead>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={roles.map((r) => r.id)}
-                strategy={verticalListSortingStrategy}
-              >
+        {loading ? (
+          <p className="py-8 text-center text-muted-foreground">
+            {t("loading")}
+          </p>
+        ) : roles.length === 0 ? (
+          <p className="py-8 text-center text-muted-foreground">
+            {t("noData")}
+          </p>
+        ) : (
+          <SortableContext
+            items={roles.map((r) => r.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="overflow-x-auto rounded-lg border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="px-4 py-3 text-left font-medium w-10">
+                      {t("col_drag")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_name")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_description")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_type")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_permissions")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_users")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium">
+                      {t("col_actions")}
+                    </th>
+                  </tr>
+                </thead>
                 <tbody>
                   {roles.map((role) => (
                     <SortableRow
@@ -270,18 +270,18 @@ export function RoleList() {
                     />
                   ))}
                 </tbody>
-              </SortableContext>
-            </DndContext>
-          </table>
-        </div>
-      )}
+              </table>
+            </div>
+          </SortableContext>
+        )}
 
-      <RoleDialog
-        role={editingRole}
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onSave={handleSaved}
-      />
-    </div>
+        <RoleDialog
+          role={editingRole}
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onSave={handleSaved}
+        />
+      </div>
+    </DndContext>
   )
 }
