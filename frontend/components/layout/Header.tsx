@@ -166,7 +166,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           {wrapEditable(
             <Link
               href="/"
-              className="text-lg font-bold tracking-wide text-foreground"
+              className="text-lg font-bold tracking-wide whitespace-nowrap text-foreground"
             >
               {siteInfo.brand_name || tHeader("brandName")}
             </Link>,
