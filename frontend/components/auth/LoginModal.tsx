@@ -207,6 +207,9 @@ export function LoginModal() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? t('loginLoading') : t('loginOrRegister')}
                 </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  {t('autoRegisterHint')}
+                </p>
               </form>
             </TabsContent>
 
@@ -254,9 +257,6 @@ export function LoginModal() {
             </Label>
           </div>
 
-          <p className="text-xs text-center text-muted-foreground">
-            {t('autoRegisterHint')}
-          </p>
         </DialogBody>
       </DialogContent>
     </Dialog>
