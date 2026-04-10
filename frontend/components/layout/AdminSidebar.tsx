@@ -12,10 +12,6 @@ import {
   LayoutDashboard,
   Users,
   Shield,
-  BookOpen,
-  Tag,
-  Trophy,
-  GraduationCap,
   Settings,
   ArrowLeft,
 } from "lucide-react"
@@ -34,11 +30,7 @@ const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin.user.*"] },
   { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin.role.*"] },
-  { key: "articleManagement", href: "/admin/articles", icon: BookOpen, permissions: ["admin.content.*"] },
-  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["admin.case.*"] },
-  { key: "categoryManagement", href: "/admin/categories", icon: Tag, permissions: ["admin.category.*"] },
-  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["admin.university.*"] },
-  { key: "settings", href: "/admin/settings", icon: Settings, permissions: ["admin.settings.*"] },
+  { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin.settings.*"] },
 ]
 
 /** 后台管理侧边栏 */

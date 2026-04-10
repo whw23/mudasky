@@ -12,8 +12,7 @@
     "cases": "Erfolgsgeschichten",
     "visa": "Visaservice",
     "life": "Studentenleben",
-    "news": "Nachrichten",
-    "contact": "Kontakt"
+    "news": "Nachrichten"
   },
   "Header": {
     "tagline": "MUTU Internationale Bildung · Fokus auf Auslandsstudium",
@@ -112,7 +111,8 @@
     "categoryManagement": "Kategorieverwaltung",
     "placeholder": "In Vorbereitung",
     "settings": "Systemeinstellungen",
-    "universityManagement": "Universitätsverwaltung"
+    "universityManagement": "Universitätsverwaltung",
+    "webSettings": "Web-Einstellungen"
   },
   "User": {
     "title": "Benutzercenter",

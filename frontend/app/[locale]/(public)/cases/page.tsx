@@ -85,7 +85,7 @@ export default async function CasesPage() {
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {cases.map((c) => (
+          {cases.map((c: Record<string, string>) => (
             <div
               key={c.name}
               className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"

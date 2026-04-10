@@ -99,3 +99,4 @@ ngx.req.set_header("X-User-Id", payload.sub)
 -- permissions 数组转逗号分隔字符串
 local perms = payload.permissions or {}
 ngx.req.set_header("X-User-Permissions", table.concat(perms, ","))
+

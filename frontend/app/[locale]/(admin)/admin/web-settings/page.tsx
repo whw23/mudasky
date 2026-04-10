@@ -1,9 +1,8 @@
 'use client'
 
 /**
- * 系统设置管理页面。
- * 可视化预览编辑模式：通过 Header/Footer/StatsSection/AboutContent 的真实渲染
- * 配合 EditableOverlay + ConfigEditDialog 实现所见即所得编辑。
+ * 网页设置管理页面。
+ * 通过预览容器展示公共网站各页面，配合编辑浮层和弹窗实现所见即所得编辑。
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -11,14 +10,11 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { StatsSection } from '@/components/home/StatsSection'
-import {
-  HistorySection,
-  MissionVisionSection,
-  PartnershipSection,
-} from '@/components/about/AboutContent'
+import { PreviewNavBar } from '@/components/admin/web-settings/PreviewNavBar'
+import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
+import type { PageKey } from '@/components/admin/web-settings/PreviewNavBar'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo } from '@/types/config'
 
 /** 品牌信息字段定义 */
@@ -48,14 +44,30 @@ const STAT_FIELDS = [
   { key: 'label', label: '标签', type: 'text' as const, localized: true },
 ]
 
+/** Hero 区域字段定义 */
+const HERO_FIELDS = [
+  { key: 'hero_title', label: '标题', type: 'text' as const, localized: true },
+  { key: 'hero_subtitle', label: '副标题', type: 'text' as const, localized: true },
+]
+
+/** 服务区域字段定义 */
+const SERVICES_FIELDS = [
+  { key: 'services_title', label: '服务标题', type: 'text' as const, localized: true },
+]
+
 /** 弹窗状态类型 */
 interface DialogState {
   open: boolean
   title: string
-  fields: Array<{ key: string; label: string; type: 'text' | 'textarea' | 'image'; localized: boolean; rows?: number }>
+  fields: Array<{
+    key: string
+    label: string
+    type: 'text' | 'textarea' | 'image'
+    localized: boolean
+    rows?: number
+  }>
   configKey: string
   data: Record<string, any>
-  /** 自定义保存逻辑（用于数组类型的统计项） */
   customSave?: (data: Record<string, any>) => Promise<void>
 }
 
@@ -82,7 +94,8 @@ const DEFAULT_RAW: RawConfig = {
   },
 }
 
-export default function SettingsPage() {
+export default function WebSettingsPage() {
+  const [activePage, setActivePage] = useState<PageKey>('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -146,50 +159,6 @@ export default function SettingsPage() {
     })
   }
 
-  /** 打开统计项编辑弹窗 */
-  function openStatDialog(index: number): void {
-    const stat = rawConfig.homepageStats[index]
-    if (!stat) return
-    setDialogState({
-      open: true,
-      title: '编辑统计项',
-      fields: STAT_FIELDS,
-      configKey: 'homepage_stats',
-      data: { value: stat.value, label: stat.label },
-      customSave: async (data) => {
-        const updated = [...rawConfig.homepageStats]
-        updated[index] = { value: data.value, label: data.label }
-        await api.put('/admin/config/homepage_stats', { value: updated })
-        toast.success('保存成功')
-        await fetchAllConfigs()
-      },
-    })
-  }
-
-  /** 添加统计项 */
-  async function handleAddStat(): Promise<void> {
-    const updated = [...rawConfig.homepageStats, { value: '', label: '' }]
-    try {
-      await api.put('/admin/config/homepage_stats', { value: updated })
-      toast.success('已添加统计项')
-      await fetchAllConfigs()
-    } catch {
-      toast.error('添加失败')
-    }
-  }
-
-  /** 删除统计项 */
-  async function handleDeleteStat(index: number): Promise<void> {
-    const updated = rawConfig.homepageStats.filter((_, i) => i !== index)
-    try {
-      await api.put('/admin/config/homepage_stats', { value: updated })
-      toast.success('已删除统计项')
-      await fetchAllConfigs()
-    } catch {
-      toast.error('删除失败')
-    }
-  }
-
   /** 打开关于我们编辑弹窗（指定字段） */
   function openAboutDialog(field: keyof AboutInfo, title: string): void {
     setDialogState({
@@ -203,6 +172,11 @@ export default function SettingsPage() {
     })
   }
 
+  /** 处理 Header 编辑区域点击 */
+  function handleHeaderEdit(): void {
+    openSiteInfoDialog()
+  }
+
   /** 处理 Footer 编辑区域点击 */
   function handleFooterEdit(section: string): void {
     if (section === 'contact') openContactDialog()
@@ -210,64 +184,76 @@ export default function SettingsPage() {
     else if (section === 'icp') openSiteInfoDialog()
   }
 
+  /** 处理页面预览中的配置编辑 */
+  function handleEditConfig(section: string): void {
+    switch (section) {
+      case 'hero':
+        setDialogState({
+          open: true,
+          title: '编辑 Hero 区域',
+          fields: HERO_FIELDS,
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'stats':
+        setDialogState({
+          open: true,
+          title: '编辑统计数据',
+          fields: STAT_FIELDS,
+          configKey: 'homepage_stats',
+          data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
+        })
+        break
+      case 'services':
+        setDialogState({
+          open: true,
+          title: '编辑服务区域',
+          fields: SERVICES_FIELDS,
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'contact':
+        openContactDialog()
+        break
+      case 'about_history':
+        openAboutDialog('history', '编辑公司历史')
+        break
+      case 'about_mission':
+        openAboutDialog('mission', '编辑使命与愿景')
+        break
+      case 'about_partnership':
+        openAboutDialog('partnership', '编辑合作介绍')
+        break
+      default:
+        break
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-muted-foreground">加载中...</p>
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">系统设置</h1>
+    <div className="mx-auto max-w-6xl">
+      <h1 className="mb-6 text-2xl font-bold">网页设置</h1>
 
-      {/* 页头预览 */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">页头</h2>
-        <div className="rounded-lg border overflow-hidden">
-          <Header editable onEdit={openSiteInfoDialog} />
+      {/* 预览容器 */}
+      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+        <Header editable onEdit={handleHeaderEdit} />
+        <PreviewNavBar activePage={activePage} onPageChange={setActivePage} />
+        <div className="max-h-[60vh] overflow-y-auto">
+          <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>
-      </section>
+        <Footer editable onEdit={handleFooterEdit} />
+      </div>
 
-      {/* 首页统计预览 */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">首页统计</h2>
-        <div className="rounded-lg border overflow-hidden">
-          <StatsSection
-            editable
-            onEdit={openStatDialog}
-            onAdd={handleAddStat}
-            onDelete={handleDeleteStat}
-          />
-        </div>
-      </section>
-
-      {/* 关于我们预览 */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">关于我们</h2>
-        <div className="rounded-lg border p-6 space-y-6">
-          <HistorySection
-            editable
-            onEdit={() => openAboutDialog('history', '编辑公司历史')}
-          />
-          <MissionVisionSection
-            editable
-            onEdit={() => openAboutDialog('mission', '编辑使命与愿景')}
-          />
-          <PartnershipSection
-            editable
-            onEdit={() => openAboutDialog('partnership', '编辑合作介绍')}
-          />
-        </div>
-      </section>
-
-      {/* 页脚预览 */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">页脚</h2>
-        <div className="rounded-lg border overflow-hidden">
-          <Footer editable onEdit={handleFooterEdit} />
-        </div>
-      </section>
-
-      {/* 国家码编辑器（保持原有表格） */}
-      <CountryCodeEditor />
+      {/* 通用配置 */}
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-semibold">通用配置</h2>
+        <CountryCodeEditor />
+      </div>
 
       {/* 配置编辑弹窗 */}
       {dialogState && (

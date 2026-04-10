@@ -96,11 +96,11 @@ export default function DashboardPage() {
   /** 将文档转换为列表项 */
   const docItems: RecentItem[] = recentDocs.map((doc) => ({
     id: doc.id,
-    title: doc.file_name,
+    title: doc.filename,
     subtitle: formatBytes(doc.file_size),
     extra: (
       <span className="rounded bg-muted px-2 py-0.5 text-xs">
-        {doc.status}
+        {doc.category}
       </span>
     ),
     href: "/documents",

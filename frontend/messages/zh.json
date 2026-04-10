@@ -12,8 +12,7 @@
     "cases": "成功案例",
     "visa": "签证办理",
     "life": "留学生活",
-    "news": "新闻政策",
-    "contact": "联系我们"
+    "news": "新闻政策"
   },
   "Header": {
     "tagline": "慕大国际教育 · 专注国际教育 专注出国服务",
@@ -112,7 +111,8 @@
     "categoryManagement": "分类管理",
     "placeholder": "待实现",
     "settings": "系统设置",
-    "universityManagement": "院校管理"
+    "universityManagement": "院校管理",
+    "webSettings": "网页设置"
   },
   "User": {
     "title": "用户中心",
