@@ -86,33 +86,13 @@ PERMISSIONS = [
     ("user_center.article.*", "permission.user_center.article.all", "所有文章权限"),
 ]
 
-# 系统角色定义：(name, description, [permission_codes])
+# 系统角色定义：(name, description, [permission_codes], sort_order)
 ROLES = [
-    (
-        "superuser",
-        "超级管理员",
-        ["*"],
-    ),
-    (
-        "website_admin",
-        "网站管理员",
-        ["admin.*", "user_center.*"],
-    ),
-    (
-        "student_advisor",
-        "留学顾问",
-        ["admin.user.*", "admin.content.*", "admin.case.*", "user_center.*"],
-    ),
-    (
-        "student",
-        "学员",
-        ["user_center.*"],
-    ),
-    (
-        "visitor",
-        "访客",
-        ["user_center.profile.view"],
-    ),
+    ("superuser", "超级管理员", ["*"], 0),
+    ("website_admin", "网站管理员", ["admin.*", "user_center.*"], 1),
+    ("student_advisor", "留学顾问", ["admin.user.*", "admin.content.*", "admin.case.*", "user_center.*"], 2),
+    ("student", "学员", ["user_center.*"], 3),
+    ("visitor", "访客", ["user_center.profile.view"], 4),
 ]
 
 
@@ -139,7 +119,7 @@ async def init_permissions(session) -> None:
 
 async def init_roles(session) -> None:
     """初始化系统角色。已存在的角色跳过。"""
-    for name, description, perm_codes in ROLES:
+    for name, description, perm_codes, sort_order in ROLES:
         stmt = select(Role).where(Role.name == name)
         result = await session.execute(stmt)
         existing = result.scalar_one_or_none()
@@ -148,7 +128,12 @@ async def init_roles(session) -> None:
             logger.debug("角色已存在，跳过: %s", name)
             continue
 
-        role = Role(name=name, description=description)
+        role = Role(
+            name=name,
+            description=description,
+            is_builtin=True,
+            sort_order=sort_order,
+        )
         session.add(role)
 
         # 先 flush 以获取 role.id
