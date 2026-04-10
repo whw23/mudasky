@@ -39,11 +39,15 @@ function RoleGrid({
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {roles.map((role) => (
+      {roles.map((role) => {
+        /* superuser（权限为 *）不可修改和删除 */
+        const isSuperuser = role.permissions.some((p) => p.code === "*")
+        return (
         <Card key={role.id}>
           <CardHeader>
             <CardTitle>{role.name}</CardTitle>
             <CardDescription>{role.description}</CardDescription>
+            {!isSuperuser && (
             <CardAction>
               <div className="flex gap-1">
                 <Button
@@ -62,6 +66,7 @@ function RoleGrid({
                 </Button>
               </div>
             </CardAction>
+            )}
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 text-sm text-muted-foreground">
@@ -76,7 +81,8 @@ function RoleGrid({
             </div>
           </CardContent>
         </Card>
-      ))}
+        )
+      })}
     </div>
   )
 }
