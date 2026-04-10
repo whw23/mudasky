@@ -241,7 +241,7 @@ export default function WebSettingsPage() {
 
       {/* 预览容器 */}
       <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-        <Header editable onEdit={handleHeaderEdit} />
+        <Header editable hideNav onEdit={handleHeaderEdit} />
         <PreviewNavBar activePage={activePage} onPageChange={setActivePage} />
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />

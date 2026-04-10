@@ -39,9 +39,10 @@ function isActive(pathname: string, href: string): boolean {
 interface HeaderProps {
   editable?: boolean
   onEdit?: (section: string) => void
+  hideNav?: boolean
 }
 
-export function Header({ editable, onEdit }: HeaderProps) {
+export function Header({ editable, onEdit, hideNav }: HeaderProps) {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
@@ -170,7 +171,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
       </div>
 
       {/* === 桌面导航栏 Row 2 === */}
-      <nav className="hidden md:block border-t border-black/[0.04]">
+      <nav className={`hidden md:block border-t border-black/[0.04] ${hideNav ? "!hidden" : ""}`}>
         <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
           <ul className="flex items-center gap-1">
             {NAV_KEYS.map((item) => {
