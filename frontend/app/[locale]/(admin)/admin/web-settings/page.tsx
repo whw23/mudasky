@@ -12,7 +12,6 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PreviewNavBar } from '@/components/admin/web-settings/PreviewNavBar'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
-import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
 import type { PageKey } from '@/components/admin/web-settings/PreviewNavBar'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo } from '@/types/config'
@@ -24,7 +23,6 @@ const SITE_INFO_FIELDS = [
   { key: 'hotline', label: '服务热线', type: 'text' as const, localized: false },
   { key: 'hotline_contact', label: '热线联系人', type: 'text' as const, localized: true },
   { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
-  { key: 'favicon_url', label: 'Favicon', type: 'image' as const, localized: false },
 ]
 
 /** 联系方式字段定义 */
@@ -249,12 +247,6 @@ export default function WebSettingsPage() {
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>
         <Footer editable onEdit={handleFooterEdit} />
-      </div>
-
-      {/* 通用配置 */}
-      <div className="mt-8">
-        <h2 className="mb-4 text-lg font-semibold">通用配置</h2>
-        <CountryCodeEditor />
       </div>
 
       {/* 配置编辑弹窗 */}
