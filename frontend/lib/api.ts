@@ -66,8 +66,11 @@ api.interceptors.response.use(
         pendingRequests = []
         return api(originalRequest)
       } catch (refreshError) {
-        /* 刷新失败，清空队列 */
+        /* 刷新失败，清空队列，跳转首页 */
         pendingRequests = []
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("auth:session-expired"))
+        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

@@ -55,6 +55,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setLoading(false))
   }, [fetchUser])
 
+  /** 监听 session 过期事件，清除用户并跳转首页 */
+  useEffect(() => {
+    const handleExpired = () => {
+      setUser(null)
+      setAuthModal('login')
+      window.location.href = '/'
+    }
+    window.addEventListener('auth:session-expired', handleExpired)
+    return () => window.removeEventListener('auth:session-expired', handleExpired)
+  }, [])
+
   /** 退出登录 */
   const logout = useCallback(() => {
     setUser(null)
