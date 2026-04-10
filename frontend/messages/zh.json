@@ -1110,6 +1110,15 @@
     "actions": "操作",
     "allCategories": "全部"
   },
+  "AdminGeneral": {
+    "title": "通用配置",
+    "faviconTitle": "网站图标",
+    "faviconDesc": "上传网站 Favicon，建议尺寸 32x32 或 64x64 像素",
+    "countryCodeTitle": "手机号国家码",
+    "countryCodeDesc": "管理用户可选的手机号国家码",
+    "saveSuccess": "保存成功",
+    "saveError": "操作失败"
+  },
   "AdminUniversities": {
     "createUniversity": "添加院校",
     "col_name": "校名",
