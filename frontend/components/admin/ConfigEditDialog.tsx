@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
   Dialog, DialogContent, DialogHeader,
-  DialogTitle, DialogDescription, DialogFooter,
+  DialogTitle, DialogDescription, DialogFooter, DialogBody,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import { LocalizedInput } from "./LocalizedInput"
@@ -135,7 +135,7 @@ export function ConfigEditDialog({
       const isFieldUploading = uploading === field.key
       return (
         <div key={field.key} className="space-y-2">
-          <Label className="text-sm font-medium">{field.label}</Label>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">{field.label}</Label>
           {/* 图片预览 */}
           {value && (
             <div className="relative h-20 w-20 overflow-hidden rounded border">
@@ -185,7 +185,7 @@ export function ConfigEditDialog({
     if (field.type === "textarea") {
       return (
         <div key={field.key} className="space-y-2">
-          <Label className="text-sm font-medium">{field.label}</Label>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">{field.label}</Label>
           <Textarea
             value={value ?? ""}
             onChange={(e) => updateField(field.key, e.target.value)}
@@ -214,15 +214,15 @@ export function ConfigEditDialog({
         if (!saving) onOpenChange(isOpen)
       }}
     >
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>编辑配置项，中文字段为必填。</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4 overflow-y-auto max-h-[60vh]">
           {fields.map(renderField)}
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button
