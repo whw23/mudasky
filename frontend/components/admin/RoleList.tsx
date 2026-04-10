@@ -2,88 +2,120 @@
 
 /**
  * 角色列表组件。
- * 卡片网格展示，支持创建、编辑和删除。
+ * 表格展示，支持拖拽排序、创建、编辑和删除。
  */
 
 import { useEffect, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
 import {
-  Card, CardHeader, CardTitle, CardDescription,
-  CardContent, CardAction,
-} from "@/components/ui/card"
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import type { DragEndEvent } from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { Button } from "@/components/ui/button"
 import { RoleDialog } from "@/components/admin/RoleDialog"
 import api from "@/lib/api"
 import type { Role } from "@/types"
 
-/** 角色卡片网格 */
-function RoleGrid({
-  roles,
+/** 可排序的表格行 */
+function SortableRow({
+  role,
   onEdit,
   onDelete,
+  t,
 }: {
-  roles: Role[]
+  role: Role
   onEdit: (role: Role) => void
   onDelete: (role: Role) => void
+  t: ReturnType<typeof useTranslations>
 }) {
-  const t = useTranslations("AdminGroups")
+  const isSuperuser = role.permissions.some((p) => p.code === "*")
 
-  if (roles.length === 0) {
-    return (
-      <p className="py-8 text-center text-muted-foreground">
-        {t("noData")}
-      </p>
-    )
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: role.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {roles.map((role) => {
-        /* superuser（权限为 *）不可修改和删除 */
-        const isSuperuser = role.permissions.some((p) => p.code === "*")
-        return (
-        <Card key={role.id}>
-          <CardHeader>
-            <CardTitle>{role.name}</CardTitle>
-            <CardDescription>{role.description}</CardDescription>
-            {!isSuperuser && (
-            <CardAction>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(role)}
-                >
-                  {t("edit")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(role)}
-                >
-                  {t("delete")}
-                </Button>
-              </div>
-            </CardAction>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>
-                {t("permissionCount", {
-                  count: role.permissions.length,
-                })}
-              </span>
-              <span>
-                {t("userCount", { count: role.user_count })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-        )
-      })}
-    </div>
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className="border-b transition-colors hover:bg-muted/30"
+    >
+      <td
+        className="px-4 py-3 text-muted-foreground cursor-grab"
+        {...attributes}
+        {...listeners}
+      >
+        ⠿
+      </td>
+      <td className="px-4 py-3 font-semibold">{role.name}</td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {role.description}
+      </td>
+      <td className="px-4 py-3">
+        {role.is_builtin ? (
+          <span className="rounded-full px-2 py-0.5 text-xs bg-secondary text-muted-foreground">
+            {t("builtin")}
+          </span>
+        ) : (
+          <span className="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+            {t("custom")}
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {role.permissions.length}
+      </td>
+      <td className="px-4 py-3 text-muted-foreground">
+        {role.user_count}
+      </td>
+      <td className="px-4 py-3">
+        {isSuperuser ? (
+          <span className="text-muted-foreground">—</span>
+        ) : (
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(role)}
+            >
+              {t("edit")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(role)}
+            >
+              {t("delete")}
+            </Button>
+          </div>
+        )}
+      </td>
+    </tr>
   )
 }
 
@@ -95,6 +127,13 @@ export function RoleList() {
   const [loading, setLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<Role | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   /** 获取角色列表 */
   const fetchRoles = useCallback(async () => {
@@ -112,6 +151,30 @@ export function RoleList() {
   useEffect(() => {
     fetchRoles()
   }, [fetchRoles])
+
+  /** 拖拽排序结束 */
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = roles.findIndex((r) => r.id === active.id)
+    const newIndex = roles.findIndex((r) => r.id === over.id)
+    const reordered = arrayMove(roles, oldIndex, newIndex)
+
+    setRoles(reordered)
+
+    try {
+      await api.patch("/roles/reorder", {
+        items: reordered.map((r, i) => ({
+          id: r.id,
+          sort_order: i,
+        })),
+      })
+    } catch {
+      toast.error(t("reorderError"))
+      fetchRoles()
+    }
+  }
 
   /** 打开创建对话框 */
   const handleCreate = () => {
@@ -155,12 +218,62 @@ export function RoleList() {
         <p className="py-8 text-center text-muted-foreground">
           {t("loading")}
         </p>
+      ) : roles.length === 0 ? (
+        <p className="py-8 text-center text-muted-foreground">
+          {t("noData")}
+        </p>
       ) : (
-        <RoleGrid
-          roles={roles}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50">
+                <th className="px-4 py-3 text-left font-medium w-10">
+                  {t("col_drag")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_name")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_description")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_type")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_permissions")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_users")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {t("col_actions")}
+                </th>
+              </tr>
+            </thead>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={roles.map((r) => r.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <tbody>
+                  {roles.map((role) => (
+                    <SortableRow
+                      key={role.id}
+                      role={role}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      t={t}
+                    />
+                  ))}
+                </tbody>
+              </SortableContext>
+            </DndContext>
+          </table>
+        </div>
       )}
 
       <RoleDialog
