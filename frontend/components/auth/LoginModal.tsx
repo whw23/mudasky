@@ -167,7 +167,7 @@ export function LoginModal() {
           <DialogTitle>{t('loginTitle')}</DialogTitle>
         </DialogHeader>
 
-        <DialogBody>
+        <DialogBody className="space-y-4">
           <Tabs defaultValue="sms" className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
