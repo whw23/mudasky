@@ -37,12 +37,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    /* 如果是 token 过期或缺失错误且尚未重试（排除 refresh 端点自身） */
+    /* 如果是 access_token 过期或缺失，尝试用 refresh_token 刷新 */
     const code = error.response?.data?.code
     const isRefreshRequest = originalRequest.url?.includes("/auth/refresh")
     if (
       error.response?.status === 401 &&
-      (code === "TOKEN_EXPIRED" || code === "TOKEN_MISSING") &&
+      (code === "ACCESS_TOKEN_EXPIRED" || code === "ACCESS_TOKEN_MISSING") &&
       !originalRequest._retry &&
       !isRefreshRequest
     ) {

@@ -58,7 +58,7 @@ end
 -- 从 Cookie 读取 access_token
 local cookie_header = ngx.var.http_cookie
 if not cookie_header then
-  reject(401, "TOKEN_MISSING")
+  reject(401, "ACCESS_TOKEN_MISSING")
 end
 
 local access_token
@@ -72,7 +72,7 @@ for pair in string.gmatch(cookie_header, "[^;]+") do
 end
 
 if not access_token then
-  reject(401, "TOKEN_MISSING")
+  reject(401, "ACCESS_TOKEN_MISSING")
 end
 
 -- 验证 JWT
@@ -80,7 +80,7 @@ local jwt_secret = config.get_jwt_secret()
 local jwt_obj = jwt:verify(jwt_secret, access_token)
 if not jwt_obj.verified then
   if jwt_obj.reason and string.find(jwt_obj.reason, "expired") then
-    reject(401, "TOKEN_EXPIRED")
+    reject(401, "ACCESS_TOKEN_EXPIRED")
   else
     reject(401, "TOKEN_INVALID")
   end

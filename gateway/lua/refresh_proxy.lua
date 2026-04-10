@@ -14,7 +14,7 @@ local cookie_header = ngx.var.http_cookie
 if not cookie_header then
   ngx.status = 401
   ngx.header["Content-Type"] = "application/json"
-  ngx.say('{"code":"TOKEN_MISSING"}')
+  ngx.say('{"code":"REFRESH_TOKEN_MISSING"}')
   return
 end
 
@@ -31,7 +31,7 @@ end
 if not refresh_token then
   ngx.status = 401
   ngx.header["Content-Type"] = "application/json"
-  ngx.say('{"code":"TOKEN_MISSING"}')
+  ngx.say('{"code":"REFRESH_TOKEN_MISSING"}')
   return
 end
 
@@ -39,9 +39,13 @@ end
 local jwt_secret = config.get_jwt_secret()
 local jwt_obj = jwt:verify(jwt_secret, refresh_token)
 if not jwt_obj.verified then
+  local code = "REFRESH_TOKEN_INVALID"
+  if jwt_obj.reason and string.find(jwt_obj.reason, "expired") then
+    code = "REFRESH_TOKEN_EXPIRED"
+  end
   ngx.status = 401
   ngx.header["Content-Type"] = "application/json"
-  ngx.say('{"code":"TOKEN_INVALID"}')
+  ngx.say('{"code":"' .. code .. '"}')
   return
 end
 
