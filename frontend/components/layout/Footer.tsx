@@ -15,11 +15,10 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 /** 快速链接：导航键 + 路径 */
 const QUICK_LINKS = [
-  { key: "about", href: "/about" },
-  { key: "studyAbroad", href: "/study-abroad" },
   { key: "universities", href: "/universities" },
+  { key: "studyAbroad", href: "/study-abroad" },
   { key: "cases", href: "/cases" },
-  { key: "contact", href: "/contact" },
+  { key: "about", href: "/about" },
 ] as const
 
 /** 服务项目：导航键 + 路径 */

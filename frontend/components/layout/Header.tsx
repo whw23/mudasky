@@ -19,15 +19,14 @@ import { LocaleSwitcher } from "./LocaleSwitcher"
 /** 导航菜单键与路径映射 */
 const NAV_KEYS = [
   { key: "home", href: "/" },
-  { key: "about", href: "/about" },
-  { key: "studyAbroad", href: "/study-abroad" },
   { key: "universities", href: "/universities" },
+  { key: "studyAbroad", href: "/study-abroad" },
   { key: "requirements", href: "/requirements" },
   { key: "cases", href: "/cases" },
   { key: "visa", href: "/visa" },
   { key: "life", href: "/life" },
   { key: "news", href: "/news" },
-  { key: "contact", href: "/contact" },
+  { key: "about", href: "/about" },
 ] as const
 
 /** 判断导航项是否激活 */
@@ -95,7 +94,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
             "编辑标语"
           )}
           {wrapEditable(
-            <span className="lg:hidden font-medium text-foreground/70">
+            <span className="md:hidden font-medium text-foreground/70">
               {siteInfo.brand_name || tHeader("brandName")}
             </span>,
             "brand",
@@ -105,7 +104,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           <div className="flex items-center gap-3 md:gap-4">
             {/* 热线电话（仅桌面） */}
             {wrapEditable(
-              <span className="hidden lg:flex items-center gap-1.5">
+              <span className="hidden md:flex items-center gap-1.5">
                 <Phone className="size-3" />
                 {siteInfo.hotline
                   ? `服务热线：${siteInfo.hotline} | ${siteInfo.hotline_contact}`
@@ -175,7 +174,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           )}
 
           {/* 桌面导航 */}
-          <ul className="hidden lg:flex items-center gap-0.5">
+          <ul className="hidden md:flex items-center gap-0.5">
             {NAV_KEYS.map((item) => {
               const active = isActive(pathname, item.href)
               return (
@@ -197,7 +196,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
 
           {/* 移动端汉堡按钮 */}
           <button
-            className="lg:hidden p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
+            className="md:hidden p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -206,7 +205,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
 
         {/* 移动端展开菜单 — 毛玻璃面板 */}
         {menuOpen && (
-          <div className="lg:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
+          <div className="md:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
             <ul className="flex flex-col px-4 py-2">
               {NAV_KEYS.map((item) => (
                 <li key={item.href}>
