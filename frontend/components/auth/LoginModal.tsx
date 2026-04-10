@@ -52,6 +52,9 @@ export function LoginModal() {
   const [account, setAccount] = useState('')
   const [accountPwd, setAccountPwd] = useState('')
 
+  /* 当前登录 tab */
+  const [activeTab, setActiveTab] = useState('sms')
+
   /* 二步验证 */
   const [twoFaStep, setTwoFaStep] = useState(false)
   const [pendingPayload, setPendingPayload] = useState<Record<
@@ -164,11 +167,13 @@ export function LoginModal() {
     <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('loginTitle')}</DialogTitle>
+          <DialogTitle>
+            {activeTab === 'sms' ? t('loginOrRegister') : t('loginTitle')}
+          </DialogTitle>
         </DialogHeader>
 
         <DialogBody className="space-y-4">
-          <Tabs defaultValue="sms" className="w-full">
+          <Tabs defaultValue="sms" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="sms">{t('tabSms')}</TabsTrigger>
               <TabsTrigger value="account">{t('tabAccount')}</TabsTrigger>
