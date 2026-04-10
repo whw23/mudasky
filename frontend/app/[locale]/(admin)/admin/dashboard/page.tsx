@@ -14,6 +14,7 @@ import {
   FolderOpen,
   UserCog,
   FileEdit,
+  PenLine,
   Settings,
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
@@ -198,6 +199,10 @@ export default function AdminDashboardPage() {
           <Button variant="outline" render={<Link href="/admin/articles" />}>
             <FileEdit className="mr-2 size-4" />
             {t("manageArticles")}
+          </Button>
+          <Button variant="outline" render={<Link href="/admin/articles" />}>
+            <PenLine className="mr-2 size-4" />
+            {t("writeArticle")}
           </Button>
           <Button variant="outline" render={<Link href="/admin/settings" />}>
             <Settings className="mr-2 size-4" />
