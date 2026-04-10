@@ -77,7 +77,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 overflow-x-hidden transition-all duration-300 ${
         scrolled
           ? "bg-white/70 backdrop-blur-xl shadow-sm"
           : ""
@@ -95,7 +95,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
             "编辑标语"
           )}
           {wrapEditable(
-            <span className="md:hidden font-medium text-foreground/70">
+            <span className="lg:hidden font-medium text-foreground/70">
               {siteInfo.brand_name || tHeader("brandName")}
             </span>,
             "brand",
@@ -105,7 +105,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           <div className="flex items-center gap-3 md:gap-4">
             {/* 热线电话（仅桌面） */}
             {wrapEditable(
-              <span className="hidden md:flex items-center gap-1.5">
+              <span className="hidden lg:flex items-center gap-1.5">
                 <Phone className="size-3" />
                 {siteInfo.hotline
                   ? `服务热线：${siteInfo.hotline} | ${siteInfo.hotline_contact}`
@@ -145,7 +145,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
                 onClick={showLoginModal}
                 className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
               >
-                {tHeader("login")}
+                {tHeader("loginOrRegister")}
               </button>
             )}
           </div>
@@ -166,7 +166,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           {wrapEditable(
             <Link
               href="/"
-              className="text-lg font-bold tracking-wide text-foreground"
+              className="text-lg font-bold tracking-wide whitespace-nowrap text-foreground"
             >
               {siteInfo.brand_name || tHeader("brandName")}
             </Link>,
@@ -175,7 +175,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
           )}
 
           {/* 桌面导航 */}
-          <ul className="hidden md:flex items-center gap-0.5">
+          <ul className="hidden lg:flex items-center gap-0.5">
             {NAV_KEYS.map((item) => {
               const active = isActive(pathname, item.href)
               return (
@@ -197,7 +197,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
 
           {/* 移动端汉堡按钮 */}
           <button
-            className="md:hidden p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
+            className="lg:hidden p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -206,7 +206,7 @@ export function Header({ editable, onEdit }: HeaderProps) {
 
         {/* 移动端展开菜单 — 毛玻璃面板 */}
         {menuOpen && (
-          <div className="md:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
+          <div className="lg:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
             <ul className="flex flex-col px-4 py-2">
               {NAV_KEYS.map((item) => (
                 <li key={item.href}>

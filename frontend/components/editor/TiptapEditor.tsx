@@ -150,6 +150,7 @@ export function TiptapEditor({
   const t = useTranslations("Editor")
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Image,

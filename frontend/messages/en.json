@@ -21,6 +21,7 @@
     "adminPanel": "Admin Panel",
     "logout": "Logout",
     "login": "Login",
+    "loginOrRegister": "Login/Register",
     "register": "Register",
     "brandName": "MUTU International Education"
   },
@@ -299,55 +300,81 @@
     "forceLogoutSuccess": "User has been logged out"
   },
   "Permissions": {
-    "user_center": "User Center",
-    "user_center.profile": "Profile",
-    "user_center.profile.view": "View Profile",
-    "user_center.profile.edit": "Edit Profile",
-    "user_center.profile.password": "Change Password",
-    "user_center.profile.phone": "Change Phone",
-    "user_center.two_factor": "Two-Factor Auth",
-    "user_center.two_factor.totp": "TOTP Auth",
-    "user_center.two_factor.sms": "SMS Auth",
-    "user_center.two_factor.disable": "Disable 2FA",
-    "user_center.document": "Documents",
-    "user_center.document.upload": "Upload Document",
-    "user_center.document.list": "View Documents",
-    "user_center.document.delete": "Delete Document",
-    "user_center.article": "Articles",
-    "user_center.article.create": "Create Article",
-    "user_center.article.edit": "Edit Article",
-    "user_center.article.delete": "Delete Article",
-    "admin": "Admin",
-    "admin.user": "User Management",
-    "admin.user.list": "View Users",
-    "admin.user.edit": "Edit User",
-    "admin.user.toggle_active": "Toggle User Status",
-    "admin.user.reset_password": "Reset Password",
-    "admin.user.assign_role": "Assign Role",
-    "admin.content": "Content",
-    "admin.content.list": "View Content",
-    "admin.content.edit": "Edit Content",
-    "admin.content.delete": "Delete Content",
-    "admin.category": "Categories",
-    "admin.category.create": "Create Category",
-    "admin.category.edit": "Edit Category",
-    "admin.category.delete": "Delete Category",
-    "admin.case": "Cases",
-    "admin.case.create": "Create Case",
-    "admin.case.edit": "Edit Case",
-    "admin.case.delete": "Delete Case",
-    "admin.university": "Universities",
-    "admin.university.create": "Create University",
-    "admin.university.edit": "Edit University",
-    "admin.university.delete": "Delete University",
-    "admin.role": "Roles",
-    "admin.role.list": "View Roles",
-    "admin.role.create": "Create Role",
-    "admin.role.edit": "Edit Role",
-    "admin.role.delete": "Delete Role",
-    "admin.settings": "Settings",
-    "admin.settings.view": "View Settings",
-    "admin.settings.edit": "Edit Settings"
+    "user_center": {
+      "_label": "User Center",
+      "profile": {
+        "_label": "Profile",
+        "view": "View Profile",
+        "edit": "Edit Profile",
+        "password": "Change Password",
+        "phone": "Change Phone"
+      },
+      "two_factor": {
+        "_label": "Two-Factor Auth",
+        "totp": "TOTP Auth",
+        "sms": "SMS Auth",
+        "disable": "Disable 2FA"
+      },
+      "document": {
+        "_label": "Documents",
+        "upload": "Upload Document",
+        "list": "View Documents",
+        "delete": "Delete Document"
+      },
+      "article": {
+        "_label": "Articles",
+        "create": "Create Article",
+        "edit": "Edit Article",
+        "delete": "Delete Article"
+      }
+    },
+    "admin": {
+      "_label": "Admin",
+      "user": {
+        "_label": "User Management",
+        "list": "View Users",
+        "edit": "Edit User",
+        "toggle_active": "Toggle User Status",
+        "reset_password": "Reset Password",
+        "assign_role": "Assign Role"
+      },
+      "content": {
+        "_label": "Content",
+        "list": "View Content",
+        "edit": "Edit Content",
+        "delete": "Delete Content"
+      },
+      "category": {
+        "_label": "Categories",
+        "create": "Create Category",
+        "edit": "Edit Category",
+        "delete": "Delete Category"
+      },
+      "case": {
+        "_label": "Cases",
+        "create": "Create Case",
+        "edit": "Edit Case",
+        "delete": "Delete Case"
+      },
+      "university": {
+        "_label": "Universities",
+        "create": "Create University",
+        "edit": "Edit University",
+        "delete": "Delete University"
+      },
+      "role": {
+        "_label": "Roles",
+        "list": "View Roles",
+        "create": "Create Role",
+        "edit": "Edit Role",
+        "delete": "Delete Role"
+      },
+      "settings": {
+        "_label": "Settings",
+        "view": "View Settings",
+        "edit": "Edit Settings"
+      }
+    }
   },
   "AdminGroups": {
     "title": "Role Management",
@@ -926,7 +953,10 @@
     "deleteSuccess": "Deleted successfully",
     "deleteError": "Failed to delete",
     "operationError": "Operation failed",
-    "totalCount": "{count} articles total"
+    "totalCount": "{count} articles total",
+    "createArticle": "New Article",
+    "editArticle": "Edit Article",
+    "edit": "Edit"
   },
   "AdminCategories": {
     "createCategory": "Create Category",
@@ -1032,6 +1062,7 @@
     "quickActions": "Quick Actions",
     "manageUsers": "Manage Users",
     "manageArticles": "Manage Articles",
+    "writeArticle": "Write Article",
     "systemSettings": "System Settings",
     "noData": "No data",
     "published": "Published",

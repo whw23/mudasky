@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.content.router import _build_paginated, _category_list_with_counts
 from app.content.schemas import (
+    ArticleCreate,
     ArticleResponse,
     ArticleUpdate,
     CategoryCreate,
@@ -15,6 +16,7 @@ from app.content.schemas import (
 )
 from app.content.service import ContentService
 from app.core.dependencies import (
+    CurrentUserId,
     DbSession,
     require_permission,
 )
@@ -114,6 +116,25 @@ async def admin_list_articles(
     return _build_paginated(
         articles, total, params, ArticleResponse
     )
+
+
+@admin_router.post(
+    "/articles",
+    response_model=ArticleResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(require_permission("admin.content.edit"))
+    ],
+)
+async def admin_create_article(
+    data: ArticleCreate,
+    user_id: CurrentUserId,
+    session: DbSession,
+) -> ArticleResponse:
+    """管理员创建文章。"""
+    svc = ContentService(session)
+    article = await svc.create_article(data, user_id)
+    return ArticleResponse.model_validate(article)
 
 
 @admin_router.patch(

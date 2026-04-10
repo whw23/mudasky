@@ -21,6 +21,7 @@
     "adminPanel": "Admin-Bereich",
     "logout": "Abmelden",
     "login": "Anmelden",
+    "loginOrRegister": "Anmelden/Registrieren",
     "register": "Registrieren",
     "brandName": "MUTU Internationale Bildung"
   },
@@ -299,55 +300,81 @@
     "forceLogoutSuccess": "Benutzer wurde abgemeldet"
   },
   "Permissions": {
-    "user_center": "Benutzercenter",
-    "user_center.profile": "Profil",
-    "user_center.profile.view": "Profil anzeigen",
-    "user_center.profile.edit": "Profil bearbeiten",
-    "user_center.profile.password": "Passwort ändern",
-    "user_center.profile.phone": "Telefon ändern",
-    "user_center.two_factor": "Zwei-Faktor-Auth",
-    "user_center.two_factor.totp": "TOTP-Auth",
-    "user_center.two_factor.sms": "SMS-Auth",
-    "user_center.two_factor.disable": "2FA deaktivieren",
-    "user_center.document": "Dokumente",
-    "user_center.document.upload": "Hochladen",
-    "user_center.document.list": "Anzeigen",
-    "user_center.document.delete": "Löschen",
-    "user_center.article": "Artikel",
-    "user_center.article.create": "Erstellen",
-    "user_center.article.edit": "Bearbeiten",
-    "user_center.article.delete": "Löschen",
-    "admin": "Verwaltung",
-    "admin.user": "Benutzerverwaltung",
-    "admin.user.list": "Benutzer anzeigen",
-    "admin.user.edit": "Benutzer bearbeiten",
-    "admin.user.toggle_active": "Status umschalten",
-    "admin.user.reset_password": "Passwort zurücksetzen",
-    "admin.user.assign_role": "Rolle zuweisen",
-    "admin.content": "Inhalte",
-    "admin.content.list": "Inhalte anzeigen",
-    "admin.content.edit": "Inhalte bearbeiten",
-    "admin.content.delete": "Inhalte löschen",
-    "admin.category": "Kategorien",
-    "admin.category.create": "Erstellen",
-    "admin.category.edit": "Bearbeiten",
-    "admin.category.delete": "Löschen",
-    "admin.case": "Fälle",
-    "admin.case.create": "Erstellen",
-    "admin.case.edit": "Bearbeiten",
-    "admin.case.delete": "Löschen",
-    "admin.university": "Universitäten",
-    "admin.university.create": "Erstellen",
-    "admin.university.edit": "Bearbeiten",
-    "admin.university.delete": "Löschen",
-    "admin.role": "Rollen",
-    "admin.role.list": "Anzeigen",
-    "admin.role.create": "Erstellen",
-    "admin.role.edit": "Bearbeiten",
-    "admin.role.delete": "Löschen",
-    "admin.settings": "Einstellungen",
-    "admin.settings.view": "Anzeigen",
-    "admin.settings.edit": "Bearbeiten"
+    "user_center": {
+      "_label": "Benutzercenter",
+      "profile": {
+        "_label": "Profil",
+        "view": "Profil anzeigen",
+        "edit": "Profil bearbeiten",
+        "password": "Passwort ändern",
+        "phone": "Telefon ändern"
+      },
+      "two_factor": {
+        "_label": "Zwei-Faktor-Auth",
+        "totp": "TOTP-Auth",
+        "sms": "SMS-Auth",
+        "disable": "2FA deaktivieren"
+      },
+      "document": {
+        "_label": "Dokumente",
+        "upload": "Hochladen",
+        "list": "Anzeigen",
+        "delete": "Löschen"
+      },
+      "article": {
+        "_label": "Artikel",
+        "create": "Erstellen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      }
+    },
+    "admin": {
+      "_label": "Verwaltung",
+      "user": {
+        "_label": "Benutzerverwaltung",
+        "list": "Benutzer anzeigen",
+        "edit": "Benutzer bearbeiten",
+        "toggle_active": "Status umschalten",
+        "reset_password": "Passwort zurücksetzen",
+        "assign_role": "Rolle zuweisen"
+      },
+      "content": {
+        "_label": "Inhalte",
+        "list": "Inhalte anzeigen",
+        "edit": "Inhalte bearbeiten",
+        "delete": "Inhalte löschen"
+      },
+      "category": {
+        "_label": "Kategorien",
+        "create": "Erstellen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      },
+      "case": {
+        "_label": "Fälle",
+        "create": "Erstellen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      },
+      "university": {
+        "_label": "Universitäten",
+        "create": "Erstellen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      },
+      "role": {
+        "_label": "Rollen",
+        "list": "Anzeigen",
+        "create": "Erstellen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
+      },
+      "settings": {
+        "_label": "Einstellungen",
+        "view": "Anzeigen",
+        "edit": "Bearbeiten"
+      }
+    }
   },
   "AdminGroups": {
     "title": "Rollenverwaltung",
@@ -926,7 +953,10 @@
     "deleteSuccess": "Erfolgreich gelöscht",
     "deleteError": "Löschen fehlgeschlagen",
     "operationError": "Vorgang fehlgeschlagen",
-    "totalCount": "{count} Artikel gesamt"
+    "totalCount": "{count} Artikel gesamt",
+    "createArticle": "Artikel erstellen",
+    "editArticle": "Artikel bearbeiten",
+    "edit": "Bearbeiten"
   },
   "AdminCategories": {
     "createCategory": "Kategorie erstellen",
@@ -1032,6 +1062,7 @@
     "quickActions": "Schnellaktionen",
     "manageUsers": "Benutzer verwalten",
     "manageArticles": "Artikel verwalten",
+    "writeArticle": "Artikel schreiben",
     "systemSettings": "Systemeinstellungen",
     "noData": "Keine Daten",
     "published": "Veröffentlicht",

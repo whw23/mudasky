@@ -21,6 +21,7 @@
     "adminPanel": "管理画面",
     "logout": "ログアウト",
     "login": "ログイン",
+    "loginOrRegister": "ログイン/登録",
     "register": "新規登録",
     "brandName": "慕大国際教育"
   },
@@ -299,55 +300,81 @@
     "forceLogoutSuccess": "強制ログアウトしました"
   },
   "Permissions": {
-    "user_center": "ユーザーセンター",
-    "user_center.profile": "プロフィール",
-    "user_center.profile.view": "プロフィール閲覧",
-    "user_center.profile.edit": "プロフィール編集",
-    "user_center.profile.password": "パスワード変更",
-    "user_center.profile.phone": "電話番号変更",
-    "user_center.two_factor": "二段階認証",
-    "user_center.two_factor.totp": "TOTP認証",
-    "user_center.two_factor.sms": "SMS認証",
-    "user_center.two_factor.disable": "二段階認証無効化",
-    "user_center.document": "ドキュメント",
-    "user_center.document.upload": "アップロード",
-    "user_center.document.list": "一覧表示",
-    "user_center.document.delete": "削除",
-    "user_center.article": "記事",
-    "user_center.article.create": "記事作成",
-    "user_center.article.edit": "記事編集",
-    "user_center.article.delete": "記事削除",
-    "admin": "管理",
-    "admin.user": "ユーザー管理",
-    "admin.user.list": "ユーザー一覧",
-    "admin.user.edit": "ユーザー編集",
-    "admin.user.toggle_active": "有効/無効切替",
-    "admin.user.reset_password": "パスワードリセット",
-    "admin.user.assign_role": "ロール割当",
-    "admin.content": "コンテンツ",
-    "admin.content.list": "コンテンツ一覧",
-    "admin.content.edit": "コンテンツ編集",
-    "admin.content.delete": "コンテンツ削除",
-    "admin.category": "カテゴリ",
-    "admin.category.create": "カテゴリ作成",
-    "admin.category.edit": "カテゴリ編集",
-    "admin.category.delete": "カテゴリ削除",
-    "admin.case": "事例",
-    "admin.case.create": "事例作成",
-    "admin.case.edit": "事例編集",
-    "admin.case.delete": "事例削除",
-    "admin.university": "大学",
-    "admin.university.create": "大学追加",
-    "admin.university.edit": "大学編集",
-    "admin.university.delete": "大学削除",
-    "admin.role": "ロール",
-    "admin.role.list": "ロール一覧",
-    "admin.role.create": "ロール作成",
-    "admin.role.edit": "ロール編集",
-    "admin.role.delete": "ロール削除",
-    "admin.settings": "設定",
-    "admin.settings.view": "設定閲覧",
-    "admin.settings.edit": "設定編集"
+    "user_center": {
+      "_label": "ユーザーセンター",
+      "profile": {
+        "_label": "プロフィール",
+        "view": "プロフィール閲覧",
+        "edit": "プロフィール編集",
+        "password": "パスワード変更",
+        "phone": "電話番号変更"
+      },
+      "two_factor": {
+        "_label": "二段階認証",
+        "totp": "TOTP認証",
+        "sms": "SMS認証",
+        "disable": "二段階認証無効化"
+      },
+      "document": {
+        "_label": "ドキュメント",
+        "upload": "アップロード",
+        "list": "一覧表示",
+        "delete": "削除"
+      },
+      "article": {
+        "_label": "記事",
+        "create": "記事作成",
+        "edit": "記事編集",
+        "delete": "記事削除"
+      }
+    },
+    "admin": {
+      "_label": "管理",
+      "user": {
+        "_label": "ユーザー管理",
+        "list": "ユーザー一覧",
+        "edit": "ユーザー編集",
+        "toggle_active": "有効/無効切替",
+        "reset_password": "パスワードリセット",
+        "assign_role": "ロール割当"
+      },
+      "content": {
+        "_label": "コンテンツ",
+        "list": "コンテンツ一覧",
+        "edit": "コンテンツ編集",
+        "delete": "コンテンツ削除"
+      },
+      "category": {
+        "_label": "カテゴリ",
+        "create": "カテゴリ作成",
+        "edit": "カテゴリ編集",
+        "delete": "カテゴリ削除"
+      },
+      "case": {
+        "_label": "事例",
+        "create": "事例作成",
+        "edit": "事例編集",
+        "delete": "事例削除"
+      },
+      "university": {
+        "_label": "大学",
+        "create": "大学追加",
+        "edit": "大学編集",
+        "delete": "大学削除"
+      },
+      "role": {
+        "_label": "ロール",
+        "list": "ロール一覧",
+        "create": "ロール作成",
+        "edit": "ロール編集",
+        "delete": "ロール削除"
+      },
+      "settings": {
+        "_label": "設定",
+        "view": "設定閲覧",
+        "edit": "設定編集"
+      }
+    }
   },
   "AdminGroups": {
     "title": "ロール管理",
@@ -926,7 +953,10 @@
     "deleteSuccess": "削除しました",
     "deleteError": "削除に失敗しました",
     "operationError": "操作に失敗しました",
-    "totalCount": "全 {count} 件"
+    "totalCount": "全 {count} 件",
+    "createArticle": "記事作成",
+    "editArticle": "記事編集",
+    "edit": "編集"
   },
   "AdminCategories": {
     "createCategory": "カテゴリ作成",
@@ -1032,6 +1062,7 @@
     "quickActions": "クイック操作",
     "manageUsers": "ユーザー管理",
     "manageArticles": "記事管理",
+    "writeArticle": "記事作成",
     "systemSettings": "システム設定",
     "noData": "データなし",
     "published": "公開済み",
