@@ -5,6 +5,7 @@ import "./globals.css"
 const lexend = Lexend({
   variable: "--font-sans",
   subsets: ["latin"],
+  preload: false,
 })
 
 /** 根布局（语言无关） */
