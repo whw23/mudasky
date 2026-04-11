@@ -11,23 +11,23 @@ logger = logging.getLogger(__name__)
 
 # 系统权限定义：(code, name_key, description)
 PERMISSIONS = [
-    # 用户中心 - 个人资料
-    ("user_center.profile.view", "permission.user_center.profile.view", "查看个人资料"),
-    ("user_center.profile.edit", "permission.user_center.profile.edit", "编辑个人资料"),
-    ("user_center.profile.password", "permission.user_center.profile.password", "修改密码"),
-    ("user_center.profile.phone", "permission.user_center.profile.phone", "修改手机号"),
-    # 用户中心 - 双因素认证
-    ("user_center.two_factor.totp", "permission.user_center.two_factor.totp", "TOTP 双因素认证"),
-    ("user_center.two_factor.sms", "permission.user_center.two_factor.sms", "短信双因素认证"),
-    ("user_center.two_factor.disable", "permission.user_center.two_factor.disable", "关闭双因素认证"),
-    # 用户中心 - 文档
-    ("user_center.document.upload", "permission.user_center.document.upload", "上传文档"),
-    ("user_center.document.list", "permission.user_center.document.list", "查看文档列表"),
-    ("user_center.document.delete", "permission.user_center.document.delete", "删除文档"),
-    # 用户中心 - 文章
-    ("user_center.article.create", "permission.user_center.article.create", "创建文章"),
-    ("user_center.article.edit", "permission.user_center.article.edit", "编辑文章"),
-    ("user_center.article.delete", "permission.user_center.article.delete", "删除文章"),
+    # 用户面板 - 个人资料
+    ("portal.profile.view", "permission.portal.profile.view", "查看个人资料"),
+    ("portal.profile.edit", "permission.portal.profile.edit", "编辑个人资料"),
+    ("portal.profile.password", "permission.portal.profile.password", "修改密码"),
+    ("portal.profile.phone", "permission.portal.profile.phone", "修改手机号"),
+    # 用户面板 - 双因素认证
+    ("portal.two_factor.totp", "permission.portal.two_factor.totp", "TOTP 双因素认证"),
+    ("portal.two_factor.sms", "permission.portal.two_factor.sms", "短信双因素认证"),
+    ("portal.two_factor.disable", "permission.portal.two_factor.disable", "关闭双因素认证"),
+    # 用户面板 - 文档
+    ("portal.document.upload", "permission.portal.document.upload", "上传文档"),
+    ("portal.document.list", "permission.portal.document.list", "查看文档列表"),
+    ("portal.document.delete", "permission.portal.document.delete", "删除文档"),
+    # 用户面板 - 文章
+    ("portal.article.create", "permission.portal.article.create", "创建文章"),
+    ("portal.article.edit", "permission.portal.article.edit", "编辑文章"),
+    ("portal.article.delete", "permission.portal.article.delete", "删除文章"),
     # 管理后台 - 用户管理
     ("admin.user.list", "permission.admin.user.list", "查看用户列表"),
     ("admin.user.edit", "permission.admin.user.edit", "编辑用户"),
@@ -58,10 +58,17 @@ PERMISSIONS = [
     # 管理后台 - 系统设置
     ("admin.settings.view", "permission.admin.settings.view", "查看系统设置"),
     ("admin.settings.edit", "permission.admin.settings.edit", "编辑系统设置"),
+    # 管理后台 - 仪表盘
+    ("admin.dashboard.view", "permission.admin.dashboard.view", "查看管理仪表盘"),
+    # 用户面板 - 概览
+    ("portal.overview.view", "permission.portal.overview.view", "查看个人概览"),
+    # 管理后台 - 面板配置
+    ("admin.panel.view", "permission.admin.panel.view", "查看面板配置"),
+    ("admin.panel.edit", "permission.admin.panel.edit", "编辑面板配置"),
     # 通配符权限
     ("*", "permission.all", "所有权限"),
     ("admin.*", "permission.admin.all", "所有管理后台权限"),
-    ("user_center.*", "permission.user_center.all", "所有用户中心权限"),
+    ("portal.*", "permission.portal.all", "所有用户面板权限"),
     ("admin.user.*", "permission.admin.user.all", "所有用户管理权限"),
     ("admin.content.*", "permission.admin.content.all", "所有内容管理权限"),
     ("admin.category.*", "permission.admin.category.all", "所有分类管理权限"),
@@ -69,19 +76,22 @@ PERMISSIONS = [
     ("admin.university.*", "permission.admin.university.all", "所有院校管理权限"),
     ("admin.role.*", "permission.admin.role.all", "所有角色管理权限"),
     ("admin.settings.*", "permission.admin.settings.all", "所有系统设置权限"),
-    ("user_center.profile.*", "permission.user_center.profile.all", "所有个人资料权限"),
-    ("user_center.two_factor.*", "permission.user_center.two_factor.all", "所有双因素认证权限"),
-    ("user_center.document.*", "permission.user_center.document.all", "所有文档权限"),
-    ("user_center.article.*", "permission.user_center.article.all", "所有文章权限"),
+    ("admin.dashboard.*", "permission.admin.dashboard.all", "所有仪表盘权限"),
+    ("portal.overview.*", "permission.portal.overview.all", "所有概览权限"),
+    ("admin.panel.*", "permission.admin.panel.all", "所有面板配置权限"),
+    ("portal.profile.*", "permission.portal.profile.all", "所有个人资料权限"),
+    ("portal.two_factor.*", "permission.portal.two_factor.all", "所有双因素认证权限"),
+    ("portal.document.*", "permission.portal.document.all", "所有文档权限"),
+    ("portal.article.*", "permission.portal.article.all", "所有文章权限"),
 ]
 
 # 系统角色定义：(name, description, [permission_codes], sort_order)
 ROLES = [
     ("superuser", "超级管理员", ["*"], 0),
-    ("website_admin", "网站管理员", ["admin.*", "user_center.*"], 1),
-    ("student_advisor", "留学顾问", ["admin.user.*", "admin.content.*", "admin.case.*", "user_center.*"], 2),
-    ("student", "学员", ["user_center.*"], 3),
-    ("visitor", "访客", ["user_center.profile.view"], 4),
+    ("website_admin", "网站管理员", ["admin.*", "portal.*"], 1),
+    ("student_advisor", "留学顾问", ["admin.user.*", "admin.content.*", "admin.case.*", "portal.*"], 2),
+    ("student", "学员", ["portal.*"], 3),
+    ("visitor", "访客", ["portal.profile.view"], 4),
 ]
 
 
