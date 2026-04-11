@@ -53,20 +53,20 @@ class TestAdminConfig:
         original_value = resp.json()["value"]
 
         # 2. 修改值（更新 tagline 字段）
-        updated_value = {**original_value, "tagline": "e2e_test_tagline"}
+        updated_value = {**original_value, "hotline": "000-0000-0000"}
         update_resp = await superuser_client.post(
             f"/api/admin/settings/edit/{key}",
             json={"value": updated_value},
         )
         assert update_resp.status_code == 200
-        assert update_resp.json()["value"]["tagline"] == "e2e_test_tagline"
+        assert update_resp.json()["value"]["hotline"] == "000-0000-0000"
 
         # 3. 验证更新生效
         verify_resp = await superuser_client.get(
             f"/api/public/config/{key}"
         )
         assert verify_resp.status_code == 200
-        assert verify_resp.json()["value"]["tagline"] == "e2e_test_tagline"
+        assert verify_resp.json()["value"]["hotline"] == "000-0000-0000"
 
         # 4. 恢复原始值
         revert_resp = await superuser_client.post(

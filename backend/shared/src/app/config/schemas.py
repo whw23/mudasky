@@ -63,16 +63,18 @@ class ContactInfoValue(BaseModel):
 
 
 class SiteInfoValue(BaseModel):
-    """品牌信息配置值验证。"""
+    """品牌信息配置值验证。支持多语言字段（str 或 {zh, en, ja, de} dict）。"""
 
-    brand_name: str = Field(..., description="品牌中文名")
-    brand_name_en: str = Field("", description="品牌英文名")
-    tagline: str = Field("", description="品牌标语")
+    model_config = {"extra": "allow"}
+
+    brand_name: str | dict = Field(..., description="品牌名称（str 或多语言 dict）")
+    tagline: str | dict = Field("", description="品牌标语（str 或多语言 dict）")
     hotline: str = Field("", description="服务热线")
-    hotline_contact: str = Field("", description="热线联系人")
+    hotline_contact: str | dict = Field("", description="热线联系人（str 或多语言 dict）")
     logo_url: str = Field("", description="Logo 图片地址")
     favicon_url: str = Field("", description="Favicon 地址")
     wechat_qr_url: str = Field("", description="微信二维码图片地址")
+    company_name: str = Field("", description="公司名称")
     icp_filing: str = Field("", description="ICP 备案号")
 
 
