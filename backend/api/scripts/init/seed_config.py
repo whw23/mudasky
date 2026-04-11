@@ -53,7 +53,7 @@ async def init_system_config(session) -> None:
                 "logo_url": "",
                 "favicon_url": "",
                 "wechat_qr_url": "",
-                "icp_filing": "浩然学行(苏州)文化传播有限公司 苏ICP备2022046719号-1",
+                "icp_filing": "苏ICP备2022046719号-1",
             },
             "description": "\u54c1\u724c\u4fe1\u606f\u914d\u7f6e",
         },
