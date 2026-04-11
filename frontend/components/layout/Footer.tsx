@@ -145,7 +145,7 @@ export function Footer({ editable, onEdit }: FooterProps) {
       {wrapEditable(
         <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
           <p>
-            {t("copyright")} |{" "}
+            {t("copyright")} | {t("companyName")} |{" "}
             <a
               href="https://beian.miit.gov.cn/"
               target="_blank"
