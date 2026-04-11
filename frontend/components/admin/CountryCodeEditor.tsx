@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +31,7 @@ export function CountryCodeEditor() {
     setLoading(true)
     api.get('/admin/config')
       .then((res) => {
-        const config = res.data.find((c: any) => c.key === 'phone_country_codes')
+        const config = res.data.find((c: { key: string; value: unknown }) => c.key === 'phone_country_codes')
         if (config && Array.isArray(config.value)) {
           setItems(config.value.map((v: CountryCode) => ({ ...v, _id: nextId.current++ })))
         }
@@ -66,8 +67,9 @@ export function CountryCodeEditor() {
       const payload = items.map(({ _id, ...rest }) => rest)
       await api.put('/admin/config/phone_country_codes', { value: payload })
       toast.success(t('saveSuccess'))
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('saveError'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('saveError'))
     } finally {
       setSaving(false)
     }

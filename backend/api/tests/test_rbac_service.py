@@ -48,6 +48,7 @@ def _make_role(
 
 
 REPO = "app.rbac.service.repository"
+USER_REPO = "app.rbac.service.user_repo"
 
 
 @pytest.fixture
@@ -190,12 +191,16 @@ async def test_delete_role_protected(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(USER_REPO)
 @patch(REPO)
 async def test_get_user_permissions(
-    mock_repo, service
+    mock_repo, mock_user_repo, service
 ):
     """查询用户权限码列表。"""
-    mock_repo.get_user_permissions = AsyncMock(
+    mock_user_repo.get_role_id = AsyncMock(
+        return_value="role-1"
+    )
+    mock_repo.get_permissions_by_role = AsyncMock(
         return_value=[
             "admin.user.list",
             "admin.user.edit",
@@ -207,25 +212,31 @@ async def test_get_user_permissions(
 
     assert "admin.user.list" in result
     assert "admin.content.edit" in result
-    mock_repo.get_user_permissions.assert_awaited_once_with(
+    mock_user_repo.get_role_id.assert_awaited_once_with(
         service.session, "user-1"
+    )
+    mock_repo.get_permissions_by_role.assert_awaited_once_with(
+        service.session, "role-1"
     )
 
 
 @pytest.mark.asyncio
+@patch(USER_REPO)
 @patch(REPO)
-async def test_assign_user_role(mock_repo, service):
+async def test_assign_user_role(
+    mock_repo, mock_user_repo, service
+):
     """分配用户角色。"""
     role = _make_role("编辑", role_id="r1")
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
-    mock_repo.set_user_role = AsyncMock()
+    mock_user_repo.set_role_id = AsyncMock()
 
     await service.assign_user_role(
         user_id="user-1",
         role_id="r1",
     )
 
-    mock_repo.set_user_role.assert_awaited_once_with(
+    mock_user_repo.set_role_id.assert_awaited_once_with(
         service.session, "user-1", "r1"
     )
 

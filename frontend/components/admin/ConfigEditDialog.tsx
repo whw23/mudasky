@@ -32,7 +32,9 @@ interface ConfigEditDialogProps {
   onOpenChange: (open: boolean) => void
   title: string
   fields: FieldDefinition[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave: (data: Record<string, any>) => Promise<void>
 }
 
@@ -56,6 +58,7 @@ export function ConfigEditDialog({
   data,
   onSave,
 }: ConfigEditDialogProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState<string | null>(null)
@@ -69,6 +72,7 @@ export function ConfigEditDialog({
   }, [open, data])
 
   /** 更新单个字段值 */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function updateField(key: string, value: any) {
     setFormData((prev) => ({ ...prev, [key]: value }))
   }

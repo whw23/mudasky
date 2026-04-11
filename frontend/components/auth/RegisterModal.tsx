@@ -8,6 +8,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import {
@@ -80,8 +81,9 @@ export function RegisterModal() {
       await fetchUser()
       resetForm()
       hideAuthModal()
-    } catch (err: any) {
-      setError(err.response?.data?.message || t('registerFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      setError(message || t('registerFailed'))
     } finally {
       setLoading(false)
     }

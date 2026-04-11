@@ -9,6 +9,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
@@ -56,8 +57,9 @@ export function TwoFactorSettings() {
       })
       const url = URL.createObjectURL(new Blob([res.data]))
       setQrUrl(url)
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('enableFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('enableFailed'))
     } finally {
       setEnabling(false)
     }
@@ -75,8 +77,9 @@ export function TwoFactorSettings() {
       setQrUrl(null)
       setTotpCode('')
       await fetchUser()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('confirmFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('confirmFailed'))
     } finally {
       setConfirming(false)
     }
@@ -103,8 +106,9 @@ export function TwoFactorSettings() {
       setShowDisableDialog(false)
       setDisablePassword('')
       await fetchUser()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('disableFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('disableFailed'))
     } finally {
       setDisabling(false)
     }

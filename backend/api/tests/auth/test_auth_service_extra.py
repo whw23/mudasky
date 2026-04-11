@@ -433,11 +433,13 @@ async def test_build_user_response(
 ):
     """构建用户响应对象。"""
     user = sample_user(id="user-1")
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=["user:read"]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
-        return_value="组1"
+    role_mock = MagicMock()
+    role_mock.name = "组1"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
     )
 
     result = await service.build_user_response(user)

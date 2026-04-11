@@ -64,10 +64,10 @@ async def test_list_users_no_filter(
     service.session.execute = AsyncMock(
         side_effect=[mock_result_count, mock_result_list]
     )
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
+    mock_rbac_repo.get_role_by_id = AsyncMock(
         return_value=None
     )
 
@@ -119,11 +119,13 @@ async def test_get_user_success(
     """获取用户详情。"""
     user = _make_user(user_id="u1")
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=["admin.user.list"]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
-        return_value="角色1"
+    role_mock = MagicMock()
+    role_mock.name = "角色1"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
     )
 
     result = await service.get_user("u1")
@@ -152,10 +154,10 @@ async def test_update_user_success(
     user = _make_user()
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_user_repo.update = AsyncMock()
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
+    mock_rbac_repo.get_role_by_id = AsyncMock(
         return_value=None
     )
 
@@ -216,11 +218,13 @@ async def test_assign_role_success(
     """分配用户角色。"""
     user = _make_user()
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=[]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
-        return_value="角色1"
+    role_mock = MagicMock()
+    role_mock.name = "角色1"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
     )
 
     with patch("app.admin.service.RbacService") as MockRbac:

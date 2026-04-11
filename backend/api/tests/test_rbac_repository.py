@@ -1,6 +1,6 @@
 """rbac/repository 单元测试。
 
-测试权限、角色、用户角色关联的数据库操作。
+测试权限、角色的数据库操作。
 使用 mock session 隔离真实数据库。
 """
 
@@ -12,15 +12,12 @@ from app.rbac.models import Permission, Role
 from app.rbac.repository import (
     create_role,
     delete_role,
+    get_permissions_by_ids,
+    get_permissions_by_role,
     get_role_by_id,
     get_role_by_name,
-    get_permissions_by_ids,
-    get_user_role_id,
-    get_user_role_name,
-    get_user_permissions,
-    list_roles,
     list_permissions,
-    set_user_role,
+    list_roles,
     update_role,
 )
 
@@ -76,15 +73,15 @@ async def test_get_permissions_by_ids(session):
 async def test_list_roles(session):
     """查询所有角色。"""
     role = MagicMock(spec=Role)
-    row = (role, 3)
     mock_result = MagicMock()
-    mock_result.all.return_value = [row]
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = [role]
+    mock_result.scalars.return_value = mock_scalars
     session.execute.return_value = mock_result
 
     result = await list_roles(session)
 
     assert len(result) == 1
-    assert result[0] == (role, 3)
 
 
 async def test_get_role_by_id_found(session):
@@ -162,11 +159,11 @@ async def test_delete_role(session):
     session.commit.assert_awaited_once()
 
 
-# ---- user permissions / roles ----
+# ---- get_permissions_by_role ----
 
 
-async def test_get_user_permissions_normal(session):
-    """查询用户权限码（普通角色）。"""
+async def test_get_permissions_by_role_normal(session):
+    """根据角色 ID 查询权限码。"""
     perm1 = MagicMock(spec=Permission)
     perm1.code = "admin.user.list"
     perm2 = MagicMock(spec=Permission)
@@ -175,77 +172,21 @@ async def test_get_user_permissions_normal(session):
     role = MagicMock(spec=Role)
     role.permissions = [perm1, perm2]
 
-    # 第一次查询 User.role_id
-    role_id_result = MagicMock()
-    role_id_result.scalar_one_or_none.return_value = "role-1"
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = role
+    session.execute.return_value = mock_result
 
-    # 第二次查询 get_role_by_id
-    role_result = MagicMock()
-    role_result.scalar_one_or_none.return_value = role
-
-    session.execute = AsyncMock(
-        side_effect=[role_id_result, role_result]
-    )
-
-    result = await get_user_permissions(session, "user-1")
+    result = await get_permissions_by_role(session, "role-1")
 
     assert set(result) == {"admin.user.list", "admin.content.edit"}
 
 
-async def test_get_user_permissions_no_role(session):
-    """用户无角色返回空列表。"""
+async def test_get_permissions_by_role_not_found(session):
+    """角色不存在返回空列表。"""
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = None
     session.execute.return_value = mock_result
 
-    result = await get_user_permissions(session, "user-1")
+    result = await get_permissions_by_role(session, "nonexistent")
 
     assert result == []
-
-
-async def test_get_user_role_id(session):
-    """查询用户所属角色 ID。"""
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = "role-1"
-    session.execute.return_value = mock_result
-
-    result = await get_user_role_id(session, "user-1")
-
-    assert result == "role-1"
-
-
-async def test_get_user_role_name(session):
-    """查询用户所属角色名称。"""
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = "管理员"
-    session.execute.return_value = mock_result
-
-    result = await get_user_role_name(session, "user-1")
-
-    assert result == "管理员"
-
-
-async def test_set_user_role_with_role(session):
-    """设置用户角色（有新角色）。"""
-    user_mock = MagicMock()
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = user_mock
-    session.execute.return_value = mock_result
-
-    await set_user_role(session, "user-1", "role-1")
-
-    assert user_mock.role_id == "role-1"
-    session.commit.assert_awaited_once()
-
-
-async def test_set_user_role_clear(session):
-    """设置用户角色（清空角色）。"""
-    user_mock = MagicMock()
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = user_mock
-    session.execute.return_value = mock_result
-
-    await set_user_role(session, "user-1", None)
-
-    assert user_mock.role_id is None
-    session.commit.assert_awaited_once()

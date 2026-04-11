@@ -65,7 +65,9 @@ interface DialogState {
     rows?: number
   }>
   configKey: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   customSave?: (data: Record<string, any>) => Promise<void>
 }
 
@@ -102,6 +104,7 @@ export default function WebSettingsPage() {
   const fetchAllConfigs = useCallback(async () => {
     try {
       const res = await api.get('/admin/config')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const configs = res.data as Array<{ key: string; value: any }>
       const findValue = (key: string) =>
         configs.find((c) => c.key === key)?.value
@@ -124,6 +127,7 @@ export default function WebSettingsPage() {
   }, [fetchAllConfigs])
 
   /** 通用保存处理 */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function handleSave(data: Record<string, any>): Promise<void> {
     if (dialogState?.customSave) {
       await dialogState.customSave(data)

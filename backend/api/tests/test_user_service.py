@@ -4,7 +4,7 @@
 使用 mock 隔离数据库层。
 """
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -35,11 +35,13 @@ async def test_get_user_response_success(
     """获取用户响应，包含权限和权限组。"""
     user = sample_user(id="user-001")
     mock_repo.get_by_id = AsyncMock(return_value=user)
-    mock_rbac_repo.get_user_permissions = AsyncMock(
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=["user:read", "doc:read"]
     )
-    mock_rbac_repo.get_user_role_name = AsyncMock(
-        return_value="学生角色"
+    role_mock = MagicMock()
+    role_mock.name = "学生角色"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
     )
 
     result = await service.get_user_response("user-001")

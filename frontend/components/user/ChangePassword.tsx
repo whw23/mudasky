@@ -8,6 +8,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import { useAuth } from '@/hooks/use-auth'
@@ -63,8 +64,9 @@ export function ChangePassword() {
       })
       toast.success(t('passwordChanged'))
       resetForm()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('changeFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('changeFailed'))
     } finally {
       setLoading(false)
     }

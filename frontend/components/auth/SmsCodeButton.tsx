@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
 
@@ -35,8 +36,9 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
     try {
       await api.post('/auth/sms-code', { phone })
       setCountdown(60)
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('sendFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      toast.error(message || t('sendFailed'))
     } finally {
       setSending(false)
     }

@@ -8,6 +8,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { setKeepLogin } from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
@@ -100,8 +101,9 @@ export function LoginModal() {
       await fetchUser()
       hideAuthModal()
       resetForm()
-    } catch (err: any) {
-      setError(err.response?.data?.message || t('loginFailed'))
+    } catch (err) {
+      const message = err instanceof AxiosError ? err.response?.data?.message : null
+      setError(message || t('loginFailed'))
     } finally {
       setLoading(false)
     }
