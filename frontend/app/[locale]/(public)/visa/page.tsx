@@ -7,7 +7,6 @@ import {
   FileText,
   Clock,
   AlertTriangle,
-  CheckCircle2,
   ArrowRight,
 } from "lucide-react"
 

@@ -62,6 +62,7 @@ export function CountryCodeEditor() {
   async function handleSave(): Promise<void> {
     setSaving(true)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const payload = items.map(({ _id, ...rest }) => rest)
       await api.put('/admin/config/phone_country_codes', { value: payload })
       toast.success(t('saveSuccess'))

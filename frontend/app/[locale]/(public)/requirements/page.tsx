@@ -6,7 +6,6 @@ import { getTranslations } from "next-intl/server"
 import {
   FileText,
   Languages,
-  Clock,
   CheckSquare,
   ArrowRight,
 } from "lucide-react"
