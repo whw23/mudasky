@@ -40,10 +40,10 @@ export function Footer({ editable, onEdit }: FooterProps) {
   const { contactInfo, siteInfo } = useLocalizedConfig()
 
   /** 将内容包裹在可编辑叠加层中 */
-  function wrapEditable(content: React.ReactNode, section: string, label: string) {
+  function wrapEditable(content: React.ReactNode, section: string, label: string, inline?: boolean) {
     if (!editable) return content
     return (
-      <EditableOverlay onClick={() => onEdit?.(section)} label={label}>
+      <EditableOverlay onClick={() => onEdit?.(section)} label={label} inline={inline}>
         {content}
       </EditableOverlay>
     )
@@ -148,13 +148,15 @@ export function Footer({ editable, onEdit }: FooterProps) {
           {wrapEditable(
             <span>© {new Date().getFullYear()} {siteInfo.company_name} {t("allRightsReserved")}</span>,
             "company",
-            "编辑公司名称"
+            "编辑公司名称",
+            true
           )}
           {" | "}
           {wrapEditable(
             <span>{siteInfo.company_name}</span>,
             "company",
-            "编辑公司名称"
+            "编辑公司名称",
+            true
           )}
           {" | "}
           {wrapEditable(
@@ -167,7 +169,8 @@ export function Footer({ editable, onEdit }: FooterProps) {
               {siteInfo.icp_filing || t("icp")}
             </a>,
             "icp",
-            "编辑ICP备案"
+            "编辑ICP备案",
+            true
           )}
         </p>
       </div>

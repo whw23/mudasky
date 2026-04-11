@@ -11,13 +11,15 @@ interface EditableOverlayProps {
   children: React.ReactNode
   onClick: () => void
   label?: string
+  inline?: boolean
 }
 
 /** 可编辑区域高亮包装器 */
-export function EditableOverlay({ children, onClick, label }: EditableOverlayProps) {
+export function EditableOverlay({ children, onClick, label, inline }: EditableOverlayProps) {
+  const Tag = inline ? "span" : "div"
   return (
-    <div
-      className="group relative cursor-pointer"
+    <Tag
+      className={`group relative cursor-pointer ${inline ? "inline" : ""}`}
       onClick={(e) => {
         e.stopPropagation()
         onClick()
@@ -30,6 +32,6 @@ export function EditableOverlay({ children, onClick, label }: EditableOverlayPro
           <Pencil className="size-3" />
         </div>
       </div>
-    </div>
+    </Tag>
   )
 }
