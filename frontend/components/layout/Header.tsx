@@ -90,7 +90,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
       className={`overflow-x-hidden transition-all duration-300 ${
         editable
           ? ""
-          : `sticky top-0 z-50 ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
+          : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
