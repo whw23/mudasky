@@ -17,10 +17,19 @@ import app.config.models  # noqa: F401 — 注册 ORM 映射
 from app.admin.router import router as admin_router
 from app.case.admin_router import admin_router as case_admin_router
 from app.case.router import router as case_router
-from app.config.router import router as config_router
+from app.config.router import (
+    admin_settings_router,
+    public_config_router,
+)
 from app.auth.router import router as auth_router
-from app.content.admin_router import admin_router as content_admin_router
-from app.content.router import router as content_router
+from app.content.admin_router import (
+    admin_category_router,
+    admin_content_router,
+)
+from app.content.router import (
+    portal_article_router,
+    public_content_router,
+)
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
@@ -128,18 +137,28 @@ if settings.DEBUG:
 
     api.openapi = custom_openapi
 
+# Auth
 api.include_router(auth_router)
-api.include_router(user_router)
-api.include_router(content_router)
-api.include_router(content_admin_router)
+
+# Public
+api.include_router(public_config_router)
+api.include_router(public_content_router)
 api.include_router(case_router)
-api.include_router(case_admin_router)
-api.include_router(document_router)
+api.include_router(university_public_router)
+
+# Admin
+api.include_router(admin_settings_router)
 api.include_router(admin_router)
 api.include_router(rbac_router)
-api.include_router(config_router)
-api.include_router(university_public_router)
+api.include_router(admin_category_router)
+api.include_router(admin_content_router)
+api.include_router(case_admin_router)
 api.include_router(university_admin_router)
+
+# Portal
+api.include_router(user_router)
+api.include_router(document_router)
+api.include_router(portal_article_router)
 
 
 @api.get("/health")
