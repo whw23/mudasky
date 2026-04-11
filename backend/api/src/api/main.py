@@ -18,7 +18,8 @@ from app.admin.router import router as admin_router
 from app.case.admin_router import admin_router as case_admin_router
 from app.case.router import router as case_router
 from app.config.router import (
-    admin_settings_router,
+    admin_general_settings_router,
+    admin_web_settings_router,
     public_config_router,
 )
 from app.auth.router import router as auth_router
@@ -147,7 +148,8 @@ api.include_router(case_router)
 api.include_router(university_public_router)
 
 # Admin
-api.include_router(admin_settings_router)
+api.include_router(admin_general_settings_router)
+api.include_router(admin_web_settings_router)
 api.include_router(admin_router)
 api.include_router(rbac_router)
 api.include_router(admin_category_router)

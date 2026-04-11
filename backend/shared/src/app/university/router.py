@@ -106,7 +106,7 @@ async def get_university(
 # ---- 管理员路由 ----
 
 admin_router = APIRouter(
-    prefix="/admin/university",
+    prefix="/admin/universities",
     tags=["admin-universities"],
 )
 
