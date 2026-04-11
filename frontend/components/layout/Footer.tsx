@@ -144,7 +144,17 @@ export function Footer({ editable, onEdit }: FooterProps) {
       {/* 底部版权栏 */}
       {wrapEditable(
         <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-          <p>{t("copyright")} | {siteInfo.icp_filing || t("icp")}</p>
+          <p>
+            {t("copyright")} |{" "}
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              {siteInfo.icp_filing || t("icp")}
+            </a>
+          </p>
           <p className="mt-1 opacity-60">{t("translationDisclaimer")}</p>
         </div>,
         "icp",
