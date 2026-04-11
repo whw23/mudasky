@@ -106,7 +106,7 @@ class TestRegister:
 
         # 5. 清理：管理员强制下线测试用户
         await superuser_client.post(
-            f"/api/admin/user/force-logout/{user_id}"
+            f"/api/admin/users/force-logout/{user_id}"
         )
 
 

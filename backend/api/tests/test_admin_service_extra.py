@@ -102,7 +102,7 @@ async def test_get_user_success(
     user = _make_user(user_id="u1")
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
     mock_rbac_repo.get_permissions_by_role = AsyncMock(
-        return_value=["admin.user.list"]
+        return_value=["admin/users/list"]
     )
     role_mock = MagicMock()
     role_mock.name = "角色1"

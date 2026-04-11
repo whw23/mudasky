@@ -63,16 +63,16 @@ def service() -> RbacService:
 async def test_list_permissions(mock_repo, service):
     """返回所有权限列表。"""
     perms = [
-        _make_permission("admin.user.list"),
-        _make_permission("admin.user.edit"),
+        _make_permission("admin/users/list"),
+        _make_permission("admin/users/edit"),
     ]
     mock_repo.list_permissions = AsyncMock(return_value=perms)
 
     result = await service.list_permissions()
 
     assert len(result) == 2
-    assert result[0].code == "admin.user.list"
-    assert result[1].code == "admin.user.edit"
+    assert result[0].code == "admin/users/list"
+    assert result[1].code == "admin/users/edit"
     mock_repo.list_permissions.assert_awaited_once()
 
 
@@ -81,7 +81,7 @@ async def test_list_permissions(mock_repo, service):
 async def test_create_role(mock_repo, service):
     """创建角色并关联权限，自动设置 sort_order。"""
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
-    perm = _make_permission("admin.user.list")
+    perm = _make_permission("admin/users/list")
     mock_repo.get_permissions_by_ids = AsyncMock(return_value=[perm])
     mock_repo.get_max_sort_order = AsyncMock(return_value=4)
 
@@ -95,7 +95,7 @@ async def test_create_role(mock_repo, service):
     data = RoleCreate(
         name="测试角色",
         description="测试描述",
-        permission_ids=["perm-admin.user.list"],
+        permission_ids=["perm-admin/users/list"],
     )
     result = await service.create_role(data)
 
@@ -130,7 +130,7 @@ async def test_update_role(mock_repo, service):
     role = _make_role("旧名称", role_id="r1")
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
-    perm = _make_permission("admin.user.edit")
+    perm = _make_permission("admin/users/edit")
     mock_repo.get_permissions_by_ids = AsyncMock(
         return_value=[perm]
     )
@@ -138,7 +138,7 @@ async def test_update_role(mock_repo, service):
 
     data = RoleUpdate(
         name="新名称",
-        permission_ids=["perm-admin.user.edit"],
+        permission_ids=["perm-admin/users/edit"],
     )
     result = await service.update_role("r1", data)
 
@@ -202,16 +202,16 @@ async def test_get_user_permissions(
     )
     mock_repo.get_permissions_by_role = AsyncMock(
         return_value=[
-            "admin.user.list",
-            "admin.user.edit",
-            "admin.content.edit",
+            "admin/users/list",
+            "admin/users/edit",
+            "admin/content/edit",
         ]
     )
 
     result = await service.get_user_permissions("user-1")
 
-    assert "admin.user.list" in result
-    assert "admin.content.edit" in result
+    assert "admin/users/list" in result
+    assert "admin/content/edit" in result
     mock_user_repo.get_role_id.assert_awaited_once_with(
         service.session, "user-1"
     )
