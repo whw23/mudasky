@@ -144,7 +144,8 @@ export function Footer({ editable, onEdit }: FooterProps) {
       {/* 底部版权栏 */}
       {wrapEditable(
         <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-          {t("copyright")} | {siteInfo.icp_filing || t("icp")}
+          <p>{t("copyright")} | {siteInfo.icp_filing || t("icp")}</p>
+          <p className="mt-1 opacity-60">{t("translationDisclaimer")}</p>
         </div>,
         "icp",
         "编辑ICP备案"
