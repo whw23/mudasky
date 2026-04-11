@@ -25,7 +25,7 @@ async def init_system_config(session) -> None:
         {
             "key": "contact_info",
             "value": {
-                "address": "\u6c5f\u82cf\u7701\u5357\u4eac\u5e02xx\u533axx\u8defxx\u53f7",
+                "address": "苏州独墅湖大学城林泉街377号公共学院5号楼7楼",
                 "phone": "189-1268-6656",
                 "email": "haoranxuexing@163.com",
                 "wechat": "mutu_edu",
