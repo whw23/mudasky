@@ -28,14 +28,14 @@ const DEFAULT_CONTACT_INFO: ContactInfo = {
 /** 默认品牌信息（兜底） */
 const DEFAULT_SITE_INFO: SiteInfo = {
   brand_name: '慕大国际教育',
-  tagline: '慕大国际教育 \u00B7 专注国际教育 专注出国服务',
+  tagline: '专注国际教育 · 专注出国服务',
   hotline: '189-1268-6656',
-  hotline_contact: '吴老师',
+  hotline_contact: '苏老师',
   logo_url: '',
   favicon_url: '',
   wechat_qr_url: '',
-  company_name: '',
-  icp_filing: '',
+  company_name: '浩然学行(苏州)文化传播有限公司',
+  icp_filing: '苏ICP备2022046719号-1',
 }
 
 /** 默认首页统计（兜底） */

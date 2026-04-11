@@ -12,6 +12,16 @@
 
 通过 psql 直接修改数据时，必须同时更新 `updated_at` 字段（`SET updated_at = NOW()`），否则 ETag 缓存不会失效，API 会继续返回 304。
 
+### 初始化数据与占位符同步
+
+修改初始化种子数据（`seed_config.py`）时，必须同步更新以下位置：
+
+- 前端翻译文件（`messages/*.json`）中对应的兜底/占位文本
+- 前端代码中硬编码的默认值（如 `ConfigContext.tsx` 的 `DEFAULT_SITE_INFO`）
+- 已运行的数据库（通过 psql 更新，带 `updated_at = NOW()`）
+
+三处必须保持一致，避免初始化数据与占位符不匹配。
+
 ### 文档提交
 
 docs/ 目录下的文档（设计文档、实施计划等）必须始终提交到 git，完成后立即提交，不要遗漏。
