@@ -55,6 +55,7 @@ logs/
 Thumbs.db
 
 # ─── IDE / Editor ────────────────────────────────────────────────────────────
+.vscode
 .vscode/
 .idea/
 *.suo
