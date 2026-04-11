@@ -26,9 +26,9 @@ export function SidebarShell({
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* 桌面端固定侧边栏 */}
-      <aside className={`hidden md:block w-60 shrink-0 border-r ${sidebarClass}`}>
+      <aside className={`hidden md:block w-60 shrink-0 overflow-y-auto border-r ${sidebarClass}`}>
         {sidebar}
       </aside>
 
@@ -40,7 +40,7 @@ export function SidebarShell({
         />
       )}
       <aside
-        className={`md:hidden fixed inset-y-0 left-0 z-50 w-60 border-r transition-transform duration-200 ${sidebarClass} ${
+        className={`md:hidden fixed inset-y-0 left-0 z-50 w-60 overflow-y-auto border-r transition-transform duration-200 ${sidebarClass} ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -56,7 +56,7 @@ export function SidebarShell({
       </aside>
 
       {/* 主区域 */}
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 overflow-y-auto bg-gray-50">
         {/* 移动端顶栏：汉堡按钮 */}
         <div className="md:hidden flex items-center border-b bg-white px-4 py-3">
           <button onClick={() => setOpen(true)} className="p-1">
