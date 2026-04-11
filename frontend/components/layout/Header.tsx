@@ -130,7 +130,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
                   <Phone className="size-3.5" />
                   {hotline}
                   {hotlineContact && (
-                    <span className="text-foreground/60 font-normal">{hotlineContact}</span>
+                    <span>{hotlineContact}</span>
                   )}
                 </span>
               ) : null,
