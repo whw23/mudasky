@@ -36,8 +36,12 @@ async def init_system_config(session) -> None:
         {
             "key": "site_info",
             "value": {
-                "brand_name": "\u6155\u5927\u56fd\u9645\u6559\u80b2",
-                "brand_name_en": "MUTU International Education",
+                "brand_name": {
+                    "zh": "慕大国际教育",
+                    "en": "MUTU International Education",
+                    "ja": "MUTU International Education",
+                    "de": "MUTU International Education",
+                },
                 "tagline": "\u6155\u5927\u56fd\u9645\u6559\u80b2 \u00b7 \u4e13\u6ce8\u56fd\u9645\u6559\u80b2 \u4e13\u6ce8\u51fa\u56fd\u670d\u52a1",
                 "hotline": "189-1268-6656",
                 "hotline_contact": "苏老师",
