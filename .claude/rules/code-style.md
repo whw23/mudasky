@@ -37,10 +37,12 @@
 
 ### API Route
 
-- URL path: kebab-case `/user-profile`
-- RESTful 风格，通过 HTTP method 区分操作
+- RPC 风格，action-in-URL：`/api/{panel}/{resource}/{action}`
+- 四类路径前缀：`/api/auth/*`（认证）、`/api/public/*`（公开）、`/api/admin/*`（管理）、`/api/portal/*`（用户面板）
+- 读操作用 `GET`，写操作用 `POST`
+- URL path: kebab-case
 - 用 HTTP status code 表达结果，禁止在 200 响应体里自定义错误码
-- `GET` 查询、`POST` 创建、`PUT` 全量更新、`PATCH` 部分更新、`DELETE` 删除
+- 权限由网关从路径自动推导，后端不做权限校验
 
 ## Layered Architecture
 
