@@ -96,6 +96,10 @@ See `.claude/rules/logging.md`
 
 See `.claude/rules/git.md`
 
+## LSP
+
+See `.claude/rules/lsp.md`
+
 ## Superpowers
 
 始终使用 superpowers 插件的 skill。开始任何任务前，先检查是否有匹配的 skill（brainstorming、writing-plans、test-driven-development、systematic-debugging 等），有则必须使用。
