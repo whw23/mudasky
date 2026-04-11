@@ -28,7 +28,7 @@ export default function GeneralSettingsPage() {
   /** 获取 site_info 配置 */
   const fetchSiteInfo = useCallback(async () => {
     try {
-      const res = await api.get("/admin/settings/list")
+      const res = await api.get("/admin/general-settings/list")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const configs = res.data as Array<{ key: string; value: any }>
       const value = configs.find((c) => c.key === "site_info")?.value
@@ -48,7 +48,7 @@ export default function GeneralSettingsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function handleSaveFavicon(data: Record<string, any>): Promise<void> {
     const updated = { ...siteInfo, ...data }
-    await api.post("/admin/settings/edit/site_info", { value: updated })
+    await api.post("/admin/general-settings/edit/site_info", { value: updated })
     toast.success(t("saveSuccess"))
     await fetchSiteInfo()
   }
