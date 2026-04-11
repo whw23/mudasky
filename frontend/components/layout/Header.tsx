@@ -56,6 +56,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
   const brandName = siteInfo.brand_name || tHeader("brandName")
   const tagline = siteInfo.tagline || tHeader("tagline")
   const hotline = siteInfo.hotline
+  const hotlineContact = siteInfo.hotline_contact
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string) {
@@ -128,6 +129,9 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
                 <span className="flex items-center gap-1.5 font-semibold text-primary">
                   <Phone className="size-3.5" />
                   {hotline}
+                  {hotlineContact && (
+                    <span className="text-foreground/60 font-normal">{hotlineContact}</span>
+                  )}
                 </span>
               ) : null,
               "hotline",
