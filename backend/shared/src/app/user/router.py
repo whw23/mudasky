@@ -20,7 +20,7 @@ from app.user.schemas import (
 )
 from app.user.service import UserService
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/portal/profile", tags=["users"])
 
 
 class TotpCodeBody(BaseModel):
@@ -42,7 +42,7 @@ class MessageResponse(BaseModel):
     message: str
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/view", response_model=UserResponse)
 async def get_me(
     user_id: CurrentUserId, session: DbSession
 ) -> UserResponse:
@@ -51,7 +51,7 @@ async def get_me(
     return await svc.get_user_response(user_id)
 
 
-@router.patch("/me", response_model=UserResponse)
+@router.post("/edit", response_model=UserResponse)
 async def update_me(
     data: UserUpdate,
     user_id: CurrentUserId,
@@ -63,7 +63,7 @@ async def update_me(
     return UserResponse.model_validate(user)
 
 
-@router.put("/me/password", response_model=MessageResponse)
+@router.post("/password", response_model=MessageResponse)
 async def change_password(
     data: PasswordChange,
     user_id: CurrentUserId,
@@ -75,7 +75,7 @@ async def change_password(
     return MessageResponse(message="密码修改成功")
 
 
-@router.put("/me/phone", response_model=UserResponse)
+@router.post("/phone", response_model=UserResponse)
 async def change_phone(
     data: PhoneChange,
     user_id: CurrentUserId,
@@ -87,7 +87,7 @@ async def change_phone(
     return UserResponse.model_validate(user)
 
 
-@router.post("/me/2fa/enable-totp")
+@router.post("/2fa-enable-totp")
 async def enable_2fa_totp(
     user_id: CurrentUserId, session: DbSession
 ) -> StreamingResponse:
@@ -111,7 +111,7 @@ async def enable_2fa_totp(
 
 
 @router.post(
-    "/me/2fa/confirm-totp", response_model=MessageResponse
+    "/2fa-confirm-totp", response_model=MessageResponse
 )
 async def confirm_2fa_totp(
     data: TotpCodeBody,
@@ -125,7 +125,7 @@ async def confirm_2fa_totp(
 
 
 @router.post(
-    "/me/2fa/enable-sms", response_model=MessageResponse
+    "/2fa-enable-sms", response_model=MessageResponse
 )
 async def enable_2fa_sms(
     data: Sms2faBody,
@@ -139,7 +139,7 @@ async def enable_2fa_sms(
 
 
 @router.post(
-    "/me/2fa/disable", response_model=MessageResponse
+    "/2fa-disable", response_model=MessageResponse
 )
 async def disable_2fa(
     data: Sms2faBody,

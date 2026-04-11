@@ -3,24 +3,21 @@
 提供成功案例的管理员 API 端点。
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 
 from app.case.schemas import CaseCreate, CaseResponse, CaseUpdate
 from app.case.service import CaseService
-from app.core.dependencies import DbSession, require_permission
+from app.core.dependencies import DbSession
 from app.core.pagination import PaginatedResponse, PaginationParams
 
 admin_router = APIRouter(
-    prefix="/admin/cases", tags=["admin-cases"]
+    prefix="/admin/case", tags=["admin-cases"]
 )
 
 
 @admin_router.get(
-    "",
+    "/list",
     response_model=PaginatedResponse[CaseResponse],
-    dependencies=[
-        Depends(require_permission("admin.case.*"))
-    ],
 )
 async def admin_list_cases(
     session: DbSession,
@@ -42,12 +39,9 @@ async def admin_list_cases(
 
 
 @admin_router.post(
-    "",
+    "/create",
     response_model=CaseResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(require_permission("admin.case.create"))
-    ],
 )
 async def admin_create_case(
     data: CaseCreate, session: DbSession
@@ -58,12 +52,9 @@ async def admin_create_case(
     return CaseResponse.model_validate(case)
 
 
-@admin_router.patch(
-    "/{case_id}",
+@admin_router.post(
+    "/edit/{case_id}",
     response_model=CaseResponse,
-    dependencies=[
-        Depends(require_permission("admin.case.edit"))
-    ],
 )
 async def admin_update_case(
     case_id: str,
@@ -76,12 +67,9 @@ async def admin_update_case(
     return CaseResponse.model_validate(case)
 
 
-@admin_router.delete(
-    "/{case_id}",
+@admin_router.post(
+    "/delete/{case_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[
-        Depends(require_permission("admin.case.delete"))
-    ],
 )
 async def admin_delete_case(
     case_id: str, session: DbSession

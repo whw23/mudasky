@@ -3,7 +3,7 @@
 提供文章和分类的管理员 API 端点。
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 
 from app.content.router import _category_list_with_counts
 from app.content.schemas import (
@@ -18,7 +18,6 @@ from app.content.service import ContentService
 from app.core.dependencies import (
     CurrentUserId,
     DbSession,
-    require_permission,
 )
 from app.core.pagination import (
     PaginatedResponse,
@@ -26,17 +25,18 @@ from app.core.pagination import (
     build_paginated,
 )
 
-admin_router = APIRouter(
+admin_category_router = APIRouter(
+    prefix="/admin/category", tags=["admin-category"]
+)
+
+admin_content_router = APIRouter(
     prefix="/admin/content", tags=["admin-content"]
 )
 
 
-@admin_router.get(
-    "/categories",
+@admin_category_router.get(
+    "/list",
     response_model=list[CategoryResponse],
-    dependencies=[
-        Depends(require_permission("admin.category.*"))
-    ],
 )
 async def admin_list_categories(
     session: DbSession,
@@ -46,13 +46,10 @@ async def admin_list_categories(
     return await _category_list_with_counts(svc)
 
 
-@admin_router.post(
-    "/categories",
+@admin_category_router.post(
+    "/create",
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(require_permission("admin.category.create"))
-    ],
 )
 async def admin_create_category(
     data: CategoryCreate, session: DbSession
@@ -63,12 +60,9 @@ async def admin_create_category(
     return CategoryResponse.model_validate(category)
 
 
-@admin_router.patch(
-    "/categories/{category_id}",
+@admin_category_router.post(
+    "/edit/{category_id}",
     response_model=CategoryResponse,
-    dependencies=[
-        Depends(require_permission("admin.category.edit"))
-    ],
 )
 async def admin_update_category(
     category_id: str,
@@ -81,14 +75,9 @@ async def admin_update_category(
     return CategoryResponse.model_validate(category)
 
 
-@admin_router.delete(
-    "/categories/{category_id}",
+@admin_category_router.post(
+    "/delete/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[
-        Depends(
-            require_permission("admin.category.delete")
-        )
-    ],
 )
 async def admin_delete_category(
     category_id: str, session: DbSession
@@ -98,12 +87,9 @@ async def admin_delete_category(
     await svc.delete_category(category_id)
 
 
-@admin_router.get(
-    "/articles",
+@admin_content_router.get(
+    "/list",
     response_model=PaginatedResponse[ArticleResponse],
-    dependencies=[
-        Depends(require_permission("admin.content.*"))
-    ],
 )
 async def admin_list_articles(
     session: DbSession,
@@ -122,13 +108,10 @@ async def admin_list_articles(
     )
 
 
-@admin_router.post(
-    "/articles",
+@admin_content_router.post(
+    "/create",
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(require_permission("admin.content.edit"))
-    ],
 )
 async def admin_create_article(
     data: ArticleCreate,
@@ -141,12 +124,9 @@ async def admin_create_article(
     return ArticleResponse.model_validate(article)
 
 
-@admin_router.patch(
-    "/articles/{article_id}",
+@admin_content_router.post(
+    "/edit/{article_id}",
     response_model=ArticleResponse,
-    dependencies=[
-        Depends(require_permission("admin.content.edit"))
-    ],
 )
 async def admin_update_article(
     article_id: str,
@@ -159,14 +139,9 @@ async def admin_update_article(
     return ArticleResponse.model_validate(article)
 
 
-@admin_router.delete(
-    "/articles/{article_id}",
+@admin_content_router.post(
+    "/delete/{article_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[
-        Depends(
-            require_permission("admin.content.delete")
-        )
-    ],
 )
 async def admin_delete_article(
     article_id: str, session: DbSession

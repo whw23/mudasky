@@ -14,7 +14,7 @@ from app.document.models import DocumentCategory
 from app.document.schemas import DocumentListResponse, DocumentResponse
 from app.user import repository as user_repo
 
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(prefix="/portal/document", tags=["documents"])
 
 
 @router.post(
@@ -35,7 +35,7 @@ async def upload_document(
     return DocumentResponse.model_validate(doc)
 
 
-@router.get("", response_model=DocumentListResponse)
+@router.get("/list", response_model=DocumentListResponse)
 async def list_documents(
     user_id: CurrentUserId,
     session: DbSession,
@@ -67,7 +67,7 @@ async def list_documents(
     )
 
 
-@router.get("/{doc_id}", response_model=DocumentResponse)
+@router.get("/detail/{doc_id}", response_model=DocumentResponse)
 async def get_document(
     doc_id: str,
     user_id: CurrentUserId,
@@ -78,7 +78,7 @@ async def get_document(
     return DocumentResponse.model_validate(doc)
 
 
-@router.get("/{doc_id}/download")
+@router.get("/download/{doc_id}")
 async def download_document(
     doc_id: str,
     user_id: CurrentUserId,
@@ -94,8 +94,8 @@ async def download_document(
     )
 
 
-@router.delete(
-    "/{doc_id}", status_code=status.HTTP_204_NO_CONTENT
+@router.post(
+    "/delete/{doc_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_document(
     doc_id: str,

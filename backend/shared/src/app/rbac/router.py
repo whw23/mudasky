@@ -3,10 +3,10 @@
 提供权限查询、角色管理等 API 端点。
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.core.dependencies import DbSession, require_permission
+from app.core.dependencies import DbSession
 from app.rbac.schemas import (
     PermissionResponse,
     RoleCreate,
@@ -16,7 +16,7 @@ from app.rbac.schemas import (
 )
 from app.rbac.service import RbacService
 
-router = APIRouter(tags=["rbac"])
+router = APIRouter(prefix="/admin/role", tags=["rbac"])
 
 
 class MessageResponse(BaseModel):
@@ -28,9 +28,6 @@ class MessageResponse(BaseModel):
 @router.get(
     "/permissions",
     response_model=list[PermissionResponse],
-    dependencies=[
-        Depends(require_permission("admin.role.list"))
-    ],
 )
 async def list_permissions(
     session: DbSession,
@@ -41,11 +38,8 @@ async def list_permissions(
 
 
 @router.get(
-    "/roles",
+    "/list",
     response_model=list[RoleResponse],
-    dependencies=[
-        Depends(require_permission("admin.role.list"))
-    ],
 )
 async def list_roles(
     session: DbSession,
@@ -56,11 +50,8 @@ async def list_roles(
 
 
 @router.post(
-    "/roles",
+    "/create",
     response_model=RoleResponse,
-    dependencies=[
-        Depends(require_permission("admin.role.create"))
-    ],
 )
 async def create_role(
     data: RoleCreate,
@@ -71,10 +62,9 @@ async def create_role(
     return await svc.create_role(data)
 
 
-@router.patch(
-    "/roles/reorder",
+@router.post(
+    "/reorder",
     response_model=MessageResponse,
-    dependencies=[Depends(require_permission("admin.role.edit"))],
 )
 async def reorder_roles(data: RoleReorder, session: DbSession) -> MessageResponse:
     """批量更新角色排序。"""
@@ -84,11 +74,8 @@ async def reorder_roles(data: RoleReorder, session: DbSession) -> MessageRespons
 
 
 @router.get(
-    "/roles/{role_id}",
+    "/detail/{role_id}",
     response_model=RoleResponse,
-    dependencies=[
-        Depends(require_permission("admin.role.list"))
-    ],
 )
 async def get_role(
     role_id: str,
@@ -99,12 +86,9 @@ async def get_role(
     return await svc.get_role(role_id)
 
 
-@router.patch(
-    "/roles/{role_id}",
+@router.post(
+    "/edit/{role_id}",
     response_model=RoleResponse,
-    dependencies=[
-        Depends(require_permission("admin.role.edit"))
-    ],
 )
 async def update_role(
     role_id: str,
@@ -116,12 +100,9 @@ async def update_role(
     return await svc.update_role(role_id, data)
 
 
-@router.delete(
-    "/roles/{role_id}",
+@router.post(
+    "/delete/{role_id}",
     response_model=MessageResponse,
-    dependencies=[
-        Depends(require_permission("admin.role.delete"))
-    ],
 )
 async def delete_role(
     role_id: str,

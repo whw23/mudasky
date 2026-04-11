@@ -3,7 +3,7 @@
 提供文章和分类的公开、用户 API 端点。
 """
 
-from fastapi import APIRouter, Depends, Header, Response, status
+from fastapi import APIRouter, Header, Response, status
 
 from app.content.schemas import (
     ArticleCreate,
@@ -16,7 +16,6 @@ from app.core.cache import set_cache_headers
 from app.core.dependencies import (
     CurrentUserId,
     DbSession,
-    require_permission,
 )
 from app.core.pagination import (
     PaginatedResponse,
@@ -24,7 +23,13 @@ from app.core.pagination import (
     build_paginated,
 )
 
-router = APIRouter(prefix="/content", tags=["content"])
+public_content_router = APIRouter(
+    prefix="/public/content", tags=["content"]
+)
+
+portal_article_router = APIRouter(
+    prefix="/portal/article", tags=["portal-article"]
+)
 
 
 async def _category_list_with_counts(
@@ -44,7 +49,7 @@ async def _category_list_with_counts(
 # ---- 公开端点 ----
 
 
-@router.get(
+@public_content_router.get(
     "/articles",
     response_model=PaginatedResponse[ArticleResponse],
 )
@@ -71,8 +76,8 @@ async def list_published_articles(
     return result
 
 
-@router.get(
-    "/articles/{article_id}",
+@public_content_router.get(
+    "/article/{article_id}",
     response_model=ArticleResponse,
 )
 async def get_published_article(
@@ -96,7 +101,7 @@ async def get_published_article(
     return result
 
 
-@router.get(
+@public_content_router.get(
     "/categories",
     response_model=list[CategoryResponse],
 )
@@ -114,11 +119,11 @@ async def list_categories(
     return categories
 
 
-# ---- 用户端点（需要认证） ----
+# ---- 用户端点（Portal） ----
 
 
-@router.get(
-    "/my",
+@portal_article_router.get(
+    "/list",
     response_model=PaginatedResponse[ArticleResponse],
 )
 async def list_my_articles(
@@ -138,15 +143,10 @@ async def list_my_articles(
     )
 
 
-@router.post(
-    "/articles",
+@portal_article_router.post(
+    "/create",
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(
-            require_permission("user_center.article.create")
-        )
-    ],
 )
 async def create_article(
     data: ArticleCreate,
@@ -159,8 +159,8 @@ async def create_article(
     return ArticleResponse.model_validate(article)
 
 
-@router.patch(
-    "/articles/{article_id}",
+@portal_article_router.post(
+    "/edit/{article_id}",
     response_model=ArticleResponse,
 )
 async def update_own_article(
@@ -177,8 +177,8 @@ async def update_own_article(
     return ArticleResponse.model_validate(article)
 
 
-@router.delete(
-    "/articles/{article_id}",
+@portal_article_router.post(
+    "/delete/{article_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_own_article(

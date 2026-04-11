@@ -3,7 +3,7 @@
 提供用户管理、密码重置、权限分配、强制下线等管理员 API 端点。
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app.admin.schemas import (
     MessageResponse,
@@ -11,25 +11,19 @@ from app.admin.schemas import (
     RoleAssignment,
 )
 from app.admin.service import AdminService
-from app.core.dependencies import (
-    DbSession,
-    require_permission,
-)
+from app.core.dependencies import DbSession
 from app.core.pagination import PaginatedResponse, PaginationParams
 from app.user.schemas import UserAdminUpdate, UserResponse
 
 router = APIRouter(
-    prefix="/admin",
+    prefix="/admin/user",
     tags=["admin"],
 )
 
 
 @router.get(
-    "/users",
+    "/list",
     response_model=PaginatedResponse[UserResponse],
-    dependencies=[
-        Depends(require_permission("admin.user.list"))
-    ],
 )
 async def list_users(
     session: DbSession,
@@ -57,11 +51,8 @@ async def list_users(
 
 
 @router.get(
-    "/users/{user_id}",
+    "/detail/{user_id}",
     response_model=UserResponse,
-    dependencies=[
-        Depends(require_permission("admin.user.list"))
-    ],
 )
 async def get_user(
     user_id: str,
@@ -72,12 +63,9 @@ async def get_user(
     return await svc.get_user(user_id)
 
 
-@router.patch(
-    "/users/{user_id}",
+@router.post(
+    "/edit/{user_id}",
     response_model=UserResponse,
-    dependencies=[
-        Depends(require_permission("admin.user.edit"))
-    ],
 )
 async def update_user(
     user_id: str,
@@ -89,14 +77,9 @@ async def update_user(
     return await svc.update_user(user_id, data)
 
 
-@router.put(
-    "/users/{user_id}/password",
+@router.post(
+    "/reset-password/{user_id}",
     response_model=MessageResponse,
-    dependencies=[
-        Depends(
-            require_permission("admin.user.reset_password")
-        )
-    ],
 )
 async def reset_password(
     user_id: str,
@@ -111,14 +94,9 @@ async def reset_password(
     return MessageResponse(message="密码重置成功")
 
 
-@router.put(
-    "/users/{user_id}/role",
+@router.post(
+    "/assign-role/{user_id}",
     response_model=UserResponse,
-    dependencies=[
-        Depends(
-            require_permission("admin.user.assign_role")
-        )
-    ],
 )
 async def assign_role(
     user_id: str,
@@ -130,12 +108,9 @@ async def assign_role(
     return await svc.assign_role(user_id, data.role_id)
 
 
-@router.delete(
-    "/users/{user_id}/tokens",
+@router.post(
+    "/force-logout/{user_id}",
     response_model=MessageResponse,
-    dependencies=[
-        Depends(require_permission("admin.user.edit"))
-    ],
 )
 async def force_logout(
     user_id: str,

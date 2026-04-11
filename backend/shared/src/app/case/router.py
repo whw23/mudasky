@@ -15,11 +15,11 @@ from app.core.pagination import (
     build_paginated,
 )
 
-router = APIRouter(prefix="/cases", tags=["cases"])
+router = APIRouter(prefix="/public/case", tags=["cases"])
 
 
 @router.get(
-    "",
+    "/list",
     response_model=PaginatedResponse[CaseResponse],
 )
 async def list_cases(
@@ -47,7 +47,7 @@ async def list_cases(
 
 
 @router.get(
-    "/{case_id}",
+    "/detail/{case_id}",
     response_model=CaseResponse,
 )
 async def get_case(

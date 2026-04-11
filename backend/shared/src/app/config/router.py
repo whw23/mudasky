@@ -1,16 +1,20 @@
 """系统配置路由层。"""
 
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, Header, Response
 
 from app.config.schemas import ConfigDetailResponse, ConfigResponse, ConfigUpdateRequest
 from app.config.service import ConfigService
 from app.core.cache import set_cache_headers
-from app.core.dependencies import DbSession, require_permission
+from app.core.dependencies import DbSession
 
-router = APIRouter(tags=["config"])
+public_config_router = APIRouter(tags=["config"])
+
+admin_settings_router = APIRouter(
+    prefix="/admin/settings", tags=["admin-settings"]
+)
 
 
-@router.get("/config/{key}")
+@public_config_router.get("/public/config/{key}")
 async def get_config(
     key: str,
     session: DbSession,
@@ -29,33 +33,27 @@ async def get_config(
     return config
 
 
-@router.get(
-    "/admin/config",
+@admin_settings_router.get(
+    "/list",
     response_model=list[ConfigDetailResponse],
-    dependencies=[
-        Depends(require_permission("admin.settings.view"))
-    ],
 )
 async def list_configs(
     session: DbSession,
 ) -> list[ConfigDetailResponse]:
-    """获取所有配置（需要系统设置查看权限）。"""
+    """获取所有配置。"""
     svc = ConfigService(session)
     return await svc.list_all()
 
 
-@router.put(
-    "/admin/config/{key}",
+@admin_settings_router.post(
+    "/edit/{key}",
     response_model=ConfigResponse,
-    dependencies=[
-        Depends(require_permission("admin.settings.edit"))
-    ],
 )
 async def update_config(
     key: str,
     data: ConfigUpdateRequest,
     session: DbSession,
 ) -> ConfigResponse:
-    """更新配置值（需要系统设置编辑权限）。"""
+    """更新配置值。"""
     svc = ConfigService(session)
     return await svc.update_value(key, data.value)

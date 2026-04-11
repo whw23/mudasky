@@ -3,13 +3,10 @@
 提供院校的公开查询和管理员管理 API 端点。
 """
 
-from fastapi import APIRouter, Depends, Header, Response, status
+from fastapi import APIRouter, Header, Response, status
 
 from app.core.cache import set_cache_headers
-from app.core.dependencies import (
-    DbSession,
-    require_permission,
-)
+from app.core.dependencies import DbSession
 from app.core.pagination import (
     PaginatedResponse,
     PaginationParams,
@@ -25,12 +22,12 @@ from app.university.service import UniversityService
 # ---- 公开路由 ----
 
 public_router = APIRouter(
-    prefix="/universities", tags=["universities"]
+    prefix="/public/university", tags=["universities"]
 )
 
 
 @public_router.get(
-    "",
+    "/list",
     response_model=PaginatedResponse[UniversityResponse],
 )
 async def list_universities(
@@ -86,7 +83,7 @@ async def list_countries(
 
 
 @public_router.get(
-    "/{university_id}",
+    "/detail/{university_id}",
     response_model=UniversityResponse,
 )
 async def get_university(
@@ -109,17 +106,14 @@ async def get_university(
 # ---- 管理员路由 ----
 
 admin_router = APIRouter(
-    prefix="/admin/universities",
+    prefix="/admin/university",
     tags=["admin-universities"],
 )
 
 
 @admin_router.get(
-    "",
+    "/list",
     response_model=PaginatedResponse[UniversityResponse],
-    dependencies=[
-        Depends(require_permission("admin.university.*"))
-    ],
 )
 async def admin_list_universities(
     session: DbSession,
@@ -138,12 +132,9 @@ async def admin_list_universities(
 
 
 @admin_router.post(
-    "",
+    "/create",
     response_model=UniversityResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[
-        Depends(require_permission("admin.university.*"))
-    ],
 )
 async def admin_create_university(
     data: UniversityCreate, session: DbSession
@@ -154,12 +145,9 @@ async def admin_create_university(
     return UniversityResponse.model_validate(university)
 
 
-@admin_router.patch(
-    "/{university_id}",
+@admin_router.post(
+    "/edit/{university_id}",
     response_model=UniversityResponse,
-    dependencies=[
-        Depends(require_permission("admin.university.*"))
-    ],
 )
 async def admin_update_university(
     university_id: str,
@@ -174,12 +162,9 @@ async def admin_update_university(
     return UniversityResponse.model_validate(university)
 
 
-@admin_router.delete(
-    "/{university_id}",
+@admin_router.post(
+    "/delete/{university_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[
-        Depends(require_permission("admin.university.*"))
-    ],
 )
 async def admin_delete_university(
     university_id: str, session: DbSession
