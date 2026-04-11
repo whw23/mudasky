@@ -62,7 +62,7 @@ describe("ConfigContext", () => {
 
   it("API 成功后更新 siteInfo", async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/config/site_info") {
+      if (url === "/public/config/site_info") {
         return Promise.resolve({
           data: {
             value: {
@@ -90,7 +90,7 @@ describe("ConfigContext", () => {
 
   it("countryCodes 只保留 enabled: true 的", async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/config/phone_country_codes") {
+      if (url === "/public/config/phone_country_codes") {
         return Promise.resolve({
           data: {
             value: [
@@ -125,7 +125,7 @@ describe("ConfigContext", () => {
 
   it("useLocalizedConfig 解析多语言字段", async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/config/site_info") {
+      if (url === "/public/config/site_info") {
         return Promise.resolve({
           data: {
             value: {
