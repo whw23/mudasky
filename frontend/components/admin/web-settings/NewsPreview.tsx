@@ -40,8 +40,8 @@ export function NewsPreview() {
 
   useEffect(() => {
     Promise.all([
-      api.get("/content/categories"),
-      api.get("/content/articles?page_size=6"),
+      api.get("/public/content/categories"),
+      api.get("/public/content/articles?page_size=6"),
     ]).then(([catRes, artRes]) => {
       setCategories(catRes.data ?? [])
       setArticles(artRes.data.items ?? [])

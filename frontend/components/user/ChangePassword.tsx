@@ -56,7 +56,7 @@ export function ChangePassword() {
     setLoading(true)
     try {
       const { encrypted_password, nonce } = await encryptPassword(newPassword)
-      await api.put('/users/me/password', {
+      await api.post('/portal/profile/password', {
         phone,
         code,
         encrypted_password,

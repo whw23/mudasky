@@ -11,7 +11,7 @@ import {
 async function fetchCases() {
   try {
     const baseUrl = process.env.INTERNAL_API_URL || "http://api:8000"
-    const res = await fetch(`${baseUrl}/api/cases?page_size=100`, {
+    const res = await fetch(`${baseUrl}/api/public/case/list?page_size=100`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []

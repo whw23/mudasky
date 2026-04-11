@@ -57,7 +57,7 @@ export default function DashboardPage() {
   async function fetchDashboardData(): Promise<void> {
     setLoading(true)
     try {
-      const docsRes = await api.get("/documents", { params: { limit: 5 } })
+      const docsRes = await api.get("/portal/document/list", { params: { limit: 5 } })
       const docs = docsRes.data
       const items = docs.items ?? docs
       setRecentDocs(Array.isArray(items) ? items : [])

@@ -46,7 +46,7 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
     try {
       const params: Record<string, string | number> = { page, page_size: 20 }
       if (debouncedSearch) params.search = debouncedSearch
-      const { data } = await api.get<PaginatedResponse<User>>("/admin/users", { params })
+      const { data } = await api.get<PaginatedResponse<User>>("/admin/user/list", { params })
       setUsers(data.items)
       setTotal(data.total)
       setTotalPages(data.total_pages)

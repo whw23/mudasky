@@ -142,7 +142,7 @@ export function RoleList() {
   const fetchRoles = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<Role[]>("/roles")
+      const { data } = await api.get<Role[]>("/admin/role/list")
       setRoles(data)
     } catch {
       toast.error(t("fetchError"))
@@ -167,7 +167,7 @@ export function RoleList() {
     setRoles(reordered)
 
     try {
-      await api.patch("/roles/reorder", {
+      await api.post("/admin/role/reorder", {
         items: reordered.map((r, i) => ({
           id: r.id,
           sort_order: i,
@@ -195,7 +195,7 @@ export function RoleList() {
   const handleDelete = async (role: Role) => {
     if (!confirm(t("deleteConfirm", { name: role.name }))) return
     try {
-      await api.delete(`/roles/${role.id}`)
+      await api.post(`/admin/role/delete/${role.id}`)
       toast.success(t("deleteSuccess"))
       fetchRoles()
     } catch {

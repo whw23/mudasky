@@ -55,9 +55,9 @@ export default function AdminDashboardPage() {
     setLoading(true)
     try {
       const [usersRes, articlesRes, categoriesRes] = await Promise.allSettled([
-        api.get("/admin/users", { params: { limit: 5 } }),
-        api.get("/admin/content/articles", { params: { limit: 5 } }),
-        api.get("/admin/content/categories"),
+        api.get("/admin/user/list", { params: { limit: 5 } }),
+        api.get("/admin/content/list", { params: { limit: 5 } }),
+        api.get("/admin/category/list"),
       ])
 
       if (usersRes.status === "fulfilled") {

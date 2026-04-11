@@ -21,14 +21,14 @@ async function globalTeardown(_config: FullConfig) {
 
   try {
     /* 获取并删除测试角色 */
-    const roleRes = await page.request.get("http://localhost/api/roles", {
+    const roleRes = await page.request.get("http://localhost/api/admin/role/list", {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     })
     if (roleRes.ok()) {
       const roles = await roleRes.json()
       for (const r of roles) {
         if (r.name?.startsWith("E2E")) {
-          await page.request.delete(`http://localhost/api/roles/${r.id}`, {
+          await page.request.post(`http://localhost/api/admin/role/delete/${r.id}`, {
             headers: { "X-Requested-With": "XMLHttpRequest" },
           })
         }

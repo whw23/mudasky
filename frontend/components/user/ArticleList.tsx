@@ -32,7 +32,7 @@ export function ArticleList({ onEdit, refreshKey }: ArticleListProps) {
   const fetchArticles = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<PaginatedResponse<Article>>("/content/my", {
+      const { data } = await api.get<PaginatedResponse<Article>>("/portal/article/list", {
         params: { page, page_size: 20 },
       })
       setArticles(data.items)
@@ -53,7 +53,7 @@ export function ArticleList({ onEdit, refreshKey }: ArticleListProps) {
   const handleDelete = async (article: Article) => {
     if (!confirm(t("deleteConfirm", { title: article.title }))) return
     try {
-      await api.delete(`/content/articles/${article.id}`)
+      await api.post(`/portal/article/delete/${article.id}`)
       toast.success(t("deleteSuccess"))
       fetchArticles()
     } catch {

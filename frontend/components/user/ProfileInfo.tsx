@@ -159,7 +159,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.patch('/users/me', { username: username.trim() })
+      await api.post('/portal/profile/edit', { username: username.trim() })
       await fetchUser()
       cancelEdit()
       toast.success(t('usernameSaved'))
@@ -181,7 +181,7 @@ export function ProfileInfo() {
     setLoading(true)
     try {
       const encrypted = await encryptPassword(newPassword)
-      await api.put('/users/me/password', {
+      await api.post('/portal/profile/password', {
         phone: user!.phone,
         code: pwdCode,
         encrypted_password: encrypted.encrypted_password,
@@ -202,7 +202,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.put('/users/me/phone', { new_phone: newPhone, code: phoneCode })
+      await api.post('/portal/profile/phone', { new_phone: newPhone, code: phoneCode })
       await fetchUser()
       cancelEdit()
       toast.success(t('phoneChanged'))
@@ -218,7 +218,7 @@ export function ProfileInfo() {
   async function handleEnableTotp(): Promise<void> {
     setLoading(true)
     try {
-      const res = await api.post('/users/me/2fa/enable-totp', null, {
+      const res = await api.post('/portal/profile/2fa-enable-totp', null, {
         responseType: 'blob',
       })
       setQrUrl(URL.createObjectURL(new Blob([res.data])))
@@ -243,7 +243,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/confirm-totp', { totp_code: totpCode })
+      await api.post('/portal/profile/2fa-confirm-totp', { totp_code: totpCode })
       await fetchUser()
       cancelEdit()
       toast.success(t('twoFaEnabled'))
@@ -260,7 +260,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/enable-sms', { phone: user!.phone, code: sms2faCode })
+      await api.post('/portal/profile/2fa-enable-sms', { phone: user!.phone, code: sms2faCode })
       await fetchUser()
       cancelEdit()
       toast.success(t('twoFaEnabled'))
@@ -277,7 +277,7 @@ export function ProfileInfo() {
     e.preventDefault()
     setLoading(true)
     try {
-      await api.post('/users/me/2fa/disable', { phone: user!.phone, code: disableCode })
+      await api.post('/portal/profile/2fa-disable', { phone: user!.phone, code: disableCode })
       await fetchUser()
       setShowDisableDialog(false)
       setDisableCode('')

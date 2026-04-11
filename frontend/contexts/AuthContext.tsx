@@ -2,7 +2,7 @@
 
 /**
  * 认证上下文。
- * 通过请求 /api/users/me 获取用户信息，不使用 localStorage。
+ * 通过请求 /api/portal/profile/view 获取用户信息，不使用 localStorage。
  */
 
 import {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** 从后端获取当前用户信息 */
   const fetchUser = useCallback(async () => {
     try {
-      const res = await api.get('/users/me')
+      const res = await api.get('/portal/profile/view')
       setUser(res.data)
     } catch {
       setUser(null)

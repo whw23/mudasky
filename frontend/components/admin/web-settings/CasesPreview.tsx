@@ -25,7 +25,7 @@ export function CasesPreview() {
   const [cases, setCases] = useState<CaseItem[]>([])
 
   useEffect(() => {
-    api.get("/cases?page_size=6").then((res) => {
+    api.get("/public/case/list?page_size=6").then((res) => {
       setCases(res.data.items ?? [])
     }).catch(() => {})
   }, [])

@@ -37,7 +37,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
   /** 获取分类列表 */
   const fetchCategories = useCallback(async () => {
     try {
-      const { data } = await api.get<Category[]>("/content/categories")
+      const { data } = await api.get<Category[]>("/public/content/categories")
       setCategories(data)
       // 默认选中第一个分类
       if (!article && data.length > 0) {
@@ -95,7 +95,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
     setSaving(true)
     try {
       if (isEdit) {
-        await api.patch(`/admin/content/articles/${article.id}`, {
+        await api.post(`/portal/article/edit/${article.id}`, {
           title,
           slug: slug || generateSlug(title),
           excerpt,
@@ -104,7 +104,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
           status,
         })
       } else {
-        await api.post("/admin/content/articles", {
+        await api.post("/portal/article/create", {
           title,
           slug: slug || generateSlug(title),
           excerpt,

@@ -27,7 +27,7 @@ export function UniversityTable() {
     setLoading(true)
     try {
       const { data } = await api.get<{ items: University[] }>(
-        "/admin/universities",
+        "/admin/university/list",
         { params: { page_size: 100 } },
       )
       setUniversities(data.items)
@@ -58,7 +58,7 @@ export function UniversityTable() {
   const handleDelete = async (university: University) => {
     if (!confirm(t("deleteConfirm", { name: university.name }))) return
     try {
-      await api.delete(`/admin/universities/${university.id}`)
+      await api.post(`/admin/university/delete/${university.id}`)
       toast.success(t("deleteSuccess"))
       fetchUniversities()
     } catch {

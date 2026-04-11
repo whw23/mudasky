@@ -64,7 +64,7 @@ export function DocumentList({
   const fetchDocuments = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<DocumentListResponse>("/documents", {
+      const { data } = await api.get<DocumentListResponse>("/portal/document/list", {
         params: { page, page_size: 20 },
       })
       /* 前端过滤分类（后端无分类筛选参数） */
@@ -93,14 +93,14 @@ export function DocumentList({
 
   /** 下载文档 */
   const handleDownload = (doc: Document) => {
-    window.open(`/api/documents/${doc.id}/download`, "_blank")
+    window.open(`/api/portal/document/download/${doc.id}`, "_blank")
   }
 
   /** 删除文档 */
   const handleDelete = async (doc: Document) => {
     if (!confirm(t("deleteConfirm"))) return
     try {
-      await api.delete(`/documents/${doc.id}`)
+      await api.post(`/portal/document/delete/${doc.id}`)
       toast.success(t("deleteSuccess"))
       fetchDocuments()
     } catch {

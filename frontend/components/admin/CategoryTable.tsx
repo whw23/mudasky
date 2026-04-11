@@ -26,7 +26,7 @@ export function CategoryTable() {
   const fetchCategories = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<Category[]>("/admin/content/categories")
+      const { data } = await api.get<Category[]>("/admin/category/list")
       setCategories(data)
     } catch {
       toast.error(t("fetchError"))
@@ -55,7 +55,7 @@ export function CategoryTable() {
   const handleDelete = async (category: Category) => {
     if (!confirm(t("deleteConfirm", { name: category.name }))) return
     try {
-      await api.delete(`/admin/content/categories/${category.id}`)
+      await api.post(`/admin/category/delete/${category.id}`)
       toast.success(t("deleteSuccess"))
       fetchCategories()
     } catch {

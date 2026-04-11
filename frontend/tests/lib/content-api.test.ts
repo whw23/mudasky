@@ -50,7 +50,7 @@ describe("fetchCategories", () => {
 
     expect(result).toEqual(MOCK_CATEGORIES)
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/content/categories"),
+      expect.stringContaining("/api/public/content/categories"),
       expect.objectContaining({ next: { revalidate: 60 } }),
     )
   })
@@ -124,7 +124,7 @@ describe("fetchArticle", () => {
 
     expect(result).toEqual(MOCK_ARTICLE)
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/content/articles/art-1"),
+      expect.stringContaining("/api/public/content/article/art-1"),
       expect.any(Object),
     )
   })

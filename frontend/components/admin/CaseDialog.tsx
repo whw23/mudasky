@@ -89,9 +89,9 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
         sort_order: sortOrder,
       }
       if (isEdit) {
-        await api.patch(`/admin/cases/${successCase.id}`, payload)
+        await api.post(`/admin/case/edit/${successCase.id}`, payload)
       } else {
-        await api.post("/admin/cases", payload)
+        await api.post("/admin/case/create", payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

@@ -81,7 +81,7 @@ export default function WebSettingsPage() {
   /** 获取所有配置 */
   const fetchAllConfigs = useCallback(async () => {
     try {
-      const res = await api.get('/admin/config')
+      const res = await api.get('/admin/settings/list')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const configs = res.data as Array<{ key: string; value: any }>
       const findValue = (key: string) =>
@@ -112,7 +112,7 @@ export default function WebSettingsPage() {
       return
     }
     if (!dialogState) return
-    await api.put(`/admin/config/${dialogState.configKey}`, { value: data })
+    await api.post(`/admin/settings/edit/${dialogState.configKey}`, { value: data })
     toast.success('保存成功')
     await fetchAllConfigs()
   }

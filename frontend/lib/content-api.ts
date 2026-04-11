@@ -40,7 +40,7 @@ function getBaseUrl(): string {
 /** 获取分类列表 */
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/content/categories`, {
+    const res = await fetch(`${getBaseUrl()}/api/public/content/categories`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
@@ -73,7 +73,7 @@ export async function fetchArticles(
     })
     if (categoryId) params.set("category_id", categoryId)
     const res = await fetch(
-      `${getBaseUrl()}/api/content/articles?${params.toString()}`,
+      `${getBaseUrl()}/api/public/content/articles?${params.toString()}`,
       { next: { revalidate: 60 } },
     )
     if (!res.ok) return empty
@@ -86,7 +86,7 @@ export async function fetchArticles(
 /** 获取文章详情 */
 export async function fetchArticle(id: string): Promise<Article | null> {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/content/articles/${id}`, {
+    const res = await fetch(`${getBaseUrl()}/api/public/content/article/${id}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null

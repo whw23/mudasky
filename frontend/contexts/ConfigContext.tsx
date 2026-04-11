@@ -84,7 +84,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
 
   useEffect(() => {
-    api.get('/config/phone_country_codes')
+    api.get('/public/config/phone_country_codes')
       .then((res) => {
         if (Array.isArray(res.data.value)) {
           const enabled = res.data.value.filter((c: CountryCode) => c.enabled)
@@ -96,7 +96,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         console.warn('[ConfigProvider] phone_country_codes 加载失败:', err.message)
       })
 
-    api.get('/config/contact_info')
+    api.get('/public/config/contact_info')
       .then((res) => {
         if (res.data.value) {
           setContactInfo(res.data.value)
@@ -104,7 +104,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => console.warn('[ConfigProvider] contact_info 加载失败:', err.message))
 
-    api.get('/config/site_info')
+    api.get('/public/config/site_info')
       .then((res) => {
         if (res.data.value) {
           setSiteInfo(res.data.value)
@@ -112,7 +112,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => console.warn('[ConfigProvider] site_info 加载失败:', err.message))
 
-    api.get('/config/homepage_stats')
+    api.get('/public/config/homepage_stats')
       .then((res) => {
         if (Array.isArray(res.data.value)) {
           setHomepageStats(res.data.value)
@@ -120,7 +120,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => console.warn('[ConfigProvider] homepage_stats 加载失败:', err.message))
 
-    api.get('/config/about_info')
+    api.get('/public/config/about_info')
       .then((res) => {
         if (res.data.value) {
           setAboutInfo(res.data.value)
