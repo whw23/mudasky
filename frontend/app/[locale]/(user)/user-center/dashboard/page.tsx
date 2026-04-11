@@ -103,7 +103,7 @@ export default function DashboardPage() {
         {doc.category}
       </span>
     ),
-    href: "/documents",
+    href: "/user-center/documents",
   }))
 
   /** 角色标签 */
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       <RecentList
         title={t("recentDocuments")}
         items={docItems}
-        viewAllHref="/documents"
+        viewAllHref="/user-center/documents"
         viewAllText={t("viewAll")}
         emptyText={t("noData")}
         loading={loading}
@@ -151,11 +151,11 @@ export default function DashboardPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">{t("quickActions")}</h2>
         <div className="flex flex-wrap gap-3">
-          <Button render={<Link href="/documents" />}>
+          <Button render={<Link href="/user-center/documents" />}>
             <Upload className="mr-2 size-4" />
             {t("uploadDocument")}
           </Button>
-          <Button variant="outline" render={<Link href="/profile" />}>
+          <Button variant="outline" render={<Link href="/user-center/profile" />}>
             <UserCog className="mr-2 size-4" />
             {t("editProfile")}
           </Button>

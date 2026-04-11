@@ -11,9 +11,9 @@ import { LayoutDashboard, User, FileText, ArrowLeft } from "lucide-react"
 
 /** 侧边栏菜单键与路径映射 */
 const MENU_KEYS = [
-  { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { key: "profile", href: "/profile", icon: User },
-  { key: "documents", href: "/documents", icon: FileText },
+  { key: "dashboard", href: "/user-center/dashboard", icon: LayoutDashboard },
+  { key: "profile", href: "/user-center/profile", icon: User },
+  { key: "documents", href: "/user-center/documents", icon: FileText },
 ] as const
 
 export function UserSidebar() {
