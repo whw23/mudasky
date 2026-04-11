@@ -42,7 +42,12 @@ async def init_system_config(session) -> None:
                     "ja": "MUTU International Education",
                     "de": "MUTU International Education",
                 },
-                "tagline": "专注国际教育 专注出国服务",
+                "tagline": {
+                    "zh": "专注国际教育 专注出国服务",
+                    "en": "Focused on International Education & Study Abroad",
+                    "ja": "国際教育と留学サービスに専念",
+                    "de": "Fokus auf internationale Bildung und Auslandsstudium",
+                },
                 "hotline": "189-1268-6656",
                 "hotline_contact": "苏老师",
                 "logo_url": "",
