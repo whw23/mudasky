@@ -6,6 +6,37 @@ local cjson = require("cjson.safe")
 local config = require("init")
 local rate_limit = require("rate_limit")
 
+--- 从路径提取权限字符串。
+-- /api/admin/user/list/xxx → admin.user.list
+local function extract_permission(uri)
+  local path = string.match(uri, "^/api/(.+)$")
+  if not path then return nil end
+  local segments = {}
+  for seg in string.gmatch(path, "[^/]+") do
+    table.insert(segments, seg)
+    if #segments == 3 then break end
+  end
+  if #segments < 3 then return nil end
+  local perm = table.concat(segments, ".")
+  perm = string.gsub(perm, "-", "_")
+  return perm
+end
+
+--- 检查用户是否拥有指定权限。
+local function has_permission(user_perms, required)
+  for _, p in ipairs(user_perms) do
+    if p == "*" then return true end
+    if p == required then return true end
+    if string.sub(p, -2) == ".*" then
+      local prefix = string.sub(p, 1, -3)
+      if string.find(required, prefix, 1, true) == 1 then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 --- 返回 JSON 错误响应。
 local function reject(status, code)
   ngx.status = status
@@ -96,7 +127,14 @@ end
 -- 注入请求头（强制覆盖，防伪造）
 ngx.req.set_header("X-User-Id", payload.sub)
 
--- permissions 数组转逗号分隔字符串
-local perms = payload.permissions or {}
-ngx.req.set_header("X-User-Permissions", table.concat(perms, ","))
+-- 对 /api/admin/* 和 /api/portal/* 做权限校验
+if string.find(uri, "^/api/admin/") or string.find(uri, "^/api/portal/") then
+  local required_perm = extract_permission(uri)
+  if required_perm then
+    local perms = payload.permissions or {}
+    if not has_permission(perms, required_perm) then
+      reject(403, "FORBIDDEN")
+    end
+  end
+end
 

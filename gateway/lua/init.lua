@@ -28,34 +28,19 @@ function _M.get_backend_url()
   return ngx.shared.config:get("backend_url") or "http://api:8000"
 end
 
---- 公开路由白名单（精确匹配）。
-_M.public_routes = {
-  ["POST:/api/auth/sms-code"] = true,
-  ["POST:/api/auth/register"] = true,
-  ["POST:/api/auth/login"] = true,
-  ["POST:/api/auth/refresh"] = true,
-  ["GET:/api/auth/public-key"] = true,
-  ["GET:/api/health"] = true,
-  ["GET:/api/content/categories"] = true,
-}
-
---- 公开路由前缀（用于动态路由）。
-_M.public_prefixes = {
-  { method = "GET", prefix = "/api/content/articles" },
-  { method = "GET", prefix = "/api/cases" },
-  { method = "GET", prefix = "/api/config/" },
-  { method = "GET", prefix = "/api/universities" },
-}
-
 --- 检查路由是否公开。
 function _M.is_public(method, uri)
-  if _M.public_routes[method .. ":" .. uri] then
+  -- 认证路由全部放行
+  if string.find(uri, "/api/auth/", 1, true) == 1 then
     return true
   end
-  for _, rule in ipairs(_M.public_prefixes) do
-    if method == rule.method and string.sub(uri, 1, #rule.prefix) == rule.prefix then
-      return true
-    end
+  -- 公开路由只允许 GET
+  if method == "GET" and string.find(uri, "/api/public/", 1, true) == 1 then
+    return true
+  end
+  -- 健康检查
+  if method == "GET" and uri == "/api/health" then
+    return true
   end
   return false
 end
