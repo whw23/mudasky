@@ -39,10 +39,11 @@ function isActive(pathname: string, href: string): boolean {
 interface HeaderProps {
   editable?: boolean
   onEdit?: (section: string) => void
-  hideNav?: boolean
+  onPageChange?: (key: string) => void
+  activePage?: string
 }
 
-export function Header({ editable, onEdit, hideNav }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage }: HeaderProps) {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
@@ -82,10 +83,10 @@ export function Header({ editable, onEdit, hideNav }: HeaderProps) {
 
   return (
     <header
-      className={`sticky top-0 z-50 overflow-x-hidden transition-all duration-300 ${
-        scrolled
-          ? "bg-white/70 backdrop-blur-xl shadow-sm"
-          : ""
+      className={`overflow-x-hidden transition-all duration-300 ${
+        editable
+          ? ""
+          : `sticky top-0 z-50 ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
@@ -171,23 +172,38 @@ export function Header({ editable, onEdit, hideNav }: HeaderProps) {
       </div>
 
       {/* === 桌面导航栏 Row 2 === */}
-      <nav className={`hidden md:block border-t border-black/[0.04] ${hideNav ? "!hidden" : ""}`}>
+      <nav className="hidden md:block border-t border-black/[0.04]">
         <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
-          <ul className="flex items-center gap-1">
+          <ul className="flex flex-1 items-center justify-evenly">
             {NAV_KEYS.map((item) => {
-              const active = isActive(pathname, item.href)
+              const active = editable
+                ? activePage === item.key
+                : isActive(pathname, item.href)
               return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
-                      active
-                        ? "text-primary border-b-2 border-primary"
-                        : "text-foreground/60 hover:text-foreground"
-                    }`}
-                  >
-                    {tNav(item.key)}
-                  </Link>
+                <li key={item.key}>
+                  {editable ? (
+                    <button
+                      onClick={() => onPageChange?.(item.key)}
+                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                        active
+                          ? "text-primary border-b-2 border-primary"
+                          : "text-foreground/60 hover:text-foreground"
+                      }`}
+                    >
+                      {tNav(item.key)}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                        active
+                          ? "text-primary border-b-2 border-primary"
+                          : "text-foreground/60 hover:text-foreground"
+                      }`}
+                    >
+                      {tNav(item.key)}
+                    </Link>
+                  )}
                 </li>
               )
             })}
