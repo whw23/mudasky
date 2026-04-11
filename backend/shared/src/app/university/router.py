@@ -13,6 +13,7 @@ from app.core.dependencies import (
 from app.core.pagination import (
     PaginatedResponse,
     PaginationParams,
+    build_paginated,
 )
 from app.university.schemas import (
     UniversityCreate,
@@ -26,27 +27,6 @@ from app.university.service import UniversityService
 public_router = APIRouter(
     prefix="/universities", tags=["universities"]
 )
-
-
-def _build_paginated(
-    items: list,
-    total: int,
-    params: PaginationParams,
-) -> PaginatedResponse[UniversityResponse]:
-    """构建分页响应。"""
-    total_pages = (
-        (total + params.page_size - 1) // params.page_size
-    )
-    return PaginatedResponse(
-        items=[
-            UniversityResponse.model_validate(i)
-            for i in items
-        ],
-        total=total,
-        page=params.page,
-        page_size=params.page_size,
-        total_pages=total_pages,
-    )
 
 
 @public_router.get(
@@ -80,7 +60,7 @@ async def list_universities(
         search,
         program,
     )
-    result = _build_paginated(universities, total, params)
+    result = build_paginated(universities, total, params, UniversityResponse)
     seed = f"uni:list:{page}:{page_size}:{country}:{is_featured}:{search}:{program}:{total}"
     if set_cache_headers(response, seed, 3600, if_none_match):
         return response  # type: ignore[return-value]

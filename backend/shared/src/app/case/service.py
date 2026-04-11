@@ -9,6 +9,7 @@ from app.case import repository
 from app.case.models import SuccessCase
 from app.case.schemas import CaseCreate, CaseUpdate
 from app.core.exceptions import NotFoundException
+from app.core.model_utils import apply_updates
 
 
 class CaseService:
@@ -50,7 +51,7 @@ class CaseService:
     ) -> SuccessCase:
         """更新成功案例。"""
         case = await self.get_case(case_id)
-        self._apply_update(case, data)
+        apply_updates(case, data)
         return await repository.update_case(
             self.session, case
         )
@@ -71,24 +72,3 @@ class CaseService:
         return await repository.list_cases(
             self.session, offset, limit, year, featured
         )
-
-    def _apply_update(
-        self, case: SuccessCase, data: CaseUpdate
-    ) -> None:
-        """将更新数据应用到案例模型。"""
-        if data.student_name is not None:
-            case.student_name = data.student_name
-        if data.university is not None:
-            case.university = data.university
-        if data.program is not None:
-            case.program = data.program
-        if data.year is not None:
-            case.year = data.year
-        if data.testimonial is not None:
-            case.testimonial = data.testimonial
-        if data.avatar_url is not None:
-            case.avatar_url = data.avatar_url
-        if data.is_featured is not None:
-            case.is_featured = data.is_featured
-        if data.sort_order is not None:
-            case.sort_order = data.sort_order

@@ -20,6 +20,7 @@ from app.rbac.schemas import (
     RoleResponse,
     RoleUpdate,
 )
+from app.user import repository as user_repo
 
 # 受保护的角色名称，不允许删除
 PROTECTED_ROLE_NAMES = {"superuser", "visitor"}
@@ -41,11 +42,12 @@ class RbacService:
 
     async def list_roles(self) -> list[RoleResponse]:
         """查询所有角色，包含权限和用户数量。"""
-        rows = await repository.list_roles(self.session)
+        roles = await repository.list_roles(self.session)
+        counts = await user_repo.count_by_role(self.session)
         result: list[RoleResponse] = []
-        for role, user_count in rows:
+        for role in roles:
             resp = RoleResponse.model_validate(role)
-            resp.user_count = user_count
+            resp.user_count = counts.get(role.id, 0)
             result.append(resp)
         return result
 
@@ -150,15 +152,20 @@ class RbacService:
         self, user_id: str
     ) -> list[str]:
         """查询用户的所有权限码。"""
-        return await repository.get_user_permissions(
+        role_id = await user_repo.get_role_id(
             self.session, user_id
+        )
+        if not role_id:
+            return []
+        return await repository.get_permissions_by_role(
+            self.session, role_id
         )
 
     async def get_user_role_id(
         self, user_id: str
     ) -> str | None:
         """查询用户所属角色 ID。"""
-        return await repository.get_user_role_id(
+        return await user_repo.get_role_id(
             self.session, user_id
         )
 
@@ -177,6 +184,6 @@ class RbacService:
                     message="角色不存在"
                 )
 
-        await repository.set_user_role(
+        await user_repo.set_role_id(
             self.session, user_id, role_id
         )

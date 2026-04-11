@@ -6,6 +6,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundException
+from app.core.model_utils import apply_updates
 from app.university import repository
 from app.university.models import University
 from app.university.schemas import (
@@ -59,26 +60,7 @@ class UniversityService:
         university = await self.get_university(
             university_id
         )
-        if data.name is not None:
-            university.name = data.name
-        if data.name_en is not None:
-            university.name_en = data.name_en
-        if data.country is not None:
-            university.country = data.country
-        if data.city is not None:
-            university.city = data.city
-        if data.logo_url is not None:
-            university.logo_url = data.logo_url
-        if data.description is not None:
-            university.description = data.description
-        if data.programs is not None:
-            university.programs = data.programs
-        if data.website is not None:
-            university.website = data.website
-        if data.is_featured is not None:
-            university.is_featured = data.is_featured
-        if data.sort_order is not None:
-            university.sort_order = data.sort_order
+        apply_updates(university, data)
         return await repository.update_university(
             self.session, university
         )

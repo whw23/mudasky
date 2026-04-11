@@ -1,7 +1,6 @@
 """RBAC 权限领域数据访问层。
 
 封装所有权限、角色相关的数据库操作。
-用户与角色为一对多关系（user.role_id）。
 """
 
 from sqlalchemy import delete, func, select
@@ -9,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.rbac.models import Permission, Role
-from app.user.models import User
 
 
 async def list_permissions(
@@ -34,34 +32,15 @@ async def get_permissions_by_ids(
 
 async def list_roles(
     session: AsyncSession,
-) -> list[tuple[Role, int]]:
-    """查询所有角色，包含权限列表和用户数量。"""
-    user_count_subq = (
-        select(
-            User.role_id,
-            func.count(User.id).label("user_count"),
-        )
-        .where(User.role_id.isnot(None))
-        .group_by(User.role_id)
-        .subquery()
-    )
-
+) -> list[Role]:
+    """查询所有角色，包含权限列表，按排序值排序。"""
     stmt = (
-        select(
-            Role,
-            func.coalesce(user_count_subq.c.user_count, 0).label(
-                "user_count"
-            ),
-        )
-        .outerjoin(
-            user_count_subq,
-            Role.id == user_count_subq.c.role_id,
-        )
+        select(Role)
         .options(selectinload(Role.permissions))
         .order_by(Role.sort_order)
     )
     result = await session.execute(stmt)
-    return [(row[0], row[1]) for row in result.all()]
+    return list(result.scalars().all())
 
 
 async def get_max_sort_order(session: AsyncSession) -> int:
@@ -130,59 +109,11 @@ async def delete_role(
     await session.commit()
 
 
-async def get_user_permissions(
-    session: AsyncSession, user_id: str
+async def get_permissions_by_role(
+    session: AsyncSession, role_id: str
 ) -> list[str]:
-    """查询用户的所有权限码。
-
-    通过 user.role_id 查找角色，返回该角色关联的权限码。
-    """
-    stmt = (
-        select(User.role_id)
-        .where(User.id == user_id)
-    )
-    result = await session.execute(stmt)
-    role_id = result.scalar_one_or_none()
-
-    if not role_id:
-        return []
-
+    """根据角色 ID 查询该角色的所有权限码。"""
     role = await get_role_by_id(session, role_id)
     if not role:
         return []
-
     return [p.code for p in role.permissions]
-
-
-async def get_user_role_id(
-    session: AsyncSession, user_id: str
-) -> str | None:
-    """查询用户所属的角色 ID。"""
-    stmt = select(User.role_id).where(User.id == user_id)
-    result = await session.execute(stmt)
-    return result.scalar_one_or_none()
-
-
-async def get_user_role_name(
-    session: AsyncSession, user_id: str
-) -> str | None:
-    """查询用户所属的角色名称。"""
-    stmt = (
-        select(Role.name)
-        .join(User, User.role_id == Role.id)
-        .where(User.id == user_id)
-    )
-    result = await session.execute(stmt)
-    return result.scalar_one_or_none()
-
-
-async def set_user_role(
-    session: AsyncSession, user_id: str, role_id: str | None
-) -> None:
-    """设置用户的角色。"""
-    stmt = select(User).where(User.id == user_id)
-    result = await session.execute(stmt)
-    user = result.scalar_one_or_none()
-    if user:
-        user.role_id = role_id
-        await session.commit()

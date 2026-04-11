@@ -19,6 +19,7 @@ from app.core.exceptions import (
     ForbiddenException,
     NotFoundException,
 )
+from app.core.model_utils import apply_updates
 
 
 class ContentService:
@@ -200,27 +201,13 @@ class ContentService:
         self, article: Article, data: ArticleUpdate
     ) -> None:
         """将更新数据应用到文章模型。"""
-        if data.title is not None:
-            article.title = data.title
-        if data.slug is not None:
-            article.slug = data.slug
-        if data.content is not None:
-            article.content = data.content
-        if data.excerpt is not None:
-            article.excerpt = data.excerpt
-        if data.cover_image is not None:
-            article.cover_image = data.cover_image
-        if data.category_id is not None:
-            article.category_id = data.category_id
-        if data.is_pinned is not None:
-            article.is_pinned = data.is_pinned
-        if data.status is not None:
-            # 发布时设置发布时间
-            if (
-                data.status == "published"
-                and article.status != "published"
-            ):
-                article.published_at = datetime.now(
-                    timezone.utc
-                )
-            article.status = data.status
+        old_status = article.status
+        apply_updates(article, data)
+        # 发布时设置发布时间
+        if (
+            article.status == "published"
+            and old_status != "published"
+        ):
+            article.published_at = datetime.now(
+                timezone.utc
+            )

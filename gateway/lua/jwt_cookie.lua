@@ -1,3 +1,0 @@
---- JWT Cookie 生成模块（备用）。
--- 当前登录/注册/续签使用 auth_proxy.lua 和 refresh_proxy.lua
--- 通过 content_by_lua 实现，此文件保留作为参考。

@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter, Depends, status
 
-from app.content.router import _build_paginated, _category_list_with_counts
+from app.content.router import _category_list_with_counts
 from app.content.schemas import (
     ArticleCreate,
     ArticleResponse,
@@ -20,7 +20,11 @@ from app.core.dependencies import (
     DbSession,
     require_permission,
 )
-from app.core.pagination import PaginatedResponse, PaginationParams
+from app.core.pagination import (
+    PaginatedResponse,
+    PaginationParams,
+    build_paginated,
+)
 
 admin_router = APIRouter(
     prefix="/admin/content", tags=["admin-content"]
@@ -113,7 +117,7 @@ async def admin_list_articles(
     articles, total = await svc.list_all_articles(
         params.offset, params.page_size, status_filter
     )
-    return _build_paginated(
+    return build_paginated(
         articles, total, params, ArticleResponse
     )
 

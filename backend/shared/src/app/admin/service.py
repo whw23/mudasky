@@ -3,7 +3,6 @@
 提供用户管理、密码重置、权限分配、强制下线等管理员专用操作。
 """
 
-from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository as auth_repo
@@ -28,12 +27,21 @@ class AdminService:
         self, user: User
     ) -> UserResponse:
         """构建包含权限和角色的用户响应。"""
-        permissions = await rbac_repo.get_user_permissions(
-            self.session, user.id
+        permissions = (
+            await rbac_repo.get_permissions_by_role(
+                self.session, user.role_id
+            )
+            if user.role_id
+            else []
         )
-        role_name = await rbac_repo.get_user_role_name(
-            self.session, user.id
+        role = (
+            await rbac_repo.get_role_by_id(
+                self.session, user.role_id
+            )
+            if user.role_id
+            else None
         )
+        role_name = role.name if role else None
         return UserResponse(
             id=user.id,
             phone=user.phone,
@@ -55,33 +63,9 @@ class AdminService:
         limit: int,
     ) -> tuple[list[UserResponse], int]:
         """分页查询用户列表，支持按关键词筛选。"""
-        base_query = select(User)
-        count_query = select(func.count()).select_from(User)
-
-        # 按手机号或用户名模糊搜索
-        if search:
-            like_pattern = f"%{search}%"
-            search_filter = or_(
-                User.phone.like(like_pattern),
-                User.username.like(like_pattern),
-            )
-            base_query = base_query.where(search_filter)
-            count_query = count_query.where(search_filter)
-
-        # 查询总数
-        total_result = await self.session.execute(count_query)
-        total = total_result.scalar_one()
-
-        # 查询分页数据
-        stmt = (
-            base_query.order_by(User.created_at.desc())
-            .offset(offset)
-            .limit(limit)
+        users, total = await user_repo.list_users(
+            self.session, offset, limit, search
         )
-        result = await self.session.execute(stmt)
-        users = list(result.scalars().all())
-
-        # 构建包含权限信息的响应
         user_responses = [
             await self._build_user_response(u) for u in users
         ]

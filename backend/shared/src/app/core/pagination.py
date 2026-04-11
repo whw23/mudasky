@@ -27,3 +27,20 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page: int
     page_size: int
     total_pages: int
+
+
+def build_paginated(
+    items: list,
+    total: int,
+    params: PaginationParams,
+    response_cls: type[T],
+) -> PaginatedResponse[T]:
+    """构建分页响应。"""
+    total_pages = (total + params.page_size - 1) // params.page_size
+    return PaginatedResponse(
+        items=[response_cls.model_validate(i) for i in items],
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        total_pages=total_pages,
+    )

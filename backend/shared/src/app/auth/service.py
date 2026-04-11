@@ -7,7 +7,6 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 import pyotp
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository
@@ -173,12 +172,21 @@ class AuthService:
         self, user: User
     ) -> UserResponse:
         """构建包含权限和角色的用户响应。"""
-        permissions = await rbac_repo.get_user_permissions(
-            self.session, user.id
+        permissions = (
+            await rbac_repo.get_permissions_by_role(
+                self.session, user.role_id
+            )
+            if user.role_id
+            else []
         )
-        role_name = await rbac_repo.get_user_role_name(
-            self.session, user.id
+        role = (
+            await rbac_repo.get_role_by_id(
+                self.session, user.role_id
+            )
+            if user.role_id
+            else None
         )
+        role_name = role.name if role else None
         return UserResponse(
             id=user.id,
             phone=user.phone,
@@ -197,9 +205,9 @@ class AuthService:
 
     async def _get_visitor_role(self) -> Role | None:
         """查找 visitor 角色。"""
-        stmt = select(Role).where(Role.name == "visitor")
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        return await rbac_repo.get_role_by_name(
+            self.session, "visitor"
+        )
 
     async def _check_sms_rate_limit(self, phone: str) -> None:
         """检查短信发送频率限制。"""
@@ -248,10 +256,7 @@ class AuthService:
             storage_quota=settings.default_storage_quota_bytes,
             role_id=visitor_role.id if visitor_role else None,
         )
-        self.session.add(user)
-        await self.session.commit()
-        await self.session.refresh(user)
-        return user
+        return await user_repo.create(self.session, user)
 
     async def _login_with_password(
         self,

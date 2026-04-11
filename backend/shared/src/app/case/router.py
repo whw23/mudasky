@@ -9,28 +9,13 @@ from app.case.schemas import CaseResponse
 from app.case.service import CaseService
 from app.core.cache import set_cache_headers
 from app.core.dependencies import DbSession
-from app.core.pagination import PaginatedResponse, PaginationParams
+from app.core.pagination import (
+    PaginatedResponse,
+    PaginationParams,
+    build_paginated,
+)
 
 router = APIRouter(prefix="/cases", tags=["cases"])
-
-
-def _build_paginated(
-    items: list,
-    total: int,
-    params: PaginationParams,
-    response_cls: type,
-) -> PaginatedResponse:
-    """构建分页响应。"""
-    total_pages = (
-        (total + params.page_size - 1) // params.page_size
-    )
-    return PaginatedResponse(
-        items=[response_cls.model_validate(i) for i in items],
-        total=total,
-        page=params.page,
-        page_size=params.page_size,
-        total_pages=total_pages,
-    )
 
 
 @router.get(
@@ -52,7 +37,7 @@ async def list_cases(
     cases, total = await svc.list_cases(
         params.offset, params.page_size, year, featured
     )
-    result = _build_paginated(
+    result = build_paginated(
         cases, total, params, CaseResponse
     )
     seed = f"case:list:{page}:{page_size}:{year}:{featured}:{total}"

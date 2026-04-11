@@ -18,28 +18,13 @@ from app.core.dependencies import (
     DbSession,
     require_permission,
 )
-from app.core.pagination import PaginatedResponse, PaginationParams
+from app.core.pagination import (
+    PaginatedResponse,
+    PaginationParams,
+    build_paginated,
+)
 
 router = APIRouter(prefix="/content", tags=["content"])
-
-
-def _build_paginated(
-    items: list,
-    total: int,
-    params: PaginationParams,
-    response_cls: type,
-) -> PaginatedResponse:
-    """构建分页响应。"""
-    total_pages = (
-        (total + params.page_size - 1) // params.page_size
-    )
-    return PaginatedResponse(
-        items=[response_cls.model_validate(i) for i in items],
-        total=total,
-        page=params.page,
-        page_size=params.page_size,
-        total_pages=total_pages,
-    )
 
 
 async def _category_list_with_counts(
@@ -77,7 +62,7 @@ async def list_published_articles(
     articles, total = await svc.list_published(
         params.offset, params.page_size, category_id
     )
-    result = _build_paginated(
+    result = build_paginated(
         articles, total, params, ArticleResponse
     )
     seed = f"article:list:{page}:{page_size}:{category_id}:{total}"
@@ -148,7 +133,7 @@ async def list_my_articles(
     articles, total = await svc.list_my_articles(
         user_id, params.offset, params.page_size
     )
-    return _build_paginated(
+    return build_paginated(
         articles, total, params, ArticleResponse
     )
 
