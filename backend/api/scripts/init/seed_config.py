@@ -44,9 +44,9 @@ async def init_system_config(session) -> None:
                 },
                 "tagline": {
                     "zh": "专注国际教育 · 专注出国服务",
-                    "en": "Focused on International Education & Study Abroad",
-                    "ja": "国際教育と留学サービスに専念",
-                    "de": "Fokus auf internationale Bildung und Auslandsstudium",
+                    "en": "Focused on International Education · Focused on Study Abroad",
+                    "ja": "国際教育に専念 · 留学サービスに専念",
+                    "de": "Fokus auf internationale Bildung · Fokus auf Auslandsstudium",
                 },
                 "hotline": "189-1268-6656",
                 "hotline_contact": "苏老师",
