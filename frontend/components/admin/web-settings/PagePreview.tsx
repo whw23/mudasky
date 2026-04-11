@@ -9,7 +9,6 @@
 import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { DataSectionOverlay } from "./DataSectionOverlay"
-import type { PageKey } from "./PreviewNavBar"
 
 import { ArticleTable } from "@/components/admin/ArticleTable"
 import { CaseTable } from "@/components/admin/CaseTable"
@@ -26,7 +25,7 @@ import {
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 
 interface PagePreviewProps {
-  activePage: PageKey
+  activePage: string
   onEditConfig: (section: string) => void
 }
 

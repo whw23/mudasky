@@ -10,31 +10,9 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { PreviewNavBar } from '@/components/admin/web-settings/PreviewNavBar'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
-import type { PageKey } from '@/components/admin/web-settings/PreviewNavBar'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo } from '@/types/config'
-
-/** 品牌信息字段定义 */
-const SITE_INFO_FIELDS = [
-  { key: 'brand_name', label: '品牌名称', type: 'text' as const, localized: true },
-  { key: 'tagline', label: '品牌标语', type: 'text' as const, localized: true },
-  { key: 'hotline', label: '服务热线', type: 'text' as const, localized: false },
-  { key: 'hotline_contact', label: '热线联系人', type: 'text' as const, localized: true },
-  { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
-]
-
-/** 联系方式字段定义 */
-const CONTACT_FIELDS = [
-  { key: 'address', label: '地址', type: 'text' as const, localized: true },
-  { key: 'phone', label: '电话', type: 'text' as const, localized: false },
-  { key: 'email', label: '邮箱', type: 'text' as const, localized: false },
-  { key: 'wechat', label: '微信号', type: 'text' as const, localized: false },
-  { key: 'office_hours', label: '办公时间', type: 'text' as const, localized: true },
-  { key: 'wechat_qr_url', label: '微信二维码', type: 'image' as const, localized: false },
-  { key: 'icp_filing', label: 'ICP备案号', type: 'text' as const, localized: false },
-]
 
 /** 统计项编辑字段定义 */
 const STAT_FIELDS = [
@@ -95,7 +73,7 @@ const DEFAULT_RAW: RawConfig = {
 }
 
 export default function WebSettingsPage() {
-  const [activePage, setActivePage] = useState<PageKey>('home')
+  const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
   const [loading, setLoading] = useState(true)
@@ -139,28 +117,6 @@ export default function WebSettingsPage() {
     await fetchAllConfigs()
   }
 
-  /** 打开品牌信息编辑弹窗 */
-  function openSiteInfoDialog(): void {
-    setDialogState({
-      open: true,
-      title: '编辑网站信息',
-      fields: SITE_INFO_FIELDS,
-      configKey: 'site_info',
-      data: rawConfig.siteInfo,
-    })
-  }
-
-  /** 打开联系方式编辑弹窗 */
-  function openContactDialog(): void {
-    setDialogState({
-      open: true,
-      title: '编辑联系方式',
-      fields: CONTACT_FIELDS,
-      configKey: 'contact_info',
-      data: { ...rawConfig.contactInfo, ...rawConfig.siteInfo },
-    })
-  }
-
   /** 打开关于我们编辑弹窗（指定字段） */
   function openAboutDialog(field: keyof AboutInfo, title: string): void {
     setDialogState({
@@ -175,15 +131,91 @@ export default function WebSettingsPage() {
   }
 
   /** 处理 Header 编辑区域点击 */
-  function handleHeaderEdit(): void {
-    openSiteInfoDialog()
+  function handleHeaderEdit(section: string): void {
+    switch (section) {
+      case 'brand':
+        setDialogState({
+          open: true,
+          title: '编辑品牌',
+          fields: [
+            { key: 'brand_name', label: '品牌名称', type: 'text' as const, localized: true },
+            { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'tagline':
+        setDialogState({
+          open: true,
+          title: '编辑标语',
+          fields: [
+            { key: 'tagline', label: '品牌标语', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'hotline':
+        setDialogState({
+          open: true,
+          title: '编辑热线',
+          fields: [
+            { key: 'hotline', label: '服务热线', type: 'text' as const, localized: false },
+            { key: 'hotline_contact', label: '热线联系人', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      default:
+        break
+    }
   }
 
   /** 处理 Footer 编辑区域点击 */
   function handleFooterEdit(section: string): void {
-    if (section === 'contact') openContactDialog()
-    else if (section === 'wechat_qr') openSiteInfoDialog()
-    else if (section === 'icp') openSiteInfoDialog()
+    switch (section) {
+      case 'contact':
+        setDialogState({
+          open: true,
+          title: '编辑联系方式',
+          fields: [
+            { key: 'address', label: '地址', type: 'text' as const, localized: true },
+            { key: 'phone', label: '电话', type: 'text' as const, localized: false },
+            { key: 'email', label: '邮箱', type: 'text' as const, localized: false },
+            { key: 'wechat', label: '微信号', type: 'text' as const, localized: false },
+            { key: 'office_hours', label: '办公时间', type: 'text' as const, localized: true },
+          ],
+          configKey: 'contact_info',
+          data: rawConfig.contactInfo,
+        })
+        break
+      case 'wechat_qr':
+        setDialogState({
+          open: true,
+          title: '编辑微信二维码',
+          fields: [
+            { key: 'wechat_qr_url', label: '微信二维码', type: 'image' as const, localized: false },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'icp':
+        setDialogState({
+          open: true,
+          title: '编辑 ICP 备案',
+          fields: [
+            { key: 'icp_filing', label: 'ICP备案号', type: 'text' as const, localized: false },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      default:
+        break
+    }
   }
 
   /** 处理页面预览中的配置编辑 */
@@ -217,7 +249,7 @@ export default function WebSettingsPage() {
         })
         break
       case 'contact':
-        openContactDialog()
+        handleFooterEdit('contact')
         break
       case 'about_history':
         openAboutDialog('history', '编辑公司历史')
@@ -241,12 +273,14 @@ export default function WebSettingsPage() {
     <div className="mx-auto max-w-6xl">
       <h1 className="mb-6 text-2xl font-bold">网页设置</h1>
 
-      {/* 预览容器 — 禁用原有交互，仅编辑按钮可点击 */}
-      <div className="preview-container overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_button]:pointer-events-none [&_.group]:pointer-events-auto [&_.preview-nav]:pointer-events-auto">
-        <Header editable hideNav onEdit={handleHeaderEdit} />
-        <div className="preview-nav">
-          <PreviewNavBar activePage={activePage} onPageChange={setActivePage} />
-        </div>
+      {/* 预览容器 — 禁用链接跳转，编辑按钮可点击 */}
+      <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+        <Header
+          editable
+          onEdit={handleHeaderEdit}
+          onPageChange={setActivePage}
+          activePage={activePage}
+        />
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>
