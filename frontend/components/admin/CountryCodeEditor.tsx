@@ -5,7 +5,7 @@
  * 管理员可增删改系统支持的手机号国家码。
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,12 +15,16 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import type { CountryCode } from '@/types/config'
 
+/** 带内部 ID 的国家码项 */
+type CountryCodeItem = CountryCode & { _id: number }
+
 /** 国家码编辑器 */
 export function CountryCodeEditor() {
   const t = useTranslations('AdminSettings')
-  const [items, setItems] = useState<CountryCode[]>([])
+  const [items, setItems] = useState<CountryCodeItem[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const nextId = useRef(0)
 
   useEffect(() => {
     setLoading(true)
@@ -28,7 +32,7 @@ export function CountryCodeEditor() {
       .then((res) => {
         const config = res.data.find((c: any) => c.key === 'phone_country_codes')
         if (config && Array.isArray(config.value)) {
-          setItems(config.value)
+          setItems(config.value.map((v: CountryCode) => ({ ...v, _id: nextId.current++ })))
         }
       })
       .catch(() => toast.error(t('fetchError')))
@@ -44,7 +48,7 @@ export function CountryCodeEditor() {
 
   /** 添加空行 */
   function addItem(): void {
-    setItems((prev) => [...prev, { code: '+', country: '', label: '', digits: 10, enabled: true }])
+    setItems((prev) => [...prev, { code: '+', country: '', label: '', digits: 10, enabled: true, _id: nextId.current++ }])
   }
 
   /** 删除行 */
@@ -58,7 +62,8 @@ export function CountryCodeEditor() {
   async function handleSave(): Promise<void> {
     setSaving(true)
     try {
-      await api.put('/admin/config/phone_country_codes', { value: items })
+      const payload = items.map(({ _id, ...rest }) => rest)
+      await api.put('/admin/config/phone_country_codes', { value: payload })
       toast.success(t('saveSuccess'))
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('saveError'))
@@ -91,7 +96,7 @@ export function CountryCodeEditor() {
             </div>
             {/* 数据行 */}
             {items.map((item, i) => (
-              <div key={i} className="grid grid-cols-[50px_100px_80px_1fr_80px_40px] gap-2 items-center">
+              <div key={item._id} className="grid grid-cols-[50px_100px_80px_1fr_80px_40px] gap-2 items-center">
                 <input
                   type="checkbox"
                   checked={item.enabled}

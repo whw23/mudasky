@@ -842,7 +842,8 @@
     "phoneFormPlaceholder": "请输入手机号码",
     "messageLabel": "留言内容",
     "messagePlaceholder": "请描述您的需求或问题...",
-    "submitButton": "提交留言"
+    "submitButton": "提交留言",
+    "comingSoon": "在线留言功能即将开放"
   },
   "AdminSettings": {
     "title": "系统设置",

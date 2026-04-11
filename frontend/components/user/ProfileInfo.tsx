@@ -5,7 +5,7 @@
  * 所有字段在同一个卡片内，点击"修改"展开内联编辑表单。
  */
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { Pencil, Check, X, ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
@@ -121,6 +121,13 @@ export function ProfileInfo() {
   const [sms2faCode, setSms2faCode] = useState('')
   const [showDisableDialog, setShowDisableDialog] = useState(false)
   const [disableCode, setDisableCode] = useState('')
+
+  // 组件卸载或 qrUrl 变化时释放 blob URL，防止内存泄漏
+  useEffect(() => {
+    return () => {
+      if (qrUrl) URL.revokeObjectURL(qrUrl)
+    }
+  }, [qrUrl])
 
   if (!user) return null
 

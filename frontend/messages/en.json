@@ -842,7 +842,8 @@
     "phoneFormPlaceholder": "Enter your phone number",
     "messageLabel": "Message",
     "messagePlaceholder": "Please describe your needs or questions...",
-    "submitButton": "Submit Message"
+    "submitButton": "Submit Message",
+    "comingSoon": "Online messaging coming soon"
   },
   "AdminSettings": {
     "title": "System Settings",

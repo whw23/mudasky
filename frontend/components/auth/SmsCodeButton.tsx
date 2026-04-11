@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
 
@@ -32,14 +33,10 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
     if (!phone || sending || countdown > 0) return
     setSending(true)
     try {
-      const res = await api.post('/auth/sms-code', { phone })
-      if (res.data.code) {
-        console.log(`[DEV] 验证码: ${res.data.code}`)
-      }
+      await api.post('/auth/sms-code', { phone })
       setCountdown(60)
     } catch (err: any) {
-      const msg = err.response?.data?.message || t('sendFailed')
-      alert(msg)
+      toast.error(err.response?.data?.message || t('sendFailed'))
     } finally {
       setSending(false)
     }

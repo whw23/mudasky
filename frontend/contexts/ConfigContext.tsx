@@ -90,8 +90,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setCountryCodes(enabled.length > 0 ? enabled : DEFAULT_COUNTRY_CODES)
         }
       })
-      .catch(() => {
+      .catch((err) => {
         // 请求失败时使用默认值，不阻塞渲染
+        console.warn('[ConfigProvider] phone_country_codes 加载失败:', err.message)
       })
 
     api.get('/config/contact_info')
@@ -100,7 +101,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setContactInfo(res.data.value)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn('[ConfigProvider] contact_info 加载失败:', err.message))
 
     api.get('/config/site_info')
       .then((res) => {
@@ -108,7 +109,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setSiteInfo(res.data.value)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn('[ConfigProvider] site_info 加载失败:', err.message))
 
     api.get('/config/homepage_stats')
       .then((res) => {
@@ -116,7 +117,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setHomepageStats(res.data.value)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn('[ConfigProvider] homepage_stats 加载失败:', err.message))
 
     api.get('/config/about_info')
       .then((res) => {
@@ -124,7 +125,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setAboutInfo(res.data.value)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.warn('[ConfigProvider] about_info 加载失败:', err.message))
   }, [])
 
   return (

@@ -832,7 +832,8 @@
     "phoneFormPlaceholder": "電話番号を入力",
     "messageLabel": "メッセージ",
     "messagePlaceholder": "ご要望やご質問をご記入ください...",
-    "submitButton": "送信"
+    "submitButton": "送信",
+    "comingSoon": "オンラインメッセージ機能は近日公開予定"
   },
   "AdminSettings": {
     "title": "システム設定",

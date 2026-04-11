@@ -842,7 +842,8 @@
     "phoneFormPlaceholder": "Telefonnummer eingeben",
     "messageLabel": "Nachricht",
     "messagePlaceholder": "Bitte beschreiben Sie Ihre Anfrage oder Fragen...",
-    "submitButton": "Nachricht senden"
+    "submitButton": "Nachricht senden",
+    "comingSoon": "Online-Nachrichten demnächst verfügbar"
   },
   "AdminSettings": {
     "title": "Systemeinstellungen",

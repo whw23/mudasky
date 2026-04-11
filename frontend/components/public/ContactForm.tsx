@@ -53,10 +53,13 @@ export function ContactForm() {
         </div>
         <button
           type="button"
-          className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+          disabled
+          className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={t('comingSoon')}
         >
           {t('submitButton')}
         </button>
+        <p className="text-center text-xs text-muted-foreground">{t('comingSoon')}</p>
       </form>
     </div>
   )
