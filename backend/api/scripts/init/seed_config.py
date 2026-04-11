@@ -27,7 +27,7 @@ async def init_system_config(session) -> None:
             "value": {
                 "address": "\u6c5f\u82cf\u7701\u5357\u4eac\u5e02xx\u533axx\u8defxx\u53f7",
                 "phone": "189-1268-6656",
-                "email": "info@mutu-edu.com",
+                "email": "haoranxuexing@163.com",
                 "wechat": "mutu_edu",
                 "office_hours": "\u5468\u4e00\u81f3\u5468\u4e94 9:00-18:00",
             },
@@ -40,7 +40,7 @@ async def init_system_config(session) -> None:
                 "brand_name_en": "MUTU International Education",
                 "tagline": "\u6155\u5927\u56fd\u9645\u6559\u80b2 \u00b7 \u4e13\u6ce8\u56fd\u9645\u6559\u80b2 \u4e13\u6ce8\u51fa\u56fd\u670d\u52a1",
                 "hotline": "189-1268-6656",
-                "hotline_contact": "\u5434\u8001\u5e08",
+                "hotline_contact": "苏老师",
                 "logo_url": "",
                 "favicon_url": "",
                 "wechat_qr_url": "",
