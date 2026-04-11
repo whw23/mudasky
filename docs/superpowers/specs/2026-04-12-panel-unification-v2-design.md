@@ -14,14 +14,14 @@
 
 前端页面 `/{panel}/{page}` 中的请求，只调用 `/api/{panel}/{page}/{action}` 开头的后端接口。
 
-```
+```text
 前端页面: /admin/users        → API: /api/admin/users/{action}
 前端页面: /admin/dashboard    → API: /api/admin/dashboard/{action}
 前端页面: /portal/documents   → API: /api/portal/documents/{action}
 前端页面: /portal/profile     → API: /api/portal/profile/{action}
 ```
 
-网关从路径自动推导权限：`/api/{panel}/{page}/{action}` → `{panel}.{page}.{action}`
+网关从路径自动推导权限：`/api/{panel}/{page}/{action}` → `{panel}/{page}/{action}`（去掉 `/api/` 前缀即为权限）
 
 ### 前端 API 调用方式
 
@@ -66,41 +66,41 @@ resource 名与前端页面路径一致：
 
 | 前端页面 | 后端 API | 推导权限 |
 | --- | --- | --- |
-| `/admin/dashboard` | `GET /api/admin/dashboard/stats` | `admin.dashboard.stats` |
-| `/admin/users` | `GET /api/admin/users/list` | `admin.users.list` |
-| `/admin/users` | `GET /api/admin/users/detail/{id}` | `admin.users.detail` |
-| `/admin/users` | `POST /api/admin/users/edit/{id}` | `admin.users.edit` |
-| `/admin/users` | `POST /api/admin/users/reset-password/{id}` | `admin.users.reset-password` |
-| `/admin/users` | `POST /api/admin/users/assign-role/{id}` | `admin.users.assign-role` |
-| `/admin/users` | `POST /api/admin/users/force-logout/{id}` | `admin.users.force-logout` |
-| `/admin/roles` | `GET /api/admin/roles/list` | `admin.roles.list` |
-| `/admin/roles` | `GET /api/admin/roles/permissions` | `admin.roles.permissions` |
-| `/admin/roles` | `POST /api/admin/roles/create` | `admin.roles.create` |
-| `/admin/roles` | `POST /api/admin/roles/edit/{id}` | `admin.roles.edit` |
-| `/admin/roles` | `POST /api/admin/roles/delete/{id}` | `admin.roles.delete` |
-| `/admin/roles` | `POST /api/admin/roles/reorder` | `admin.roles.reorder` |
-| `/admin/general-settings` | `GET /api/admin/general-settings/list` | `admin.general-settings.list` |
-| `/admin/general-settings` | `POST /api/admin/general-settings/edit/{key}` | `admin.general-settings.edit` |
-| `/admin/web-settings` | `GET /api/admin/web-settings/list` | `admin.web-settings.list` |
-| `/admin/web-settings` | `POST /api/admin/web-settings/edit/{key}` | `admin.web-settings.edit` |
-| `/admin/panel-settings` | `GET /api/admin/panel-settings/view` | `admin.panel-settings.view` |
-| `/admin/panel-settings` | `POST /api/admin/panel-settings/edit` | `admin.panel-settings.edit` |
-| `/portal/profile` | `GET /api/portal/profile/view` | `portal.profile.view` |
-| `/portal/profile` | `POST /api/portal/profile/edit` | `portal.profile.edit` |
-| `/portal/profile` | `POST /api/portal/profile/password` | `portal.profile.password` |
-| `/portal/profile` | `POST /api/portal/profile/phone` | `portal.profile.phone` |
-| `/portal/profile` | `POST /api/portal/profile/2fa-enable-totp` | `portal.profile.2fa-enable-totp` |
-| `/portal/profile` | `POST /api/portal/profile/2fa-disable` | `portal.profile.2fa-disable` |
-| `/portal/profile` | `POST /api/portal/profile/2fa-verify` | `portal.profile.2fa-verify` |
-| `/portal/documents` | `GET /api/portal/documents/list` | `portal.documents.list` |
-| `/portal/documents` | `GET /api/portal/documents/download/{id}` | `portal.documents.download` |
-| `/portal/documents` | `POST /api/portal/documents/upload` | `portal.documents.upload` |
-| `/portal/documents` | `POST /api/portal/documents/delete/{id}` | `portal.documents.delete` |
-| `/portal/articles` | `GET /api/portal/articles/list` | `portal.articles.list` |
-| `/portal/articles` | `POST /api/portal/articles/create` | `portal.articles.create` |
-| `/portal/articles` | `POST /api/portal/articles/edit/{id}` | `portal.articles.edit` |
-| `/portal/articles` | `POST /api/portal/articles/delete/{id}` | `portal.articles.delete` |
-| `/portal/overview` | `GET /api/portal/overview/stats` | `portal.overview.stats` |
+| `/admin/dashboard` | `GET /api/admin/dashboard/stats` | `admin/dashboard/stats` |
+| `/admin/users` | `GET /api/admin/users/list` | `admin/users/list` |
+| `/admin/users` | `GET /api/admin/users/detail/{id}` | `admin/users/detail` |
+| `/admin/users` | `POST /api/admin/users/edit/{id}` | `admin/users/edit` |
+| `/admin/users` | `POST /api/admin/users/reset-password/{id}` | `admin/users/reset-password` |
+| `/admin/users` | `POST /api/admin/users/assign-role/{id}` | `admin/users/assign-role` |
+| `/admin/users` | `POST /api/admin/users/force-logout/{id}` | `admin/users/force-logout` |
+| `/admin/roles` | `GET /api/admin/roles/list` | `admin/roles/list` |
+| `/admin/roles` | `GET /api/admin/roles/permissions` | `admin/roles/permissions` |
+| `/admin/roles` | `POST /api/admin/roles/create` | `admin/roles/create` |
+| `/admin/roles` | `POST /api/admin/roles/edit/{id}` | `admin/roles/edit` |
+| `/admin/roles` | `POST /api/admin/roles/delete/{id}` | `admin/roles/delete` |
+| `/admin/roles` | `POST /api/admin/roles/reorder` | `admin/roles/reorder` |
+| `/admin/general-settings` | `GET /api/admin/general-settings/list` | `admin/general-settings/list` |
+| `/admin/general-settings` | `POST /api/admin/general-settings/edit/{key}` | `admin/general-settings/edit` |
+| `/admin/web-settings` | `GET /api/admin/web-settings/list` | `admin/web-settings/list` |
+| `/admin/web-settings` | `POST /api/admin/web-settings/edit/{key}` | `admin/web-settings/edit` |
+| `/admin/panel-settings` | `GET /api/admin/panel-settings/view` | `admin/panel-settings/view` |
+| `/admin/panel-settings` | `POST /api/admin/panel-settings/edit` | `admin/panel-settings/edit` |
+| `/portal/profile` | `GET /api/portal/profile/view` | `portal/profile/view` |
+| `/portal/profile` | `POST /api/portal/profile/edit` | `portal/profile/edit` |
+| `/portal/profile` | `POST /api/portal/profile/password` | `portal/profile/password` |
+| `/portal/profile` | `POST /api/portal/profile/phone` | `portal/profile/phone` |
+| `/portal/profile` | `POST /api/portal/profile/2fa-enable-totp` | `portal/profile/2fa-enable-totp` |
+| `/portal/profile` | `POST /api/portal/profile/2fa-disable` | `portal/profile/2fa-disable` |
+| `/portal/profile` | `POST /api/portal/profile/2fa-verify` | `portal/profile/2fa-verify` |
+| `/portal/documents` | `GET /api/portal/documents/list` | `portal/documents/list` |
+| `/portal/documents` | `GET /api/portal/documents/download/{id}` | `portal/documents/download` |
+| `/portal/documents` | `POST /api/portal/documents/upload` | `portal/documents/upload` |
+| `/portal/documents` | `POST /api/portal/documents/delete/{id}` | `portal/documents/delete` |
+| `/portal/articles` | `GET /api/portal/articles/list` | `portal/articles/list` |
+| `/portal/articles` | `POST /api/portal/articles/create` | `portal/articles/create` |
+| `/portal/articles` | `POST /api/portal/articles/edit/{id}` | `portal/articles/edit` |
+| `/portal/articles` | `POST /api/portal/articles/delete/{id}` | `portal/articles/delete` |
+| `/portal/overview` | `GET /api/portal/overview/stats` | `portal/overview/stats` |
 | — | `GET /api/public/config/{key}` | 无需权限 |
 | — | `GET /api/public/panel-config` | 无需权限 |
 | — | `GET /api/public/case/list` | 无需权限 |
@@ -172,28 +172,42 @@ fetch(`${baseUrl}/api/public/content/articles?${params}`)
 
 resource 名与前端页面路径一致（复数形式）。
 
-## 权限重命名
+## 权限格式
+
+权限 = URL 路径去掉 `/api/` 前缀，用 `/` 分隔，通配符用 `*`。网关无需任何字符转换。
+
+### 权限重命名
 
 `seed_rbac.py` 中所有权限前缀更新：
 
 | 旧 | 新 |
 | --- | --- |
-| `admin.user.*` | `admin.users.*` |
-| `admin.role.*` | `admin.roles.*` |
-| `admin.settings.*` | `admin.general-settings.*` + `admin.web-settings.*` |
-| `user_center.profile.*` | `portal.profile.*` |
-| `user_center.document.*` | `portal.documents.*` |
-| `user_center.article.*` | `portal.articles.*` |
+| `admin.user.*` | `admin/users/*` |
+| `admin.role.*` | `admin/roles/*` |
+| `admin.settings.*` | `admin/general-settings/*` + `admin/web-settings/*` |
+| `user_center.profile.*` | `portal/profile/*` |
+| `user_center.document.*` | `portal/documents/*` |
+| `user_center.article.*` | `portal/articles/*` |
 
 新增：
 
-- `admin.dashboard.*`
-- `admin.panel-settings.*`
-- `portal.overview.*`
+- `admin/dashboard/*`
+- `admin/panel-settings/*`
+- `portal/overview/*`
 
-## 网关鉴权（不变）
+### 角色权限定义
 
-与 v1 相同：从路径推导权限，通配符匹配。
+```python
+superuser:       ["*"]
+website_admin:   ["admin/*", "portal/*"]
+student_advisor: ["admin/users/*", "admin/content/*", "admin/cases/*", "portal/*"]
+student:         ["portal/*"]
+visitor:         ["portal/profile/view"]
+```
+
+## 网关鉴权（更新）
+
+权限推导简化：去掉 `/api/` 前缀，取前 3 段路径即为权限，不做任何字符转换（去掉原来的连字符转下划线逻辑）。通配符匹配规则不变（`*`、`admin/*`、`admin/users/*`）。
 
 ## 测试策略（不变）
 
@@ -222,8 +236,8 @@ resource 名与前端页面路径一致（复数形式）。
 | 修改 | `gateway/lua/auth.lua` — 鉴权逻辑 |
 | 修改 | `frontend/components/layout/Header.tsx` — 链接更新 |
 | 修改 | `frontend/contexts/ConfigContext.tsx` — 新增 panel-config |
-| 修改 | 所有前端 API 调用 — 硬编码路径 → `apiPath()` 拼接 |
-| 修改 | `frontend/lib/content-api.ts` — fetch + apiPath |
+| 修改 | 所有前端 admin/portal API 调用 — 硬编码路径 → `usePathname()` + action 拼接 |
+| 修改 | `frontend/lib/content-api.ts` — SSR fetch 路径更新 |
 | 修改 | 后端测试 — 路径更新 |
 | 修改 | 前端测试 — client mock + 路径更新 |
 | 修改 | E2E 测试 — 页面路径更新 |
