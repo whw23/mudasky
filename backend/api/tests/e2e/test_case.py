@@ -11,7 +11,7 @@ class TestPublicCase:
 
     async def test_list_cases(self, anon_client):
         """匿名访问案例列表返回 200。"""
-        resp = await anon_client.get("/api/cases")
+        resp = await anon_client.get("/api/public/case/list")
         assert resp.status_code == 200
         data = resp.json()
         assert "items" in data
@@ -31,7 +31,7 @@ class TestCaseCrud:
 
         # 1. 创建案例
         create_resp = await superuser_client.post(
-            "/api/admin/cases",
+            "/api/admin/case/create",
             json={
                 "student_name": f"E2E 学生 {suffix}",
                 "university": f"E2E 大学 {suffix}",
@@ -53,7 +53,7 @@ class TestCaseCrud:
         try:
             # 2. 匿名用户可以访问案例详情
             public_resp = await anon_client.get(
-                f"/api/cases/{case_id}"
+                f"/api/public/case/detail/{case_id}"
             )
             assert public_resp.status_code == 200
             assert (
@@ -62,8 +62,8 @@ class TestCaseCrud:
             )
 
             # 3. 更新案例
-            update_resp = await superuser_client.patch(
-                f"/api/admin/cases/{case_id}",
+            update_resp = await superuser_client.post(
+                f"/api/admin/case/edit/{case_id}",
                 json={
                     "student_name": f"E2E 更新学生 {suffix}",
                     "year": 2027,
@@ -79,8 +79,8 @@ class TestCaseCrud:
 
         finally:
             # 4. 删除案例（清理）
-            delete_resp = await superuser_client.delete(
-                f"/api/admin/cases/{case_id}"
+            delete_resp = await superuser_client.post(
+                f"/api/admin/case/delete/{case_id}"
             )
             assert delete_resp.status_code == 204
 
@@ -89,7 +89,7 @@ class TestCaseCrud:
     ):
         """未认证创建案例返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/cases",
+            "/api/admin/case/create",
             json={
                 "student_name": "unauthorized",
                 "university": "unauthorized",

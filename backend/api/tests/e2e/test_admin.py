@@ -12,7 +12,7 @@ class TestAdminUsers:
 
     async def test_list_users(self, superuser_client):
         """超级管理员分页查询用户列表。"""
-        resp = await superuser_client.get("/api/admin/users")
+        resp = await superuser_client.get("/api/admin/user/list")
         assert resp.status_code == 200
         data = resp.json()
         assert "items" in data
@@ -26,7 +26,7 @@ class TestAdminUsers:
     async def test_list_users_with_pagination(self, superuser_client):
         """分页参数生效。"""
         resp = await superuser_client.get(
-            "/api/admin/users", params={"page": 1, "page_size": 1}
+            "/api/admin/user/list", params={"page": 1, "page_size": 1}
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -37,13 +37,15 @@ class TestAdminUsers:
     async def test_get_user_detail(self, superuser_client):
         """获取超级管理员自身用户详情。"""
         # 先获取自身 user_id
-        me_resp = await superuser_client.get("/api/users/me")
+        me_resp = await superuser_client.get(
+            "/api/portal/profile/view"
+        )
         assert me_resp.status_code == 200
         user_id = me_resp.json()["id"]
 
         # 通过管理接口查询
         resp = await superuser_client.get(
-            f"/api/admin/users/{user_id}"
+            f"/api/admin/user/detail/{user_id}"
         )
         assert resp.status_code == 200
         user = resp.json()
@@ -79,8 +81,8 @@ class TestAdminUsers:
 
         try:
             # 2. 禁用用户
-            disable_resp = await superuser_client.patch(
-                f"/api/admin/users/{user_id}",
+            disable_resp = await superuser_client.post(
+                f"/api/admin/user/edit/{user_id}",
                 json={"is_active": False},
             )
             assert disable_resp.status_code == 200
@@ -88,14 +90,14 @@ class TestAdminUsers:
 
             # 3. 验证用户已被禁用
             detail_resp = await superuser_client.get(
-                f"/api/admin/users/{user_id}"
+                f"/api/admin/user/detail/{user_id}"
             )
             assert detail_resp.status_code == 200
             assert detail_resp.json()["is_active"] is False
 
             # 4. 恢复激活状态
-            enable_resp = await superuser_client.patch(
-                f"/api/admin/users/{user_id}",
+            enable_resp = await superuser_client.post(
+                f"/api/admin/user/edit/{user_id}",
                 json={"is_active": True},
             )
             assert enable_resp.status_code == 200
@@ -103,8 +105,8 @@ class TestAdminUsers:
 
         finally:
             # 5. 清理：强制下线测试用户
-            await superuser_client.delete(
-                f"/api/admin/users/{user_id}/tokens"
+            await superuser_client.post(
+                f"/api/admin/user/force-logout/{user_id}"
             )
 
 
@@ -114,20 +116,20 @@ class TestAdminUnauthorized:
 
     async def test_list_users_without_auth(self, e2e_client):
         """未登录访问用户列表返回 401。"""
-        resp = await e2e_client.get("/api/admin/users")
+        resp = await e2e_client.get("/api/admin/user/list")
         assert resp.status_code == 401
 
     async def test_get_user_without_auth(self, e2e_client):
         """未登录获取用户详情返回 401。"""
         resp = await e2e_client.get(
-            "/api/admin/users/nonexistent-id"
+            "/api/admin/user/detail/nonexistent-id"
         )
         assert resp.status_code == 401
 
     async def test_update_user_without_auth(self, e2e_client):
         """未登录更新用户返回 401。"""
-        resp = await e2e_client.patch(
-            "/api/admin/users/nonexistent-id",
+        resp = await e2e_client.post(
+            "/api/admin/user/edit/nonexistent-id",
             json={"is_active": False},
         )
         assert resp.status_code == 401

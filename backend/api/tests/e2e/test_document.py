@@ -20,7 +20,7 @@ class TestDocumentCrud:
             )
         }
         upload_resp = await superuser_client.post(
-            "/api/documents/upload", files=files
+            "/api/portal/document/upload", files=files
         )
         assert upload_resp.status_code == 201
         doc = upload_resp.json()
@@ -31,7 +31,7 @@ class TestDocumentCrud:
 
         # 2. 列表中包含上传的文档
         list_resp = await superuser_client.get(
-            "/api/documents"
+            "/api/portal/document/list"
         )
         assert list_resp.status_code == 200
         list_data = list_resp.json()
@@ -43,21 +43,21 @@ class TestDocumentCrud:
 
         # 3. 获取文档详情
         detail_resp = await superuser_client.get(
-            f"/api/documents/{doc_id}"
+            f"/api/portal/document/detail/{doc_id}"
         )
         assert detail_resp.status_code == 200
         assert detail_resp.json()["id"] == doc_id
 
         # 4. 下载文件
         download_resp = await superuser_client.get(
-            f"/api/documents/{doc_id}/download"
+            f"/api/portal/document/download/{doc_id}"
         )
         assert download_resp.status_code == 200
         assert b"hello world from e2e test" in download_resp.content
 
         # 5. 删除文档
-        delete_resp = await superuser_client.delete(
-            f"/api/documents/{doc_id}"
+        delete_resp = await superuser_client.post(
+            f"/api/portal/document/delete/{doc_id}"
         )
         assert delete_resp.status_code == 204
 
@@ -71,6 +71,6 @@ class TestDocumentCrud:
             )
         }
         resp = await e2e_client.post(
-            "/api/documents/upload", files=files
+            "/api/portal/document/upload", files=files
         )
         assert resp.status_code == 401

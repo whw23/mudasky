@@ -11,7 +11,9 @@ class TestPublicUniversity:
 
     async def test_list_universities(self, anon_client):
         """匿名访问院校列表返回 200。"""
-        resp = await anon_client.get("/api/universities")
+        resp = await anon_client.get(
+            "/api/public/university/list"
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "items" in data
@@ -21,7 +23,7 @@ class TestPublicUniversity:
     async def test_list_countries(self, anon_client):
         """匿名访问国家列表返回 200。"""
         resp = await anon_client.get(
-            "/api/universities/countries"
+            "/api/public/university/countries"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -40,7 +42,7 @@ class TestUniversityCrud:
 
         # 1. 创建院校
         create_resp = await superuser_client.post(
-            "/api/admin/universities",
+            "/api/admin/university/create",
             json={
                 "name": f"E2E 测试大学 {suffix}",
                 "name_en": f"E2E Test University {suffix}",
@@ -68,7 +70,7 @@ class TestUniversityCrud:
         try:
             # 2. 匿名用户可以访问院校详情
             public_resp = await anon_client.get(
-                f"/api/universities/{university_id}"
+                f"/api/public/university/detail/{university_id}"
             )
             assert public_resp.status_code == 200
             assert (
@@ -77,8 +79,8 @@ class TestUniversityCrud:
             )
 
             # 3. 更新院校
-            update_resp = await superuser_client.patch(
-                f"/api/admin/universities/{university_id}",
+            update_resp = await superuser_client.post(
+                f"/api/admin/university/edit/{university_id}",
                 json={
                     "name": f"E2E 更新大学 {suffix}",
                     "city": "曼彻斯特",
@@ -100,8 +102,8 @@ class TestUniversityCrud:
 
         finally:
             # 4. 删除院校（清理）
-            delete_resp = await superuser_client.delete(
-                f"/api/admin/universities/{university_id}"
+            delete_resp = await superuser_client.post(
+                f"/api/admin/university/delete/{university_id}"
             )
             assert delete_resp.status_code == 204
 
@@ -110,7 +112,7 @@ class TestUniversityCrud:
     ):
         """未认证创建院校返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/universities",
+            "/api/admin/university/create",
             json={
                 "name": "unauthorized",
                 "country": "unauthorized",

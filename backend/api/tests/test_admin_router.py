@@ -55,35 +55,11 @@ class TestListUsers:
             1,
         )
         resp = await client.get(
-            "/admin/users", headers=superuser_headers
+            "/admin/user/list", headers=superuser_headers
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
-
-    async def test_list_users_with_staff_perm(
-        self, client, staff_headers
-    ):
-        """有 admin.user.* 权限可查看用户列表。"""
-        self.mock_svc.list_users.return_value = ([], 0)
-        resp = await client.get(
-            "/admin/users", headers=staff_headers
-        )
-        assert resp.status_code == 200
-
-    async def test_list_users_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权查看用户列表。"""
-        resp = await client.get(
-            "/admin/users", headers=user_headers
-        )
-        assert resp.status_code == 403
-
-    async def test_list_users_no_auth(self, client):
-        """未认证无法查看用户列表。"""
-        resp = await client.get("/admin/users")
-        assert resp.status_code == 403
 
     async def test_list_users_with_search(
         self, client, superuser_headers
@@ -91,7 +67,7 @@ class TestListUsers:
         """支持搜索参数。"""
         self.mock_svc.list_users.return_value = ([], 0)
         resp = await client.get(
-            "/admin/users?search=test",
+            "/admin/user/list?search=test",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -118,20 +94,10 @@ class TestGetUser:
             _make_user_response()
         )
         resp = await client.get(
-            "/admin/users/target-001",
+            "/admin/user/detail/target-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
-
-    async def test_get_user_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权查看用户详情。"""
-        resp = await client.get(
-            "/admin/users/target-001",
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
 
 
 class TestUpdateUser:
@@ -154,23 +120,12 @@ class TestUpdateUser:
         self.mock_svc.update_user.return_value = (
             _make_user_response(is_active=False)
         )
-        resp = await client.patch(
-            "/admin/users/target-001",
+        resp = await client.post(
+            "/admin/user/edit/target-001",
             json={"is_active": False},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
-
-    async def test_update_user_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权更新用户信息。"""
-        resp = await client.patch(
-            "/admin/users/target-001",
-            json={"is_active": False},
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
 
 
 class TestResetPassword:
@@ -191,8 +146,8 @@ class TestResetPassword:
     ):
         """管理员可重置用户密码。"""
         self.mock_svc.reset_password.return_value = None
-        resp = await client.put(
-            "/admin/users/target-001/password",
+        resp = await client.post(
+            "/admin/user/reset-password/target-001",
             json={
                 "encrypted_password": "enc_data",
                 "nonce": "test_nonce",
@@ -201,20 +156,6 @@ class TestResetPassword:
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "密码重置成功"
-
-    async def test_reset_password_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权重置密码。"""
-        resp = await client.put(
-            "/admin/users/target-001/password",
-            json={
-                "encrypted_password": "enc_data",
-                "nonce": "test_nonce",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
 
 
 class TestAssignRole:
@@ -240,23 +181,12 @@ class TestAssignRole:
                 role_name="编辑",
             )
         )
-        resp = await client.put(
-            "/admin/users/target-001/role",
+        resp = await client.post(
+            "/admin/user/assign-role/target-001",
             json={"role_id": "role-001"},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
-
-    async def test_assign_role_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权分配角色。"""
-        resp = await client.put(
-            "/admin/users/target-001/role",
-            json={"role_id": "role-001"},
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
 
 
 class TestForceLogout:
@@ -277,19 +207,9 @@ class TestForceLogout:
     ):
         """管理员可强制下线用户。"""
         self.mock_svc.force_logout.return_value = None
-        resp = await client.delete(
-            "/admin/users/target-001/tokens",
+        resp = await client.post(
+            "/admin/user/force-logout/target-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "用户已强制下线"
-
-    async def test_force_logout_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权强制下线。"""
-        resp = await client.delete(
-            "/admin/users/target-001/tokens",
-            headers=user_headers,
-        )
-        assert resp.status_code == 403

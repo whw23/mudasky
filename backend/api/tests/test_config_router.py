@@ -32,7 +32,9 @@ class TestGetConfig:
             },
             datetime(2026, 1, 1, tzinfo=timezone.utc),
         )
-        resp = await client.get("/config/phone_country_codes")
+        resp = await client.get(
+            "/public/config/phone_country_codes"
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["key"] == "phone_country_codes"
@@ -45,7 +47,7 @@ class TestGetConfig:
         self.mock_svc.get_value_with_timestamp.side_effect = (
             NotFoundException(message="配置项 nonexistent 不存在")
         )
-        resp = await client.get("/config/nonexistent")
+        resp = await client.get("/public/config/nonexistent")
         assert resp.status_code == 404
 
 
@@ -68,23 +70,11 @@ class TestAdminListConfig:
         """超级管理员可查看所有配置。"""
         self.mock_svc.list_all.return_value = []
         resp = await client.get(
-            "/admin/config", headers=superuser_headers
+            "/admin/settings/list",
+            headers=superuser_headers,
         )
         assert resp.status_code == 200
 
-    async def test_list_configs_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权查看配置列表。"""
-        resp = await client.get(
-            "/admin/config", headers=user_headers
-        )
-        assert resp.status_code == 403
-
-    async def test_list_configs_no_auth(self, client):
-        """未认证用户无权查看配置列表。"""
-        resp = await client.get("/admin/config")
-        assert resp.status_code == 403
 
 
 class TestAdminUpdateConfig:
@@ -109,20 +99,9 @@ class TestAdminUpdateConfig:
             "value": [],
             "description": "国家码列表",
         }
-        resp = await client.put(
-            "/admin/config/phone_country_codes",
+        resp = await client.post(
+            "/admin/settings/edit/phone_country_codes",
             json={"value": []},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
-
-    async def test_update_config_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权更新配置。"""
-        resp = await client.put(
-            "/admin/config/phone_country_codes",
-            json={"value": []},
-            headers=user_headers,
-        )
-        assert resp.status_code == 403

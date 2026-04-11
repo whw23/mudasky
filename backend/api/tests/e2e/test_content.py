@@ -12,7 +12,7 @@ class TestPublicContent:
     async def test_list_categories(self, anon_client):
         """匿名访问分类列表返回 200。"""
         resp = await anon_client.get(
-            "/api/content/categories"
+            "/api/public/content/categories"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -21,7 +21,7 @@ class TestPublicContent:
     async def test_list_published_articles(self, anon_client):
         """匿名访问已发布文章列表返回 200。"""
         resp = await anon_client.get(
-            "/api/content/articles"
+            "/api/public/content/articles"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -42,7 +42,7 @@ class TestCategoryCrud:
 
         # 1. 创建分类
         create_resp = await superuser_client.post(
-            "/api/admin/content/categories",
+            "/api/admin/category/create",
             json={
                 "name": f"E2E 测试分类 {suffix}",
                 "slug": f"e2e-test-{suffix}",
@@ -57,8 +57,8 @@ class TestCategoryCrud:
         assert category["slug"] == f"e2e-test-{suffix}"
 
         # 2. 更新分类
-        update_resp = await superuser_client.patch(
-            f"/api/admin/content/categories/{category_id}",
+        update_resp = await superuser_client.post(
+            f"/api/admin/category/edit/{category_id}",
             json={"name": f"E2E 更新分类 {suffix}"},
         )
         assert update_resp.status_code == 200
@@ -68,8 +68,8 @@ class TestCategoryCrud:
         )
 
         # 3. 删除分类
-        delete_resp = await superuser_client.delete(
-            f"/api/admin/content/categories/{category_id}"
+        delete_resp = await superuser_client.post(
+            f"/api/admin/category/delete/{category_id}"
         )
         assert delete_resp.status_code == 204
 
@@ -78,7 +78,7 @@ class TestCategoryCrud:
     ):
         """未认证创建分类返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/content/categories",
+            "/api/admin/category/create",
             json={
                 "name": "unauthorized",
                 "slug": "unauthorized",
@@ -99,7 +99,7 @@ class TestArticleCrud:
 
         # 1. 先创建一个分类
         cat_resp = await superuser_client.post(
-            "/api/admin/content/categories",
+            "/api/admin/category/create",
             json={
                 "name": f"E2E 文章分类 {suffix}",
                 "slug": f"e2e-article-cat-{suffix}",
@@ -111,7 +111,7 @@ class TestArticleCrud:
         try:
             # 2. 创建文章
             create_resp = await superuser_client.post(
-                "/api/content/articles",
+                "/api/portal/article/create",
                 json={
                     "title": f"E2E 测试文章 {suffix}",
                     "slug": f"e2e-test-article-{suffix}",
@@ -131,7 +131,7 @@ class TestArticleCrud:
 
             # 3. 匿名用户可以访问已发布文章
             public_resp = await anon_client.get(
-                f"/api/content/articles/{article_id}"
+                f"/api/public/content/article/{article_id}"
             )
             assert public_resp.status_code == 200
             assert (
@@ -140,8 +140,8 @@ class TestArticleCrud:
             )
 
             # 4. 更新文章标题
-            update_resp = await superuser_client.patch(
-                f"/api/content/articles/{article_id}",
+            update_resp = await superuser_client.post(
+                f"/api/portal/article/edit/{article_id}",
                 json={
                     "title": f"E2E 更新文章 {suffix}"
                 },
@@ -153,12 +153,12 @@ class TestArticleCrud:
             )
 
             # 5. 删除文章
-            del_resp = await superuser_client.delete(
-                f"/api/content/articles/{article_id}"
+            del_resp = await superuser_client.post(
+                f"/api/portal/article/delete/{article_id}"
             )
             assert del_resp.status_code == 204
         finally:
             # 6. 清理：删除分类
-            await superuser_client.delete(
-                f"/api/admin/content/categories/{category_id}"
+            await superuser_client.post(
+                f"/api/admin/category/delete/{category_id}"
             )

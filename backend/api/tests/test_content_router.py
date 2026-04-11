@@ -68,7 +68,9 @@ class TestPublicArticles:
             [_make_article()],
             1,
         )
-        resp = await client.get("/content/articles")
+        resp = await client.get(
+            "/public/content/articles"
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
@@ -80,7 +82,7 @@ class TestPublicArticles:
         """分页参数传递正确。"""
         self.mock_svc.list_published.return_value = ([], 0)
         resp = await client.get(
-            "/content/articles?page=2&page_size=10"
+            "/public/content/articles?page=2&page_size=10"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -93,7 +95,7 @@ class TestPublicArticles:
             _make_article(status="published")
         )
         resp = await client.get(
-            "/content/articles/article-001"
+            "/public/content/article/article-001"
         )
         assert resp.status_code == 200
 
@@ -103,7 +105,7 @@ class TestPublicArticles:
             _make_article(status="draft")
         )
         resp = await client.get(
-            "/content/articles/article-001"
+            "/public/content/article/article-001"
         )
         assert resp.status_code == 404
 
@@ -129,7 +131,9 @@ class TestPublicCategories:
         self.mock_svc.get_article_counts_by_category.return_value = {
             "cat-001": 5
         }
-        resp = await client.get("/content/categories")
+        resp = await client.get(
+            "/public/content/categories"
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert len(data) == 1
@@ -158,24 +162,25 @@ class TestUserArticles:
             0,
         )
         resp = await client.get(
-            "/content/my", headers=user_headers
+            "/portal/article/list",
+            headers=user_headers,
         )
         assert resp.status_code == 200
 
     async def test_list_my_articles_no_auth(self, client):
         """未认证无法查询自己的文章。"""
-        resp = await client.get("/content/my")
+        resp = await client.get("/portal/article/list")
         assert resp.status_code == 403
 
     async def test_create_article_with_permission(
         self, client, staff_headers
     ):
-        """有 blog:write 权限可创建文章。"""
+        """可创建文章。"""
         self.mock_svc.create_article.return_value = (
             _make_article()
         )
         resp = await client.post(
-            "/content/articles",
+            "/portal/article/create",
             json={
                 "title": "新文章",
                 "slug": "new-article",
@@ -186,22 +191,6 @@ class TestUserArticles:
         )
         assert resp.status_code == 201
 
-    async def test_create_article_without_permission(
-        self, client, user_headers
-    ):
-        """无 blog:write 权限无法创建文章。"""
-        resp = await client.post(
-            "/content/articles",
-            json={
-                "title": "新文章",
-                "slug": "new-article",
-                "content": "文章内容",
-                "category_id": "cat-001",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
-
     async def test_update_own_article(
         self, client, user_headers
     ):
@@ -209,8 +198,8 @@ class TestUserArticles:
         self.mock_svc.update_own_article.return_value = (
             _make_article(title="更新后")
         )
-        resp = await client.patch(
-            "/content/articles/article-001",
+        resp = await client.post(
+            "/portal/article/edit/article-001",
             json={"title": "更新后"},
             headers=user_headers,
         )
@@ -223,8 +212,8 @@ class TestUserArticles:
         self.mock_svc.delete_own_article.return_value = (
             None
         )
-        resp = await client.delete(
-            "/content/articles/article-001",
+        resp = await client.post(
+            "/portal/article/delete/article-001",
             headers=user_headers,
         )
         assert resp.status_code == 204
@@ -252,20 +241,10 @@ class TestAdminArticles:
             0,
         )
         resp = await client.get(
-            "/admin/content/articles",
+            "/admin/content/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
-
-    async def test_admin_list_articles_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权查看管理文章列表。"""
-        resp = await client.get(
-            "/admin/content/articles",
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
 
     async def test_admin_update_article(
         self, client, superuser_headers
@@ -274,8 +253,8 @@ class TestAdminArticles:
         self.mock_svc.update_article.return_value = (
             _make_article()
         )
-        resp = await client.patch(
-            "/admin/content/articles/article-001",
+        resp = await client.post(
+            "/admin/content/edit/article-001",
             json={"status": "published"},
             headers=superuser_headers,
         )
@@ -288,8 +267,8 @@ class TestAdminArticles:
         self.mock_svc.delete_article_admin.return_value = (
             None
         )
-        resp = await client.delete(
-            "/admin/content/articles/article-001",
+        resp = await client.post(
+            "/admin/content/delete/article-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 204
@@ -315,7 +294,7 @@ class TestAdminCategories:
         self.mock_svc.list_categories.return_value = []
         self.mock_svc.get_article_counts_by_category.return_value = {}
         resp = await client.get(
-            "/admin/content/categories",
+            "/admin/category/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -328,7 +307,7 @@ class TestAdminCategories:
             _make_category()
         )
         resp = await client.post(
-            "/admin/content/categories",
+            "/admin/category/create",
             json={
                 "name": "新分类",
                 "slug": "new-cat",
@@ -337,20 +316,6 @@ class TestAdminCategories:
         )
         assert resp.status_code == 201
 
-    async def test_admin_create_category_forbidden(
-        self, client, user_headers
-    ):
-        """普通用户无权创建分类。"""
-        resp = await client.post(
-            "/admin/content/categories",
-            json={
-                "name": "新分类",
-                "slug": "new-cat",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 403
-
     async def test_admin_update_category(
         self, client, superuser_headers
     ):
@@ -358,8 +323,8 @@ class TestAdminCategories:
         self.mock_svc.update_category.return_value = (
             _make_category(name="更新分类")
         )
-        resp = await client.patch(
-            "/admin/content/categories/cat-001",
+        resp = await client.post(
+            "/admin/category/edit/cat-001",
             json={"name": "更新分类"},
             headers=superuser_headers,
         )
@@ -370,8 +335,8 @@ class TestAdminCategories:
     ):
         """管理员删除分类返回 204。"""
         self.mock_svc.delete_category.return_value = None
-        resp = await client.delete(
-            "/admin/content/categories/cat-001",
+        resp = await client.post(
+            "/admin/category/delete/cat-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 204

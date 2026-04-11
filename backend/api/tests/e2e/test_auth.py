@@ -80,8 +80,10 @@ class TestRegister:
         assert user_data["user"]["username"] == f"e2e_user_{phone[-6:]}"
         user_id = user_data["user"]["id"]
 
-        # 3. 注册后 cookie 已设置，可以访问 /users/me
-        me_resp = await e2e_client.get("/api/users/me")
+        # 3. 注册后 cookie 已设置，可以访问 /portal/profile/view
+        me_resp = await e2e_client.get(
+            "/api/portal/profile/view"
+        )
         assert me_resp.status_code == 200
         assert me_resp.json()["username"] == f"e2e_user_{phone[-6:]}"
 
@@ -102,9 +104,9 @@ class TestRegister:
             )
             assert login_resp.status_code == 200
 
-        # 5. 清理：管理员删除测试用户的 token
-        await superuser_client.delete(
-            f"/api/admin/users/{user_id}/tokens"
+        # 5. 清理：管理员强制下线测试用户
+        await superuser_client.post(
+            f"/api/admin/user/force-logout/{user_id}"
         )
 
 
@@ -157,7 +159,9 @@ class TestCsrf:
 
     async def test_mutation_without_csrf_rejected(self, anon_client):
         """不带 X-Requested-With 的 mutation 请求被拒绝。"""
-        resp = await anon_client.post("/api/users/me/2fa/enable-totp")
+        resp = await anon_client.post(
+            "/api/portal/profile/2fa-enable-totp"
+        )
         assert resp.status_code == 403
 
 
@@ -167,5 +171,7 @@ class TestUnauthenticated:
 
     async def test_protected_endpoint_returns_401(self, e2e_client):
         """未登录访问受保护端点返回 401。"""
-        resp = await e2e_client.get("/api/users/me")
+        resp = await e2e_client.get(
+            "/api/portal/profile/view"
+        )
         assert resp.status_code == 401

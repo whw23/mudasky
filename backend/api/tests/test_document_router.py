@@ -68,7 +68,7 @@ class TestUploadDocument:
             _make_document()
         )
         resp = await client.post(
-            "/documents/upload",
+            "/portal/document/upload",
             files={
                 "file": ("test.pdf", b"fake-content", "application/pdf")
             },
@@ -81,7 +81,7 @@ class TestUploadDocument:
     async def test_upload_no_auth(self, client):
         """未认证无法上传文件。"""
         resp = await client.post(
-            "/documents/upload",
+            "/portal/document/upload",
             files={
                 "file": ("test.pdf", b"fake-content", "application/pdf")
             },
@@ -93,7 +93,8 @@ class TestUploadDocument:
     ):
         """缺少文件返回 422。"""
         resp = await client.post(
-            "/documents/upload", headers=user_headers
+            "/portal/document/upload",
+            headers=user_headers,
         )
         assert resp.status_code == 422
 
@@ -140,7 +141,8 @@ class TestListDocuments:
             _make_user_model()
         )
         resp = await client.get(
-            "/documents", headers=user_headers
+            "/portal/document/list",
+            headers=user_headers,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -150,7 +152,7 @@ class TestListDocuments:
 
     async def test_list_documents_no_auth(self, client):
         """未认证无法查询文档列表。"""
-        resp = await client.get("/documents")
+        resp = await client.get("/portal/document/list")
         assert resp.status_code == 403
 
 
@@ -175,7 +177,8 @@ class TestGetDocument:
             _make_document()
         )
         resp = await client.get(
-            "/documents/doc-001", headers=user_headers
+            "/portal/document/detail/doc-001",
+            headers=user_headers,
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -191,13 +194,16 @@ class TestGetDocument:
             NotFoundException(message="文档不存在")
         )
         resp = await client.get(
-            "/documents/nonexistent", headers=user_headers
+            "/portal/document/detail/nonexistent",
+            headers=user_headers,
         )
         assert resp.status_code == 404
 
     async def test_get_document_no_auth(self, client):
         """未认证无法获取文档详情。"""
-        resp = await client.get("/documents/doc-001")
+        resp = await client.get(
+            "/portal/document/detail/doc-001"
+        )
         assert resp.status_code == 403
 
 
@@ -219,8 +225,9 @@ class TestDeleteDocument:
     ):
         """删除文档成功返回 204。"""
         self.mock_svc.delete_document.return_value = None
-        resp = await client.delete(
-            "/documents/doc-001", headers=user_headers
+        resp = await client.post(
+            "/portal/document/delete/doc-001",
+            headers=user_headers,
         )
         assert resp.status_code == 204
 
@@ -233,12 +240,15 @@ class TestDeleteDocument:
         self.mock_svc.delete_document.side_effect = (
             NotFoundException(message="文档不存在")
         )
-        resp = await client.delete(
-            "/documents/nonexistent", headers=user_headers
+        resp = await client.post(
+            "/portal/document/delete/nonexistent",
+            headers=user_headers,
         )
         assert resp.status_code == 404
 
     async def test_delete_document_no_auth(self, client):
         """未认证无法删除文档。"""
-        resp = await client.delete("/documents/doc-001")
+        resp = await client.post(
+            "/portal/document/delete/doc-001"
+        )
         assert resp.status_code == 403

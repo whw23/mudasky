@@ -73,7 +73,7 @@ class TestGetMe:
             _make_user_response()
         )
         resp = await client.get(
-            "/users/me", headers=user_headers
+            "/portal/profile/view", headers=user_headers
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -81,7 +81,7 @@ class TestGetMe:
 
     async def test_get_me_no_auth(self, client):
         """未认证请求返回 403。"""
-        resp = await client.get("/users/me")
+        resp = await client.get("/portal/profile/view")
         assert resp.status_code == 403
 
 
@@ -105,8 +105,8 @@ class TestUpdateMe:
         self.mock_svc.update_profile.return_value = (
             _make_user_model(username="newname")
         )
-        resp = await client.patch(
-            "/users/me",
+        resp = await client.post(
+            "/portal/profile/edit",
             json={"username": "newname"},
             headers=user_headers,
         )
@@ -114,8 +114,8 @@ class TestUpdateMe:
 
     async def test_update_me_no_auth(self, client):
         """未认证无法更新个人信息。"""
-        resp = await client.patch(
-            "/users/me", json={"username": "newname"}
+        resp = await client.post(
+            "/portal/profile/edit", json={"username": "newname"}
         )
         assert resp.status_code == 403
 
@@ -138,8 +138,8 @@ class TestChangePassword:
     ):
         """修改密码成功返回 200。"""
         self.mock_svc.change_password.return_value = None
-        resp = await client.put(
-            "/users/me/password",
+        resp = await client.post(
+            "/portal/profile/password",
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
@@ -153,8 +153,8 @@ class TestChangePassword:
 
     async def test_change_password_no_auth(self, client):
         """未认证无法修改密码。"""
-        resp = await client.put(
-            "/users/me/password",
+        resp = await client.post(
+            "/portal/profile/password",
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
@@ -185,8 +185,8 @@ class TestChangePhone:
         self.mock_svc.change_phone.return_value = (
             _make_user_model(phone="+8613900139000")
         )
-        resp = await client.put(
-            "/users/me/phone",
+        resp = await client.post(
+            "/portal/profile/phone",
             json={
                 "new_phone": "+8613900139000",
                 "code": "654321",
@@ -199,8 +199,8 @@ class TestChangePhone:
         self, client, user_headers
     ):
         """手机号格式无效返回 422。"""
-        resp = await client.put(
-            "/users/me/phone",
+        resp = await client.post(
+            "/portal/profile/phone",
             json={
                 "new_phone": "bad-phone",
                 "code": "654321",
@@ -226,7 +226,7 @@ class TestTwoFactor:
     async def test_confirm_totp_no_auth(self, client):
         """未认证无法确认 TOTP。"""
         resp = await client.post(
-            "/users/me/2fa/confirm-totp",
+            "/portal/profile/2fa-confirm-totp",
             json={"totp_code": "123456"},
         )
         assert resp.status_code == 403
@@ -237,7 +237,7 @@ class TestTwoFactor:
         """确认 TOTP 成功返回 200。"""
         self.mock_svc.confirm_2fa_totp.return_value = None
         resp = await client.post(
-            "/users/me/2fa/confirm-totp",
+            "/portal/profile/2fa-confirm-totp",
             json={"totp_code": "123456"},
             headers=user_headers,
         )
@@ -249,7 +249,7 @@ class TestTwoFactor:
         """启用短信 2FA 成功返回 200。"""
         self.mock_svc.enable_2fa_sms.return_value = None
         resp = await client.post(
-            "/users/me/2fa/enable-sms",
+            "/portal/profile/2fa-enable-sms",
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
@@ -264,7 +264,7 @@ class TestTwoFactor:
         """关闭 2FA 成功返回 200。"""
         self.mock_svc.disable_2fa.return_value = None
         resp = await client.post(
-            "/users/me/2fa/disable",
+            "/portal/profile/2fa-disable",
             json={
                 "phone": "+8613800138000",
                 "code": "123456",
