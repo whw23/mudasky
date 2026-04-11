@@ -37,6 +37,24 @@ async def get_config(
     return config
 
 
+@public_config_router.get("/public/panel-config")
+async def get_panel_config(
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
+) -> ConfigResponse:
+    """获取面板页面配置（公开接口，支持 ETag 缓存）。"""
+    svc = ConfigService(session)
+    config, updated_at = await svc.get_value_with_timestamp("panel_pages")
+
+    if set_cache_headers(
+        response, f"panel_pages:{updated_at.isoformat()}", 3600, if_none_match
+    ):
+        return response  # type: ignore[return-value]
+
+    return config
+
+
 @admin_general_settings_router.get(
     "/list",
     response_model=list[ConfigDetailResponse],
