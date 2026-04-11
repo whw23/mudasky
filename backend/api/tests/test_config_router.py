@@ -70,7 +70,7 @@ class TestAdminListConfig:
         """超级管理员可查看所有配置。"""
         self.mock_svc.list_all.return_value = []
         resp = await client.get(
-            "/admin/settings/list",
+            "/admin/general-settings/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -100,7 +100,7 @@ class TestAdminUpdateConfig:
             "description": "国家码列表",
         }
         resp = await client.post(
-            "/admin/settings/edit/phone_country_codes",
+            "/admin/general-settings/edit/phone_country_codes",
             json={"value": []},
             headers=superuser_headers,
         )

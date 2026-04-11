@@ -58,7 +58,7 @@ class TestListPermissions:
             _make_permission()
         ]
         resp = await client.get(
-            "/admin/role/permissions",
+            "/admin/roles/permissions",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -87,7 +87,7 @@ class TestListRoles:
             _make_role()
         ]
         resp = await client.get(
-            "/admin/role/list",
+            "/admin/roles/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -114,7 +114,7 @@ class TestCreateRole:
             _make_role()
         )
         resp = await client.post(
-            "/admin/role/create",
+            "/admin/roles/create",
             json={
                 "name": "新角色",
                 "description": "测试",
@@ -129,7 +129,7 @@ class TestCreateRole:
     ):
         """缺少必填字段返回 422。"""
         resp = await client.post(
-            "/admin/role/create",
+            "/admin/roles/create",
             json={"description": "缺少名称"},
             headers=superuser_headers,
         )
@@ -155,7 +155,7 @@ class TestGetRole:
         """可查看角色详情。"""
         self.mock_svc.get_role.return_value = _make_role()
         resp = await client.get(
-            "/admin/role/detail/role-001",
+            "/admin/roles/detail/role-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -170,7 +170,7 @@ class TestGetRole:
             NotFoundException(message="角色不存在")
         )
         resp = await client.get(
-            "/admin/role/detail/nonexistent",
+            "/admin/roles/detail/nonexistent",
             headers=superuser_headers,
         )
         assert resp.status_code == 404
@@ -197,7 +197,7 @@ class TestUpdateRole:
             _make_role(name="更新后")
         )
         resp = await client.post(
-            "/admin/role/edit/role-001",
+            "/admin/roles/edit/role-001",
             json={"name": "更新后"},
             headers=superuser_headers,
         )
@@ -223,7 +223,7 @@ class TestDeleteRole:
         """可删除角色。"""
         self.mock_svc.delete_role.return_value = None
         resp = await client.post(
-            "/admin/role/delete/role-001",
+            "/admin/roles/delete/role-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200

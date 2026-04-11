@@ -42,7 +42,7 @@ class TestUniversityCrud:
 
         # 1. 创建院校
         create_resp = await superuser_client.post(
-            "/api/admin/university/create",
+            "/api/admin/universities/create",
             json={
                 "name": f"E2E 测试大学 {suffix}",
                 "name_en": f"E2E Test University {suffix}",
@@ -80,7 +80,7 @@ class TestUniversityCrud:
 
             # 3. 更新院校
             update_resp = await superuser_client.post(
-                f"/api/admin/university/edit/{university_id}",
+                f"/api/admin/universities/edit/{university_id}",
                 json={
                     "name": f"E2E 更新大学 {suffix}",
                     "city": "曼彻斯特",
@@ -103,7 +103,7 @@ class TestUniversityCrud:
         finally:
             # 4. 删除院校（清理）
             delete_resp = await superuser_client.post(
-                f"/api/admin/university/delete/{university_id}"
+                f"/api/admin/universities/delete/{university_id}"
             )
             assert delete_resp.status_code == 204
 
@@ -112,7 +112,7 @@ class TestUniversityCrud:
     ):
         """未认证创建院校返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/university/create",
+            "/api/admin/universities/create",
             json={
                 "name": "unauthorized",
                 "country": "unauthorized",

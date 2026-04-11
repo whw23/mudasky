@@ -27,7 +27,7 @@ class TestAdminConfig:
     async def test_list_configs(self, superuser_client):
         """超级管理员获取所有配置列表。"""
         resp = await superuser_client.get(
-            "/api/admin/settings/list"
+            "/api/admin/general-settings/list"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -55,7 +55,7 @@ class TestAdminConfig:
         # 2. 修改值（更新 tagline 字段）
         updated_value = {**original_value, "hotline": "000-0000-0000"}
         update_resp = await superuser_client.post(
-            f"/api/admin/settings/edit/{key}",
+            f"/api/admin/general-settings/edit/{key}",
             json={"value": updated_value},
         )
         assert update_resp.status_code == 200
@@ -70,7 +70,7 @@ class TestAdminConfig:
 
         # 4. 恢复原始值
         revert_resp = await superuser_client.post(
-            f"/api/admin/settings/edit/{key}",
+            f"/api/admin/general-settings/edit/{key}",
             json={"value": original_value},
         )
         assert revert_resp.status_code == 200
@@ -84,14 +84,14 @@ class TestConfigUnauthorized:
     async def test_list_configs_without_auth(self, e2e_client):
         """未登录访问管理配置列表返回 401。"""
         resp = await e2e_client.get(
-            "/api/admin/settings/list"
+            "/api/admin/general-settings/list"
         )
         assert resp.status_code == 401
 
     async def test_update_config_without_auth(self, e2e_client):
         """未登录更新配置返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/settings/edit/site_info",
+            "/api/admin/general-settings/edit/site_info",
             json={"value": {"brand_name": "hack"}},
         )
         assert resp.status_code == 401

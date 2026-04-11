@@ -55,7 +55,7 @@ class TestListUsers:
             1,
         )
         resp = await client.get(
-            "/admin/user/list", headers=superuser_headers
+            "/admin/users/list", headers=superuser_headers
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -67,7 +67,7 @@ class TestListUsers:
         """支持搜索参数。"""
         self.mock_svc.list_users.return_value = ([], 0)
         resp = await client.get(
-            "/admin/user/list?search=test",
+            "/admin/users/list?search=test",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -94,7 +94,7 @@ class TestGetUser:
             _make_user_response()
         )
         resp = await client.get(
-            "/admin/user/detail/target-001",
+            "/admin/users/detail/target-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -121,7 +121,7 @@ class TestUpdateUser:
             _make_user_response(is_active=False)
         )
         resp = await client.post(
-            "/admin/user/edit/target-001",
+            "/admin/users/edit/target-001",
             json={"is_active": False},
             headers=superuser_headers,
         )
@@ -147,7 +147,7 @@ class TestResetPassword:
         """管理员可重置用户密码。"""
         self.mock_svc.reset_password.return_value = None
         resp = await client.post(
-            "/admin/user/reset-password/target-001",
+            "/admin/users/reset-password/target-001",
             json={
                 "encrypted_password": "enc_data",
                 "nonce": "test_nonce",
@@ -182,7 +182,7 @@ class TestAssignRole:
             )
         )
         resp = await client.post(
-            "/admin/user/assign-role/target-001",
+            "/admin/users/assign-role/target-001",
             json={"role_id": "role-001"},
             headers=superuser_headers,
         )
@@ -208,7 +208,7 @@ class TestForceLogout:
         """管理员可强制下线用户。"""
         self.mock_svc.force_logout.return_value = None
         resp = await client.post(
-            "/admin/user/force-logout/target-001",
+            "/admin/users/force-logout/target-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
