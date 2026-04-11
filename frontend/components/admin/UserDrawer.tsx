@@ -42,7 +42,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   const fetchUser = useCallback(async () => {
     if (!userId) return
     try {
-      const { data } = await api.get<User>(`/admin/user/detail/${userId}`)
+      const { data } = await api.get<User>(`/admin/users/detail/${userId}`)
       setUser(data)
       setSelectedRoleId(data.role_id || "")
       setStorageQuota(data.storage_quota)
@@ -54,7 +54,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   /** 加载角色列表 */
   const fetchRoles = useCallback(async () => {
     try {
-      const { data } = await api.get<Role[]>("/admin/role/list")
+      const { data } = await api.get<Role[]>("/admin/roles/list")
       setRoles(data)
     } catch {
       /* 忽略 */
@@ -88,7 +88,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   const handleToggleActive = () => {
     if (!user) return
     runAction(
-      () => api.post(`/admin/user/edit/${userId}`, { is_active: !user.is_active }),
+      () => api.post(`/admin/users/edit/${userId}`, { is_active: !user.is_active }),
       t("toggleActiveSuccess"),
     )
   }
@@ -96,7 +96,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   /** 保存角色 */
   const handleSaveRole = () => {
     runAction(
-      () => api.post(`/admin/user/assign-role/${userId}`, { role_id: selectedRoleId || null }),
+      () => api.post(`/admin/users/assign-role/${userId}`, { role_id: selectedRoleId || null }),
       t("saveGroupsSuccess"),
     )
   }
@@ -104,7 +104,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   /** 保存存储配额 */
   const handleSaveQuota = () => {
     runAction(
-      () => api.post(`/admin/user/edit/${userId}`, { storage_quota: storageQuota }),
+      () => api.post(`/admin/users/edit/${userId}`, { storage_quota: storageQuota }),
       t("saveQuotaSuccess"),
     )
   }
@@ -117,7 +117,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
     }
     const encrypted = await encryptPassword(password)
     runAction(
-      () => api.post(`/admin/user/reset-password/${userId}`, {
+      () => api.post(`/admin/users/reset-password/${userId}`, {
         encrypted_password: encrypted.encrypted_password,
         nonce: encrypted.nonce,
       }),
@@ -129,7 +129,7 @@ export function UserDrawer({ userId, open, onClose, onUpdate }: UserDrawerProps)
   const handleForceLogout = () => {
     if (!confirm(t("forceLogoutConfirm"))) return
     runAction(
-      () => api.post(`/admin/user/force-logout/${userId}`),
+      () => api.post(`/admin/users/force-logout/${userId}`),
       t("forceLogoutSuccess"),
     )
   }

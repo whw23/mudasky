@@ -132,7 +132,7 @@ export function RoleDialog({
   /** 获取所有权限列表 */
   const fetchPermissions = useCallback(async () => {
     try {
-      const { data } = await api.get<Permission[]>("/admin/role/permissions")
+      const { data } = await api.get<Permission[]>("/admin/roles/permissions")
       setPermissions(data)
     } catch {
       /* 忽略 */
@@ -248,9 +248,9 @@ export function RoleDialog({
         permission_ids: [...selectedIds],
       }
       if (isEdit) {
-        await api.post(`/admin/role/edit/${role.id}`, payload)
+        await api.post(`/admin/roles/edit/${role.id}`, payload)
       } else {
-        await api.post("/admin/role/create", payload)
+        await api.post("/admin/roles/create", payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

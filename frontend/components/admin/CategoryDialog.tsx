@@ -65,9 +65,9 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
     try {
       const payload = { name, slug, description, sort_order: sortOrder }
       if (isEdit) {
-        await api.post(`/admin/category/edit/${category.id}`, payload)
+        await api.post(`/admin/categories/edit/${category.id}`, payload)
       } else {
-        await api.post("/admin/category/create", payload)
+        await api.post("/admin/categories/create", payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()
