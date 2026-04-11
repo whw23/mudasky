@@ -12,7 +12,8 @@ import { useTranslations } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
-import { useLocalizedConfig } from "@/contexts/ConfigContext"
+import { useLocalizedConfig, useConfig } from "@/contexts/ConfigContext"
+import { getLocalizedValue } from "@/lib/i18n-config"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 import { HeaderLogo } from "./HeaderLogo"
@@ -48,12 +49,14 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
   const { siteInfo } = useLocalizedConfig()
+  const rawConfig = useConfig()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
   const brandName = siteInfo.brand_name || tHeader("brandName")
+  const brandNameEn = getLocalizedValue(rawConfig.siteInfo.brand_name, "en") || "MUTU International Education"
   const tagline = siteInfo.tagline || tHeader("tagline")
   const hotline = siteInfo.hotline
   const hotlineContact = siteInfo.hotline_contact
@@ -103,12 +106,17 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
                   size={36}
                   className="rounded-lg shrink-0"
                 />
-                <span
-                  className="font-[800] tracking-wide whitespace-nowrap text-foreground"
-                  style={{ fontSize: 22 }}
-                >
-                  {brandName}
-                </span>
+                <div className="flex flex-col">
+                  <span
+                    className="font-[800] tracking-wide whitespace-nowrap text-foreground"
+                    style={{ fontSize: 22 }}
+                  >
+                    {brandName}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                    {brandNameEn}
+                  </span>
+                </div>
               </Link>,
               "brand",
               "编辑品牌名称"
