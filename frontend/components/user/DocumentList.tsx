@@ -64,7 +64,7 @@ export function DocumentList({
   const fetchDocuments = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<DocumentListResponse>("/portal/document/list", {
+      const { data } = await api.get<DocumentListResponse>("/portal/documents/list", {
         params: { page, page_size: 20 },
       })
       /* 前端过滤分类（后端无分类筛选参数） */
@@ -100,7 +100,7 @@ export function DocumentList({
   const handleDelete = async (doc: Document) => {
     if (!confirm(t("deleteConfirm"))) return
     try {
-      await api.post(`/portal/document/delete/${doc.id}`)
+      await api.post(`/portal/documents/delete/${doc.id}`)
       toast.success(t("deleteSuccess"))
       fetchDocuments()
     } catch {
