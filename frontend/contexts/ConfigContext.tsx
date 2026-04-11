@@ -34,6 +34,7 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   logo_url: '',
   favicon_url: '',
   wechat_qr_url: '',
+  company_name: '',
   icp_filing: '',
 }
 
@@ -151,6 +152,7 @@ interface LocalizedConfigType {
     logo_url: string
     favicon_url: string
     wechat_qr_url: string
+    company_name: string
     icp_filing: string
   }
   contactInfo: {

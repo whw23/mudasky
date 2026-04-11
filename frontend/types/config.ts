@@ -31,6 +31,7 @@ export interface SiteInfo {
   logo_url: string
   favicon_url: string
   wechat_qr_url: string
+  company_name: string
   icp_filing: string
 }
 

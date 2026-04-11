@@ -142,11 +142,22 @@ export function Footer({ editable, onEdit }: FooterProps) {
       </div>
 
       {/* 底部版权栏 */}
-      {wrapEditable(
-        <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-          <p className="opacity-60">{t("translationDisclaimer")}</p>
-          <p className="mt-1">
-            {t("copyright")} | {t("companyName")} |{" "}
+      <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
+        <p className="opacity-60">{t("translationDisclaimer")}</p>
+        <p className="mt-1">
+          {wrapEditable(
+            <span>© {new Date().getFullYear()} {siteInfo.company_name} {t("allRightsReserved")}</span>,
+            "company",
+            "编辑公司名称"
+          )}
+          {" | "}
+          {wrapEditable(
+            <span>{siteInfo.company_name}</span>,
+            "company",
+            "编辑公司名称"
+          )}
+          {" | "}
+          {wrapEditable(
             <a
               href="https://beian.miit.gov.cn/"
               target="_blank"
@@ -154,12 +165,12 @@ export function Footer({ editable, onEdit }: FooterProps) {
               className="hover:text-foreground transition-colors"
             >
               {siteInfo.icp_filing || t("icp")}
-            </a>
-          </p>
-        </div>,
-        "icp",
-        "编辑ICP备案"
-      )}
+            </a>,
+            "icp",
+            "编辑ICP备案"
+          )}
+        </p>
+      </div>
     </footer>
   )
 }
