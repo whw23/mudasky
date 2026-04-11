@@ -16,7 +16,9 @@ case "${1:-}" in
     echo "停止容器并清理数据卷..."
     docker compose down -v
     echo "重新构建并启动..."
-    docker compose up --build
+    docker compose build --pull
+    docker image prune -f
+    docker compose up
     ;;
   --down)
     echo "停止并移除容器..."
@@ -27,7 +29,10 @@ case "${1:-}" in
     ;;
   "")
     echo "构建并启动开发环境..."
-    docker compose up --build
+    docker compose down
+    docker compose build --pull
+    docker image prune -f
+    docker compose up
     ;;
   *)
     echo "用法: $0 [--clean|--down|--logs [服务名]]"
