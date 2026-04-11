@@ -134,39 +134,43 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               "编辑热线"
             )}
 
-            <LocaleSwitcher />
+            <div className={editable ? "pointer-events-none" : ""}>
+              <LocaleSwitcher />
+            </div>
 
-            {user ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/dashboard"
-                  className="text-foreground/70 hover:text-foreground transition-colors"
-                >
-                  {user.username || user.phone}
-                </Link>
-                {isAdmin && (
+            <div className={editable ? "pointer-events-none" : ""}>
+              {user ? (
+                <div className="flex items-center gap-3">
                   <Link
-                    href="/admin/dashboard"
+                    href="/dashboard"
+                    className="text-foreground/70 hover:text-foreground transition-colors"
+                  >
+                    {user.username || user.phone}
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/dashboard"
+                      className="text-foreground/60 hover:text-foreground transition-colors"
+                    >
+                      {tHeader("adminPanel")}
+                    </Link>
+                  )}
+                  <button
+                    onClick={logout}
                     className="text-foreground/60 hover:text-foreground transition-colors"
                   >
-                    {tHeader("adminPanel")}
-                  </Link>
-                )}
+                    {tHeader("logout")}
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={logout}
-                  className="text-foreground/60 hover:text-foreground transition-colors"
+                  onClick={showLoginModal}
+                  className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
                 >
-                  {tHeader("logout")}
+                  {tHeader("loginOrRegister")}
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={showLoginModal}
-                className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
-              >
-                {tHeader("loginOrRegister")}
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
