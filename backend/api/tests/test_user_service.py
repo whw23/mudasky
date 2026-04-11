@@ -33,7 +33,7 @@ async def test_get_user_response_success(
     mock_repo, mock_rbac_repo, service, sample_user
 ):
     """获取用户响应，包含权限和权限组。"""
-    user = sample_user(id="user-001")
+    user = sample_user(id="user-001", role_id="role-x")
     mock_repo.get_by_id = AsyncMock(return_value=user)
     mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=["user:read", "doc:read"]

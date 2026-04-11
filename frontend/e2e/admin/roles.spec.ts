@@ -36,8 +36,8 @@ test.describe("角色管理", () => {
     await expect(adminPage.getByText(ROLE_NAME)).toBeVisible({ timeout: 30_000 })
 
     /* === 编辑角色 === */
-    const container = adminPage.getByText(ROLE_NAME).locator("..").locator("..")
-    await container.getByRole("button", { name: "编辑" }).click()
+    const row = adminPage.locator("div.grid").filter({ hasText: ROLE_NAME }).first()
+    await row.getByRole("button", { name: "编辑" }).click()
     await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 15_000 })
     const nameInput = adminPage.getByPlaceholder("请输入角色名称")
     await nameInput.clear()
@@ -48,8 +48,8 @@ test.describe("角色管理", () => {
 
     /* === 删除角色 === */
     adminPage.on("dialog", (dialog) => dialog.accept())
-    const delContainer = adminPage.getByText(ROLE_NAME_EDITED).locator("..").locator("..")
-    await delContainer.getByRole("button", { name: "删除" }).click()
+    const delRow = adminPage.locator("div.grid").filter({ hasText: ROLE_NAME_EDITED }).first()
+    await delRow.getByRole("button", { name: "删除" }).click()
     await expect(adminPage.getByText(ROLE_NAME_EDITED)).toBeHidden({ timeout: 30_000 })
   })
 })

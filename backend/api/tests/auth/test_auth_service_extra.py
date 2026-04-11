@@ -432,7 +432,7 @@ async def test_build_user_response(
     mock_repo, mock_rbac_repo, service, sample_user
 ):
     """构建用户响应对象。"""
-    user = sample_user(id="user-1")
+    user = sample_user(id="user-1", role_id="role-x")
     mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=["user:read"]
     )

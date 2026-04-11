@@ -9,7 +9,7 @@ import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
 
-async function globalSetup(config: FullConfig) {
+async function globalSetup(_config: FullConfig) {
   const dir = path.dirname(AUTH_FILE)
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
@@ -64,8 +64,6 @@ async function globalSetup(config: FullConfig) {
   /* 预热所有管理后台页面 — 用已登录的浏览器访问触发 SSR + client bundle 编译 */
   const adminPages = [
     "/admin/dashboard", "/admin/users", "/admin/roles",
-    "/admin/articles", "/admin/cases", "/admin/categories",
-    "/admin/universities", "/admin/settings",
   ]
   for (const p of adminPages) {
     await page.goto(`http://localhost${p}`, { waitUntil: "load", timeout: 60_000 })

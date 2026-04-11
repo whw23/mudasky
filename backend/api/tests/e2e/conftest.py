@@ -52,14 +52,6 @@ async def encrypt_password(
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """Session 级事件循环。"""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="session")
 async def wait_for_healthy():
     """等待服务就绪。"""
     async with httpx.AsyncClient(base_url=E2E_BASE_URL) as client:

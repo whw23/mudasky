@@ -19,6 +19,7 @@ dev = [
     "pytest-asyncio>=0.26",
     "httpx>=0.28",
     "black>=25.1",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.uv.sources]
@@ -29,6 +30,8 @@ packages = ["src/api"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 markers = ["e2e: 端到端测试（需要容器运行）"]
 

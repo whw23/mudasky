@@ -54,16 +54,7 @@ async def test_list_users_no_filter(
 ):
     """分页查询用户列表（无过滤）。"""
     user = _make_user()
-    mock_result_count = MagicMock()
-    mock_result_count.scalar_one.return_value = 1
-    mock_result_list = MagicMock()
-    mock_scalars = MagicMock()
-    mock_scalars.all.return_value = [user]
-    mock_result_list.scalars.return_value = mock_scalars
-
-    service.session.execute = AsyncMock(
-        side_effect=[mock_result_count, mock_result_list]
-    )
+    mock_user_repo.list_users = AsyncMock(return_value=([user], 1))
     mock_rbac_repo.get_permissions_by_role = AsyncMock(
         return_value=[]
     )
@@ -87,16 +78,7 @@ async def test_list_users_with_search(
     mock_user_repo, mock_rbac_repo, service
 ):
     """分页查询（按搜索词）。"""
-    mock_result_count = MagicMock()
-    mock_result_count.scalar_one.return_value = 0
-    mock_result_list = MagicMock()
-    mock_scalars = MagicMock()
-    mock_scalars.all.return_value = []
-    mock_result_list.scalars.return_value = mock_scalars
-
-    service.session.execute = AsyncMock(
-        side_effect=[mock_result_count, mock_result_list]
-    )
+    mock_user_repo.list_users = AsyncMock(return_value=([], 0))
 
     users, total = await service.list_users(
         search="张三",
