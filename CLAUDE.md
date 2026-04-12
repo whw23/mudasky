@@ -96,6 +96,10 @@ See `.claude/rules/logging.md`
 
 See `.claude/rules/git.md`
 
+## Testing
+
+See `.claude/rules/testing.md`
+
 ## LSP
 
 See `.claude/rules/lsp.md`

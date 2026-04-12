@@ -120,6 +120,7 @@
     "title": "用户中心",
     "backToSite": "返回官网",
     "dashboard": "仪表盘",
+    "overview": "总览",
     "profile": "个人资料",
     "documents": "文档管理",
     "myArticles": "我的文章",
@@ -416,7 +417,16 @@
     "col_actions": "操作",
     "builtin": "内置",
     "custom": "自定义",
-    "reorderError": "排序更新失败"
+    "reorderError": "排序更新失败",
+    "panel": "面板",
+    "pages": "页面",
+    "auto": "自动",
+    "admin": "管理后台",
+    "portal": "用户中心",
+    "searchPermissions": "搜索权限...",
+    "selectAll": "全选",
+    "noSearchResults": "无匹配结果",
+    "noApis": "无 API 接口"
   },
   "AdminGeneral": {
     "title": "通用配置",

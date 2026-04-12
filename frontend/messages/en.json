@@ -120,6 +120,7 @@
     "title": "User Center",
     "backToSite": "Back to Website",
     "dashboard": "Dashboard",
+    "overview": "Overview",
     "profile": "Profile",
     "documents": "Documents",
     "myArticles": "My Articles",
@@ -416,7 +417,16 @@
     "col_actions": "Actions",
     "builtin": "Built-in",
     "custom": "Custom",
-    "reorderError": "Reorder failed"
+    "reorderError": "Reorder failed",
+    "panel": "Panel",
+    "pages": "Pages",
+    "auto": "Auto",
+    "admin": "Admin",
+    "portal": "User Center",
+    "searchPermissions": "Search permissions...",
+    "selectAll": "Select all",
+    "noSearchResults": "No results",
+    "noApis": "No APIs"
   },
   "AdminGeneral": {
     "title": "General Settings",

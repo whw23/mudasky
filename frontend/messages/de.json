@@ -120,6 +120,7 @@
     "title": "Benutzercenter",
     "backToSite": "Zurück zur Website",
     "dashboard": "Dashboard",
+    "overview": "Übersicht",
     "profile": "Profil",
     "documents": "Dokumente",
     "myArticles": "Meine Artikel",
@@ -416,7 +417,16 @@
     "col_actions": "Aktionen",
     "builtin": "Integriert",
     "custom": "Benutzerdefiniert",
-    "reorderError": "Neuordnung fehlgeschlagen"
+    "reorderError": "Neuordnung fehlgeschlagen",
+    "panel": "Panel",
+    "pages": "Seiten",
+    "auto": "Auto",
+    "admin": "Admin",
+    "portal": "Benutzerzentrum",
+    "searchPermissions": "Berechtigungen suchen...",
+    "selectAll": "Alle auswählen",
+    "noSearchResults": "Keine Ergebnisse",
+    "noApis": "Keine APIs"
   },
   "AdminGeneral": {
     "title": "Allgemeine Einstellungen",

@@ -228,3 +228,38 @@ class TestDeleteRole:
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "角色已删除"
+
+
+class TestOpenApiSpec:
+    """OpenAPI spec 端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_get_openapi_spec(self):
+        """模拟 get_openapi_spec 函数。"""
+        mock_schema = {
+            "openapi": "3.1.0",
+            "info": {"title": "Test API", "version": "0.1.0"},
+            "paths": {
+                "/admin/roles/list": {
+                    "get": {"summary": "查询角色列表"}
+                }
+            },
+        }
+        with patch(
+            "app.rbac.router.get_openapi_spec",
+            return_value=mock_schema,
+        ) as mock_fn:
+            self.mock_fn = mock_fn
+            yield
+
+    async def test_get_openapi_json_success(
+        self, client, superuser_headers
+    ):
+        """可获取 OpenAPI spec，响应 200 且包含 paths。"""
+        resp = await client.get(
+            "/admin/roles/list/openapi.json",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "paths" in data
