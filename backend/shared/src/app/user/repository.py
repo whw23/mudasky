@@ -3,7 +3,8 @@
 封装所有用户相关的数据库操作。
 """
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
+from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.user.models import User
@@ -99,7 +100,7 @@ async def set_role_id(
 ) -> None:
     """设置用户的角色 ID。"""
     stmt = (
-        update(User)
+        sa_update(User)
         .where(User.id == user_id)
         .values(role_id=role_id)
     )

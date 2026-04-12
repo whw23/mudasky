@@ -114,18 +114,25 @@ class TestRoles:
         roles = resp.json()
         assert len(roles) >= 2
 
-        # 构造排序请求（反转前两个）
-        role_ids = [r["id"] for r in roles[:2]]
+        # 构造排序请求（交换前两个的 sort_order）
+        items = [
+            {"id": roles[0]["id"], "sort_order": roles[1].get("sort_order", 1)},
+            {"id": roles[1]["id"], "sort_order": roles[0].get("sort_order", 0)},
+        ]
         reorder_resp = await superuser_client.post(
             "/api/admin/roles/reorder",
-            json={"role_ids": list(reversed(role_ids))},
+            json={"items": items},
         )
         assert reorder_resp.status_code == 200
 
         # 恢复原始排序
+        restore_items = [
+            {"id": roles[0]["id"], "sort_order": roles[0].get("sort_order", 0)},
+            {"id": roles[1]["id"], "sort_order": roles[1].get("sort_order", 1)},
+        ]
         await superuser_client.post(
             "/api/admin/roles/reorder",
-            json={"role_ids": role_ids},
+            json={"items": restore_items},
         )
 
 
