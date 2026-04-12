@@ -145,12 +145,18 @@ export function Footer({ editable, onEdit }: FooterProps) {
       <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
         <p className="opacity-60">{t("translationDisclaimer")}</p>
         <p className="mt-1">
-          {wrapEditable(
-            <span>© {new Date().getFullYear()} {siteInfo.company_name} {t("allRightsReserved")}</span>,
-            "company",
-            "编辑公司名称",
-            true
-          )}
+          <span>
+            © {new Date().getFullYear()}{" "}
+            <a
+              href="https://github.com/whw23"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              whw23
+            </a>
+            {" "}版权所有 · 授权 浩然学行(苏州)文化传播有限公司 使用
+          </span>
           {" | "}
           {wrapEditable(
             <span>{siteInfo.company_name}</span>,
