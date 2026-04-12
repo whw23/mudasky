@@ -19,6 +19,7 @@ import {
 import api from "@/lib/api"
 import type { Permission, Role } from "@/types"
 import { PermissionTree } from "./PermissionTree"
+import { PANEL_CONFIG } from "@/lib/permission-config"
 
 interface RoleDialogProps {
   role: Role | null
@@ -67,20 +68,32 @@ export function RoleDialog({
 
       for (const rp of rolePerms) {
         if (rp.code === "*") {
-          /* 全部权限 */
           for (const lp of leafPerms) codes.add(lp.code.replaceAll(".", "/"))
         } else if (rp.code.endsWith(".*")) {
-          /* 通配符：匹配前缀 */
           const prefix = rp.code.slice(0, -2).replaceAll(".", "/") + "/"
           for (const lp of leafPerms) {
             const lpCode = lp.code.replaceAll(".", "/")
             if (lpCode.startsWith(prefix)) codes.add(lpCode)
           }
         } else {
-          /* 具体权限：将 . 转为 / */
           codes.add(rp.code.replaceAll(".", "/"))
         }
       }
+
+      /* 根据已选 API 码，自动推导面板/页面可见性码 */
+      for (const panel of PANEL_CONFIG) {
+        let panelHasAny = false
+        for (const page of panel.pages) {
+          const prefix = page.apiPrefix + "/"
+          const hasApiUnderPage = [...codes].some((c) => c.startsWith(prefix) || c === page.apiPrefix)
+          if (hasApiUnderPage) {
+            codes.add(`@${page.apiPrefix}`)
+            panelHasAny = true
+          }
+        }
+        if (panelHasAny) codes.add(`@${panel.prefix}`)
+      }
+
       return codes
     },
     [],
@@ -89,10 +102,12 @@ export function RoleDialog({
   /**
    * 将已选中的 permission code 集合转换为 permission ID 列表。
    * code 使用 / 分隔符，DB 中使用 . 分隔符，需转换后查找。
+   * 跳过 @ 开头的可见性码（面板/页面可见性，不对应 DB 权限）。
    */
   const codesToPermissionIds = (): string[] => {
     const ids: string[] = []
     for (const code of selectedCodes) {
+      if (code.startsWith("@")) continue
       const dotCode = code.replaceAll("/", ".")
       const perm = permissions.find((p) => p.code === dotCode)
       if (perm) ids.push(perm.id)

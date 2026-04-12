@@ -68,6 +68,13 @@ function SelRow({
   )
 }
 
+/** 页面可见性码前缀（区分 API 路由码） */
+const VIS_PREFIX = "@"
+/** 生成面板可见性码 */
+function panelVisCode(panel: PanelConfig): string { return `${VIS_PREFIX}${panel.prefix}` }
+/** 生成页面可见性码 */
+function pageVisCode(page: PageConfig): string { return `${VIS_PREFIX}${page.apiPrefix}` }
+
 /** 三栏权限选择器 */
 export function PermissionTree({ selectedCodes, onSelectionChange, readonly = false }: PermissionTreeProps) {
   const t = useTranslations("AdminGroups")
@@ -123,12 +130,84 @@ export function PermissionTree({ selectedCodes, onSelectionChange, readonly = fa
     [readonly, selectedCodes, onSelectionChange],
   )
 
+  /** 切换页面可见性（级联：页面码 + 所有 API 路由） */
+  const togglePage = useCallback(
+    (page: PageConfig) => {
+      if (readonly) return
+      const vis = pageVisCode(page)
+      const apiCodes = filterRoutesByPrefix(allRoutes, page.apiPrefix).map(routeToCode)
+      const isOn = selectedCodes.has(vis)
+      const next = new Set(selectedCodes)
+      if (isOn) {
+        next.delete(vis)
+        for (const c of apiCodes) next.delete(c)
+      } else {
+        next.add(vis)
+        for (const c of apiCodes) next.add(c)
+      }
+      onSelectionChange(next)
+    },
+    [readonly, selectedCodes, allRoutes, onSelectionChange],
+  )
+
+  /** 切换面板可见性（级联：面板码 + 所有页面码 + 所有 API 路由） */
+  const togglePanel = useCallback(
+    (panel: PanelConfig) => {
+      if (readonly) return
+      const vis = panelVisCode(panel)
+      const isOn = selectedCodes.has(vis)
+      const next = new Set(selectedCodes)
+      if (isOn) {
+        next.delete(vis)
+        for (const page of panel.pages) {
+          next.delete(pageVisCode(page))
+          for (const r of filterRoutesByPrefix(allRoutes, page.apiPrefix)) next.delete(routeToCode(r))
+        }
+      } else {
+        next.add(vis)
+        for (const page of panel.pages) {
+          next.add(pageVisCode(page))
+          for (const r of filterRoutesByPrefix(allRoutes, page.apiPrefix)) next.add(routeToCode(r))
+        }
+      }
+      onSelectionChange(next)
+    },
+    [readonly, selectedCodes, allRoutes, onSelectionChange],
+  )
+
   /** 页面标签翻译 */
   const pageLabel = useCallback(
     (panelKey: string, pageKey: string): string => {
       try { return panelKey === "admin" ? tAdmin(pageKey) : tUser(pageKey) } catch { return pageKey }
     },
     [tAdmin, tUser],
+  )
+
+  /** 判断页面 checkbox 状态 */
+  const getPageCheckState = useCallback(
+    (page: PageConfig): { checked: boolean; indeterminate: boolean } => {
+      const vis = pageVisCode(page)
+      const apiCodes = filterRoutesByPrefix(allRoutes, page.apiPrefix).map(routeToCode)
+      const hasVis = selectedCodes.has(vis)
+      if (apiCodes.length === 0) return { checked: hasVis, indeterminate: false }
+      const apiChecked = apiCodes.filter((c) => selectedCodes.has(c)).length
+      const allOn = apiChecked === apiCodes.length && hasVis
+      const someOn = hasVis || apiChecked > 0
+      return { checked: allOn, indeterminate: someOn && !allOn }
+    },
+    [allRoutes, selectedCodes],
+  )
+
+  /** 判断面板 checkbox 状态 */
+  const getPanelCheckState = useCallback(
+    (panel: PanelConfig): { checked: boolean; indeterminate: boolean } => {
+      const hasVis = selectedCodes.has(panelVisCode(panel))
+      const pageStates = panel.pages.map((p) => getPageCheckState(p))
+      const allPagesChecked = pageStates.every((s) => s.checked) && hasVis
+      const someChecked = hasVis || pageStates.some((s) => s.checked || s.indeterminate)
+      return { checked: allPagesChecked, indeterminate: someChecked && !allPagesChecked }
+    },
+    [selectedCodes, getPageCheckState],
   )
 
   const totalChecked = countChecked(allRoutes)
@@ -147,20 +226,16 @@ export function PermissionTree({ selectedCodes, onSelectionChange, readonly = fa
         <div className="w-[22%] border-r overflow-y-auto bg-muted/30 flex flex-col">
           <ColHeader label={t("panel")} tag={t("auto")} />
           {PANEL_CONFIG.map((panel) => {
-            const panelRoutes = panel.pages.flatMap((pg) => filterRoutesByPrefix(allRoutes, pg.apiPrefix))
-            const checked = countChecked(panelRoutes)
-            const total = panelRoutes.length
-            const allOn = total > 0 && checked === total
+            const state = getPanelCheckState(panel)
             return (
               <SelRow key={panel.key} active={panel.key === activePanel} onClick={() => setActivePanel(panel.key)}>
                 {!readonly && (
-                  <Checkbox checked={allOn} indeterminate={checked > 0 && !allOn}
-                    onCheckedChange={() => toggleRoutes(panelRoutes)}
+                  <Checkbox checked={state.checked} indeterminate={state.indeterminate}
+                    onCheckedChange={() => togglePanel(panel)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
                 <span className="flex-1 truncate">{panel.key === "admin" ? t("admin") : t("portal")}</span>
-                {total > 0 && <span className="text-[10px] text-muted-foreground">{checked}/{total}</span>}
               </SelRow>
             )
           })}
@@ -170,20 +245,19 @@ export function PermissionTree({ selectedCodes, onSelectionChange, readonly = fa
         <div className="w-[30%] border-r overflow-y-auto flex flex-col">
           <ColHeader label={t("pages")} tag={t("auto")} />
           {currentPanel?.pages.map((page) => {
+            const state = getPageCheckState(page)
             const pgRoutes = filterRoutesByPrefix(allRoutes, page.apiPrefix)
-            const checked = countChecked(pgRoutes)
-            const total = pgRoutes.length
-            const allOn = total > 0 && checked === total
+            const apiChecked = countChecked(pgRoutes)
             return (
               <SelRow key={page.key} active={page.key === activePage} onClick={() => setActivePage(page.key)}>
                 {!readonly && (
-                  <Checkbox checked={allOn} indeterminate={checked > 0 && !allOn}
-                    onCheckedChange={() => toggleRoutes(pgRoutes)}
+                  <Checkbox checked={state.checked} indeterminate={state.indeterminate}
+                    onCheckedChange={() => togglePage(page)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
                 <span className="flex-1 truncate">{pageLabel(activePanel, page.key)}</span>
-                {total > 0 && <span className="text-[10px] bg-muted rounded px-1">{checked}</span>}
+                {pgRoutes.length > 0 && <span className="text-[10px] bg-muted rounded px-1">{apiChecked}</span>}
               </SelRow>
             )
           })}
