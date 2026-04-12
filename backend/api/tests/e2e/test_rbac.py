@@ -137,6 +137,33 @@ class TestRoles:
 
 
 @pytest.mark.e2e
+class TestOpenApiSpec:
+    """OpenAPI spec 端点 E2E 测试。"""
+
+    async def test_get_openapi_spec(self, superuser_client):
+        """超级管理员获取 OpenAPI spec。"""
+        resp = await superuser_client.get(
+            "/api/admin/roles/list/openapi.json"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "paths" in data
+        assert "info" in data
+        # 应包含已知的 admin 路由
+        paths = list(data["paths"].keys())
+        assert any("/admin/" in p for p in paths)
+
+    async def test_get_openapi_spec_without_auth(
+        self, e2e_client
+    ):
+        """未登录访问 OpenAPI spec 返回 401。"""
+        resp = await e2e_client.get(
+            "/api/admin/roles/list/openapi.json"
+        )
+        assert resp.status_code == 401
+
+
+@pytest.mark.e2e
 class TestRbacUnauthorized:
     """RBAC 接口未授权访问测试。"""
 
