@@ -98,3 +98,13 @@ class TestCaseCrud:
             },
         )
         assert resp.status_code == 401
+
+    async def test_admin_list_cases(self, superuser_client):
+        """管理员查询案例列表。"""
+        resp = await superuser_client.get(
+            "/api/admin/cases/list"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        assert "total" in data

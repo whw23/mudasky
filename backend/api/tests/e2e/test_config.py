@@ -4,6 +4,22 @@ import pytest
 
 
 @pytest.mark.e2e
+class TestPanelConfig:
+    """面板配置接口测试。"""
+
+    async def test_get_panel_config(self, anon_client):
+        """匿名获取面板配置返回 200。"""
+        resp = await anon_client.get("/api/public/panel-config")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["key"] == "panel_pages"
+        assert "admin" in data["value"]
+        assert "portal" in data["value"]
+        assert isinstance(data["value"]["admin"], list)
+        assert isinstance(data["value"]["portal"], list)
+
+
+@pytest.mark.e2e
 class TestPublicConfig:
     """公开配置接口测试。"""
 
@@ -93,5 +109,56 @@ class TestConfigUnauthorized:
         resp = await e2e_client.post(
             "/api/admin/general-settings/edit/site_info",
             json={"value": {"brand_name": "hack"}},
+        )
+        assert resp.status_code == 401
+
+
+@pytest.mark.e2e
+class TestWebSettings:
+    """网站设置接口测试。"""
+
+    async def test_list_web_configs(self, superuser_client):
+        """超级管理员获取网站配置列表。"""
+        resp = await superuser_client.get(
+            "/api/admin/web-settings/list"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+
+    async def test_update_web_config_and_revert(
+        self, superuser_client
+    ):
+        """通过网站设置接口更新配置并恢复。"""
+        key = "site_info"
+
+        # 1. 获取原始值
+        resp = await superuser_client.get(
+            f"/api/public/config/{key}"
+        )
+        assert resp.status_code == 200
+        original_value = resp.json()["value"]
+
+        # 2. 修改值
+        updated_value = {**original_value, "hotline": "111-1111-1111"}
+        update_resp = await superuser_client.post(
+            f"/api/admin/web-settings/edit/{key}",
+            json={"value": updated_value},
+        )
+        assert update_resp.status_code == 200
+        assert update_resp.json()["value"]["hotline"] == "111-1111-1111"
+
+        # 3. 恢复原始值
+        revert_resp = await superuser_client.post(
+            f"/api/admin/web-settings/edit/{key}",
+            json={"value": original_value},
+        )
+        assert revert_resp.status_code == 200
+
+    async def test_web_settings_unauthorized(self, e2e_client):
+        """未登录访问网站设置返回 401。"""
+        resp = await e2e_client.get(
+            "/api/admin/web-settings/list"
         )
         assert resp.status_code == 401

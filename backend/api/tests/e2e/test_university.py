@@ -120,3 +120,15 @@ class TestUniversityCrud:
             },
         )
         assert resp.status_code == 401
+
+    async def test_admin_list_universities(
+        self, superuser_client
+    ):
+        """管理员查询院校列表。"""
+        resp = await superuser_client.get(
+            "/api/admin/universities/list"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        assert "total" in data

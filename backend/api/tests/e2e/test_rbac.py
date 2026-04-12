@@ -104,6 +104,30 @@ class TestRoles:
         )
         assert gone_resp.status_code == 404
 
+    async def test_reorder_roles(self, superuser_client):
+        """角色排序。"""
+        # 获取所有角色
+        resp = await superuser_client.get(
+            "/api/admin/roles/list"
+        )
+        assert resp.status_code == 200
+        roles = resp.json()
+        assert len(roles) >= 2
+
+        # 构造排序请求（反转前两个）
+        role_ids = [r["id"] for r in roles[:2]]
+        reorder_resp = await superuser_client.post(
+            "/api/admin/roles/reorder",
+            json={"role_ids": list(reversed(role_ids))},
+        )
+        assert reorder_resp.status_code == 200
+
+        # 恢复原始排序
+        await superuser_client.post(
+            "/api/admin/roles/reorder",
+            json={"role_ids": role_ids},
+        )
+
 
 @pytest.mark.e2e
 class TestRbacUnauthorized:

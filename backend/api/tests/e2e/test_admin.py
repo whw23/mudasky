@@ -133,3 +133,133 @@ class TestAdminUnauthorized:
             json={"is_active": False},
         )
         assert resp.status_code == 401
+
+
+@pytest.mark.e2e
+class TestAdminUserActions:
+    """管理员用户操作测试（密码重置、角色分配）。"""
+
+    async def test_reset_password(
+        self, superuser_client, e2e_client
+    ):
+        """创建测试用户 -> 重置密码 -> 用新密码登录 -> 清理。"""
+        import random
+
+        phone = f"+86139{random.randint(10000000, 99999999)}"
+
+        # 1. 注册测试用户
+        sms_resp = await e2e_client.post(
+            "/api/auth/sms-code", json={"phone": phone}
+        )
+        assert sms_resp.status_code == 200
+        code = sms_resp.json()["code"]
+
+        encrypted = await encrypt_password(
+            e2e_client, "oldpass123"
+        )
+        reg_resp = await e2e_client.post(
+            "/api/auth/register",
+            json={
+                "phone": phone,
+                "code": code,
+                "username": f"e2e_reset_{phone[-6:]}",
+                **encrypted,
+            },
+        )
+        assert reg_resp.status_code == 200
+        user_id = reg_resp.json()["user"]["id"]
+
+        try:
+            # 2. 管理员重置密码
+            new_pass = "newpass456"
+            new_encrypted = await encrypt_password(
+                superuser_client, new_pass
+            )
+            reset_resp = await superuser_client.post(
+                f"/api/admin/users/reset-password/{user_id}",
+                json=new_encrypted,
+            )
+            assert reset_resp.status_code == 200
+
+            # 3. 用新密码登录
+            async with httpx.AsyncClient(
+                base_url="http://localhost",
+                headers={"X-Requested-With": "XMLHttpRequest"},
+            ) as login_client:
+                login_encrypted = await encrypt_password(
+                    login_client, new_pass
+                )
+                login_resp = await login_client.post(
+                    "/api/auth/login",
+                    json={
+                        "username": f"e2e_reset_{phone[-6:]}",
+                        **login_encrypted,
+                    },
+                )
+                assert login_resp.status_code == 200
+        finally:
+            await superuser_client.post(
+                f"/api/admin/users/force-logout/{user_id}"
+            )
+
+    async def test_assign_role(
+        self, superuser_client, e2e_client
+    ):
+        """创建测试用户 -> 分配角色 -> 验证 -> 清理。"""
+        import random
+
+        phone = f"+86139{random.randint(10000000, 99999999)}"
+
+        # 1. 获取 visitor 角色 ID
+        roles_resp = await superuser_client.get(
+            "/api/admin/roles/list"
+        )
+        assert roles_resp.status_code == 200
+        visitor_role = next(
+            r
+            for r in roles_resp.json()
+            if r["name"] == "visitor"
+        )
+        role_id = visitor_role["id"]
+
+        # 2. 注册测试用户
+        sms_resp = await e2e_client.post(
+            "/api/auth/sms-code", json={"phone": phone}
+        )
+        assert sms_resp.status_code == 200
+        code = sms_resp.json()["code"]
+
+        encrypted = await encrypt_password(
+            e2e_client, "testpass123"
+        )
+        reg_resp = await e2e_client.post(
+            "/api/auth/register",
+            json={
+                "phone": phone,
+                "code": code,
+                "username": f"e2e_role_{phone[-6:]}",
+                **encrypted,
+            },
+        )
+        assert reg_resp.status_code == 200
+        user_id = reg_resp.json()["user"]["id"]
+
+        try:
+            # 3. 分配角色
+            assign_resp = await superuser_client.post(
+                f"/api/admin/users/assign-role/{user_id}",
+                json={"role_id": role_id},
+            )
+            assert assign_resp.status_code == 200
+            assert assign_resp.json()["role_id"] == role_id
+
+            # 4. 验证
+            detail_resp = await superuser_client.get(
+                f"/api/admin/users/detail/{user_id}"
+            )
+            assert detail_resp.status_code == 200
+            assert detail_resp.json()["role_id"] == role_id
+        finally:
+            await superuser_client.post(
+                f"/api/admin/users/force-logout/{user_id}"
+            )
