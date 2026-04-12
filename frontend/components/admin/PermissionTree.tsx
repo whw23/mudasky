@@ -155,7 +155,7 @@ export function PermissionTree({ selectedCodes, onSelectionChange, readonly = fa
               <SelRow key={panel.key} active={panel.key === activePanel} onClick={() => setActivePanel(panel.key)}>
                 {!readonly && (
                   <Checkbox checked={allOn} indeterminate={checked > 0 && !allOn}
-                    onCheckedChange={(e) => { (e as React.MouseEvent)?.stopPropagation?.(); toggleRoutes(panelRoutes) }}
+                    onCheckedChange={() => toggleRoutes(panelRoutes)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
@@ -178,7 +178,7 @@ export function PermissionTree({ selectedCodes, onSelectionChange, readonly = fa
               <SelRow key={page.key} active={page.key === activePage} onClick={() => setActivePage(page.key)}>
                 {!readonly && (
                   <Checkbox checked={allOn} indeterminate={checked > 0 && !allOn}
-                    onCheckedChange={(e) => { (e as React.MouseEvent)?.stopPropagation?.(); toggleRoutes(pgRoutes) }}
+                    onCheckedChange={() => toggleRoutes(pgRoutes)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
