@@ -3,7 +3,9 @@
 提供权限查询、角色管理等 API 端点。
 """
 
-from fastapi import APIRouter
+from typing import Any
+
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from app.core.dependencies import DbSession
@@ -112,3 +114,22 @@ async def delete_role(
     svc = RbacService(session)
     await svc.delete_role(role_id)
     return MessageResponse(message="角色已删除")
+
+
+def get_openapi_spec(app: Any) -> dict:
+    """从 FastAPI 应用获取 OpenAPI spec。"""
+    if hasattr(app, "openapi"):
+        return app.openapi()
+    from fastapi.openapi.utils import get_openapi
+
+    return get_openapi(
+        title=app.title,
+        version=app.version,
+        routes=app.routes,
+    )
+
+
+@router.get("/list/openapi.json")
+async def get_openapi_json(request: Request) -> dict:
+    """返回 OpenAPI spec（权限码复用 admin/roles/list）。"""
+    return get_openapi_spec(request.app)
