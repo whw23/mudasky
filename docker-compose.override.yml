@@ -13,6 +13,8 @@ services:
 
   gateway:
     entrypoint: ["sh", "/usr/local/openresty/nginx/dev-entrypoint.sh"]
+    environment:
+      - RATE_LIMIT_MULTIPLIER=10
     volumes:
       - ./gateway/lua:/usr/local/openresty/nginx/lua
       - ./gateway/conf.d:/etc/nginx/conf.d
