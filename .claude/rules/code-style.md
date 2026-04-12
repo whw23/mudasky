@@ -68,16 +68,6 @@
 - 导入顺序：标准库 → 第三方库 → 项目内部模块，组间空行分隔
 - 业务异常使用 `core/exceptions.py` 中定义的异常类，禁止裸 `raise Exception()`
 
-## Testing
-
-- 测试覆盖率最低 80%
-- 后端使用 pytest + pytest-asyncio，前端使用 Vitest
-- Service 层必须有单元测试，覆盖正常流程和异常分支
-- Router 层通过集成测试覆盖（httpx + TestClient）
-- Repository 层通过 Service 测试间接覆盖
-- 测试文件与源码目录结构对应：`src/app/user/service.py` → `tests/user/test_service.py`
-- 每个 PR 不允许降低现有覆盖率
-
 ## Comment Style
 
 | Language | 文档注释   | 行内注释 |
