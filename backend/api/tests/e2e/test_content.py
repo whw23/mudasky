@@ -42,7 +42,7 @@ class TestCategoryCrud:
 
         # 1. 创建分类
         create_resp = await superuser_client.post(
-            "/api/admin/category/create",
+            "/api/admin/categories/create",
             json={
                 "name": f"E2E 测试分类 {suffix}",
                 "slug": f"e2e-test-{suffix}",
@@ -58,7 +58,7 @@ class TestCategoryCrud:
 
         # 2. 更新分类
         update_resp = await superuser_client.post(
-            f"/api/admin/category/edit/{category_id}",
+            f"/api/admin/categories/edit/{category_id}",
             json={"name": f"E2E 更新分类 {suffix}"},
         )
         assert update_resp.status_code == 200
@@ -69,7 +69,7 @@ class TestCategoryCrud:
 
         # 3. 删除分类
         delete_resp = await superuser_client.post(
-            f"/api/admin/category/delete/{category_id}"
+            f"/api/admin/categories/delete/{category_id}"
         )
         assert delete_resp.status_code == 204
 
@@ -78,7 +78,7 @@ class TestCategoryCrud:
     ):
         """未认证创建分类返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/category/create",
+            "/api/admin/categories/create",
             json={
                 "name": "unauthorized",
                 "slug": "unauthorized",
@@ -99,7 +99,7 @@ class TestArticleCrud:
 
         # 1. 先创建一个分类
         cat_resp = await superuser_client.post(
-            "/api/admin/category/create",
+            "/api/admin/categories/create",
             json={
                 "name": f"E2E 文章分类 {suffix}",
                 "slug": f"e2e-article-cat-{suffix}",
@@ -111,7 +111,7 @@ class TestArticleCrud:
         try:
             # 2. 创建文章
             create_resp = await superuser_client.post(
-                "/api/portal/article/create",
+                "/api/portal/articles/create",
                 json={
                     "title": f"E2E 测试文章 {suffix}",
                     "slug": f"e2e-test-article-{suffix}",
@@ -141,7 +141,7 @@ class TestArticleCrud:
 
             # 4. 更新文章标题
             update_resp = await superuser_client.post(
-                f"/api/portal/article/edit/{article_id}",
+                f"/api/portal/articles/edit/{article_id}",
                 json={
                     "title": f"E2E 更新文章 {suffix}"
                 },
@@ -154,11 +154,97 @@ class TestArticleCrud:
 
             # 5. 删除文章
             del_resp = await superuser_client.post(
-                f"/api/portal/article/delete/{article_id}"
+                f"/api/portal/articles/delete/{article_id}"
             )
             assert del_resp.status_code == 204
         finally:
             # 6. 清理：删除分类
             await superuser_client.post(
-                f"/api/admin/category/delete/{category_id}"
+                f"/api/admin/categories/delete/{category_id}"
+            )
+
+
+@pytest.mark.e2e
+class TestPortalArticleList:
+    """用户文章列表测试。"""
+
+    async def test_list_my_articles(self, superuser_client):
+        """已登录用户获取自己的文章列表。"""
+        resp = await superuser_client.get(
+            "/api/portal/articles/list"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        assert "total" in data
+
+
+@pytest.mark.e2e
+class TestAdminContentCrud:
+    """管理员内容 CRUD 测试。"""
+
+    async def test_admin_content_lifecycle(
+        self, superuser_client
+    ):
+        """管理员：列表 -> 创建分类 -> 创建文章 -> 编辑 -> 删除。"""
+        suffix = uuid.uuid4().hex[:8]
+
+        # 1. 管理员分类列表
+        cat_list_resp = await superuser_client.get(
+            "/api/admin/categories/list"
+        )
+        assert cat_list_resp.status_code == 200
+        assert isinstance(cat_list_resp.json(), list)
+
+        # 2. 创建分类
+        cat_resp = await superuser_client.post(
+            "/api/admin/categories/create",
+            json={
+                "name": f"E2E Admin 分类 {suffix}",
+                "slug": f"e2e-admin-cat-{suffix}",
+            },
+        )
+        assert cat_resp.status_code == 201
+        category_id = cat_resp.json()["id"]
+
+        try:
+            # 3. 管理员创建文章
+            create_resp = await superuser_client.post(
+                "/api/admin/content/create",
+                json={
+                    "title": f"E2E Admin 文章 {suffix}",
+                    "slug": f"e2e-admin-article-{suffix}",
+                    "content": "管理员创建的文章。",
+                    "category_id": category_id,
+                    "status": "draft",
+                },
+            )
+            assert create_resp.status_code == 201
+            article_id = create_resp.json()["id"]
+
+            # 4. 管理员文章列表
+            list_resp = await superuser_client.get(
+                "/api/admin/content/list"
+            )
+            assert list_resp.status_code == 200
+            assert "items" in list_resp.json()
+
+            # 5. 管理员编辑文章（发布）
+            edit_resp = await superuser_client.post(
+                f"/api/admin/content/edit/{article_id}",
+                json={"status": "published"},
+            )
+            assert edit_resp.status_code == 200
+            assert (
+                edit_resp.json()["status"] == "published"
+            )
+
+            # 6. 管理员删除文章
+            del_resp = await superuser_client.post(
+                f"/api/admin/content/delete/{article_id}"
+            )
+            assert del_resp.status_code == 204
+        finally:
+            await superuser_client.post(
+                f"/api/admin/categories/delete/{category_id}"
             )

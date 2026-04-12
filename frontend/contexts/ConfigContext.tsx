@@ -11,6 +11,25 @@ import api from '@/lib/api'
 import { getLocalizedValue } from '@/lib/i18n-config'
 import type { CountryCode, ContactInfo, SiteInfo, HomepageStat, AboutInfo } from '@/types/config'
 
+/** 面板页面配置项 */
+interface PanelPage {
+  key: string
+  icon: string
+  permissions?: string[]
+}
+
+/** 面板配置 */
+interface PanelConfig {
+  admin: PanelPage[]
+  portal: PanelPage[]
+}
+
+/** 默认面板配置（兜底） */
+const DEFAULT_PANEL_CONFIG: PanelConfig = {
+  admin: [],
+  portal: [],
+}
+
 /** 默认国家码（兜底） */
 const DEFAULT_COUNTRY_CODES: CountryCode[] = [
   { code: '+86', country: '\u{1F1E8}\u{1F1F3}', label: '中国', digits: 11, enabled: true },
@@ -65,6 +84,8 @@ interface ConfigContextType {
   homepageStats: HomepageStat[]
   /** 关于我们页面内容 */
   aboutInfo: AboutInfo
+  /** 面板页面配置 */
+  panelConfig: PanelConfig
 }
 
 const ConfigContext = createContext<ConfigContextType>({
@@ -73,6 +94,7 @@ const ConfigContext = createContext<ConfigContextType>({
   siteInfo: DEFAULT_SITE_INFO,
   homepageStats: DEFAULT_HOMEPAGE_STATS,
   aboutInfo: DEFAULT_ABOUT_INFO,
+  panelConfig: DEFAULT_PANEL_CONFIG,
 })
 
 /** 系统配置 Provider */
@@ -82,6 +104,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO)
   const [homepageStats, setHomepageStats] = useState<HomepageStat[]>(DEFAULT_HOMEPAGE_STATS)
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
+  const [panelConfig, setPanelConfig] = useState<PanelConfig>(DEFAULT_PANEL_CONFIG)
 
   useEffect(() => {
     api.get('/public/config/phone_country_codes')
@@ -127,10 +150,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch((err) => console.warn('[ConfigProvider] about_info 加载失败:', err.message))
+
+    api.get('/public/panel-config').then(res => setPanelConfig(res.data.value)).catch(() => {})
   }, [])
 
   return (
-    <ConfigContext value={{ countryCodes, contactInfo, siteInfo, homepageStats, aboutInfo }}>
+    <ConfigContext value={{ countryCodes, contactInfo, siteInfo, homepageStats, aboutInfo, panelConfig }}>
       {children}
     </ConfigContext>
   )
@@ -144,6 +169,7 @@ export function useConfig(): ConfigContextType {
 /** 已解析语言的配置类型（展示用） */
 interface LocalizedConfigType {
   countryCodes: CountryCode[]
+  panelConfig: PanelConfig
   siteInfo: {
     brand_name: string
     tagline: string
@@ -178,6 +204,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
 
   return {
     countryCodes: config.countryCodes,
+    panelConfig: config.panelConfig,
     siteInfo: {
       ...config.siteInfo,
       brand_name: getLocalizedValue(config.siteInfo.brand_name, locale),

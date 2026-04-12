@@ -95,7 +95,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
     setSaving(true)
     try {
       if (isEdit) {
-        await api.post(`/portal/article/edit/${article.id}`, {
+        await api.post(`/portal/articles/edit/${article.id}`, {
           title,
           slug: slug || generateSlug(title),
           excerpt,
@@ -104,7 +104,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
           status,
         })
       } else {
-        await api.post("/portal/article/create", {
+        await api.post("/portal/articles/create", {
           title,
           slug: slug || generateSlug(title),
           excerpt,

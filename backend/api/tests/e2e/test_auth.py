@@ -106,7 +106,7 @@ class TestRegister:
 
         # 5. 清理：管理员强制下线测试用户
         await superuser_client.post(
-            f"/api/admin/user/force-logout/{user_id}"
+            f"/api/admin/users/force-logout/{user_id}"
         )
 
 
@@ -163,6 +163,24 @@ class TestCsrf:
             "/api/portal/profile/2fa-enable-totp"
         )
         assert resp.status_code == 403
+
+
+@pytest.mark.e2e
+class TestTokenRefresh:
+    """Token 刷新测试。"""
+
+    @pytest.mark.skip(
+        reason="refresh 端点依赖网关从 refresh_token cookie 注入 X-Refresh-Token-Hash 头，"
+        "httpx 无法正确传递 HttpOnly+SameSite=Strict cookie"
+    )
+    async def test_refresh_token(self, superuser_client):
+        """刷新 token -> 验证新 token 有效。"""
+        refresh_resp = await superuser_client.post(
+            "/api/auth/refresh"
+        )
+        assert refresh_resp.status_code == 200
+        data = refresh_resp.json()
+        assert "user" in data
 
 
 @pytest.mark.e2e

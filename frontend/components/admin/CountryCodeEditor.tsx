@@ -29,7 +29,7 @@ export function CountryCodeEditor() {
 
   useEffect(() => {
     setLoading(true)
-    api.get('/admin/settings/list')
+    api.get('/admin/general-settings/list')
       .then((res) => {
         const config = res.data.find((c: { key: string; value: unknown }) => c.key === 'phone_country_codes')
         if (config && Array.isArray(config.value)) {
@@ -65,7 +65,7 @@ export function CountryCodeEditor() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const payload = items.map(({ _id, ...rest }) => rest)
-      await api.post('/admin/settings/edit/phone_country_codes', { value: payload })
+      await api.post('/admin/general-settings/edit/phone_country_codes', { value: payload })
       toast.success(t('saveSuccess'))
     } catch (err) {
       const message = err instanceof AxiosError ? err.response?.data?.message : null

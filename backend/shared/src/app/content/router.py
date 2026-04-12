@@ -28,7 +28,7 @@ public_content_router = APIRouter(
 )
 
 portal_article_router = APIRouter(
-    prefix="/portal/article", tags=["portal-article"]
+    prefix="/portal/articles", tags=["portal-article"]
 )
 
 

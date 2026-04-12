@@ -11,7 +11,7 @@ from app.core.dependencies import DbSession
 from app.core.pagination import PaginatedResponse, PaginationParams
 
 admin_router = APIRouter(
-    prefix="/admin/case", tags=["admin-cases"]
+    prefix="/admin/cases", tags=["admin-cases"]
 )
 
 

@@ -162,14 +162,14 @@ class TestUserArticles:
             0,
         )
         resp = await client.get(
-            "/portal/article/list",
+            "/portal/articles/list",
             headers=user_headers,
         )
         assert resp.status_code == 200
 
     async def test_list_my_articles_no_auth(self, client):
         """未认证无法查询自己的文章。"""
-        resp = await client.get("/portal/article/list")
+        resp = await client.get("/portal/articles/list")
         assert resp.status_code == 403
 
     async def test_create_article_with_permission(
@@ -180,7 +180,7 @@ class TestUserArticles:
             _make_article()
         )
         resp = await client.post(
-            "/portal/article/create",
+            "/portal/articles/create",
             json={
                 "title": "新文章",
                 "slug": "new-article",
@@ -199,7 +199,7 @@ class TestUserArticles:
             _make_article(title="更新后")
         )
         resp = await client.post(
-            "/portal/article/edit/article-001",
+            "/portal/articles/edit/article-001",
             json={"title": "更新后"},
             headers=user_headers,
         )
@@ -213,7 +213,7 @@ class TestUserArticles:
             None
         )
         resp = await client.post(
-            "/portal/article/delete/article-001",
+            "/portal/articles/delete/article-001",
             headers=user_headers,
         )
         assert resp.status_code == 204
@@ -294,7 +294,7 @@ class TestAdminCategories:
         self.mock_svc.list_categories.return_value = []
         self.mock_svc.get_article_counts_by_category.return_value = {}
         resp = await client.get(
-            "/admin/category/list",
+            "/admin/categories/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -307,7 +307,7 @@ class TestAdminCategories:
             _make_category()
         )
         resp = await client.post(
-            "/admin/category/create",
+            "/admin/categories/create",
             json={
                 "name": "新分类",
                 "slug": "new-cat",
@@ -324,7 +324,7 @@ class TestAdminCategories:
             _make_category(name="更新分类")
         )
         resp = await client.post(
-            "/admin/category/edit/cat-001",
+            "/admin/categories/edit/cat-001",
             json={"name": "更新分类"},
             headers=superuser_headers,
         )
@@ -336,7 +336,7 @@ class TestAdminCategories:
         """管理员删除分类返回 204。"""
         self.mock_svc.delete_category.return_value = None
         resp = await client.post(
-            "/admin/category/delete/cat-001",
+            "/admin/categories/delete/cat-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 204

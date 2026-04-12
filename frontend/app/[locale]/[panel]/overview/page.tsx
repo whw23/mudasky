@@ -57,7 +57,7 @@ export default function DashboardPage() {
   async function fetchDashboardData(): Promise<void> {
     setLoading(true)
     try {
-      const docsRes = await api.get("/portal/document/list", { params: { limit: 5 } })
+      const docsRes = await api.get("/portal/documents/list", { params: { limit: 5 } })
       const docs = docsRes.data
       const items = docs.items ?? docs
       setRecentDocs(Array.isArray(items) ? items : [])
@@ -103,7 +103,7 @@ export default function DashboardPage() {
         {doc.category}
       </span>
     ),
-    href: "/user-center/documents",
+    href: "/portal/documents",
   }))
 
   /** 角色标签 */
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       <RecentList
         title={t("recentDocuments")}
         items={docItems}
-        viewAllHref="/user-center/documents"
+        viewAllHref="/portal/documents"
         viewAllText={t("viewAll")}
         emptyText={t("noData")}
         loading={loading}
@@ -151,11 +151,11 @@ export default function DashboardPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">{t("quickActions")}</h2>
         <div className="flex flex-wrap gap-3">
-          <Button render={<Link href="/user-center/documents" />}>
+          <Button render={<Link href="/portal/documents" />}>
             <Upload className="mr-2 size-4" />
             {t("uploadDocument")}
           </Button>
-          <Button variant="outline" render={<Link href="/user-center/profile" />}>
+          <Button variant="outline" render={<Link href="/portal/profile" />}>
             <UserCog className="mr-2 size-4" />
             {t("editProfile")}
           </Button>

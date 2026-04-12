@@ -31,7 +31,7 @@ class TestCaseCrud:
 
         # 1. 创建案例
         create_resp = await superuser_client.post(
-            "/api/admin/case/create",
+            "/api/admin/cases/create",
             json={
                 "student_name": f"E2E 学生 {suffix}",
                 "university": f"E2E 大学 {suffix}",
@@ -63,7 +63,7 @@ class TestCaseCrud:
 
             # 3. 更新案例
             update_resp = await superuser_client.post(
-                f"/api/admin/case/edit/{case_id}",
+                f"/api/admin/cases/edit/{case_id}",
                 json={
                     "student_name": f"E2E 更新学生 {suffix}",
                     "year": 2027,
@@ -80,7 +80,7 @@ class TestCaseCrud:
         finally:
             # 4. 删除案例（清理）
             delete_resp = await superuser_client.post(
-                f"/api/admin/case/delete/{case_id}"
+                f"/api/admin/cases/delete/{case_id}"
             )
             assert delete_resp.status_code == 204
 
@@ -89,7 +89,7 @@ class TestCaseCrud:
     ):
         """未认证创建案例返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/case/create",
+            "/api/admin/cases/create",
             json={
                 "student_name": "unauthorized",
                 "university": "unauthorized",
@@ -98,3 +98,13 @@ class TestCaseCrud:
             },
         )
         assert resp.status_code == 401
+
+    async def test_admin_list_cases(self, superuser_client):
+        """管理员查询案例列表。"""
+        resp = await superuser_client.get(
+            "/api/admin/cases/list"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "items" in data
+        assert "total" in data

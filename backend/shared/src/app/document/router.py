@@ -14,7 +14,7 @@ from app.document.models import DocumentCategory
 from app.document.schemas import DocumentListResponse, DocumentResponse
 from app.user import repository as user_repo
 
-router = APIRouter(prefix="/portal/document", tags=["documents"])
+router = APIRouter(prefix="/portal/documents", tags=["documents"])
 
 
 @router.post(

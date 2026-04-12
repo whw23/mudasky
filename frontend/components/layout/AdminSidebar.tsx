@@ -29,10 +29,10 @@ interface MenuItem {
 /** 侧边栏菜单键与路径映射 */
 const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin.user.*"] },
-  { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin.role.*"] },
-  { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin.settings.*"] },
-  { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin.settings.*"] },
+  { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin/users/*"] },
+  { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin/roles/*"] },
+  { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin/general-settings/*"] },
+  { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin/web-settings/*"] },
 ]
 
 /** 后台管理侧边栏 */

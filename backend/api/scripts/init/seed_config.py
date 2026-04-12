@@ -78,6 +78,25 @@ async def init_system_config(session) -> None:
             },
             "description": "\u5173\u4e8e\u6211\u4eec\u9875\u9762\u5185\u5bb9",
         },
+        {
+            "key": "panel_pages",
+            "value": {
+                "admin": [
+                    {"key": "dashboard", "icon": "LayoutDashboard"},
+                    {"key": "users", "icon": "Users", "permissions": ["admin/users/*"]},
+                    {"key": "roles", "icon": "Shield", "permissions": ["admin/roles/*"]},
+                    {"key": "general-settings", "icon": "Wrench", "permissions": ["admin/general-settings/*"]},
+                    {"key": "web-settings", "icon": "Settings", "permissions": ["admin/web-settings/*"]},
+                ],
+                "portal": [
+                    {"key": "overview", "icon": "LayoutDashboard"},
+                    {"key": "profile", "icon": "User"},
+                    {"key": "documents", "icon": "FileText"},
+                    {"key": "articles", "icon": "FileEdit"},
+                ],
+            },
+            "description": "面板页面配置",
+        },
     ]
 
     for cfg in configs:

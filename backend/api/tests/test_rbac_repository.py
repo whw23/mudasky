@@ -165,9 +165,9 @@ async def test_delete_role(session):
 async def test_get_permissions_by_role_normal(session):
     """根据角色 ID 查询权限码。"""
     perm1 = MagicMock(spec=Permission)
-    perm1.code = "admin.user.list"
+    perm1.code = "admin/users/list"
     perm2 = MagicMock(spec=Permission)
-    perm2.code = "admin.content.edit"
+    perm2.code = "admin/content/edit"
 
     role = MagicMock(spec=Role)
     role.permissions = [perm1, perm2]
@@ -178,7 +178,7 @@ async def test_get_permissions_by_role_normal(session):
 
     result = await get_permissions_by_role(session, "role-1")
 
-    assert set(result) == {"admin.user.list", "admin.content.edit"}
+    assert set(result) == {"admin/users/list", "admin/content/edit"}
 
 
 async def test_get_permissions_by_role_not_found(session):
