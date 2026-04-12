@@ -43,6 +43,8 @@ local function reject(status, code)
   ngx.exit(status)
 end
 
+local VALID_LOCALES = { zh = true, en = true, ja = true, de = true }
+
 local uri = ngx.var.uri
 
 -- 非 /api/ 路由直接放行
@@ -65,7 +67,9 @@ if cookie_str then
     local trimmed = string.gsub(pair, "^%s+", "")
     local k, v = string.match(trimmed, "^(.-)=(.+)$")
     if k == "NEXT_INTL_LOCALE" then
-      locale = v
+      if VALID_LOCALES[v] then
+        locale = v
+      end
       break
     end
   end
@@ -128,11 +132,9 @@ ngx.req.set_header("X-User-Id", payload.sub)
 -- 对 /api/admin/* 和 /api/portal/* 做权限校验
 if string.find(uri, "^/api/admin/") or string.find(uri, "^/api/portal/") then
   local required_perm = extract_permission(uri)
-  if required_perm then
-    local perms = payload.permissions or {}
-    if not has_permission(perms, required_perm) then
-      reject(403, "FORBIDDEN")
-    end
+  local perms = payload.permissions or {}
+  if not required_perm or not has_permission(perms, required_perm) then
+    reject(403, "FORBIDDEN")
   end
 end
 
