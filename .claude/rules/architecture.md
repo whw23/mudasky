@@ -8,4 +8,7 @@
 - **is_active 在 JWT claims 中**，禁用延迟可接受，续签时查库校验
 - **前端用户信息**：登录/续签/修改时响应体带用户信息，存 localStorage，Cookie 保持 HttpOnly
 
+- **RBAC 权限**：superuser、website_admin、student_advisor、student、visitor + 自定义角色，全部平等；每个用户只能有一个角色；权限采用树形结构（用户中心/管理后台 → 面板 → 功能），前后端同时控制
+- **API 错误码**：后端异常返回具体 code（如 `PHONE_ALREADY_REGISTERED`），前端通过 `getApiError` 查 `ApiErrors` 翻译命名空间实现多语言错误提示
+
 新功能开发遵循领域分包结构，认证相关改动在网关层处理。

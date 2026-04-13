@@ -110,4 +110,4 @@ See `.claude/rules/lsp.md`
 
 ## Design Docs
 
-- RBAC 权限重构：`docs/rbac-redesign.md`
+已完成功能的设计文档和实施计划在实施完成后删除，架构决策整合到 `.claude/rules/architecture.md`。
