@@ -134,3 +134,56 @@ async def revoke_user_refresh_tokens(
     )
     await session.execute(stmt)
     await session.commit()
+
+
+async def revoke_refresh_token_by_hash(
+    session: AsyncSession, token_hash: str
+) -> None:
+    """根据令牌哈希撤销单个刷新令牌。"""
+    stmt = delete(RefreshToken).where(
+        RefreshToken.token_hash == token_hash
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
+async def revoke_other_refresh_tokens(
+    session: AsyncSession, user_id: str, current_hash: str
+) -> None:
+    """撤销用户除当前令牌外的所有刷新令牌。"""
+    stmt = delete(RefreshToken).where(
+        RefreshToken.user_id == user_id,
+        RefreshToken.token_hash != current_hash,
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
+async def list_user_refresh_tokens(
+    session: AsyncSession, user_id: str
+) -> list[RefreshToken]:
+    """列出用户所有未过期的刷新令牌。"""
+    now = datetime.now(timezone.utc)
+    stmt = (
+        select(RefreshToken)
+        .where(
+            RefreshToken.user_id == user_id,
+            RefreshToken.expires_at > now,
+        )
+        .order_by(RefreshToken.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def revoke_refresh_token_by_id(
+    session: AsyncSession, token_id: str, user_id: str
+) -> bool:
+    """根据令牌 ID 撤销单个刷新令牌，返回是否成功。"""
+    stmt = delete(RefreshToken).where(
+        RefreshToken.id == token_id,
+        RefreshToken.user_id == user_id,
+    )
+    result = await session.execute(stmt)
+    await session.commit()
+    return result.rowcount > 0
