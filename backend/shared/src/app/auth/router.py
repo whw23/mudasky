@@ -109,7 +109,7 @@ async def save_refresh_token_hash(
 
     if not settings.INTERNAL_SECRET or x_internal_secret != settings.INTERNAL_SECRET:
         from app.core.exceptions import ForbiddenException
-        raise ForbiddenException(message="内部接口禁止外部访问")
+        raise ForbiddenException(message="内部接口禁止外部访问", code="INTERNAL_API_FORBIDDEN")
     svc = AuthService(session)
     await svc.save_refresh_token_hash(
         data.user_id,

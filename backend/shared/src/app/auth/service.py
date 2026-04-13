@@ -69,13 +69,13 @@ class AuthService:
         await repository.verify_sms_code(self.session, phone, code)
         existing = await user_repo.get_by_phone(self.session, phone)
         if existing:
-            raise ConflictException(message="手机号已注册")
+            raise ConflictException(message="手机号已注册", code="PHONE_ALREADY_REGISTERED")
         if username:
             existing_name = await user_repo.get_by_username(
                 self.session, username
             )
             if existing_name:
-                raise ConflictException(message="用户名已被使用")
+                raise ConflictException(message="用户名已被使用", code="USERNAME_ALREADY_USED")
         password = None
         if encrypted_password and nonce:
             password = decrypt_password(encrypted_password, nonce)
@@ -126,7 +126,7 @@ class AuthService:
             return await self._login_with_password(
                 user, password, totp, sms_code_2fa
             )
-        raise UnauthorizedException(message="请提供有效的登录凭据")
+        raise UnauthorizedException(message="请提供有效的登录凭据", code="INVALID_CREDENTIALS")
 
     async def refresh(self, token_hash: str) -> User:
         """刷新令牌续签，返回用户信息。
@@ -137,10 +137,10 @@ class AuthService:
             self.session, token_hash
         )
         if not token:
-            raise UnauthorizedException(message="刷新令牌无效")
+            raise UnauthorizedException(message="刷新令牌无效", code="REFRESH_TOKEN_INVALID")
         now = datetime.now(timezone.utc)
         if token.expires_at < now:
-            raise UnauthorizedException(message="刷新令牌已过期")
+            raise UnauthorizedException(message="刷新令牌已过期", code="REFRESH_TOKEN_EXPIRED")
         await repository.revoke_refresh_token_by_hash(
             self.session, token_hash
         )
@@ -148,7 +148,7 @@ class AuthService:
             self.session, token.user_id
         )
         if not user or not user.is_active:
-            raise UnauthorizedException(message="用户不存在或已禁用")
+            raise UnauthorizedException(message="用户不存在或已禁用", code="USER_NOT_FOUND_OR_DISABLED")
         return user
 
     async def save_refresh_token_hash(
@@ -229,7 +229,7 @@ class AuthService:
             elapsed = datetime.now(timezone.utc) - latest.created_at
             if elapsed < timedelta(seconds=60):
                 raise TooManyRequestsException(
-                    message="验证码发送过于频繁，请稍后再试"
+                    message="验证码发送过于频繁，请稍后再试", code="SMS_CODE_TOO_FREQUENT"
                 )
         # 每小时最多 5 次
         count = await repository.count_recent_sms(
@@ -237,7 +237,7 @@ class AuthService:
         )
         if count >= 5:
             raise TooManyRequestsException(
-                message="验证码发送次数已达上限，请一小时后再试"
+                message="验证码发送次数已达上限，请一小时后再试", code="SMS_CODE_LIMIT_REACHED"
             )
 
     async def _login_by_sms(
@@ -278,9 +278,9 @@ class AuthService:
         """密码登录，检查二步验证。"""
         self._check_user_active(user)
         if not user.password_hash:
-            raise UnauthorizedException(message="用户未设置密码")
+            raise UnauthorizedException(message="用户未设置密码", code="PASSWORD_NOT_SET")
         if not verify_password(password, user.password_hash):
-            raise UnauthorizedException(message="密码不正确")
+            raise UnauthorizedException(message="密码不正确", code="PASSWORD_INCORRECT")
         if not user.two_factor_enabled:
             return user, None
         return await self._handle_2fa(
@@ -304,7 +304,7 @@ class AuthService:
             totp_obj = pyotp.TOTP(user.totp_secret)
             if not totp_obj.verify(totp):
                 raise UnauthorizedException(
-                    message="TOTP 验证码不正确"
+                    message="TOTP 验证码不正确", code="TOTP_CODE_INCORRECT"
                 )
             return user, None
         # 短信验证码（totp 和 sms 模式都接受）
@@ -321,7 +321,7 @@ class AuthService:
         """根据手机号获取用户，不存在则抛出异常。"""
         user = await user_repo.get_by_phone(self.session, phone)
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return user
 
     async def _get_user_by_username(
@@ -332,14 +332,14 @@ class AuthService:
             self.session, username
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return user
 
     @staticmethod
     def _check_user_active(user: User) -> None:
         """检查用户是否处于活跃状态。"""
         if not user.is_active:
-            raise UnauthorizedException(message="用户已被禁用")
+            raise UnauthorizedException(message="用户已被禁用", code="USER_DISABLED")
 
     @staticmethod
     def _generate_code() -> str:

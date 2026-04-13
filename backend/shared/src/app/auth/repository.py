@@ -55,11 +55,11 @@ async def verify_sms_code(
     """
     sms_code = await get_latest_sms_code(session, phone)
     if not sms_code:
-        raise UnauthorizedException(message="验证码无效或已过期")
+        raise UnauthorizedException(message="验证码无效或已过期", code="SMS_CODE_EXPIRED")
     sms_code.attempts += 1
     if sms_code.code != code:
         await session.commit()
-        raise UnauthorizedException(message="验证码不正确")
+        raise UnauthorizedException(message="验证码不正确", code="SMS_CODE_INCORRECT")
     sms_code.is_used = True
     await session.commit()
 
