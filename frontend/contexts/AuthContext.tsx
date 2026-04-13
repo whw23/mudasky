@@ -68,8 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   /** 退出登录 */
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null)
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      /* 忽略 */
+    }
   }, [])
 
   const showLoginModal = useCallback(() => setAuthModal('login'), [])
