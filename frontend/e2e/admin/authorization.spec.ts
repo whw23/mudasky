@@ -47,7 +47,7 @@ test.describe("越权 — 未登录用户", () => {
     expect(response.status).toBe(401)
   })
 
-  test("直接调用删除用户 API 返回 401", async ({ page }) => {
+  test("直接调用删除用户 API 被拒绝", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
       const res = await fetch("/api/admin/users/delete/fake-id", {
@@ -56,6 +56,7 @@ test.describe("越权 — 未登录用户", () => {
       })
       return { status: res.status }
     })
-    expect(response.status).toBe(401)
+    // 网关 CSRF 保护返回 403，或未认证返回 401
+    expect([401, 403]).toContain(response.status)
   })
 })

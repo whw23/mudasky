@@ -128,7 +128,7 @@ test.describe("安全 — 接口参数篡改", () => {
     expect(response.status).not.toBe(500)
   })
 
-  test("尝试删除不存在的用户返回 404", async ({ page }) => {
+  test("尝试删除不存在的用户被拒绝", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
       const res = await fetch("/api/admin/users/delete/nonexistent-id", {
@@ -137,8 +137,8 @@ test.describe("安全 — 接口参数篡改", () => {
       })
       return { status: res.status }
     })
-    // 未认证返回 401
-    expect(response.status).toBe(401)
+    // 网关 CSRF 保护返回 403，或未认证返回 401
+    expect([401, 403]).toContain(response.status)
   })
 })
 
@@ -154,6 +154,7 @@ test.describe("安全 — CSRF", () => {
       })
       return { status: res.status }
     })
-    expect(response.status).toBe(401)
+    // 网关 CSRF 保护返回 403，或未认证返回 401
+    expect([401, 403]).toContain(response.status)
   })
 })
