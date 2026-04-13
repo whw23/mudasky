@@ -15,6 +15,10 @@ import {
   Wrench,
   Settings,
   ArrowLeft,
+  FileText,
+  FolderOpen,
+  GraduationCap,
+  Trophy,
 } from "lucide-react"
 import { usePermissions } from "@/hooks/use-permissions"
 
@@ -31,6 +35,10 @@ const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin/users/*"] },
   { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin/roles/*"] },
+  { key: "articleManagement", href: "/admin/articles", icon: FileText, permissions: ["admin/content/*"] },
+  { key: "categoryManagement", href: "/admin/categories", icon: FolderOpen, permissions: ["admin/categories/*"] },
+  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["admin/universities/*"] },
+  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["admin/cases/*"] },
   { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin/general-settings/*"] },
   { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin/web-settings/*"] },
 ]

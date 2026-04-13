@@ -190,7 +190,10 @@
     "insertLink": "Insert Link",
     "imagePrompt": "Enter image URL",
     "linkPrompt": "Enter link URL",
-    "placeholder": "Start typing..."
+    "placeholder": "Start typing...",
+    "markdownSource": "Source",
+    "markdownSplit": "Split",
+    "markdownPreview": "Preview"
   },
   "Sidebar": {
     "latestArticles": "Latest Articles",

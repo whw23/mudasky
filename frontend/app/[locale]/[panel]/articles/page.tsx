@@ -1,59 +1,56 @@
 "use client"
 
 /**
- * 用户文章页面。
- * 展示用户的文章列表和文章编辑器。
+ * 文章管理页面（仅 admin）。
+ * 展示所有文章列表，支持创建/编辑/发布/删除。
  */
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { ArticleList } from "@/components/user/ArticleList"
+import { ArticleTable } from "@/components/admin/ArticleTable"
 import { ArticleEditor } from "@/components/user/ArticleEditor"
 import type { Article } from "@/types"
 
-/** 用户文章页面 */
-export default function UserArticlesPage() {
-  const t = useTranslations("UserArticles")
+/** 文章管理页面 */
+export default function AdminArticlesPage() {
+  const t = useTranslations("Admin")
+  const tArticle = useTranslations("UserArticles")
+
   const [editing, setEditing] = useState(false)
   const [editingArticle, setEditingArticle] = useState<Article | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   /** 开始创建新文章 */
-  const handleCreate = () => {
+  function handleCreate(): void {
     setEditingArticle(null)
     setEditing(true)
   }
 
   /** 开始编辑文章 */
-  const handleEdit = (article: Article) => {
+  function handleEdit(article: Article): void {
     setEditingArticle(article)
     setEditing(true)
   }
 
   /** 保存完成后返回列表 */
-  const handleSaved = () => {
+  function handleSaved(): void {
     setEditing(false)
     setEditingArticle(null)
     setRefreshKey((k) => k + 1)
-  }
-
-  /** 取消编辑 */
-  const handleCancel = () => {
-    setEditing(false)
-    setEditingArticle(null)
   }
 
   if (editing) {
     return (
       <div>
         <h1 className="mb-4 text-2xl font-bold">
-          {t(editingArticle ? "editArticle" : "createArticle")}
+          {tArticle(editingArticle ? "editArticle" : "createArticle")}
         </h1>
         <ArticleEditor
           article={editingArticle}
+          apiPrefix="/admin/content"
           onSave={handleSaved}
-          onCancel={handleCancel}
+          onCancel={() => { setEditing(false); setEditingArticle(null) }}
         />
       </div>
     )
@@ -62,10 +59,10 @@ export default function UserArticlesPage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Button onClick={handleCreate}>{t("createArticle")}</Button>
+        <h1 className="text-2xl font-bold">{t("articleManagement")}</h1>
+        <Button onClick={handleCreate}>{tArticle("createArticle")}</Button>
       </div>
-      <ArticleList onEdit={handleEdit} refreshKey={refreshKey} />
+      <ArticleTable onEdit={handleEdit} refreshKey={refreshKey} />
     </div>
   )
 }

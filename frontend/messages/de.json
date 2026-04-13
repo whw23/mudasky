@@ -190,7 +190,10 @@
     "insertLink": "Link einfügen",
     "imagePrompt": "Bild-URL eingeben",
     "linkPrompt": "Link-URL eingeben",
-    "placeholder": "Inhalt eingeben..."
+    "placeholder": "Inhalt eingeben...",
+    "markdownSource": "Quelle",
+    "markdownSplit": "Geteilt",
+    "markdownPreview": "Vorschau"
   },
   "Sidebar": {
     "latestArticles": "Neueste Artikel",

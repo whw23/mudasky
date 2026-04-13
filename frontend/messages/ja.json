@@ -190,7 +190,10 @@
     "insertLink": "リンクを挿入",
     "imagePrompt": "画像のURLを入力してください",
     "linkPrompt": "リンクのURLを入力してください",
-    "placeholder": "内容を入力..."
+    "placeholder": "内容を入力...",
+    "markdownSource": "ソース",
+    "markdownSplit": "分割",
+    "markdownPreview": "プレビュー"
   },
   "Sidebar": {
     "latestArticles": "最新記事",

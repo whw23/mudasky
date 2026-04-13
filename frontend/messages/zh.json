@@ -190,7 +190,10 @@
     "insertLink": "插入链接",
     "imagePrompt": "请输入图片地址",
     "linkPrompt": "请输入链接地址",
-    "placeholder": "请输入内容..."
+    "placeholder": "请输入内容...",
+    "markdownSource": "源码",
+    "markdownSplit": "分屏",
+    "markdownPreview": "预览"
   },
   "Sidebar": {
     "latestArticles": "最新文章",

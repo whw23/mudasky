@@ -11,18 +11,19 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { TiptapEditor } from "@/components/editor/TiptapEditor"
+import { MarkdownEditor } from "@/components/editor/MarkdownEditor"
 import api from "@/lib/api"
 import type { Article, Category } from "@/types"
 
 interface ArticleEditorProps {
   article: Article | null
+  apiPrefix?: string
   onSave: () => void
   onCancel: () => void
 }
 
 /** 文章编辑器 */
-export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps) {
+export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave, onCancel }: ArticleEditorProps) {
   const t = useTranslations("UserArticles")
   const isEdit = !!article
 
@@ -95,7 +96,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
     setSaving(true)
     try {
       if (isEdit) {
-        await api.post(`/portal/articles/edit/${article.id}`, {
+        await api.post(`${apiPrefix}/edit/${article.id}`, {
           title,
           slug: slug || generateSlug(title),
           excerpt,
@@ -104,7 +105,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
           status,
         })
       } else {
-        await api.post("/portal/articles/create", {
+        await api.post(`${apiPrefix}/create`, {
           title,
           slug: slug || generateSlug(title),
           excerpt,
@@ -174,7 +175,7 @@ export function ArticleEditor({ article, onSave, onCancel }: ArticleEditorProps)
       {/* 正文编辑器 */}
       <div className="space-y-1">
         <Label>{t("contentLabel")}</Label>
-        <TiptapEditor content={content} onChange={setContent} />
+        <MarkdownEditor content={content} onChange={setContent} />
       </div>
 
       {/* 操作按钮 */}
