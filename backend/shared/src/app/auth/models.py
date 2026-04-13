@@ -68,3 +68,9 @@ class RefreshToken(Base):
         server_default=func.now(),
         nullable=False,
     )
+    user_agent: Mapped[str | None] = mapped_column(
+        String(256), nullable=True
+    )
+    ip_address: Mapped[str | None] = mapped_column(
+        String(45), nullable=True
+    )
