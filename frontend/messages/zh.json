@@ -1087,7 +1087,18 @@
     "saving": "保存中...",
     "saveSuccess": "保存成功",
     "publishSuccess": "发布成功",
-    "saveError": "保存失败"
+    "saveError": "保存失败",
+    "contentTypeLabel": "内容类型",
+    "fileUpload": "文件上传",
+    "fileLabel": "上传文件",
+    "fileHint": "支持 PDF、Word、Excel、PowerPoint 文件",
+    "selectFile": "选择文件",
+    "reupload": "重新上传",
+    "uploading": "上传中...",
+    "fileUploaded": "文件上传成功",
+    "fileUploadError": "文件上传失败",
+    "fileRequired": "请上传文件",
+    "supportedFormats": "支持格式：PDF、DOC、DOCX、XLS、XLSX、PPT、PPTX"
   },
   "Dashboard": {
     "welcome": "欢迎回来，{name}",

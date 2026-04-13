@@ -1087,7 +1087,18 @@
     "saving": "保存中...",
     "saveSuccess": "保存しました",
     "publishSuccess": "公開しました",
-    "saveError": "保存に失敗しました"
+    "saveError": "保存に失敗しました",
+    "contentTypeLabel": "コンテンツタイプ",
+    "fileUpload": "ファイルアップロード",
+    "fileLabel": "ファイルをアップロード",
+    "fileHint": "PDF、Word、Excel、PowerPointファイルに対応",
+    "selectFile": "ファイルを選択",
+    "reupload": "再アップロード",
+    "uploading": "アップロード中...",
+    "fileUploaded": "アップロード完了",
+    "fileUploadError": "アップロード失敗",
+    "fileRequired": "ファイルをアップロードしてください",
+    "supportedFormats": "対応形式：PDF、DOC、DOCX、XLS、XLSX、PPT、PPTX"
   },
   "Dashboard": {
     "welcome": "おかえりなさい、{name}",

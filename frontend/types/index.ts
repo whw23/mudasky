@@ -40,7 +40,9 @@ export interface Article {
   id: string
   title: string
   slug: string
+  content_type: "markdown" | "file"
   content: string
+  file_url: string | null
   excerpt: string
   cover_image: string | null
   category_id: string

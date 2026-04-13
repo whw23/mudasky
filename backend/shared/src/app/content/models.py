@@ -57,8 +57,14 @@ class Article(Base):
     slug: Mapped[str] = mapped_column(
         String(200), unique=True, index=True, nullable=False
     )
+    content_type: Mapped[str] = mapped_column(
+        String(20), default="markdown", nullable=False
+    )
     content: Mapped[str] = mapped_column(
         Text, nullable=False
+    )
+    file_url: Mapped[str | None] = mapped_column(
+        String(500), nullable=True
     )
     excerpt: Mapped[str] = mapped_column(
         String(500), default="", nullable=False

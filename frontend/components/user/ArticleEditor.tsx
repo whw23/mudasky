@@ -2,18 +2,22 @@
 
 /**
  * 文章编辑器组件。
- * 支持创建和编辑文章，包含标题、分类选择、摘要和富文本编辑。
+ * 支持 Markdown 编辑和文件上传（Office/PDF）两种模式。
  */
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { Upload, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor"
 import api from "@/lib/api"
 import type { Article, Category } from "@/types"
+
+/** 允许上传的文件类型 */
+const ACCEPTED_TYPES = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
 
 interface ArticleEditorProps {
   article: Article | null
@@ -31,16 +35,20 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
   const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
   const [content, setContent] = useState("")
+  const [contentType, setContentType] = useState<"markdown" | "file">("markdown")
+  const [fileUrl, setFileUrl] = useState<string | null>(null)
+  const [fileName, setFileName] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [categories, setCategories] = useState<Category[]>([])
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   /** 获取分类列表 */
   const fetchCategories = useCallback(async () => {
     try {
       const { data } = await api.get<Category[]>("/public/content/categories")
       setCategories(data)
-      // 默认选中第一个分类
       if (!article && data.length > 0) {
         setCategoryId(data[0].id)
       }
@@ -57,17 +65,25 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
       setSlug(article.slug)
       setExcerpt(article.excerpt)
       setContent(article.content)
+      setContentType(article.content_type || "markdown")
+      setFileUrl(article.file_url)
+      if (article.file_url) {
+        setFileName(article.file_url.split("/").pop() || "")
+      }
       setCategoryId(article.category_id)
     } else {
       setTitle("")
       setSlug("")
       setExcerpt("")
       setContent("")
+      setContentType("markdown")
+      setFileUrl(null)
+      setFileName("")
     }
   }, [article, fetchCategories])
 
   /** 从标题自动生成 slug */
-  const generateSlug = (text: string): string => {
+  function generateSlug(text: string): string {
     return text
       .toLowerCase()
       .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
@@ -76,15 +92,38 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
   }
 
   /** 标题变化时自动更新 slug（仅创建时） */
-  const handleTitleChange = (value: string) => {
+  function handleTitleChange(value: string): void {
     setTitle(value)
     if (!isEdit) {
       setSlug(generateSlug(value))
     }
   }
 
+  /** 上传文件 */
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("category", "application")
+      const { data } = await api.post("/portal/documents/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      setFileUrl(`/api/portal/documents/download/${data.id}`)
+      setFileName(file.name)
+      toast.success(t("fileUploaded"))
+    } catch {
+      toast.error(t("fileUploadError"))
+    } finally {
+      setUploading(false)
+    }
+  }
+
   /** 保存文章 */
-  const handleSave = async (status: "draft" | "published") => {
+  async function handleSave(status: "draft" | "published"): Promise<void> {
     if (!title.trim()) {
       toast.error(t("titleRequired"))
       return
@@ -93,26 +132,26 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
       toast.error(t("categoryRequired"))
       return
     }
+    if (contentType === "file" && !fileUrl) {
+      toast.error(t("fileRequired"))
+      return
+    }
     setSaving(true)
     try {
+      const payload = {
+        title,
+        slug: slug || generateSlug(title),
+        excerpt,
+        content_type: contentType,
+        content: contentType === "markdown" ? content : "",
+        file_url: contentType === "file" ? fileUrl : null,
+        category_id: categoryId,
+        status,
+      }
       if (isEdit) {
-        await api.post(`${apiPrefix}/edit/${article.id}`, {
-          title,
-          slug: slug || generateSlug(title),
-          excerpt,
-          content,
-          category_id: categoryId,
-          status,
-        })
+        await api.post(`${apiPrefix}/edit/${article.id}`, payload)
       } else {
-        await api.post(`${apiPrefix}/create`, {
-          title,
-          slug: slug || generateSlug(title),
-          excerpt,
-          content,
-          category_id: categoryId,
-          status,
-        })
+        await api.post(`${apiPrefix}/create`, payload)
       }
       toast.success(t(status === "published" ? "publishSuccess" : "saveSuccess"))
       onSave()
@@ -172,11 +211,80 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
         />
       </div>
 
-      {/* 正文编辑器 */}
-      <div className="space-y-1">
-        <Label>{t("contentLabel")}</Label>
-        <MarkdownEditor content={content} onChange={setContent} />
+      {/* 内容类型切换 */}
+      <div className="space-y-2">
+        <Label>{t("contentTypeLabel")}</Label>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={contentType === "markdown" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setContentType("markdown")}
+          >
+            <FileText className="mr-1 size-4" />
+            Markdown
+          </Button>
+          <Button
+            type="button"
+            variant={contentType === "file" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setContentType("file")}
+          >
+            <Upload className="mr-1 size-4" />
+            {t("fileUpload")}
+          </Button>
+        </div>
       </div>
+
+      {/* 正文编辑器 或 文件上传 */}
+      {contentType === "markdown" ? (
+        <div className="space-y-1">
+          <Label>{t("contentLabel")}</Label>
+          <MarkdownEditor content={content} onChange={setContent} />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>{t("fileLabel")}</Label>
+          <div className="rounded-lg border-2 border-dashed p-6 text-center">
+            {fileUrl ? (
+              <div className="flex items-center justify-center gap-2">
+                <FileText className="size-5 text-green-600" />
+                <span className="text-sm font-medium">{fileName}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {t("reupload")}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Upload className="mx-auto size-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{t("fileHint")}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploading ? t("uploading") : t("selectFile")}
+                </Button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_TYPES}
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">{t("supportedFormats")}</p>
+        </div>
+      )}
 
       {/* 操作按钮 */}
       <div className="flex justify-end gap-2">

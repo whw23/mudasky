@@ -1087,7 +1087,18 @@
     "saving": "Saving...",
     "saveSuccess": "Saved successfully",
     "publishSuccess": "Published successfully",
-    "saveError": "Failed to save"
+    "saveError": "Failed to save",
+    "contentTypeLabel": "Content Type",
+    "fileUpload": "File Upload",
+    "fileLabel": "Upload File",
+    "fileHint": "Supports PDF, Word, Excel, PowerPoint files",
+    "selectFile": "Select File",
+    "reupload": "Re-upload",
+    "uploading": "Uploading...",
+    "fileUploaded": "File uploaded",
+    "fileUploadError": "Upload failed",
+    "fileRequired": "Please upload a file",
+    "supportedFormats": "Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX"
   },
   "Dashboard": {
     "welcome": "Welcome back, {name}",

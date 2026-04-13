@@ -1087,7 +1087,18 @@
     "saving": "Speichern...",
     "saveSuccess": "Erfolgreich gespeichert",
     "publishSuccess": "Erfolgreich veröffentlicht",
-    "saveError": "Speichern fehlgeschlagen"
+    "saveError": "Speichern fehlgeschlagen",
+    "contentTypeLabel": "Inhaltstyp",
+    "fileUpload": "Datei hochladen",
+    "fileLabel": "Datei hochladen",
+    "fileHint": "Unterstützt PDF, Word, Excel, PowerPoint",
+    "selectFile": "Datei auswählen",
+    "reupload": "Erneut hochladen",
+    "uploading": "Wird hochgeladen...",
+    "fileUploaded": "Datei hochgeladen",
+    "fileUploadError": "Upload fehlgeschlagen",
+    "fileRequired": "Bitte laden Sie eine Datei hoch",
+    "supportedFormats": "Unterstützt: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX"
   },
   "Dashboard": {
     "welcome": "Willkommen zurück, {name}",
