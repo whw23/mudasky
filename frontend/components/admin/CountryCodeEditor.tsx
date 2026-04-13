@@ -9,12 +9,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import type { CountryCode } from '@/types/config'
+import { getApiError } from '@/lib/api-error'
 
 /** 带内部 ID 的国家码项 */
 type CountryCodeItem = CountryCode & { _id: number }
@@ -22,6 +22,7 @@ type CountryCodeItem = CountryCode & { _id: number }
 /** 国家码编辑器 */
 export function CountryCodeEditor() {
   const t = useTranslations('AdminSettings')
+  const tErr = useTranslations('ApiErrors')
   const [items, setItems] = useState<CountryCodeItem[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -68,8 +69,7 @@ export function CountryCodeEditor() {
       await api.post('/admin/general-settings/edit/phone_country_codes', { value: payload })
       toast.success(t('saveSuccess'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('saveError'))
+      toast.error(getApiError(err, tErr, t('saveError')))
     } finally {
       setSaving(false)
     }

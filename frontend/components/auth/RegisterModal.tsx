@@ -8,9 +8,9 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
-import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
+import { getApiError } from '@/lib/api-error'
 import {
   Dialog,
   DialogBody,
@@ -30,6 +30,7 @@ import { PhoneInput } from './PhoneInput'
 export function RegisterModal() {
   const { authModal, hideAuthModal, fetchUser, showLoginModal } = useAuth()
   const t = useTranslations('Auth')
+  const tErr = useTranslations('ApiErrors')
 
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
@@ -82,8 +83,7 @@ export function RegisterModal() {
       resetForm()
       hideAuthModal()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      setError(message || t('registerFailed'))
+      setError(getApiError(err, tErr, t('registerFailed')))
     } finally {
       setLoading(false)
     }

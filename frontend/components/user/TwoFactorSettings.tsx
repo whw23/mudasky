@@ -9,10 +9,10 @@ import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
+import { getApiError } from '@/lib/api-error'
 import {
   Card,
   CardHeader,
@@ -34,6 +34,7 @@ import { PasswordInput } from '@/components/auth/PasswordInput'
 export function TwoFactorSettings() {
   const { user, fetchUser } = useAuth()
   const t = useTranslations('Profile')
+  const tErr = useTranslations('ApiErrors')
 
   /* 启用流程状态 */
   const [qrUrl, setQrUrl] = useState<string | null>(null)
@@ -58,8 +59,7 @@ export function TwoFactorSettings() {
       const url = URL.createObjectURL(new Blob([res.data]))
       setQrUrl(url)
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('enableFailed'))
+      toast.error(getApiError(err, tErr, t('enableFailed')))
     } finally {
       setEnabling(false)
     }
@@ -78,8 +78,7 @@ export function TwoFactorSettings() {
       setTotpCode('')
       await fetchUser()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('confirmFailed'))
+      toast.error(getApiError(err, tErr, t('confirmFailed')))
     } finally {
       setConfirming(false)
     }
@@ -107,8 +106,7 @@ export function TwoFactorSettings() {
       setDisablePassword('')
       await fetchUser()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('disableFailed'))
+      toast.error(getApiError(err, tErr, t('disableFailed')))
     } finally {
       setDisabling(false)
     }

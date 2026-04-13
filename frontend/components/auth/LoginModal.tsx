@@ -8,10 +8,10 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
-import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { setKeepLogin } from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
+import { getApiError } from '@/lib/api-error'
 import {
   Dialog,
   DialogBody,
@@ -38,6 +38,7 @@ function isPhoneNumber(value: string): boolean {
 export function LoginModal() {
   const { authModal, hideAuthModal, fetchUser } = useAuth()
   const t = useTranslations('Auth')
+  const tErr = useTranslations('ApiErrors')
 
   /* 通用状态 */
   const [loading, setLoading] = useState(false)
@@ -102,8 +103,7 @@ export function LoginModal() {
       hideAuthModal()
       resetForm()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      setError(message || t('loginFailed'))
+      setError(getApiError(err, tErr, t('loginFailed')))
     } finally {
       setLoading(false)
     }

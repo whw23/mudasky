@@ -9,10 +9,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { Pencil, Check, X, ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
+import { getApiError } from '@/lib/api-error'
 import {
   Card,
   CardHeader,
@@ -101,6 +101,7 @@ function InfoRow({
 export function ProfileInfo() {
   const { user, fetchUser } = useAuth()
   const t = useTranslations('Profile')
+  const tErr = useTranslations('ApiErrors')
   const [editing, setEditing] = useState<EditingField>(null)
   const [loading, setLoading] = useState(false)
 
@@ -165,8 +166,7 @@ export function ProfileInfo() {
       cancelEdit()
       toast.success(t('usernameSaved'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('saveFailed'))
+      toast.error(getApiError(err, tErr, t('saveFailed')))
     } finally {
       setLoading(false)
     }
@@ -191,8 +191,7 @@ export function ProfileInfo() {
       cancelEdit()
       toast.success(t('passwordChanged'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('changeFailed'))
+      toast.error(getApiError(err, tErr, t('changeFailed')))
     } finally {
       setLoading(false)
     }
@@ -208,8 +207,7 @@ export function ProfileInfo() {
       cancelEdit()
       toast.success(t('phoneChanged'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('changeFailed'))
+      toast.error(getApiError(err, tErr, t('changeFailed')))
     } finally {
       setLoading(false)
     }
@@ -226,8 +224,7 @@ export function ProfileInfo() {
       setTwoFaMode('totp')
       setEditing('2fa')
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('enableFailed'))
+      toast.error(getApiError(err, tErr, t('enableFailed')))
     } finally {
       setLoading(false)
     }
@@ -249,8 +246,7 @@ export function ProfileInfo() {
       cancelEdit()
       toast.success(t('twoFaEnabled'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('confirmFailed'))
+      toast.error(getApiError(err, tErr, t('confirmFailed')))
     } finally {
       setLoading(false)
     }
@@ -266,8 +262,7 @@ export function ProfileInfo() {
       cancelEdit()
       toast.success(t('twoFaEnabled'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('confirmFailed'))
+      toast.error(getApiError(err, tErr, t('confirmFailed')))
     } finally {
       setLoading(false)
     }
@@ -284,8 +279,7 @@ export function ProfileInfo() {
       setDisableCode('')
       toast.success(t('twoFaDisabled'))
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('disableFailed'))
+      toast.error(getApiError(err, tErr, t('disableFailed')))
     } finally {
       setLoading(false)
     }

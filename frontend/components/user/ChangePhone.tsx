@@ -8,9 +8,9 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
+import { getApiError } from '@/lib/api-error'
 import {
   Card,
   CardHeader,
@@ -27,6 +27,7 @@ import { PhoneInput } from '@/components/auth/PhoneInput'
 export function ChangePhone() {
   const { fetchUser } = useAuth()
   const t = useTranslations('Profile')
+  const tErr = useTranslations('ApiErrors')
 
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
@@ -48,8 +49,7 @@ export function ChangePhone() {
       resetForm()
       await fetchUser()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('changeFailed'))
+      toast.error(getApiError(err, tErr, t('changeFailed')))
     } finally {
       setLoading(false)
     }

@@ -8,10 +8,10 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import { useAuth } from '@/hooks/use-auth'
+import { getApiError } from '@/lib/api-error'
 import {
   Card,
   CardHeader,
@@ -28,6 +28,7 @@ import { PhoneInput } from '@/components/auth/PhoneInput'
 /** 修改密码表单 */
 export function ChangePassword() {
   const t = useTranslations('Profile')
+  const tErr = useTranslations('ApiErrors')
   const { user } = useAuth()
 
   const [phone, setPhone] = useState('')
@@ -65,8 +66,7 @@ export function ChangePassword() {
       toast.success(t('passwordChanged'))
       resetForm()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('changeFailed'))
+      toast.error(getApiError(err, tErr, t('changeFailed')))
     } finally {
       setLoading(false)
     }

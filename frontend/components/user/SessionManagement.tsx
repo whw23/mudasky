@@ -9,11 +9,11 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { LogOut } from 'lucide-react'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { getApiError } from '@/lib/api-error'
 
 interface Session {
   id: string
@@ -36,6 +36,7 @@ function parseUserAgent(ua: string | null, unknownDevice: string): string {
 
 export function SessionManagement() {
   const t = useTranslations('Profile')
+  const tErr = useTranslations('ApiErrors')
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(false)
   const [sessionsLoading, setSessionsLoading] = useState(true)
@@ -47,8 +48,7 @@ export function SessionManagement() {
       const res = await api.get<Session[]>('/portal/profile/sessions')
       setSessions(res.data)
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('saveFailed'))
+      toast.error(getApiError(err, tErr, t('saveFailed')))
     } finally {
       setSessionsLoading(false)
     }
@@ -66,8 +66,7 @@ export function SessionManagement() {
       toast.success(t('sessionRevoked'))
       await fetchSessions()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('saveFailed'))
+      toast.error(getApiError(err, tErr, t('saveFailed')))
     } finally {
       setLoading(false)
     }
@@ -81,8 +80,7 @@ export function SessionManagement() {
       toast.success(t('allSessionsRevoked'))
       await fetchSessions()
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('saveFailed'))
+      toast.error(getApiError(err, tErr, t('saveFailed')))
     } finally {
       setLoading(false)
     }

@@ -8,9 +8,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
+import { isValidPhone } from '@/components/auth/PhoneInput'
+import { useConfig } from '@/contexts/ConfigContext'
+import { getApiError } from '@/lib/api-error'
 
 interface SmsCodeButtonProps {
   phone: string
@@ -22,6 +24,9 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
   const [countdown, setCountdown] = useState(0)
   const [sending, setSending] = useState(false)
   const t = useTranslations('Auth')
+  const tErr = useTranslations('ApiErrors')
+  const { countryCodes } = useConfig()
+  const phoneValid = isValidPhone(phone, countryCodes)
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -31,25 +36,24 @@ export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
 
   /** 发送验证码 */
   const handleSend = useCallback(async () => {
-    if (!phone || sending || countdown > 0) return
+    if (!phone || !phoneValid || sending || countdown > 0) return
     setSending(true)
     try {
       await api.post('/auth/sms-code', { phone })
       setCountdown(60)
     } catch (err) {
-      const message = err instanceof AxiosError ? err.response?.data?.message : null
-      toast.error(message || t('sendFailed'))
+      toast.error(getApiError(err, tErr, t('sendFailed')))
     } finally {
       setSending(false)
     }
-  }, [phone, sending, countdown, t])
+  }, [phone, sending, countdown, t, tErr, phoneValid])
 
   return (
     <Button
       type="button"
       variant="outline"
       size="sm"
-      disabled={disabled || sending || countdown > 0 || !phone}
+      disabled={disabled || sending || countdown > 0 || !phone || !phoneValid}
       onClick={handleSend}
       className="w-28 shrink-0"
     >
