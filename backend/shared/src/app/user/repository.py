@@ -108,6 +108,11 @@ async def set_role_id(
     await session.commit()
 
 
+async def delete(session: AsyncSession, user: User) -> None:
+    """删除用户记录。"""
+    await session.delete(user)
+
+
 async def count_by_role(
     session: AsyncSession,
 ) -> dict[str, int]:

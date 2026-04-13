@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.auth import repository as auth_repo
 from app.auth.schemas import SessionResponse
+from app.config.service import ConfigService
 from app.core.dependencies import CurrentUserId, DbSession
 from app.user.schemas import (
     PasswordChange,
@@ -98,10 +99,15 @@ async def enable_2fa_totp(
     user = await svc.get_user(user_id)
     secret = await svc.enable_2fa_totp(user_id)
 
+    config_svc = ConfigService(session)
+    site_info = await config_svc.get_value("site_info")
+    brand = site_info.value.get("brand_name", {})
+    issuer = brand.get("zh", "mudasky") if isinstance(brand, dict) else brand
+
     totp = pyotp.TOTP(secret)
     provisioning_uri = totp.provisioning_uri(
         name=user.phone or user.username or user.id,
-        issuer_name="mudasky",
+        issuer_name=issuer,
     )
 
     img = qrcode.make(provisioning_uri)
@@ -158,6 +164,33 @@ async def disable_2fa(
     svc = UserService(session)
     await svc.disable_2fa(user_id, data.phone, data.code)
     return MessageResponse(message="双因素认证已关闭")
+
+
+class DeleteAccountBody(BaseModel):
+    """注销账号请求体。"""
+
+    code: str = Field(..., description="短信验证码")
+
+
+@router.post("/delete-account", response_model=MessageResponse, summary="注销账号")
+async def delete_account(
+    data: DeleteAccountBody,
+    user_id: CurrentUserId,
+    session: DbSession,
+) -> MessageResponse:
+    """用户注销自己的账号，需短信验证码确认。"""
+    from app.core.exceptions import ForbiddenException
+
+    svc = UserService(session)
+    user = await svc.get_user(user_id)
+    if not user.phone:
+        raise ForbiddenException(
+            message="未绑定手机号，无法注销账号",
+            code="PHONE_NOT_BOUND",
+        )
+    await auth_repo.verify_sms_code(session, user.phone, data.code)
+    await svc.delete_user(user_id)
+    return MessageResponse(message="账号已注销")
 
 
 @router.get("/sessions", response_model=list[SessionResponse], summary="查看所有活跃会话")

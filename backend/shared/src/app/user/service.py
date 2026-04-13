@@ -3,6 +3,9 @@
 处理用户资料更新、密码修改、双因素认证等业务。
 """
 
+import logging
+import shutil
+
 import pyotp
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,13 +13,18 @@ from app.auth import repository as auth_repo
 from app.core.crypto import decrypt_password
 from app.core.exceptions import (
     ConflictException,
+    ForbiddenException,
     NotFoundException,
 )
 from app.core.security import hash_password
+from app.core.storage import UPLOAD_BASE_DIR
+from app.document import repository as doc_repo
 from app.rbac import repository as rbac_repo
 from app.user import repository
 from app.user.models import User
 from app.user.schemas import PasswordChange, PhoneChange, UserResponse, UserUpdate
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -105,13 +113,13 @@ class UserService:
         通过短信验证码验证新手机号后修改。
         """
         user = await self.get_user(user_id)
-        await auth_repo.verify_sms_code(self.session, data.new_phone, data.code)
-        # 检查唯一性
+        # 先检查唯一性，避免浪费验证码
         existing = await repository.get_by_phone(
             self.session, data.new_phone
         )
         if existing and existing.id != user_id:
             raise ConflictException(message="手机号已被使用", code="PHONE_ALREADY_USED")
+        await auth_repo.verify_sms_code(self.session, data.new_phone, data.code)
         user.phone = data.new_phone
         return await repository.update(self.session, user)
 
@@ -184,3 +192,45 @@ class UserService:
         return await repository.list_users(
             self.session, offset, limit
         )
+
+    async def delete_user(self, user_id: str) -> None:
+        """删除用户及其所有关联数据。
+
+        清理顺序：RefreshToken → SmsCode → Document → User。
+        磁盘文件在事务提交后删除。
+        """
+        user = await self.get_user(user_id)
+
+        # superuser 不可删除
+        if user.role_id:
+            role = await rbac_repo.get_role_by_id(
+                self.session, user.role_id
+            )
+            if role and role.name == "superuser":
+                raise ForbiddenException(
+                    message="超级管理员不可删除",
+                    code="SUPERUSER_CANNOT_BE_DELETED",
+                )
+
+        # 收集磁盘文件路径（事务后删除）
+        file_paths = await doc_repo.list_file_paths_by_user(
+            self.session, user_id
+        )
+
+        # 事务内按依赖顺序删除数据库记录
+        await auth_repo.delete_refresh_tokens_by_user(
+            self.session, user_id
+        )
+        if user.phone:
+            await auth_repo.delete_sms_codes_by_phone(
+                self.session, user.phone
+            )
+        await doc_repo.delete_by_user(self.session, user_id)
+        await repository.delete(self.session, user)
+        await self.session.commit()
+
+        # 事务成功后删除磁盘文件
+        user_dir = UPLOAD_BASE_DIR / user_id
+        if user_dir.exists():
+            shutil.rmtree(user_dir, ignore_errors=True)
+            logger.info("用户文件目录已删除: %s", user_dir)
