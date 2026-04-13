@@ -169,10 +169,6 @@ class TestCsrf:
 class TestTokenRefresh:
     """Token 刷新测试。"""
 
-    @pytest.mark.skip(
-        reason="refresh 端点依赖网关从 refresh_token cookie 注入 X-Refresh-Token-Hash 头，"
-        "httpx 无法正确传递 HttpOnly+SameSite=Strict cookie"
-    )
     async def test_refresh_token(self, superuser_client):
         """刷新 token -> 验证新 token 有效。"""
         refresh_resp = await superuser_client.post(

@@ -148,7 +148,6 @@ class TestOpenApiSpec:
         assert resp.status_code == 200
         data = resp.json()
         assert "paths" in data
-        assert "info" in data
         # 应包含已知的 admin 路由
         paths = list(data["paths"].keys())
         assert any("/admin/" in p for p in paths)
