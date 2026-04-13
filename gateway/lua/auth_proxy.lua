@@ -107,6 +107,8 @@ save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash
   body = cjson.encode({
     user_id = user.id,
     token_hash = token_hash,
+    user_agent = ngx.var.http_user_agent or "",
+    ip_address = ngx.var.remote_addr or "",
   }),
   headers = {
     ["Content-Type"] = "application/json",
