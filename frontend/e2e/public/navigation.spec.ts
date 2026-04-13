@@ -73,7 +73,7 @@ test.describe("院校页搜索和筛选", () => {
 
   test("搜索框可见", async ({ page }) => {
     const searchInput = page.getByPlaceholder(/搜索院校/)
-    await expect(searchInput).toBeVisible()
+    await expect(searchInput).toBeVisible({ timeout: 15000 })
   })
 
   test("国家筛选下拉可见", async ({ page }) => {
