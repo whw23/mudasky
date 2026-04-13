@@ -94,6 +94,8 @@ class RefreshTokenHashRequest(BaseModel):
 
     user_id: str
     token_hash: str
+    user_agent: str | None = None
+    ip_address: str | None = None
 
 
 @router.post("/refresh-token-hash", response_model=MessageResponse, summary="保存刷新令牌哈希")
@@ -109,19 +111,24 @@ async def save_refresh_token_hash(
         from app.core.exceptions import ForbiddenException
         raise ForbiddenException(message="内部接口禁止外部访问")
     svc = AuthService(session)
-    await svc.save_refresh_token_hash(data.user_id, data.token_hash)
+    await svc.save_refresh_token_hash(
+        data.user_id,
+        data.token_hash,
+        user_agent=data.user_agent,
+        ip_address=data.ip_address,
+    )
     return MessageResponse(message="ok")
 
 
 @router.post("/logout", response_model=MessageResponse, summary="用户登出")
 async def logout(
     session: DbSession,
-    x_user_id: str = Header(""),
+    x_refresh_token_hash: str = Header(""),
 ) -> MessageResponse:
-    """撤销当前用户所有刷新令牌（由网关内部调用）。"""
-    if x_user_id:
-        from app.auth import repository
-        await repository.revoke_user_refresh_tokens(session, x_user_id)
+    """撤销当前设备的刷新令牌（由网关内部调用）。"""
+    if x_refresh_token_hash:
+        svc = AuthService(session)
+        await svc.logout_current_device(x_refresh_token_hash)
     return MessageResponse(message="已退出登录")
 
 

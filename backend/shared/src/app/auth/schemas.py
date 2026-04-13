@@ -3,6 +3,8 @@
 定义短信验证码、注册、登录、认证响应等数据传输对象。
 """
 
+from datetime import datetime
+
 from pydantic import BaseModel, Field, field_validator
 
 from app.user.schemas import UserResponse
@@ -110,3 +112,13 @@ class PublicKeyResponse(BaseModel):
 
     public_key: str
     nonce: str
+
+
+class SessionResponse(BaseModel):
+    """活跃会话响应。"""
+
+    id: str
+    user_agent: str | None = None
+    ip_address: str | None = None
+    created_at: datetime
+    is_current: bool = False
