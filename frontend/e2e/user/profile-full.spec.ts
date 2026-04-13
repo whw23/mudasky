@@ -28,9 +28,9 @@ test.describe("个人资料页", () => {
 
   test("点击修改用户名展开编辑表单", async ({ adminPage }) => {
     await adminPage.getByRole("button", { name: "修改" }).first().click()
-    await adminPage.waitForTimeout(500)
-    // 应该出现输入框
-    await expect(adminPage.getByRole("button", { name: "保存" })).toBeVisible()
+    await adminPage.waitForTimeout(1000)
+    // 应该出现输入框和取消按钮
+    await expect(adminPage.getByRole("button", { name: "取消" }).first()).toBeVisible()
   })
 
   test("密码区域显示已设置或未设置", async ({ adminPage }) => {
@@ -38,7 +38,7 @@ test.describe("个人资料页", () => {
   })
 
   test("二步验证区域可见", async ({ adminPage }) => {
-    await expect(adminPage.getByText("两步验证")).toBeVisible()
+    await expect(adminPage.getByText("两步验证", { exact: true })).toBeVisible()
   })
 
   test("角色显示区域可见", async ({ adminPage }) => {

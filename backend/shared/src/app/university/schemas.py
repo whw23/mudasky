@@ -18,6 +18,9 @@ class UniversityCreate(BaseModel):
     country: str = Field(
         ..., max_length=100, description="国家"
     )
+    province: str | None = Field(
+        None, max_length=100, description="省份/州"
+    )
     city: str = Field(
         ..., max_length=100, description="城市"
     )
@@ -51,6 +54,9 @@ class UniversityUpdate(BaseModel):
     country: str | None = Field(
         None, max_length=100, description="国家"
     )
+    province: str | None = Field(
+        None, max_length=100, description="省份/州"
+    )
     city: str | None = Field(
         None, max_length=100, description="城市"
     )
@@ -81,6 +87,7 @@ class UniversityResponse(BaseModel):
     name: str
     name_en: str | None = None
     country: str
+    province: str | None = None
     city: str
     logo_url: str | None = None
     description: str | None = None

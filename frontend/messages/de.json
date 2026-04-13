@@ -586,6 +586,8 @@
     "searchPlaceholder": "Universität, Stadt suchen...",
     "countryFilter": "Nach Land filtern",
     "allCountries": "Alle Länder",
+    "allProvinces": "Alle Bundesländer",
+    "allCities": "Alle Städte",
     "reset": "Zurücksetzen",
     "loading": "Laden...",
     "noResults": "Keine Universitäten gefunden",

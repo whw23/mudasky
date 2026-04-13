@@ -30,6 +30,7 @@ class UniversityService:
             name=data.name,
             name_en=data.name_en,
             country=data.country,
+            province=data.province,
             city=data.city,
             logo_url=data.logo_url,
             description=data.description,
@@ -81,6 +82,7 @@ class UniversityService:
         offset: int,
         limit: int,
         country: str | None = None,
+        city: str | None = None,
         is_featured: bool | None = None,
         search: str | None = None,
         program: str | None = None,
@@ -91,6 +93,7 @@ class UniversityService:
             offset,
             limit,
             country,
+            city,
             is_featured,
             search,
             program,
@@ -102,4 +105,20 @@ class UniversityService:
         """获取所有院校的去重国家列表。"""
         return await repository.get_distinct_countries(
             self.session
+        )
+
+    async def get_distinct_provinces(
+        self, country: str | None = None
+    ) -> list[str]:
+        """获取院校的去重省份列表，可按国家筛选。"""
+        return await repository.get_distinct_provinces(
+            self.session, country
+        )
+
+    async def get_distinct_cities(
+        self, country: str | None = None
+    ) -> list[str]:
+        """获取院校的去重城市列表，可按国家筛选。"""
+        return await repository.get_distinct_cities(
+            self.session, country
         )

@@ -117,6 +117,7 @@ export interface University {
   name: string
   name_en: string | null
   country: string
+  province: string | null
   city: string
   logo_url: string | null
   description: string | null

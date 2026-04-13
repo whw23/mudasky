@@ -38,13 +38,14 @@ async def list_universities(
     page: int = 1,
     page_size: int = 20,
     country: str | None = None,
+    city: str | None = None,
     is_featured: bool | None = None,
     search: str | None = None,
     program: str | None = None,
 ) -> PaginatedResponse[UniversityResponse]:
     """分页查询合作院校列表。
 
-    支持按关键词搜索和专业过滤。
+    支持按国家、城市、关键词和专业过滤。
     """
     params = PaginationParams(
         page=page, page_size=page_size
@@ -54,12 +55,13 @@ async def list_universities(
         params.offset,
         params.page_size,
         country,
+        city,
         is_featured,
         search,
         program,
     )
     result = build_paginated(universities, total, params, UniversityResponse)
-    seed = f"uni:list:{page}:{page_size}:{country}:{is_featured}:{search}:{program}:{total}"
+    seed = f"uni:list:{page}:{page_size}:{country}:{city}:{is_featured}:{search}:{program}:{total}"
     if set_cache_headers(response, seed, 3600, if_none_match):
         return response  # type: ignore[return-value]
     return result
@@ -82,6 +84,46 @@ async def list_countries(
     if set_cache_headers(response, seed, 3600, if_none_match):
         return response  # type: ignore[return-value]
     return countries
+
+
+@public_router.get(
+    "/provinces",
+    response_model=list[str],
+    summary="获取省份列表",
+)
+async def list_provinces(
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
+    country: str | None = None,
+) -> list[str]:
+    """获取院校的去重省份列表，可按国家筛选。"""
+    svc = UniversityService(session)
+    provinces = await svc.get_distinct_provinces(country)
+    seed = f"uni:provinces:{country}:{','.join(provinces)}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return provinces
+
+
+@public_router.get(
+    "/cities",
+    response_model=list[str],
+    summary="获取城市列表",
+)
+async def list_cities(
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
+    country: str | None = None,
+) -> list[str]:
+    """获取院校的去重城市列表，可按国家筛选。"""
+    svc = UniversityService(session)
+    cities = await svc.get_distinct_cities(country)
+    seed = f"uni:cities:{country}:{','.join(cities)}"
+    if set_cache_headers(response, seed, 3600, if_none_match):
+        return response  # type: ignore[return-value]
+    return cities
 
 
 @public_router.get(

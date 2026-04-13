@@ -586,6 +586,8 @@
     "searchPlaceholder": "大学名、都市を検索...",
     "countryFilter": "国で絞り込み",
     "allCountries": "すべての国",
+    "allProvinces": "すべての州/県",
+    "allCities": "すべての都市",
     "reset": "リセット",
     "loading": "読み込み中...",
     "noResults": "該当する大学が見つかりません",

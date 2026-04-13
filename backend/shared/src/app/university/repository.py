@@ -31,18 +31,21 @@ async def list_universities(
     offset: int,
     limit: int,
     country: str | None = None,
+    city: str | None = None,
     is_featured: bool | None = None,
     search: str | None = None,
     program: str | None = None,
 ) -> tuple[list[University], int]:
     """分页查询院校列表。
 
-    可按国家、推荐状态、关键词和专业过滤。
+    可按国家、城市、推荐状态、关键词和专业过滤。
     返回院校列表和总数。
     """
     conditions = []
     if country:
         conditions.append(University.country == country)
+    if city:
+        conditions.append(University.city == city)
     if is_featured is not None:
         conditions.append(
             University.is_featured == is_featured
@@ -105,6 +108,38 @@ async def get_distinct_countries(
         select(distinct(University.country))
         .order_by(University.country.asc())
     )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_distinct_provinces(
+    session: AsyncSession,
+    country: str | None = None,
+) -> list[str]:
+    """获取院校的去重省份列表，可按国家筛选。"""
+    stmt = select(distinct(University.province)).where(
+        University.province.isnot(None),
+        University.province != "",
+    )
+    if country:
+        stmt = stmt.where(University.country == country)
+    stmt = stmt.order_by(University.province.asc())
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_distinct_cities(
+    session: AsyncSession,
+    country: str | None = None,
+) -> list[str]:
+    """获取院校的去重城市列表，可按国家筛选。"""
+    stmt = select(distinct(University.city)).where(
+        University.city.isnot(None),
+        University.city != "",
+    )
+    if country:
+        stmt = stmt.where(University.country == country)
+    stmt = stmt.order_by(University.city.asc())
     result = await session.execute(stmt)
     return list(result.scalars().all())
 

@@ -35,6 +35,8 @@ export function UniversityList() {
   const [filters, setFilters] = useState({
     search: "",
     country: "",
+    province: "",
+    city: "",
   })
 
   /** 获取国家列表 */
@@ -55,6 +57,7 @@ export function UniversityList() {
       }
       if (filters.search) params.search = filters.search
       if (filters.country) params.country = filters.country
+      if (filters.city) params.city = filters.city
 
       const { data } = await api.get<PaginatedResponse<University>>(
         "/public/university/list",
@@ -80,6 +83,8 @@ export function UniversityList() {
   const handleFilterChange = (newFilters: {
     search: string
     country: string
+    province: string
+    city: string
   }) => {
     setFilters(newFilters)
     setPage(1)

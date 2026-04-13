@@ -39,6 +39,9 @@ class University(Base):
     country: Mapped[str] = mapped_column(
         String(100), nullable=False
     )
+    province: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     city: Mapped[str] = mapped_column(
         String(100), nullable=False
     )
