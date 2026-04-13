@@ -2,6 +2,7 @@
 * text=auto
 
 # ─── Web / React ─────────────────────────────────────────────────────────────
+*.svg   text eol=lf
 *.js    text eol=lf
 *.jsx   text eol=lf
 *.ts    text eol=lf
@@ -9,6 +10,8 @@
 *.html  text eol=lf
 *.css   text eol=lf
 *.scss  text eol=lf
+*.mjs   text eol=lf
+*.cjs   text eol=lf
 
 # ─── Python ──────────────────────────────────────────────────────────────────
 *.py    text eol=lf
@@ -29,6 +32,11 @@ docker-compose*.yml text eol=lf
 *.ini   text eol=lf
 *.conf  text eol=lf
 *.md    text eol=lf
+*.txt   text eol=lf
+*.env   text eol=lf
+*.sql   text eol=lf
+*.xml   text eol=lf
+*.lock  text eol=lf
 *.sh    text eol=lf
 
 # ─── Shell scripts (ensure executable line endings) ──────────────────────────
@@ -40,10 +48,12 @@ docker-compose*.yml text eol=lf
 *.jpeg  binary
 *.gif   binary
 *.ico   binary
-*.svg   binary
 *.woff  binary
 *.woff2 binary
 *.ttf   binary
 *.eot   binary
 *.pyc   binary
 *.luac  binary
+*.webp  binary
+*.avif  binary
+*.pdf   binary
