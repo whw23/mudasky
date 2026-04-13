@@ -1,6 +1,7 @@
 import { SidebarShell } from "@/components/layout/SidebarShell"
 import { AdminSidebar } from "@/components/layout/AdminSidebar"
 import { UserSidebar } from "@/components/layout/UserSidebar"
+import { PanelGuard } from "@/components/layout/PanelGuard"
 
 /** 统一面板布局 */
 export default async function PanelLayout({
@@ -15,11 +16,13 @@ export default async function PanelLayout({
   const isAdmin = panel === "admin"
 
   return (
-    <SidebarShell
-      sidebar={isAdmin ? <AdminSidebar /> : <UserSidebar />}
-      sidebarClass={isAdmin ? "bg-gray-900 text-gray-300" : "bg-gray-50"}
-    >
-      {children}
-    </SidebarShell>
+    <PanelGuard panel={panel}>
+      <SidebarShell
+        sidebar={isAdmin ? <AdminSidebar /> : <UserSidebar />}
+        sidebarClass={isAdmin ? "bg-gray-900 text-gray-300" : "bg-gray-50"}
+      >
+        {children}
+      </SidebarShell>
+    </PanelGuard>
   )
 }

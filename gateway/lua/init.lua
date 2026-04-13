@@ -30,7 +30,7 @@ end
 
 --- 检查路由是否公开。
 function _M.is_public(method, uri)
-  -- 认证路由全部放行
+  -- 认证路由全部放行（login/register/logout 等）
   if string.find(uri, "/api/auth/", 1, true) == 1 then
     return true
   end
