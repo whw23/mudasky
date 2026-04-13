@@ -129,6 +129,27 @@ end
 -- 注入请求头（强制覆盖，防伪造）
 ngx.req.set_header("X-User-Id", payload.sub)
 
+-- 对会话管理接口注入 X-Refresh-Token-Hash
+if string.find(uri, "/api/portal/profile/sessions", 1, true) == 1 then
+  local rt_cookie
+  for pair in string.gmatch(cookie_header, "[^;]+") do
+    local trimmed = string.gsub(pair, "^%s+", "")
+    local k, v = string.match(trimmed, "^(.-)=(.+)$")
+    if k == "refresh_token" then
+      rt_cookie = v
+      break
+    end
+  end
+  if rt_cookie then
+    local resty_sha256 = require("resty.sha256")
+    local str_util = require("resty.string")
+    local sha = resty_sha256:new()
+    sha:update(rt_cookie)
+    local digest = sha:final()
+    ngx.req.set_header("X-Refresh-Token-Hash", str_util.to_hex(digest))
+  end
+end
+
 -- 对 /api/admin/* 和 /api/portal/* 做权限校验
 if string.find(uri, "^/api/admin/") or string.find(uri, "^/api/portal/") then
   local required_perm = extract_permission(uri)
