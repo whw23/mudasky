@@ -77,7 +77,7 @@ class AdminService:
             self.session, user_id
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return await self._build_user_response(user)
 
     async def update_user(
@@ -88,7 +88,7 @@ class AdminService:
             self.session, user_id
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
 
         if data.is_active is not None:
             user.is_active = data.is_active
@@ -109,7 +109,7 @@ class AdminService:
             self.session, user_id
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
 
         password = decrypt_password(encrypted_password, nonce)
         user.password_hash = hash_password(password)
@@ -128,7 +128,7 @@ class AdminService:
             self.session, user_id
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return await self._build_user_response(user)
 
     async def force_logout(self, user_id: str) -> None:
@@ -145,5 +145,5 @@ class AdminService:
             self.session, user_id
         )
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return user

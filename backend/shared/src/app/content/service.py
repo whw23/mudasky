@@ -53,7 +53,7 @@ class ContentService:
             self.session, category_id
         )
         if not category:
-            raise NotFoundException(message="分类不存在")
+            raise NotFoundException(message="分类不存在", code="CATEGORY_NOT_FOUND")
 
         if data.name is not None:
             category.name = data.name
@@ -76,7 +76,7 @@ class ContentService:
             self.session, category_id
         )
         if not category:
-            raise NotFoundException(message="分类不存在")
+            raise NotFoundException(message="分类不存在", code="CATEGORY_NOT_FOUND")
         await repository.delete_category(self.session, category)
 
     async def list_categories(self) -> list[Category]:
@@ -123,7 +123,7 @@ class ContentService:
             self.session, article_id
         )
         if not article:
-            raise NotFoundException(message="文章不存在")
+            raise NotFoundException(message="文章不存在", code="ARTICLE_NOT_FOUND")
         return article
 
     async def update_article(
@@ -145,7 +145,7 @@ class ContentService:
         """更新自己的文章。"""
         article = await self.get_article(article_id)
         if article.author_id != user_id:
-            raise ForbiddenException(message="无权操作此文章")
+            raise ForbiddenException(message="无权操作此文章", code="ARTICLE_ACCESS_DENIED")
         self._apply_article_update(article, data)
         return await repository.update_article(
             self.session, article
@@ -157,7 +157,7 @@ class ContentService:
         """删除自己的文章。"""
         article = await self.get_article(article_id)
         if article.author_id != user_id:
-            raise ForbiddenException(message="无权操作此文章")
+            raise ForbiddenException(message="无权操作此文章", code="ARTICLE_ACCESS_DENIED")
         await repository.delete_article(self.session, article)
 
     async def delete_article_admin(

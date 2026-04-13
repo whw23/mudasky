@@ -57,7 +57,7 @@ class RbacService:
             self.session, role_id
         )
         if not role:
-            raise NotFoundException(message="角色不存在")
+            raise NotFoundException(message="角色不存在", code="ROLE_NOT_FOUND")
         return RoleResponse.model_validate(role)
 
     async def create_role(
@@ -71,7 +71,7 @@ class RbacService:
             self.session, data.name
         )
         if existing:
-            raise ConflictException(message="角色名称已存在")
+            raise ConflictException(message="角色名称已存在", code="ROLE_NAME_EXISTS")
 
         permissions = await repository.get_permissions_by_ids(
             self.session, data.permission_ids
@@ -97,19 +97,19 @@ class RbacService:
             self.session, role_id
         )
         if not role:
-            raise NotFoundException(message="角色不存在")
+            raise NotFoundException(message="角色不存在", code="ROLE_NOT_FOUND")
 
         if data.name is not None:
             if role.name in PROTECTED_ROLE_NAMES:
                 raise ForbiddenException(
-                    message="受保护角色不允许修改名称"
+                    message="受保护角色不允许修改名称", code="PROTECTED_ROLE_NO_RENAME"
                 )
             existing = await repository.get_role_by_name(
                 self.session, data.name
             )
             if existing and existing.id != role_id:
                 raise ConflictException(
-                    message="角色名称已存在"
+                    message="角色名称已存在", code="ROLE_NAME_EXISTS"
                 )
             role.name = data.name
 
@@ -136,10 +136,10 @@ class RbacService:
             self.session, role_id
         )
         if not role:
-            raise NotFoundException(message="角色不存在")
+            raise NotFoundException(message="角色不存在", code="ROLE_NOT_FOUND")
         if role.name in PROTECTED_ROLE_NAMES:
             raise ForbiddenException(
-                message="受保护角色不允许删除"
+                message="受保护角色不允许删除", code="PROTECTED_ROLE_NO_DELETE"
             )
         await repository.delete_role(self.session, role_id)
 
@@ -181,7 +181,7 @@ class RbacService:
             )
             if not role:
                 raise NotFoundException(
-                    message="角色不存在"
+                    message="角色不存在", code="ROLE_NOT_FOUND"
                 )
 
         await user_repo.set_role_id(

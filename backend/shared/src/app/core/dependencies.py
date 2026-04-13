@@ -16,7 +16,7 @@ async def get_current_user_id(
 ) -> str:
     """从网关注入的请求头获取当前用户 ID。"""
     if not x_user_id:
-        raise ForbiddenException(message="未获取到用户信息")
+        raise ForbiddenException(message="未获取到用户信息", code="USER_INFO_MISSING")
     return x_user_id
 
 

@@ -63,9 +63,9 @@ def decrypt_password(encrypted_b64: str, expected_nonce: str) -> str:
     with _nonce_lock:
         _cleanup_expired(now)
         if expected_nonce in _used_nonces:
-            raise UnauthorizedException(message="密码解密失败")
+            raise UnauthorizedException(message="密码解密失败", code="PASSWORD_DECRYPT_FAILED")
         if expected_nonce not in _issued_nonces:
-            raise UnauthorizedException(message="密码解密失败")
+            raise UnauthorizedException(message="密码解密失败", code="PASSWORD_DECRYPT_FAILED")
         _issued_nonces.pop(expected_nonce)
         _used_nonces[expected_nonce] = now
 

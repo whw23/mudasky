@@ -43,7 +43,7 @@ class CaseService:
             self.session, case_id
         )
         if not case:
-            raise NotFoundException(message="案例不存在")
+            raise NotFoundException(message="案例不存在", code="CASE_NOT_FOUND")
         return case
 
     async def update_case(

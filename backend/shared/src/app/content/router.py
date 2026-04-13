@@ -94,7 +94,7 @@ async def get_published_article(
     if article.status != "published":
         from app.core.exceptions import NotFoundException
 
-        raise NotFoundException(message="文章不存在")
+        raise NotFoundException(message="文章不存在", code="ARTICLE_NOT_FOUND")
     result = ArticleResponse.model_validate(article)
     ts = article.updated_at.isoformat() if article.updated_at else ""
     seed = f"article:{article_id}:{ts}"

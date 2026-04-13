@@ -50,7 +50,7 @@ class UniversityService:
             self.session, university_id
         )
         if not university:
-            raise NotFoundException(message="院校不存在")
+            raise NotFoundException(message="院校不存在", code="UNIVERSITY_NOT_FOUND")
         return university
 
     async def update_university(

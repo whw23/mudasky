@@ -44,7 +44,7 @@ async def save_file(
     # 校验单文件大小
     if file_size > settings.max_upload_size_bytes:
         raise QuotaExceededException(
-            message=f"文件大小超过限制（{settings.MAX_UPLOAD_SIZE_MB}MB）"
+            message=f"文件大小超过限制（{settings.MAX_UPLOAD_SIZE_MB}MB）", code="FILE_SIZE_EXCEEDED"
         )
 
     filename = file.filename or "untitled"
@@ -110,4 +110,4 @@ def validate_storage_quota(
         QuotaExceededException: 配额不足。
     """
     if used + file_size > quota:
-        raise QuotaExceededException(message="存储配额不足")
+        raise QuotaExceededException(message="存储配额不足", code="STORAGE_QUOTA_EXCEEDED")

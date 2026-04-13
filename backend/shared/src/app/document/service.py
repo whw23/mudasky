@@ -44,7 +44,7 @@ async def upload_document(
     # 配额校验
     user = await user_repo.get_by_id(session, user_id)
     if not user:
-        raise NotFoundException(message="用户不存在")
+        raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
     used = await repository.get_user_storage_used(session, user_id)
     validate_storage_quota(used, file_size, user.storage_quota)
 
@@ -54,7 +54,7 @@ async def upload_document(
         session, file_hash, user_id
     )
     if existing:
-        raise ConflictException(message="文件已存在")
+        raise ConflictException(message="文件已存在", code="FILE_ALREADY_EXISTS")
 
     # 重置文件指针后通过 storage 模块保存
     await file.seek(0)
@@ -88,9 +88,9 @@ async def get_document(
     """获取文档信息，检查所有权。"""
     doc = await repository.get_by_id(session, doc_id)
     if not doc:
-        raise NotFoundException(message="文档不存在")
+        raise NotFoundException(message="文档不存在", code="DOCUMENT_NOT_FOUND")
     if doc.user_id != user_id:
-        raise ForbiddenException(message="无权访问此文档")
+        raise ForbiddenException(message="无权访问此文档", code="DOCUMENT_ACCESS_DENIED")
     return doc
 
 
