@@ -336,7 +336,7 @@ async def test_refresh_success(
     mock_repo.get_refresh_token_by_hash = AsyncMock(
         return_value=token
     )
-    mock_repo.revoke_user_refresh_tokens = AsyncMock()
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
     user = sample_user(id="user-1", is_active=True)
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
 
@@ -381,7 +381,7 @@ async def test_refresh_user_not_found(
     mock_repo.get_refresh_token_by_hash = AsyncMock(
         return_value=token
     )
-    mock_repo.revoke_user_refresh_tokens = AsyncMock()
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
     mock_user_repo.get_by_id = AsyncMock(return_value=None)
 
     with pytest.raises(UnauthorizedException):
@@ -400,7 +400,7 @@ async def test_refresh_user_inactive(
     mock_repo.get_refresh_token_by_hash = AsyncMock(
         return_value=token
     )
-    mock_repo.revoke_user_refresh_tokens = AsyncMock()
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
     user = sample_user(id="user-1", is_active=False)
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
 
