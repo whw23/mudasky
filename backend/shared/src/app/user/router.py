@@ -7,10 +7,12 @@ import io
 
 import pyotp
 import qrcode
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.auth import repository as auth_repo
+from app.auth.schemas import SessionResponse
 from app.core.dependencies import CurrentUserId, DbSession
 from app.user.schemas import (
     PasswordChange,
@@ -156,3 +158,52 @@ async def disable_2fa(
     svc = UserService(session)
     await svc.disable_2fa(user_id, data.phone, data.code)
     return MessageResponse(message="双因素认证已关闭")
+
+
+@router.get("/sessions", response_model=list[SessionResponse], summary="查看所有活跃会话")
+async def list_sessions(
+    user_id: CurrentUserId,
+    session: DbSession,
+    x_refresh_token_hash: str = Header(""),
+) -> list[SessionResponse]:
+    """列出当前用户所有活跃会话。"""
+    tokens = await auth_repo.list_user_refresh_tokens(session, user_id)
+    return [
+        SessionResponse(
+            id=token.id,
+            user_agent=token.user_agent,
+            ip_address=token.ip_address,
+            created_at=token.created_at,
+            is_current=(token.token_hash == x_refresh_token_hash),
+        )
+        for token in tokens
+    ]
+
+
+@router.post("/sessions/revoke/{token_id}", response_model=MessageResponse, summary="撤销指定会话")
+async def revoke_session(
+    token_id: str,
+    user_id: CurrentUserId,
+    session: DbSession,
+) -> MessageResponse:
+    """撤销指定会话。"""
+    success = await auth_repo.revoke_refresh_token_by_id(
+        session, token_id, user_id
+    )
+    if not success:
+        from app.core.exceptions import NotFoundException
+        raise NotFoundException(message="会话不存在或已被撤销")
+    return MessageResponse(message="会话已撤销")
+
+
+@router.post("/sessions/revoke-all", response_model=MessageResponse, summary="撤销所有其他会话")
+async def revoke_all_sessions(
+    user_id: CurrentUserId,
+    session: DbSession,
+    x_refresh_token_hash: str = Header(""),
+) -> MessageResponse:
+    """撤销除当前设备外的所有会话。"""
+    await auth_repo.revoke_other_refresh_tokens(
+        session, user_id, x_refresh_token_hash
+    )
+    return MessageResponse(message="已撤销所有其他会话")
