@@ -92,6 +92,7 @@ local refresh_jwt = jwt:sign(jwt_secret, {
     type = "refresh",
     iat = now,
     exp = now + refresh_expire,
+    jti = ngx.var.request_id, -- 使用 nginx 的 request_id 作为 JWT ID,确保唯一性
   },
 })
 
@@ -129,7 +130,7 @@ table.insert(cookies, "access_token=" .. access_jwt
   .. "; Max-Age=" .. access_expire)
 
 local refresh_cookie = "refresh_token=" .. refresh_jwt
-  .. "; Path=/api/auth/refresh; HttpOnly; SameSite=Strict"
+  .. "; Path=/; HttpOnly; SameSite=Strict"
 if keep then
   refresh_cookie = refresh_cookie .. "; Max-Age=" .. refresh_expire
 end
