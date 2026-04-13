@@ -21,6 +21,7 @@ router = APIRouter(prefix="/public/case", tags=["cases"])
 @router.get(
     "/list",
     response_model=PaginatedResponse[CaseResponse],
+    summary="分页查询成功案例",
 )
 async def list_cases(
     session: DbSession,
@@ -49,6 +50,7 @@ async def list_cases(
 @router.get(
     "/detail/{case_id}",
     response_model=CaseResponse,
+    summary="获取成功案例详情",
 )
 async def get_case(
     case_id: str,

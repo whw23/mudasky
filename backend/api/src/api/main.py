@@ -163,7 +163,7 @@ api.include_router(document_router)
 api.include_router(portal_article_router)
 
 
-@api.get("/health")
+@api.get("/health", summary="健康检查")
 async def api_health_check() -> dict:
     """API 健康检查端点。"""
     return {"status": "ok"}

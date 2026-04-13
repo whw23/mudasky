@@ -18,7 +18,7 @@ admin_web_settings_router = APIRouter(
 )
 
 
-@public_config_router.get("/public/config/{key}")
+@public_config_router.get("/public/config/{key}", summary="获取单个配置值")
 async def get_config(
     key: str,
     session: DbSession,
@@ -37,7 +37,7 @@ async def get_config(
     return config
 
 
-@public_config_router.get("/public/panel-config")
+@public_config_router.get("/public/panel-config", summary="获取面板页面配置")
 async def get_panel_config(
     session: DbSession,
     response: Response,
@@ -58,6 +58,7 @@ async def get_panel_config(
 @admin_general_settings_router.get(
     "/list",
     response_model=list[ConfigDetailResponse],
+    summary="获取所有通用配置",
 )
 async def list_general_configs(
     session: DbSession,
@@ -70,6 +71,7 @@ async def list_general_configs(
 @admin_general_settings_router.post(
     "/edit/{key}",
     response_model=ConfigResponse,
+    summary="更新通用配置值",
 )
 async def update_general_config(
     key: str,
@@ -84,6 +86,7 @@ async def update_general_config(
 @admin_web_settings_router.get(
     "/list",
     response_model=list[ConfigDetailResponse],
+    summary="获取所有网站配置",
 )
 async def list_web_configs(
     session: DbSession,
@@ -96,6 +99,7 @@ async def list_web_configs(
 @admin_web_settings_router.post(
     "/edit/{key}",
     response_model=ConfigResponse,
+    summary="更新网站配置值",
 )
 async def update_web_config(
     key: str,

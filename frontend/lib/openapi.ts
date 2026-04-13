@@ -15,12 +15,9 @@ export interface ApiRoute {
   summary: string
 }
 
-/** 需要过滤的路径前缀 */
-const EXCLUDED_PREFIXES = ["/auth/", "/public/", "/health"]
-
 /**
  * 从 OpenAPI spec 中提取路由列表。
- * 只保留 /admin/* 和 /portal/* 路由。
+ * 后端已过滤为权限相关路由，前端只做格式转换。
  */
 export function parseRoutes(spec: Record<string, unknown>): ApiRoute[] {
   const paths = spec.paths as Record<string, Record<string, Record<string, string>>> | undefined
@@ -28,9 +25,6 @@ export function parseRoutes(spec: Record<string, unknown>): ApiRoute[] {
 
   const routes: ApiRoute[] = []
   for (const [path, methods] of Object.entries(paths)) {
-    if (EXCLUDED_PREFIXES.some((prefix) => path.startsWith(prefix))) continue
-    if (!path.startsWith("/admin/") && !path.startsWith("/portal/")) continue
-
     for (const [method, detail] of Object.entries(methods)) {
       if (method === "parameters") continue
       routes.push({

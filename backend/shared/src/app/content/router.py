@@ -52,6 +52,7 @@ async def _category_list_with_counts(
 @public_content_router.get(
     "/articles",
     response_model=PaginatedResponse[ArticleResponse],
+    summary="分页查询已发布文章",
 )
 async def list_published_articles(
     session: DbSession,
@@ -79,6 +80,7 @@ async def list_published_articles(
 @public_content_router.get(
     "/article/{article_id}",
     response_model=ArticleResponse,
+    summary="获取已发布文章详情",
 )
 async def get_published_article(
     article_id: str,
@@ -104,6 +106,7 @@ async def get_published_article(
 @public_content_router.get(
     "/categories",
     response_model=list[CategoryResponse],
+    summary="查询所有分类",
 )
 async def list_categories(
     session: DbSession,
@@ -125,6 +128,7 @@ async def list_categories(
 @portal_article_router.get(
     "/list",
     response_model=PaginatedResponse[ArticleResponse],
+    summary="分页查询当前用户文章",
 )
 async def list_my_articles(
     user_id: CurrentUserId,
@@ -147,6 +151,7 @@ async def list_my_articles(
     "/create",
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="创建文章",
 )
 async def create_article(
     data: ArticleCreate,
@@ -162,6 +167,7 @@ async def create_article(
 @portal_article_router.post(
     "/edit/{article_id}",
     response_model=ArticleResponse,
+    summary="更新文章",
 )
 async def update_own_article(
     article_id: str,
@@ -180,6 +186,7 @@ async def update_own_article(
 @portal_article_router.post(
     "/delete/{article_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除文章",
 )
 async def delete_own_article(
     article_id: str,

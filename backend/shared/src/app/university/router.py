@@ -29,6 +29,7 @@ public_router = APIRouter(
 @public_router.get(
     "/list",
     response_model=PaginatedResponse[UniversityResponse],
+    summary="查询院校列表",
 )
 async def list_universities(
     session: DbSession,
@@ -67,6 +68,7 @@ async def list_universities(
 @public_router.get(
     "/countries",
     response_model=list[str],
+    summary="获取国家列表",
 )
 async def list_countries(
     session: DbSession,
@@ -85,6 +87,7 @@ async def list_countries(
 @public_router.get(
     "/detail/{university_id}",
     response_model=UniversityResponse,
+    summary="获取院校详情",
 )
 async def get_university(
     university_id: str,
@@ -114,6 +117,7 @@ admin_router = APIRouter(
 @admin_router.get(
     "/list",
     response_model=PaginatedResponse[UniversityResponse],
+    summary="管理员查询院校列表",
 )
 async def admin_list_universities(
     session: DbSession,
@@ -135,6 +139,7 @@ async def admin_list_universities(
     "/create",
     response_model=UniversityResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="创建院校",
 )
 async def admin_create_university(
     data: UniversityCreate, session: DbSession
@@ -148,6 +153,7 @@ async def admin_create_university(
 @admin_router.post(
     "/edit/{university_id}",
     response_model=UniversityResponse,
+    summary="更新院校",
 )
 async def admin_update_university(
     university_id: str,
@@ -165,6 +171,7 @@ async def admin_update_university(
 @admin_router.post(
     "/delete/{university_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除院校",
 )
 async def admin_delete_university(
     university_id: str, session: DbSession

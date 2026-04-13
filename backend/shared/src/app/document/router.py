@@ -21,6 +21,7 @@ router = APIRouter(prefix="/portal/documents", tags=["documents"])
     "/upload",
     response_model=DocumentResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="上传文件",
 )
 async def upload_document(
     file: UploadFile,
@@ -35,7 +36,7 @@ async def upload_document(
     return DocumentResponse.model_validate(doc)
 
 
-@router.get("/list", response_model=DocumentListResponse)
+@router.get("/list", response_model=DocumentListResponse, summary="查询文档列表")
 async def list_documents(
     user_id: CurrentUserId,
     session: DbSession,
@@ -67,7 +68,7 @@ async def list_documents(
     )
 
 
-@router.get("/detail/{doc_id}", response_model=DocumentResponse)
+@router.get("/detail/{doc_id}", response_model=DocumentResponse, summary="获取文档详情")
 async def get_document(
     doc_id: str,
     user_id: CurrentUserId,
@@ -78,7 +79,7 @@ async def get_document(
     return DocumentResponse.model_validate(doc)
 
 
-@router.get("/download/{doc_id}")
+@router.get("/download/{doc_id}", summary="下载文档")
 async def download_document(
     doc_id: str,
     user_id: CurrentUserId,
@@ -95,7 +96,9 @@ async def download_document(
 
 
 @router.post(
-    "/delete/{doc_id}", status_code=status.HTTP_204_NO_CONTENT
+    "/delete/{doc_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除文档",
 )
 async def delete_document(
     doc_id: str,

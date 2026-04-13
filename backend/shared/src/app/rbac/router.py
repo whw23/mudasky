@@ -30,6 +30,7 @@ class MessageResponse(BaseModel):
 @router.get(
     "/permissions",
     response_model=list[PermissionResponse],
+    summary="查询权限列表",
 )
 async def list_permissions(
     session: DbSession,
@@ -42,6 +43,7 @@ async def list_permissions(
 @router.get(
     "/list",
     response_model=list[RoleResponse],
+    summary="查询角色列表",
 )
 async def list_roles(
     session: DbSession,
@@ -54,6 +56,7 @@ async def list_roles(
 @router.post(
     "/create",
     response_model=RoleResponse,
+    summary="创建角色",
 )
 async def create_role(
     data: RoleCreate,
@@ -67,6 +70,7 @@ async def create_role(
 @router.post(
     "/reorder",
     response_model=MessageResponse,
+    summary="更新角色排序",
 )
 async def reorder_roles(data: RoleReorder, session: DbSession) -> MessageResponse:
     """批量更新角色排序。"""
@@ -78,6 +82,7 @@ async def reorder_roles(data: RoleReorder, session: DbSession) -> MessageRespons
 @router.get(
     "/detail/{role_id}",
     response_model=RoleResponse,
+    summary="获取角色详情",
 )
 async def get_role(
     role_id: str,
@@ -91,6 +96,7 @@ async def get_role(
 @router.post(
     "/edit/{role_id}",
     response_model=RoleResponse,
+    summary="更新角色",
 )
 async def update_role(
     role_id: str,
@@ -105,6 +111,7 @@ async def update_role(
 @router.post(
     "/delete/{role_id}",
     response_model=MessageResponse,
+    summary="删除角色",
 )
 async def delete_role(
     role_id: str,
@@ -116,20 +123,39 @@ async def delete_role(
     return MessageResponse(message="角色已删除")
 
 
-def get_openapi_spec(app: Any) -> dict:
-    """从 FastAPI 应用获取 OpenAPI spec。"""
+_PERMISSION_PREFIXES = ("/admin/", "/portal/")
+_EXCLUDED_PREFIXES = ("/auth/", "/public/", "/health")
+
+
+def _filter_openapi_spec(app: Any) -> dict:
+    """从 OpenAPI spec 中提取权限相关路由。
+
+    只保留 /admin/* 和 /portal/* 路径，
+    排除 /auth/*、/public/*、/health，
+    移除 components 等无关字段，减少响应体积。
+    """
     if hasattr(app, "openapi"):
-        return app.openapi()
-    from fastapi.openapi.utils import get_openapi
+        full = app.openapi()
+    else:
+        from fastapi.openapi.utils import get_openapi
 
-    return get_openapi(
-        title=app.title,
-        version=app.version,
-        routes=app.routes,
-    )
+        full = get_openapi(
+            title=app.title,
+            version=app.version,
+            routes=app.routes,
+        )
+
+    filtered_paths = {}
+    for path, methods in (full.get("paths") or {}).items():
+        if any(path.startswith(p) for p in _EXCLUDED_PREFIXES):
+            continue
+        if any(path.startswith(p) for p in _PERMISSION_PREFIXES):
+            filtered_paths[path] = methods
+
+    return {"paths": filtered_paths}
 
 
-@router.get("/list/openapi.json")
+@router.get("/list/openapi.json", summary="获取权限相关 API 路由")
 async def get_openapi_json(request: Request) -> dict:
-    """返回 OpenAPI spec（权限码复用 admin/roles/list）。"""
-    return get_openapi_spec(request.app)
+    """返回权限相关的 API 路由（权限码复用 admin/roles/list）。"""
+    return _filter_openapi_spec(request.app)

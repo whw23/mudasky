@@ -37,6 +37,7 @@ admin_content_router = APIRouter(
 @admin_category_router.get(
     "/list",
     response_model=list[CategoryResponse],
+    summary="查询分类列表",
 )
 async def admin_list_categories(
     session: DbSession,
@@ -50,6 +51,7 @@ async def admin_list_categories(
     "/create",
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="创建分类",
 )
 async def admin_create_category(
     data: CategoryCreate, session: DbSession
@@ -63,6 +65,7 @@ async def admin_create_category(
 @admin_category_router.post(
     "/edit/{category_id}",
     response_model=CategoryResponse,
+    summary="更新分类",
 )
 async def admin_update_category(
     category_id: str,
@@ -78,6 +81,7 @@ async def admin_update_category(
 @admin_category_router.post(
     "/delete/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除分类",
 )
 async def admin_delete_category(
     category_id: str, session: DbSession
@@ -90,6 +94,7 @@ async def admin_delete_category(
 @admin_content_router.get(
     "/list",
     response_model=PaginatedResponse[ArticleResponse],
+    summary="查询所有文章",
 )
 async def admin_list_articles(
     session: DbSession,
@@ -112,6 +117,7 @@ async def admin_list_articles(
     "/create",
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="创建文章",
 )
 async def admin_create_article(
     data: ArticleCreate,
@@ -127,6 +133,7 @@ async def admin_create_article(
 @admin_content_router.post(
     "/edit/{article_id}",
     response_model=ArticleResponse,
+    summary="更新文章",
 )
 async def admin_update_article(
     article_id: str,
@@ -142,6 +149,7 @@ async def admin_update_article(
 @admin_content_router.post(
     "/delete/{article_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除文章",
 )
 async def admin_delete_article(
     article_id: str, session: DbSession

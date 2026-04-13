@@ -18,6 +18,7 @@ admin_router = APIRouter(
 @admin_router.get(
     "/list",
     response_model=PaginatedResponse[CaseResponse],
+    summary="查询成功案例列表",
 )
 async def admin_list_cases(
     session: DbSession,
@@ -42,6 +43,7 @@ async def admin_list_cases(
     "/create",
     response_model=CaseResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="创建成功案例",
 )
 async def admin_create_case(
     data: CaseCreate, session: DbSession
@@ -55,6 +57,7 @@ async def admin_create_case(
 @admin_router.post(
     "/edit/{case_id}",
     response_model=CaseResponse,
+    summary="更新成功案例",
 )
 async def admin_update_case(
     case_id: str,
@@ -70,6 +73,7 @@ async def admin_update_case(
 @admin_router.post(
     "/delete/{case_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除成功案例",
 )
 async def admin_delete_case(
     case_id: str, session: DbSession

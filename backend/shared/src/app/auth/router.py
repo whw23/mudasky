@@ -34,7 +34,7 @@ class SmsCodeResponse(BaseModel):
     code: str | None = None
 
 
-@router.get("/public-key", response_model=PublicKeyResponse)
+@router.get("/public-key", response_model=PublicKeyResponse, summary="获取 RSA 公钥")
 async def get_public_key() -> PublicKeyResponse:
     """获取 RSA 公钥和一次性 nonce。"""
     return PublicKeyResponse(
@@ -43,7 +43,7 @@ async def get_public_key() -> PublicKeyResponse:
     )
 
 
-@router.post("/sms-code", response_model=SmsCodeResponse)
+@router.post("/sms-code", response_model=SmsCodeResponse, summary="发送短信验证码")
 async def send_sms_code(
     data: SmsCodeRequest, session: DbSession
 ) -> SmsCodeResponse:
@@ -53,7 +53,7 @@ async def send_sms_code(
     return SmsCodeResponse(message="验证码已发送", code=code)
 
 
-@router.post("/register", response_model=AuthResponse)
+@router.post("/register", response_model=AuthResponse, summary="用户注册")
 async def register(
     data: RegisterRequest, session: DbSession
 ) -> AuthResponse:
@@ -70,7 +70,7 @@ async def register(
     return AuthResponse(user=user_resp)
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post("/login", response_model=AuthResponse, summary="用户登录")
 async def login(
     data: LoginRequest, session: DbSession
 ) -> AuthResponse:
@@ -96,7 +96,7 @@ class RefreshTokenHashRequest(BaseModel):
     token_hash: str
 
 
-@router.post("/refresh-token-hash", response_model=MessageResponse)
+@router.post("/refresh-token-hash", response_model=MessageResponse, summary="保存刷新令牌哈希")
 async def save_refresh_token_hash(
     data: RefreshTokenHashRequest,
     session: DbSession,
@@ -113,7 +113,19 @@ async def save_refresh_token_hash(
     return MessageResponse(message="ok")
 
 
-@router.post("/refresh", response_model=AuthResponse)
+@router.post("/logout", response_model=MessageResponse, summary="用户登出")
+async def logout(
+    session: DbSession,
+    x_user_id: str = Header(""),
+) -> MessageResponse:
+    """撤销当前用户所有刷新令牌（由网关内部调用）。"""
+    if x_user_id:
+        from app.auth import repository
+        await repository.revoke_user_refresh_tokens(session, x_user_id)
+    return MessageResponse(message="已退出登录")
+
+
+@router.post("/refresh", response_model=AuthResponse, summary="刷新令牌续签")
 async def refresh(
     session: DbSession,
     x_refresh_token_hash: str = Header(...),

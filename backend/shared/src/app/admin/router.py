@@ -24,6 +24,7 @@ router = APIRouter(
 @router.get(
     "/list",
     response_model=PaginatedResponse[UserResponse],
+    summary="查询用户列表",
 )
 async def list_users(
     session: DbSession,
@@ -53,6 +54,7 @@ async def list_users(
 @router.get(
     "/detail/{user_id}",
     response_model=UserResponse,
+    summary="查询用户详情",
 )
 async def get_user(
     user_id: str,
@@ -66,6 +68,7 @@ async def get_user(
 @router.post(
     "/edit/{user_id}",
     response_model=UserResponse,
+    summary="更新用户信息",
 )
 async def update_user(
     user_id: str,
@@ -80,6 +83,7 @@ async def update_user(
 @router.post(
     "/reset-password/{user_id}",
     response_model=MessageResponse,
+    summary="重置用户密码",
 )
 async def reset_password(
     user_id: str,
@@ -97,6 +101,7 @@ async def reset_password(
 @router.post(
     "/assign-role/{user_id}",
     response_model=UserResponse,
+    summary="分配用户角色",
 )
 async def assign_role(
     user_id: str,
@@ -111,6 +116,7 @@ async def assign_role(
 @router.post(
     "/force-logout/{user_id}",
     response_model=MessageResponse,
+    summary="强制下线用户",
 )
 async def force_logout(
     user_id: str,

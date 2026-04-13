@@ -42,7 +42,7 @@ class MessageResponse(BaseModel):
     message: str
 
 
-@router.get("/view", response_model=UserResponse)
+@router.get("/view", response_model=UserResponse, summary="获取当前用户信息")
 async def get_me(
     user_id: CurrentUserId, session: DbSession
 ) -> UserResponse:
@@ -51,7 +51,7 @@ async def get_me(
     return await svc.get_user_response(user_id)
 
 
-@router.post("/edit", response_model=UserResponse)
+@router.post("/edit", response_model=UserResponse, summary="更新当前用户个人信息")
 async def update_me(
     data: UserUpdate,
     user_id: CurrentUserId,
@@ -63,7 +63,7 @@ async def update_me(
     return UserResponse.model_validate(user)
 
 
-@router.post("/password", response_model=MessageResponse)
+@router.post("/password", response_model=MessageResponse, summary="修改密码")
 async def change_password(
     data: PasswordChange,
     user_id: CurrentUserId,
@@ -75,7 +75,7 @@ async def change_password(
     return MessageResponse(message="密码修改成功")
 
 
-@router.post("/phone", response_model=UserResponse)
+@router.post("/phone", response_model=UserResponse, summary="修改手机号")
 async def change_phone(
     data: PhoneChange,
     user_id: CurrentUserId,
@@ -87,7 +87,7 @@ async def change_phone(
     return UserResponse.model_validate(user)
 
 
-@router.post("/2fa-enable-totp")
+@router.post("/2fa-enable-totp", summary="启用 TOTP 双因素认证")
 async def enable_2fa_totp(
     user_id: CurrentUserId, session: DbSession
 ) -> StreamingResponse:
@@ -111,7 +111,9 @@ async def enable_2fa_totp(
 
 
 @router.post(
-    "/2fa-confirm-totp", response_model=MessageResponse
+    "/2fa-confirm-totp",
+    response_model=MessageResponse,
+    summary="确认启用 TOTP",
 )
 async def confirm_2fa_totp(
     data: TotpCodeBody,
@@ -125,7 +127,9 @@ async def confirm_2fa_totp(
 
 
 @router.post(
-    "/2fa-enable-sms", response_model=MessageResponse
+    "/2fa-enable-sms",
+    response_model=MessageResponse,
+    summary="启用短信双因素认证",
 )
 async def enable_2fa_sms(
     data: Sms2faBody,
@@ -139,7 +143,9 @@ async def enable_2fa_sms(
 
 
 @router.post(
-    "/2fa-disable", response_model=MessageResponse
+    "/2fa-disable",
+    response_model=MessageResponse,
+    summary="关闭双因素认证",
 )
 async def disable_2fa(
     data: Sms2faBody,
