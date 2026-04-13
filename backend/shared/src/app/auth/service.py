@@ -141,8 +141,8 @@ class AuthService:
         now = datetime.now(timezone.utc)
         if token.expires_at < now:
             raise UnauthorizedException(message="刷新令牌已过期")
-        await repository.revoke_user_refresh_tokens(
-            self.session, token.user_id
+        await repository.revoke_refresh_token_by_hash(
+            self.session, token_hash
         )
         user = await user_repo.get_by_id(
             self.session, token.user_id
@@ -156,6 +156,8 @@ class AuthService:
         user_id: str,
         token_hash: str,
         expire_days: int = 30,
+        user_agent: str | None = None,
+        ip_address: str | None = None,
     ) -> None:
         """保存刷新令牌哈希。"""
         expires_at = datetime.now(timezone.utc) + timedelta(
@@ -165,6 +167,8 @@ class AuthService:
             user_id=user_id,
             token_hash=token_hash,
             expires_at=expires_at,
+            user_agent=user_agent,
+            ip_address=ip_address,
         )
         await repository.save_refresh_token(self.session, token)
 
@@ -199,6 +203,12 @@ class AuthService:
             role_name=role_name,
             created_at=user.created_at,
             updated_at=user.updated_at,
+        )
+
+    async def logout_current_device(self, token_hash: str) -> None:
+        """登出当前设备，撤销指定令牌。"""
+        await repository.revoke_refresh_token_by_hash(
+            self.session, token_hash
         )
 
     # ---- 私有方法 ----
