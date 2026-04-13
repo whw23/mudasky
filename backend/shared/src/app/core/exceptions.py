@@ -16,50 +16,50 @@ class AppException(Exception):
 class UnauthorizedException(AppException):
     """认证失败异常。"""
 
-    def __init__(self, message: str = "认证失败"):
-        super().__init__(status_code=401, code="UNAUTHORIZED", message=message)
+    def __init__(self, message: str = "认证失败", code: str = "UNAUTHORIZED"):
+        super().__init__(status_code=401, code=code, message=message)
 
 
 class NotFoundException(AppException):
     """资源未找到异常。"""
 
-    def __init__(self, message: str = "资源不存在"):
-        super().__init__(status_code=404, code="NOT_FOUND", message=message)
+    def __init__(self, message: str = "资源不存在", code: str = "NOT_FOUND"):
+        super().__init__(status_code=404, code=code, message=message)
 
 
 class ForbiddenException(AppException):
     """权限不足异常。"""
 
-    def __init__(self, message: str = "权限不足"):
-        super().__init__(status_code=403, code="FORBIDDEN", message=message)
+    def __init__(self, message: str = "权限不足", code: str = "FORBIDDEN"):
+        super().__init__(status_code=403, code=code, message=message)
 
 
 class BadRequestException(AppException):
     """请求参数错误。"""
 
-    def __init__(self, message: str = "请求参数错误") -> None:
-        super().__init__(status_code=400, code="BAD_REQUEST", message=message)
+    def __init__(self, message: str = "请求参数错误", code: str = "BAD_REQUEST") -> None:
+        super().__init__(status_code=400, code=code, message=message)
 
 
 class ConflictException(AppException):
     """资源冲突异常。"""
 
-    def __init__(self, message: str = "资源冲突"):
-        super().__init__(status_code=409, code="CONFLICT", message=message)
+    def __init__(self, message: str = "资源冲突", code: str = "CONFLICT"):
+        super().__init__(status_code=409, code=code, message=message)
 
 
 class TooManyRequestsException(AppException):
     """请求过于频繁异常。"""
 
-    def __init__(self, message: str = "请求过于频繁"):
-        super().__init__(status_code=429, code="TOO_MANY_REQUESTS", message=message)
+    def __init__(self, message: str = "请求过于频繁", code: str = "TOO_MANY_REQUESTS"):
+        super().__init__(status_code=429, code=code, message=message)
 
 
 class QuotaExceededException(AppException):
     """配额超限异常。"""
 
-    def __init__(self, message: str = "存储配额已满"):
-        super().__init__(status_code=413, code="QUOTA_EXCEEDED", message=message)
+    def __init__(self, message: str = "存储配额已满", code: str = "QUOTA_EXCEEDED"):
+        super().__init__(status_code=413, code=code, message=message)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
