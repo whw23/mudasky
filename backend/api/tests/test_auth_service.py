@@ -74,10 +74,11 @@ async def test_register_phone_already_exists(
     existing = sample_user(phone="+8613800138000")
     mock_user_repo.get_by_phone = AsyncMock(return_value=existing)
 
-    with pytest.raises(ConflictException):
+    with pytest.raises(ConflictException) as exc_info:
         await service.register(
             phone="+8613800138000", code="123456"
         )
+    assert exc_info.value.code == "PHONE_ALREADY_REGISTERED"
 
 
 # ---- login: username + password ----
@@ -125,12 +126,13 @@ async def test_login_wrong_password(
     with patch(
         "app.auth.service.verify_password", return_value=False
     ):
-        with pytest.raises(UnauthorizedException):
+        with pytest.raises(UnauthorizedException) as exc_info:
             await service.login(
                 username="testuser",
                 encrypted_password="enc",
                 nonce="n",
             )
+        assert exc_info.value.code == "PASSWORD_INCORRECT"
 
 
 @pytest.mark.asyncio

@@ -154,7 +154,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               {user ? (
                 <div className="flex items-center gap-3">
                   <Link
-                    href="/portal/dashboard"
+                    href="/portal/overview"
                     className="text-foreground/70 hover:text-foreground transition-colors"
                   >
                     {user.username || user.phone}
