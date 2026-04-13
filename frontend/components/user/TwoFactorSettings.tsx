@@ -11,7 +11,6 @@ import { ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import api from '@/lib/api'
-import { encryptPassword } from '@/lib/crypto'
 import { getApiError } from '@/lib/api-error'
 import {
   Card,
@@ -28,7 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { PasswordInput } from '@/components/auth/PasswordInput'
+import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
 
 /** 两步验证管理 */
 export function TwoFactorSettings() {
@@ -44,7 +43,7 @@ export function TwoFactorSettings() {
 
   /* 禁用流程状态 */
   const [showDisableDialog, setShowDisableDialog] = useState(false)
-  const [disablePassword, setDisablePassword] = useState('')
+  const [disableSmsCode, setDisableSmsCode] = useState('')
   const [disabling, setDisabling] = useState(false)
 
   if (!user) return null
@@ -96,14 +95,13 @@ export function TwoFactorSettings() {
     e.preventDefault()
     setDisabling(true)
     try {
-      const encrypted = await encryptPassword(disablePassword)
       await api.post('/portal/profile/2fa-disable', {
-        encrypted_password: encrypted.encrypted_password,
-        nonce: encrypted.nonce,
+        phone: user.phone,
+        code: disableSmsCode,
       })
       toast.success(t('twoFaDisabled'))
       setShowDisableDialog(false)
-      setDisablePassword('')
+      setDisableSmsCode('')
       await fetchUser()
     } catch (err) {
       toast.error(getApiError(err, tErr, t('disableFailed')))
@@ -191,7 +189,7 @@ export function TwoFactorSettings() {
         onOpenChange={(open) => {
           if (!open) {
             setShowDisableDialog(false)
-            setDisablePassword('')
+            setDisableSmsCode('')
           }
         }}
       >
@@ -204,13 +202,19 @@ export function TwoFactorSettings() {
               {t('disableConfirmHint')}
             </p>
             <div className="space-y-2">
-              <Label htmlFor="disable-2fa-pwd">{t('password')}</Label>
-              <PasswordInput
-                id="disable-2fa-pwd"
-                value={disablePassword}
-                onChange={setDisablePassword}
-                required
-              />
+              <Label htmlFor="disable-2fa-code">{t('smsCode')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="disable-2fa-code"
+                  value={disableSmsCode}
+                  onChange={(e) => setDisableSmsCode(e.target.value)}
+                  placeholder={t('codePlaceholder')}
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                  required
+                />
+                <SmsCodeButton phone={user.phone || ''} disabled={!user.phone} />
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button
@@ -218,7 +222,7 @@ export function TwoFactorSettings() {
                 variant="outline"
                 onClick={() => {
                   setShowDisableDialog(false)
-                  setDisablePassword('')
+                  setDisableSmsCode('')
                 }}
               >
                 {t('cancel')}
