@@ -33,6 +33,7 @@ import {
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { PhoneInput } from '@/components/auth/PhoneInput'
 import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
+import { SessionManagement } from '@/components/user/SessionManagement'
 
 /** 当前正在编辑的字段 */
 type EditingField = null | 'username' | 'password' | 'phone' | '2fa'
@@ -507,6 +508,9 @@ export function ProfileInfo() {
               </span>
             </div>
           )}
+
+          {/* 登录设备管理 */}
+          <SessionManagement />
         </CardContent>
       </Card>
 

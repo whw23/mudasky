@@ -262,7 +262,15 @@
     "cancel": "キャンセル",
     "edit": "変更",
     "save": "保存",
-    "passwordSet": "設定済み"
+    "passwordSet": "設定済み",
+    "sessions": "ログインデバイス",
+    "currentDevice": "現在",
+    "revokeSession": "解除",
+    "revokeAllOthers": "他のすべてのデバイスをログアウト",
+    "sessionRevoked": "デバイスを解除しました",
+    "allSessionsRevoked": "他のすべてのデバイスをログアウトしました",
+    "unknownDevice": "不明なデバイス",
+    "noOtherSessions": "他のデバイスはログインしていません"
   },
   "AdminUsers": {
     "searchPlaceholder": "ユーザー名または電話番号を検索",

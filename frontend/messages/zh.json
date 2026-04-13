@@ -262,7 +262,15 @@
     "cancel": "取消",
     "edit": "修改",
     "save": "保存",
-    "passwordSet": "已设置"
+    "passwordSet": "已设置",
+    "sessions": "登录设备",
+    "currentDevice": "当前",
+    "revokeSession": "踢出",
+    "revokeAllOthers": "退出所有其他设备",
+    "sessionRevoked": "设备已踢出",
+    "allSessionsRevoked": "已踢出所有其他设备",
+    "unknownDevice": "未知设备",
+    "noOtherSessions": "暂无其他设备登录"
   },
   "AdminUsers": {
     "searchPlaceholder": "搜索用户名或手机号",

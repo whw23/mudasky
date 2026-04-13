@@ -262,7 +262,15 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "save": "Save",
-    "passwordSet": "Set"
+    "passwordSet": "Set",
+    "sessions": "Login Devices",
+    "currentDevice": "Current",
+    "revokeSession": "Revoke",
+    "revokeAllOthers": "Revoke All Others",
+    "sessionRevoked": "Device revoked",
+    "allSessionsRevoked": "All other devices revoked",
+    "unknownDevice": "Unknown device",
+    "noOtherSessions": "No other devices logged in"
   },
   "AdminUsers": {
     "searchPlaceholder": "Search username or phone",

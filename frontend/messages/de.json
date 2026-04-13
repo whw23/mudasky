@@ -262,7 +262,15 @@
     "cancel": "Abbrechen",
     "edit": "Ändern",
     "save": "Speichern",
-    "passwordSet": "Eingestellt"
+    "passwordSet": "Eingestellt",
+    "sessions": "Angemeldete Geräte",
+    "currentDevice": "Aktuell",
+    "revokeSession": "Entfernen",
+    "revokeAllOthers": "Alle anderen Geräte abmelden",
+    "sessionRevoked": "Gerät entfernt",
+    "allSessionsRevoked": "Alle anderen Geräte abgemeldet",
+    "unknownDevice": "Unbekanntes Gerät",
+    "noOtherSessions": "Keine anderen Geräte angemeldet"
   },
   "AdminUsers": {
     "searchPlaceholder": "Benutzername oder Telefon suchen",
