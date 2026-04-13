@@ -30,7 +30,7 @@ class UserService:
         """获取用户 ORM 对象，不存在则抛出异常。"""
         user = await repository.get_by_id(self.session, user_id)
         if not user:
-            raise NotFoundException(message="用户不存在")
+            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
         return user
 
     async def get_user_response(self, user_id: str) -> UserResponse:
@@ -78,7 +78,7 @@ class UserService:
                 self.session, data.username
             )
             if existing and existing.id != user_id:
-                raise ConflictException(message="用户名已被使用")
+                raise ConflictException(message="用户名已被使用", code="USERNAME_ALREADY_USED")
             user.username = data.username
         return await repository.update(self.session, user)
 
@@ -91,7 +91,7 @@ class UserService:
         """
         user = await self.get_user(user_id)
         if user.phone != data.phone:
-            raise ConflictException(message="手机号与当前账号不匹配")
+            raise ConflictException(message="手机号与当前账号不匹配", code="PHONE_MISMATCH")
         await auth_repo.verify_sms_code(self.session, data.phone, data.code)
         password = decrypt_password(data.encrypted_password, data.nonce)
         user.password_hash = hash_password(password)
@@ -111,7 +111,7 @@ class UserService:
             self.session, data.new_phone
         )
         if existing and existing.id != user_id:
-            raise ConflictException(message="手机号已被使用")
+            raise ConflictException(message="手机号已被使用", code="PHONE_ALREADY_USED")
         user.phone = data.new_phone
         return await repository.update(self.session, user)
 
@@ -135,10 +135,10 @@ class UserService:
         """
         user = await self.get_user(user_id)
         if not user.totp_secret:
-            raise ConflictException(message="请先启用双因素认证")
+            raise ConflictException(message="请先启用双因素认证", code="TWO_FA_NOT_ENABLED")
         totp = pyotp.TOTP(user.totp_secret)
         if not totp.verify(totp_code):
-            raise ConflictException(message="验证码不正确")
+            raise ConflictException(message="验证码不正确", code="TWO_FA_CODE_INCORRECT")
         user.two_factor_enabled = True
         user.two_factor_method = "totp"
         await repository.update(self.session, user)
@@ -152,9 +152,9 @@ class UserService:
         """
         user = await self.get_user(user_id)
         if not user.phone:
-            raise ConflictException(message="请先绑定手机号")
+            raise ConflictException(message="请先绑定手机号", code="PHONE_NOT_BOUND")
         if user.phone != phone:
-            raise ConflictException(message="手机号与当前账号不匹配")
+            raise ConflictException(message="手机号与当前账号不匹配", code="PHONE_MISMATCH")
         await auth_repo.verify_sms_code(self.session, phone, code)
         user.two_factor_enabled = True
         user.two_factor_method = "sms"
@@ -170,7 +170,7 @@ class UserService:
         """
         user = await self.get_user(user_id)
         if user.phone != phone:
-            raise ConflictException(message="手机号不匹配")
+            raise ConflictException(message="手机号不匹配", code="PHONE_MISMATCH")
         await auth_repo.verify_sms_code(self.session, phone, code)
         user.two_factor_enabled = False
         user.two_factor_method = None

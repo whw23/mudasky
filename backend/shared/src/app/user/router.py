@@ -192,7 +192,7 @@ async def revoke_session(
     )
     if not success:
         from app.core.exceptions import NotFoundException
-        raise NotFoundException(message="会话不存在或已被撤销")
+        raise NotFoundException(message="会话不存在或已被撤销", code="SESSION_NOT_FOUND")
     return MessageResponse(message="会话已撤销")
 
 
