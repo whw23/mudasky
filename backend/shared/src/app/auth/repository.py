@@ -93,6 +93,24 @@ async def delete_expired_sms_codes(
     await session.execute(stmt)
 
 
+async def delete_sms_codes_by_phone(
+    session: AsyncSession, phone: str
+) -> None:
+    """删除指定手机号的所有验证码记录。"""
+    stmt = delete(SmsCode).where(SmsCode.phone == phone)
+    await session.execute(stmt)
+
+
+async def delete_refresh_tokens_by_user(
+    session: AsyncSession, user_id: str
+) -> None:
+    """删除用户所有刷新令牌（不 commit，用于事务内调用）。"""
+    stmt = delete(RefreshToken).where(
+        RefreshToken.user_id == user_id
+    )
+    await session.execute(stmt)
+
+
 async def delete_expired_refresh_tokens(
     session: AsyncSession,
 ) -> int:

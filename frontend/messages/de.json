@@ -270,7 +270,15 @@
     "sessionRevoked": "Gerät entfernt",
     "allSessionsRevoked": "Alle anderen Geräte abgemeldet",
     "unknownDevice": "Unbekanntes Gerät",
-    "noOtherSessions": "Keine anderen Geräte angemeldet"
+    "noOtherSessions": "Keine anderen Geräte angemeldet",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountHint": "Alle Daten werden dauerhaft gelöscht und können nicht wiederhergestellt werden.",
+    "deleteAccountButton": "Konto löschen",
+    "deleteAccountWarning": "Diese Aktion kann nicht rückgängig gemacht werden!",
+    "deleteAccountConfirmHint": "Alle Ihre Daten (Dokumente, Sitzungen usw.) werden dauerhaft gelöscht. Geben Sie den SMS-Code zur Bestätigung ein.",
+    "deleteAccountSuccess": "Konto gelöscht",
+    "deleteAccountFailed": "Löschen fehlgeschlagen",
+    "confirmDelete": "Löschen bestätigen"
   },
   "AdminUsers": {
     "searchPlaceholder": "Benutzername oder Telefon suchen",
@@ -308,7 +316,14 @@
     "resetPasswordSuccess": "Passwort erfolgreich zurückgesetzt",
     "forceLogout": "Erzwungene Abmeldung",
     "forceLogoutConfirm": "Möchten Sie diesen Benutzer wirklich abmelden?",
-    "forceLogoutSuccess": "Benutzer wurde abgemeldet"
+    "forceLogoutSuccess": "Benutzer wurde abgemeldet",
+    "deleteUser": "Benutzer löschen",
+    "deleteUserHint": "Löscht den Benutzer und alle Daten dauerhaft. Nicht rückgängig zu machen.",
+    "deleteUserSuccess": "Benutzer gelöscht",
+    "deleteUserConfirmTitle": "Benutzer löschen bestätigen",
+    "deleteUserConfirmDesc": "Alle Daten des Benutzers (Dokumente, Sitzungen usw.) werden dauerhaft gelöscht. Fortfahren?",
+    "confirmDeleteUser": "Löschen bestätigen",
+    "cancel": "Abbrechen"
   },
   "Permissions": {
     "user_center": {
@@ -1228,6 +1243,8 @@
     "SMS_CODE_TOO_FREQUENT": "Bestätigungscode zu häufig gesendet, bitte versuchen Sie es später",
     "SMS_CODE_LIMIT_REACHED": "Bestätigungscode-Limit erreicht, bitte versuchen Sie es in einer Stunde erneut",
     "FILE_SIZE_EXCEEDED": "Dateigröße überschreitet das Limit",
-    "STORAGE_QUOTA_EXCEEDED": "Speicherkontingent überschritten"
+    "STORAGE_QUOTA_EXCEEDED": "Speicherkontingent überschritten",
+    "SUPERUSER_CANNOT_BE_DELETED": "Superuser kann nicht gelöscht werden",
+    "CANNOT_DELETE_SELF": "Eigenes Konto kann nicht gelöscht werden"
   }
 }

@@ -2,23 +2,19 @@
 
 /**
  * 用户管理列表组件。
- * 包含搜索、类型筛选、表格和分页。
+ * 包含搜索、表格、分页和行内展开面板。
  */
 
 import { useEffect, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { Pagination } from "@/components/common/Pagination"
+import { UserExpandPanel } from "./UserExpandPanel"
 import api from "@/lib/api"
 import type { User, PaginatedResponse } from "@/types"
 
-interface UserTableProps {
-  onSelectUser: (userId: string) => void
-  refreshKey: number
-}
-
 /** 用户管理列表 */
-export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
+export function UserTable() {
   const t = useTranslations("AdminUsers")
 
   const [users, setUsers] = useState<User[]>([])
@@ -28,6 +24,7 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [loading, setLoading] = useState(false)
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null)
 
   /** 搜索防抖 */
   useEffect(() => {
@@ -59,11 +56,22 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
 
   useEffect(() => {
     fetchUsers()
-  }, [fetchUsers, refreshKey])
+  }, [fetchUsers])
 
   /** 格式化日期 */
-  const formatDate = (dateStr: string): string => {
+  function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString()
+  }
+
+  /** 点击行切换展开 */
+  function toggleExpand(userId: string): void {
+    setExpandedUserId((prev) => (prev === userId ? null : userId))
+  }
+
+  /** 操作后刷新列表 */
+  function handleUpdate(): void {
+    setExpandedUserId(null)
+    fetchUsers()
   }
 
   return (
@@ -105,37 +113,51 @@ export function UserTable({ onSelectUser, refreshKey }: UserTableProps) {
               </tr>
             ) : (
               users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="cursor-pointer border-b transition-colors hover:bg-muted/30"
-                  onClick={() => onSelectUser(user.id)}
-                >
-                  <td className="px-4 py-3">{user.username ?? "-"}</td>
-                  <td className="px-4 py-3">{user.phone ?? "-"}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        user.is_active
-                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                      }`}
-                    >
-                      {t(user.is_active ? "status_active" : "status_inactive")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {user.role_name ? (
-                      <span className="text-xs text-muted-foreground">
-                        {user.role_name}
+                <>
+                  <tr
+                    key={user.id}
+                    className={`cursor-pointer border-b transition-colors hover:bg-muted/30 ${
+                      expandedUserId === user.id ? "bg-muted/20" : ""
+                    }`}
+                    onClick={() => toggleExpand(user.id)}
+                  >
+                    <td className="px-4 py-3">{user.username ?? "-"}</td>
+                    <td className="px-4 py-3">{user.phone ?? "-"}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          user.is_active
+                            ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                            : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                        }`}
+                      >
+                        {t(user.is_active ? "status_active" : "status_inactive")}
                       </span>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {formatDate(user.created_at)}
-                  </td>
-                </tr>
+                    </td>
+                    <td className="px-4 py-3">
+                      {user.role_name ? (
+                        <span className="text-xs text-muted-foreground">
+                          {user.role_name}
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {formatDate(user.created_at)}
+                    </td>
+                  </tr>
+                  {expandedUserId === user.id && (
+                    <tr key={`${user.id}-expand`}>
+                      <td colSpan={5} className="border-b bg-muted/10 p-0">
+                        <UserExpandPanel
+                          userId={user.id}
+                          onUpdate={handleUpdate}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))
             )}
           </tbody>

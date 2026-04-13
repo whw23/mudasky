@@ -124,6 +124,9 @@ export function ProfileInfo() {
   const [sms2faCode, setSms2faCode] = useState('')
   const [showDisableDialog, setShowDisableDialog] = useState(false)
   const [disableCode, setDisableCode] = useState('')
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteCode, setDeleteCode] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   // 组件卸载或 qrUrl 变化时释放 blob URL，防止内存泄漏
   useEffect(() => {
@@ -282,6 +285,24 @@ export function ProfileInfo() {
       toast.error(getApiError(err, tErr, t('disableFailed')))
     } finally {
       setLoading(false)
+    }
+  }
+
+  /** 注销账号 */
+  async function handleDeleteAccount(e: FormEvent): Promise<void> {
+    e.preventDefault()
+    setDeleting(true)
+    try {
+      await api.post('/portal/profile/delete-account', { code: deleteCode })
+      setShowDeleteDialog(false)
+      setDeleteCode('')
+      toast.success(t('deleteAccountSuccess'))
+      // 清除认证状态并跳转首页
+      window.location.href = '/'
+    } catch (err) {
+      toast.error(getApiError(err, tErr, t('deleteAccountFailed')))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -505,6 +526,24 @@ export function ProfileInfo() {
 
           {/* 登录设备管理 */}
           <SessionManagement />
+
+          {/* 注销账号 */}
+          {user.phone && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-destructive">{t('deleteAccount')}</Label>
+                <p className="text-xs text-muted-foreground">{t('deleteAccountHint')}</p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  {t('deleteAccountButton')}
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -548,6 +587,55 @@ export function ProfileInfo() {
                 </Button>
                 <Button type="submit" variant="destructive" disabled={loading}>
                   {loading ? t('saving') : t('confirmDisable')}
+                </Button>
+              </div>
+            </form>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+
+      {/* 注销账号确认弹窗 */}
+      <Dialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowDeleteDialog(false)
+            setDeleteCode('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">{t('deleteAccount')}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <form onSubmit={handleDeleteAccount} className="space-y-4">
+              <p className="text-sm text-destructive font-medium">{t('deleteAccountWarning')}</p>
+              <p className="text-sm text-muted-foreground">{t('deleteAccountConfirmHint')}</p>
+              <div className="space-y-2">
+                <Label>{t('smsCode')}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={deleteCode}
+                    onChange={(e) => setDeleteCode(e.target.value)}
+                    placeholder={t('codePlaceholder')}
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                    required
+                  />
+                  <SmsCodeButton phone={user.phone!} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 border-t px-5 py-3 -mx-5 -mb-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setShowDeleteDialog(false); setDeleteCode('') }}
+                >
+                  {t('cancel')}
+                </Button>
+                <Button type="submit" variant="destructive" disabled={deleting}>
+                  {deleting ? t('saving') : t('confirmDelete')}
                 </Button>
               </div>
             </form>

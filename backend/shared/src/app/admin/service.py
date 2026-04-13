@@ -14,6 +14,7 @@ from app.rbac.service import RbacService
 from app.user import repository as user_repo
 from app.user.models import User
 from app.user.schemas import UserAdminUpdate, UserResponse
+from app.user.service import UserService
 
 
 class AdminService:
@@ -136,6 +137,11 @@ class AdminService:
         await auth_repo.revoke_user_refresh_tokens(
             self.session, user_id
         )
+
+    async def delete_user(self, user_id: str) -> None:
+        """管理员删除用户，委托 UserService 处理数据清理。"""
+        user_svc = UserService(self.session)
+        await user_svc.delete_user(user_id)
 
     async def get_user_model(
         self, user_id: str

@@ -270,7 +270,15 @@
     "sessionRevoked": "设备已踢出",
     "allSessionsRevoked": "已踢出所有其他设备",
     "unknownDevice": "未知设备",
-    "noOtherSessions": "暂无其他设备登录"
+    "noOtherSessions": "暂无其他设备登录",
+    "deleteAccount": "注销账号",
+    "deleteAccountHint": "注销后所有数据将被永久删除，无法恢复。",
+    "deleteAccountButton": "注销账号",
+    "deleteAccountWarning": "此操作不可恢复！",
+    "deleteAccountConfirmHint": "注销后您的所有数据（文档、会话等）将被永久删除。请输入短信验证码确认注销。",
+    "deleteAccountSuccess": "账号已注销",
+    "deleteAccountFailed": "注销失败",
+    "confirmDelete": "确认注销"
   },
   "AdminUsers": {
     "searchPlaceholder": "搜索用户名或手机号",
@@ -308,7 +316,14 @@
     "resetPasswordSuccess": "密码重置成功",
     "forceLogout": "强制登出",
     "forceLogoutConfirm": "确定要强制登出该用户吗？",
-    "forceLogoutSuccess": "已强制登出"
+    "forceLogoutSuccess": "已强制登出",
+    "deleteUser": "删除用户",
+    "deleteUserHint": "永久删除该用户及其所有数据，操作不可恢复。",
+    "deleteUserSuccess": "用户已删除",
+    "deleteUserConfirmTitle": "确认删除用户",
+    "deleteUserConfirmDesc": "此操作将永久删除该用户的所有数据（文档、会话等），且无法恢复。确定要继续吗？",
+    "confirmDeleteUser": "确认删除",
+    "cancel": "取消"
   },
   "Permissions": {
     "user_center": {
@@ -1237,6 +1252,8 @@
     "SMS_CODE_TOO_FREQUENT": "验证码发送过于频繁，请稍后再试",
     "SMS_CODE_LIMIT_REACHED": "验证码发送次数已达上限，请一小时后再试",
     "FILE_SIZE_EXCEEDED": "文件大小超过限制",
-    "STORAGE_QUOTA_EXCEEDED": "存储配额不足"
+    "STORAGE_QUOTA_EXCEEDED": "存储配额不足",
+    "SUPERUSER_CANNOT_BE_DELETED": "超级管理员不可删除",
+    "CANNOT_DELETE_SELF": "不能删除自己的账号"
   }
 }

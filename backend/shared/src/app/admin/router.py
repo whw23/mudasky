@@ -3,7 +3,7 @@
 提供用户管理、密码重置、权限分配、强制下线等管理员 API 端点。
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 from app.admin.schemas import (
     MessageResponse,
@@ -11,7 +11,7 @@ from app.admin.schemas import (
     RoleAssignment,
 )
 from app.admin.service import AdminService
-from app.core.dependencies import DbSession
+from app.core.dependencies import CurrentUserId, DbSession
 from app.core.pagination import PaginatedResponse, PaginationParams
 from app.user.schemas import UserAdminUpdate, UserResponse
 
@@ -126,3 +126,26 @@ async def force_logout(
     svc = AdminService(session)
     await svc.force_logout(user_id)
     return MessageResponse(message="用户已强制下线")
+
+
+@router.post(
+    "/delete/{user_id}",
+    response_model=MessageResponse,
+    summary="删除用户",
+)
+async def delete_user(
+    user_id: str,
+    admin_user_id: CurrentUserId,
+    session: DbSession,
+) -> MessageResponse:
+    """管理员删除用户，清理所有关联数据。"""
+    from app.core.exceptions import ForbiddenException
+
+    if user_id == admin_user_id:
+        raise ForbiddenException(
+            message="不能删除自己的账号",
+            code="CANNOT_DELETE_SELF",
+        )
+    svc = AdminService(session)
+    await svc.delete_user(user_id)
+    return MessageResponse(message="用户已删除")

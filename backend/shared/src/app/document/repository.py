@@ -75,6 +75,29 @@ async def list_by_user(
     return docs, total
 
 
+async def list_file_paths_by_user(
+    session: AsyncSession, user_id: str
+) -> list[str]:
+    """获取用户所有文档的文件路径。"""
+    stmt = select(Document.file_path).where(
+        Document.user_id == user_id
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def delete_by_user(
+    session: AsyncSession, user_id: str
+) -> None:
+    """删除用户所有文档记录（不 commit）。"""
+    from sqlalchemy import delete as sa_delete
+
+    stmt = sa_delete(Document).where(
+        Document.user_id == user_id
+    )
+    await session.execute(stmt)
+
+
 async def delete(session: AsyncSession, doc: Document) -> None:
     """删除文档记录。"""
     await session.delete(doc)

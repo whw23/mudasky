@@ -270,7 +270,15 @@
     "sessionRevoked": "デバイスを解除しました",
     "allSessionsRevoked": "他のすべてのデバイスをログアウトしました",
     "unknownDevice": "不明なデバイス",
-    "noOtherSessions": "他のデバイスはログインしていません"
+    "noOtherSessions": "他のデバイスはログインしていません",
+    "deleteAccount": "アカウント削除",
+    "deleteAccountHint": "削除後、すべてのデータは完全に削除され、復元できません。",
+    "deleteAccountButton": "アカウントを削除",
+    "deleteAccountWarning": "この操作は取り消せません！",
+    "deleteAccountConfirmHint": "すべてのデータ（ドキュメント、セッションなど）が完全に削除されます。SMS認証コードを入力して確認してください。",
+    "deleteAccountSuccess": "アカウントが削除されました",
+    "deleteAccountFailed": "削除に失敗しました",
+    "confirmDelete": "削除を確認"
   },
   "AdminUsers": {
     "searchPlaceholder": "ユーザー名または電話番号を検索",
@@ -308,7 +316,14 @@
     "resetPasswordSuccess": "パスワードをリセットしました",
     "forceLogout": "強制ログアウト",
     "forceLogoutConfirm": "このユーザーを強制ログアウトしてもよろしいですか？",
-    "forceLogoutSuccess": "強制ログアウトしました"
+    "forceLogoutSuccess": "強制ログアウトしました",
+    "deleteUser": "ユーザーを削除",
+    "deleteUserHint": "このユーザーとすべてのデータを完全に削除します。元に戻せません。",
+    "deleteUserSuccess": "ユーザーを削除しました",
+    "deleteUserConfirmTitle": "ユーザー削除の確認",
+    "deleteUserConfirmDesc": "このユーザーのすべてのデータ（ドキュメント、セッションなど）が完全に削除されます。続行しますか？",
+    "confirmDeleteUser": "削除を確認",
+    "cancel": "キャンセル"
   },
   "Permissions": {
     "user_center": {
@@ -1228,6 +1243,8 @@
     "SMS_CODE_TOO_FREQUENT": "認証コードの送信が頻繁すぎます。しばらくしてから再試行してください",
     "SMS_CODE_LIMIT_REACHED": "認証コードの送信回数が上限に達しました。1時間後に再試行してください",
     "FILE_SIZE_EXCEEDED": "ファイルサイズが制限を超えています",
-    "STORAGE_QUOTA_EXCEEDED": "ストレージ容量が不足しています"
+    "STORAGE_QUOTA_EXCEEDED": "ストレージ容量が不足しています",
+    "SUPERUSER_CANNOT_BE_DELETED": "スーパーユーザーは削除できません",
+    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません"
   }
 }

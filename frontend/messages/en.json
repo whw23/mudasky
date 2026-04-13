@@ -270,7 +270,15 @@
     "sessionRevoked": "Device revoked",
     "allSessionsRevoked": "All other devices revoked",
     "unknownDevice": "Unknown device",
-    "noOtherSessions": "No other devices logged in"
+    "noOtherSessions": "No other devices logged in",
+    "deleteAccount": "Delete Account",
+    "deleteAccountHint": "All data will be permanently deleted and cannot be recovered.",
+    "deleteAccountButton": "Delete Account",
+    "deleteAccountWarning": "This action cannot be undone!",
+    "deleteAccountConfirmHint": "All your data (documents, sessions, etc.) will be permanently deleted. Enter the SMS code to confirm.",
+    "deleteAccountSuccess": "Account deleted",
+    "deleteAccountFailed": "Failed to delete account",
+    "confirmDelete": "Confirm Delete"
   },
   "AdminUsers": {
     "searchPlaceholder": "Search username or phone",
@@ -308,7 +316,14 @@
     "resetPasswordSuccess": "Password reset successfully",
     "forceLogout": "Force Logout",
     "forceLogoutConfirm": "Are you sure you want to force logout this user?",
-    "forceLogoutSuccess": "User has been logged out"
+    "forceLogoutSuccess": "User has been logged out",
+    "deleteUser": "Delete User",
+    "deleteUserHint": "Permanently delete this user and all their data. This cannot be undone.",
+    "deleteUserSuccess": "User deleted",
+    "deleteUserConfirmTitle": "Confirm Delete User",
+    "deleteUserConfirmDesc": "This will permanently delete all data for this user (documents, sessions, etc.) and cannot be undone. Continue?",
+    "confirmDeleteUser": "Confirm Delete",
+    "cancel": "Cancel"
   },
   "Permissions": {
     "user_center": {
@@ -1228,6 +1243,8 @@
     "SMS_CODE_TOO_FREQUENT": "Verification code sent too frequently, please try later",
     "SMS_CODE_LIMIT_REACHED": "Verification code limit reached, please try again in an hour",
     "FILE_SIZE_EXCEEDED": "File size exceeds limit",
-    "STORAGE_QUOTA_EXCEEDED": "Storage quota exceeded"
+    "STORAGE_QUOTA_EXCEEDED": "Storage quota exceeded",
+    "SUPERUSER_CANNOT_BE_DELETED": "Superuser cannot be deleted",
+    "CANNOT_DELETE_SELF": "Cannot delete your own account"
   }
 }
