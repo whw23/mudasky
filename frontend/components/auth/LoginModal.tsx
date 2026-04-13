@@ -58,6 +58,7 @@ export function LoginModal() {
 
   /* 二步验证 */
   const [twoFaStep, setTwoFaStep] = useState(false)
+  const [twoFaMethods, setTwoFaMethods] = useState<{ has_totp: boolean; has_phone: boolean }>({ has_totp: false, has_phone: false })
   const [pendingPayload, setPendingPayload] = useState<Record<
     string,
     string
@@ -71,6 +72,7 @@ export function LoginModal() {
     setAccount('')
     setAccountPwd('')
     setTwoFaStep(false)
+    setTwoFaMethods({ has_totp: false, has_phone: false })
     setPendingPayload(null)
   }
 
@@ -96,6 +98,7 @@ export function LoginModal() {
       const res = await api.post('/auth/login', payload)
       if (res.data.step === '2fa_required') {
         setTwoFaStep(true)
+        setTwoFaMethods(res.data.two_fa_methods || { has_totp: false, has_phone: false })
         setPendingPayload(payload)
         return
       }
@@ -153,6 +156,8 @@ export function LoginModal() {
           <DialogBody>
             <TwoFaForm
               phone={pendingPayload?.phone || ''}
+              hasTotp={twoFaMethods.has_totp}
+              hasPhone={twoFaMethods.has_phone}
               loading={loading}
               error={error}
               onSubmit={handleTwoFaSubmit}

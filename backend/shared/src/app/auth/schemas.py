@@ -96,15 +96,23 @@ class LoginRequest(BaseModel):
     )
 
 
+class TwoFaMethods(BaseModel):
+    """二步验证可用方式。"""
+
+    has_totp: bool = False
+    has_phone: bool = False
+
+
 class AuthResponse(BaseModel):
     """认证响应。
 
     step 字段用于二步验证流程，值为 "2fa_required" 时
-    表示需要提供二步验证码。
+    表示需要提供二步验证码。two_fa_methods 指示可用的验证方式。
     """
 
     user: UserResponse
     step: str | None = None
+    two_fa_methods: TwoFaMethods | None = None
 
 
 class PublicKeyResponse(BaseModel):

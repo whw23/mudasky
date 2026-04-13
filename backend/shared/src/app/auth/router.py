@@ -13,6 +13,7 @@ from app.auth.schemas import (
     PublicKeyResponse,
     RegisterRequest,
     SmsCodeRequest,
+    TwoFaMethods,
 )
 from app.auth.service import AuthService
 from app.core.crypto import generate_nonce, get_public_key_pem
@@ -86,7 +87,13 @@ async def login(
         sms_code_2fa=data.sms_code_2fa,
     )
     user_resp = await svc.build_user_response(user)
-    return AuthResponse(user=user_resp, step=step)
+    two_fa_methods = None
+    if step == "2fa_required":
+        two_fa_methods = TwoFaMethods(
+            has_totp=bool(user.totp_secret),
+            has_phone=bool(user.phone),
+        )
+    return AuthResponse(user=user_resp, step=step, two_fa_methods=two_fa_methods)
 
 
 class RefreshTokenHashRequest(BaseModel):

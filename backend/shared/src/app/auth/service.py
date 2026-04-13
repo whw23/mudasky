@@ -313,8 +313,7 @@ class AuthService:
                 self.session, user.phone, sms_code_2fa
             )
             return user, None
-        # 未提供验证码，自动发送短信
-        await self.send_code(user.phone)
+        # 未提供验证码，不自动发短信，让前端根据可用方式展示
         return user, "2fa_required"
 
     async def _get_user_by_phone(self, phone: str) -> User:
