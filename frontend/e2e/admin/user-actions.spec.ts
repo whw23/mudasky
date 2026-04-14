@@ -5,6 +5,7 @@
 
 import { test, expect } from "../fixtures/base"
 
+/* 此测试需要有效的登录状态，单独运行或在 globalSetup 后立即运行 */
 test.describe("用户管理操作", () => {
   test.beforeEach(async ({ adminPage }) => {
     await adminPage.goto("/admin/users")
