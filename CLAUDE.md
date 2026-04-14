@@ -33,11 +33,15 @@ Merge order: `feat/*` → `dev` → `main`
 ```text
 mudasky/
 ├── frontend/          # React app (pnpm)
-├── backend/           # Python app (uv for local dev, Python 3.14)
+├── backend/           # Python app
+│   ├── shared/        # 基础设施层（app 包：db/sms/core/utils）
+│   ├── api/           # 业务层（api 包：auth/public/admin/portal）
+│   ├── worker/        # 任务队列
+│   ├── alembic/       # 数据库迁移
+│   └── scripts/       # 运维脚本（init/start-api.sh）
 ├── gateway/           # OpenResty / Lua config
+├── db/                # 数据库（Dockerfile, init, cron）
 ├── legacy/            # Code migrated from old system
-├── scripts/           # Dev/ops scripts
-├── docker/            # Dockerfiles
 ├── .github/workflows/ # CI/CD (main branch only)
 ├── docker-compose.yml
 └── docker-compose.override.yml  # dev overrides
@@ -45,10 +49,10 @@ mudasky/
 
 ## Tooling
 
-| Tool   | Scope                          |
-|--------|--------------------------------|
+| Tool   | Scope                              |
+|--------|------------------------------------|
 | pnpm   | Frontend package manager (Next.js) |
-| uv     | Backend local dev (IDE + LSP)  |
+| uv     | Backend local dev (IDE + LSP)      |
 | Docker | Container runtime              |
 
 - Backend container uses `python:3.14` image directly, no uv inside container

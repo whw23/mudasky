@@ -46,19 +46,20 @@
 
 ## Layered Architecture
 
-- 调用方向：`Router → Service → Repository → Models`，每层只依赖下一层
+- 调用方向：`Router(api) → Service(api) → Repository(shared) → Models(shared)`
 - Router 只能调 Service，禁止直接调 Repository 或操作 Models
 - Service 只能调 Repository，禁止直接写 SQLAlchemy 查询
 - Repository 只能操作 Models，禁止包含业务逻辑
-- 禁止跨层调用（如 Router → Repository）和反向依赖（如 Repository → Service）
-- 跨领域调用：Service 可调用其他领域的 Service 或 Repository，Router 和 Repository 禁止跨领域
+- 禁止跨层调用和反向依赖
+- 禁止跨面板调用 Service，共享逻辑通过 Repository 层
+- Service 不引用 Schemas，接收/返回原始数据类型
 
 ## Code Reuse
 
 - 禁止重复代码：相同逻辑出现两次以上必须抽取为共享函数/模块
-- 多领域共用的逻辑放 `core/`（如分页、哈希、日期处理）
-- 领域内共用的逻辑放该领域目录下的独立模块
-- 复用 schemas 时直接 import，不要复制字段定义
+- API 层共用逻辑放 `api/core/`（如分页、缓存、依赖注入）
+- 数据层共用逻辑放 `shared/app/core/` 或 `shared/app/utils/`
+- Schemas 按面板独立定义，不跨面板共享
 
 ## Python Convention
 
