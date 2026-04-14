@@ -15,7 +15,9 @@ export interface Article {
   id: string
   title: string
   slug: string
+  content_type: string
   content: string
+  file_url: string | null
   excerpt: string
   category_id: string
   published_at: string | null

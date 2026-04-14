@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
-import { SafeHtml } from "@/components/common/SafeHtml"
+import { ArticleContent } from "@/components/content/ArticleContent"
 
 /** 文章详情页面 */
 export default async function ArticleDetailPage({
@@ -64,9 +64,11 @@ export default async function ArticleDetailPage({
         <div className="my-8 h-px bg-border" />
 
         {/* 文章正文 */}
-        <SafeHtml
-          html={article.content}
-          className="prose prose-gray max-w-none prose-headings:font-bold prose-a:text-primary"
+        <ArticleContent
+          contentType={article.content_type ?? "markdown"}
+          content={article.content}
+          fileUrl={article.file_url ?? null}
+          title={article.title}
         />
 
         {/* 底部返回 */}
