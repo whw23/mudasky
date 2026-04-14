@@ -34,6 +34,8 @@ const ADMIN_PAGES: PageConfig[] = [
   { key: "caseManagement", href: "/admin/cases", apiPrefix: "admin/cases" },
   { key: "generalSettings", href: "/admin/general-settings", apiPrefix: "admin/general-settings" },
   { key: "webSettings", href: "/admin/web-settings", apiPrefix: "admin/web-settings" },
+  { key: "studentManagement", href: "/admin/students", apiPrefix: "admin/students" },
+  { key: "contactManagement", href: "/admin/contacts", apiPrefix: "admin/contacts" },
 ]
 
 /** 用户中心页面 */

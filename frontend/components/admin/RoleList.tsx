@@ -45,7 +45,7 @@ function SortableRow({
   onDelete: (role: Role) => void
   t: ReturnType<typeof useTranslations>
 }) {
-  const isSuperuser = role.permissions.some((p) => p.code === "*")
+  const isSuperuser = role.permissions.some((p) => p === "*")
 
   const {
     attributes,
@@ -142,7 +142,7 @@ export function RoleList() {
   const fetchRoles = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<Role[]>("/admin/roles/list")
+      const { data } = await api.get<Role[]>("/admin/roles/meta/list")
       setRoles(data)
     } catch {
       toast.error(t("fetchError"))
@@ -167,7 +167,7 @@ export function RoleList() {
     setRoles(reordered)
 
     try {
-      await api.post("/admin/roles/reorder", {
+      await api.post("/admin/roles/meta/list/reorder", {
         items: reordered.map((r, i) => ({
           id: r.id,
           sort_order: i,
@@ -195,7 +195,7 @@ export function RoleList() {
   const handleDelete = async (role: Role) => {
     if (!confirm(t("deleteConfirm", { name: role.name }))) return
     try {
-      await api.post(`/admin/roles/delete/${role.id}`)
+      await api.post("/admin/roles/meta/list/detail/delete", { role_id: role.id })
       toast.success(t("deleteSuccess"))
       fetchRoles()
     } catch {

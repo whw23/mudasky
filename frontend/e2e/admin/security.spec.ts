@@ -61,7 +61,7 @@ test.describe("安全 — SQL 注入", () => {
   test("搜索参数 SQL 注入不导致服务崩溃", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
-      const res = await fetch("/api/public/university/list?search=test%27+OR+1%3D1", {
+      const res = await fetch("/api/public/universities/list?search=test%27+OR+1%3D1", {
         credentials: "include",
       })
       return { status: res.status }
@@ -74,7 +74,7 @@ test.describe("安全 — SQL 注入", () => {
   test("用户 ID 路径注入返回错误而非执行", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
-      const res = await fetch("/api/public/university/detail/nonexistent-id", {
+      const res = await fetch("/api/public/universities/detail/nonexistent-id", {
         credentials: "include",
       })
       return { status: res.status }
@@ -132,7 +132,7 @@ test.describe("安全 — 接口参数篡改", () => {
   test("尝试删除不存在的用户被拒绝", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
-      const res = await fetch("/api/admin/users/delete/nonexistent-id", {
+      const res = await fetch("/api/admin/users/list/detail/delete", {
         method: "POST",
         credentials: "include",
       })
@@ -147,7 +147,7 @@ test.describe("安全 — CSRF", () => {
   test("无 cookie 的 POST 请求被拒绝", async ({ page }) => {
     await page.goto("/")
     const response = await page.evaluate(async () => {
-      const res = await fetch("/api/portal/profile/edit", {
+      const res = await fetch("/api/portal/profile/meta/list/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: "hacked" }),

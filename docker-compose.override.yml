@@ -10,6 +10,7 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
+      - next_cache:/app/.next
 
   gateway:
     entrypoint: ["sh", "/usr/local/openresty/nginx/dev-entrypoint.sh"]
@@ -24,4 +25,7 @@ services:
   db:
     ports:
       - "15432:5432"
+
+volumes:
+  next_cache:
 

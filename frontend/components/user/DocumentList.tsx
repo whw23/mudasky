@@ -93,14 +93,14 @@ export function DocumentList({
 
   /** 下载文档 */
   const handleDownload = (doc: Document) => {
-    window.open(`/api/portal/document/download/${doc.id}`, "_blank")
+    window.open(`/api/portal/documents/list/detail/download?doc_id=${doc.id}`, "_blank")
   }
 
   /** 删除文档 */
   const handleDelete = async (doc: Document) => {
     if (!confirm(t("deleteConfirm"))) return
     try {
-      await api.post(`/portal/documents/delete/${doc.id}`)
+      await api.post('/portal/documents/list/detail/delete', { doc_id: doc.id })
       toast.success(t("deleteSuccess"))
       fetchDocuments()
     } catch {

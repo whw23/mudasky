@@ -48,6 +48,6 @@ export function filterRoutesByPrefix(routes: ApiRoute[], prefix: string): ApiRou
 
 /** 从后端获取 OpenAPI spec。 */
 export async function fetchOpenApiSpec(): Promise<Record<string, unknown>> {
-  const { data } = await api.get<Record<string, unknown>>("/admin/roles/list/openapi.json")
+  const { data } = await api.get<Record<string, unknown>>("/openapi.json")
   return data
 }

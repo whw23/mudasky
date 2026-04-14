@@ -65,7 +65,8 @@ export function CaseTable() {
   /** 切换推荐状态 */
   const toggleFeatured = async (c: SuccessCase) => {
     try {
-      await api.post(`${pathname}/edit/${c.id}`, {
+      await api.post(`${pathname}/list/detail/edit`, {
+        case_id: c.id,
         is_featured: !c.is_featured,
       })
       toast.success(t(c.is_featured ? "unfeaturedSuccess" : "featuredSuccess"))
@@ -79,7 +80,7 @@ export function CaseTable() {
   const handleDelete = async (c: SuccessCase) => {
     if (!confirm(t("deleteConfirm", { name: c.student_name }))) return
     try {
-      await api.post(`${pathname}/delete/${c.id}`)
+      await api.post(`${pathname}/list/detail/delete`, { case_id: c.id })
       toast.success(t("deleteSuccess"))
       fetchCases()
     } catch {

@@ -28,6 +28,8 @@ const PANEL_ROUTES: Record<string, string[]> = {
     "cases",
     "general-settings",
     "web-settings",
+    "students",
+    "contacts",
   ],
   portal: ["overview", "profile", "documents"],
 }

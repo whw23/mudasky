@@ -48,7 +48,7 @@ export default function GeneralSettingsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function handleSaveFavicon(data: Record<string, any>): Promise<void> {
     const updated = { ...siteInfo, ...data }
-    await api.post("/admin/general-settings/edit/site_info", { value: updated })
+    await api.post("/admin/general-settings/list/edit", { key: "site_info", value: updated })
     toast.success(t("saveSuccess"))
     await fetchSiteInfo()
   }

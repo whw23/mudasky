@@ -26,7 +26,7 @@ test.describe("用户管理", () => {
     await expect(main.getByText("mudasky")).toBeVisible({ timeout: 10_000 })
   })
 
-  test("点击用户行打开详情抽屉", async ({ adminPage }) => {
+  test("点击用户行展开详情面板", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
     const main = adminPage.locator("main")
 
@@ -36,6 +36,7 @@ test.describe("用户管理", () => {
     const row = main.locator("tr", { hasText: "mudasky" })
     await row.click()
 
-    await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 15_000 })
+    /* 展开面板是行内渲染，不是 dialog；等待面板内容出现 */
+    await expect(main.getByText(/基本信息|分配角色|重置密码/)).toBeVisible({ timeout: 15_000 })
   })
 })

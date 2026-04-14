@@ -8,6 +8,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
+import { ConsultButton } from "@/components/common/ConsultButton"
 import { getTranslations } from "next-intl/server"
 
 /** 官网首页 */
@@ -177,12 +178,11 @@ export default async function HomePage() {
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
             {t("ctaDescription")}
           </p>
-          <Link
-            href="/contact"
+          <ConsultButton
             className="mt-8 inline-block rounded-lg border-2 border-primary bg-white px-8 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white"
           >
             {t("ctaButton")}
-          </Link>
+          </ConsultButton>
         </div>
       </section>
     </>

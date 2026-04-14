@@ -52,7 +52,7 @@ export function TwoFactorSettings() {
   async function handleEnable(): Promise<void> {
     setEnabling(true)
     try {
-      const res = await api.post('/portal/profile/2fa-enable-totp', null, {
+      const res = await api.post('/portal/profile/two-factor/enable-totp', null, {
         responseType: 'blob',
       })
       const url = URL.createObjectURL(new Blob([res.data]))
@@ -69,7 +69,7 @@ export function TwoFactorSettings() {
     e.preventDefault()
     setConfirming(true)
     try {
-      await api.post('/portal/profile/2fa-confirm-totp', { totp_code: totpCode })
+      await api.post('/portal/profile/two-factor/confirm-totp', { totp_code: totpCode })
       toast.success(t('twoFaEnabled'))
       /* 清理二维码 URL */
       if (qrUrl) URL.revokeObjectURL(qrUrl)
@@ -95,8 +95,8 @@ export function TwoFactorSettings() {
     e.preventDefault()
     setDisabling(true)
     try {
-      await api.post('/portal/profile/2fa-disable', {
-        phone: user.phone,
+      await api.post('/portal/profile/two-factor/disable', {
+        phone: user!.phone,
         code: disableSmsCode,
       })
       toast.success(t('twoFaDisabled'))

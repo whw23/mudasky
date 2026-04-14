@@ -61,12 +61,61 @@
 ### 前端 E2E 测试
 
 - 使用 Playwright + `adminPage` fixture（已登录的管理员页面）
-- 测试完整用户交互流程（导航、填表、提交、验证结果）
 - 使用 `gotoAdmin`、`clickAndWaitDialog` 等项目自定义辅助函数
 - 配置文件：`frontend/e2e/playwright.config.ts`
 - fixture 文件：`frontend/e2e/fixtures/base.ts`
-- 禁止并发执行，单线程串行运行（宿主机压力大）
-- 运行命令：`pnpm --prefix frontend exec playwright test --workers=1`
+- 默认 6 worker 并发执行
+- 运行命令：`pnpm --prefix frontend exec playwright test`
+
+#### 覆盖标准
+
+每个前端页面的 E2E 测试必须覆盖以下三类：
+
+1. **后端端点触发**：页面涉及的每个后端 API 调用，至少有一个测试通过 UI 操作触发该请求
+2. **用户交互操作**：页面上每个可交互元素（按钮、输入框、下拉框、checkbox、tab、弹窗、展开面板等）至少被操作一次
+3. **跨页面状态一致性**：不同页面/面板之间切换后状态正确（路由守卫、数据隔离、侧边栏高亮）
+
+#### 测试分类
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| 端点覆盖 | 通过 UI 操作触发后端 API | 点击创建按钮 → 填表 → 保存 → 验证列表刷新 |
+| 交互覆盖 | 验证 UI 元素可操作 | tab 切换、弹窗打开/关闭、展开/收起、拖拽排序 |
+| 正向测试 | 操作成功的完整流程 | 创建 → 列表出现新数据 → 编辑 → 数据变更 → 删除 → 数据消失 |
+| 反向测试 | 错误/边界/权限拒绝 | 空表单提交不关闭弹窗、未登录重定向、无权限 403 |
+| 交叉测试 | 页面间快速切换 | admin→portal→admin 切换后数据正确 |
+
+#### 测试约定
+
+- E2E 创建的数据以 `E2E` 开头，`global-teardown.ts` 负责清理
+- 不修改/删除种子数据（superuser、预设角色等）
+- 未登录测试使用 `test.use({ storageState: { cookies: [], origins: [] } })`
+- 展开面板是行内渲染（非 dialog），用 `getByText("基本信息").waitFor()` 等待加载
+- **禁止使用 `waitForTimeout` 作为主要等待手段**，优先使用条件等待：
+  - 等待元素：`await page.locator("main").waitFor()` 或 `await expect(el).toBeVisible()`
+  - 等待弹窗：`await expect(page.getByRole("dialog")).toBeVisible()`
+  - 等待导航：`await page.waitForURL(/pattern/)`
+  - 等待 API：`await page.waitForResponse(r => r.url().includes("/list"))`
+  - 搜索防抖：允许 `waitForTimeout(500)`（唯一合理场景）
+
+#### E2E 测试目录结构
+
+```text
+frontend/e2e/
+├── fixtures/
+│   └── base.ts              # adminPage fixture, gotoAdmin, clickAndWaitDialog
+├── helpers/
+│   └── sms.ts               # SMS 验证码获取
+├── global-setup.ts           # 登录并保存 storageState
+├── global-teardown.ts        # 清理 E2E 测试数据
+├── playwright.config.ts      # 6 worker, 120s timeout, 1 retry
+├── auth/                     # 认证流程（登录弹窗、tab 切换、退出）
+├── public/                   # 公开页面（导航、ConsultButton、语言切换）
+├── admin/                    # 管理面板（每个模块一个 spec）
+├── portal/                   # 用户面板（profile、sessions、documents）
+├── cross-navigation.spec.ts  # 路径乱序交叉测试
+└── permission-guard.spec.ts  # 权限拦截测试
+```
 
 ### 测试目录结构
 

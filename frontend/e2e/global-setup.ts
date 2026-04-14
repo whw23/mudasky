@@ -27,7 +27,7 @@ async function globalSetup(_config: FullConfig) {
   await page.goto("http://localhost/", { waitUntil: "networkidle", timeout: 60_000 })
 
   /* 等待水合完成 */
-  const loginBtn = page.getByRole("button", { name: "登录" })
+  const loginBtn = page.getByRole("button", { name: /登录/ })
   await loginBtn.waitFor({ timeout: 30_000 })
   await page.waitForTimeout(3000)
 

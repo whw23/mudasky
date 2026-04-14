@@ -1,7 +1,7 @@
 import { Banner } from "@/components/layout/Banner"
 import { ArticleSection } from "@/components/content/ArticleSection"
 import { fetchArticlesByCategorySlug } from "@/lib/content-api"
-import { Link } from "@/i18n/navigation"
+import { ConsultButton } from "@/components/common/ConsultButton"
 import { getTranslations } from "next-intl/server"
 import {
   FileText,
@@ -159,12 +159,11 @@ export default async function VisaPage() {
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
             {t("ctaDesc")}
           </p>
-          <Link
-            href="/contact"
+          <ConsultButton
             className="mt-8 inline-flex items-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white"
           >
             {t("ctaButton")} <ArrowRight className="h-4 w-4" />
-          </Link>
+          </ConsultButton>
         </div>
       </section>
     </>
