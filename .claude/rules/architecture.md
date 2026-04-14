@@ -63,7 +63,7 @@ Router → Service → Repository → Models
 - **开发环境也走 gateway**，不需要 CORS
 - **is_active 在 JWT claims 中**，禁用延迟可接受，续签时查库校验
 - **前端用户信息**：登录/续签/修改时响应体带用户信息，存 localStorage，Cookie 保持 HttpOnly
-- **RBAC 权限**：superuser、website_admin、student_advisor、student、visitor + 自定义角色，全部平等；每个用户只能有一个角色；权限采用树形结构（用户中心/管理后台 → 面板 → 功能），前后端同时控制
+- **RBAC 权限**：superuser、content_admin、advisor、support、student、visitor + 自定义角色；每个用户一个角色；Role.permissions 为 JSON 通配符数组；权限码 = 静态 URL 路径；通配符支持子路径 + 祖先路径匹配；改权限时踢下线（删 refresh_token）
 - **API 错误码**：后端异常返回具体 code（如 `PHONE_ALREADY_REGISTERED`），前端通过 `getApiError` 查 `ApiErrors` 翻译命名空间实现多语言错误提示
 - **数据库迁移**：alembic（Python/SQLAlchemy），与初始建表保持同一技术栈
 - **定时清理**：pg_cron 在数据库层执行，不在 API 进程中

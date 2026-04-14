@@ -37,12 +37,15 @@
 
 ### API Route
 
-- RPC 风格，action-in-URL：`/api/{panel}/{resource}/{action}`
+- 层级依赖结构：`/api/{panel}/{resource}/list/detail/edit`，子路径依赖父路径
 - 四类路径前缀：`/api/auth/*`（认证）、`/api/public/*`（公开）、`/api/admin/*`（管理）、`/api/portal/*`（用户面板）
+- URL 路径完全静态，不含动态参数（ID/key 等）
+- GET 请求 ID 通过 query param 传递，POST 请求 ID 通过 body 传递
 - 读操作用 `GET`，写操作用 `POST`
 - URL path: kebab-case
 - 用 HTTP status code 表达结果，禁止在 200 响应体里自定义错误码
-- 权限由网关从路径自动推导，后端不做权限校验
+- 权限码 = URL 路径（去掉 /api/ 前缀），网关自动匹配，后端不做权限校验
+- 每个 `__init__.py` 导出 `description`（中文名），用于权限树和 OpenAPI
 
 ## Layered Architecture
 

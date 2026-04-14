@@ -6,8 +6,8 @@
 
 | 层级 | 工具 | 目标 | 位置 |
 |------|------|------|------|
-| 单元测试（后端） | pytest + mock | Service 层逻辑 | `backend/api/tests/{panel}/{domain}/test_service.py` |
-| 接口测试（后端） | pytest + httpx | 直连 API 容器的接口测试 | `backend/api/tests/{panel}/{domain}/test_router.py` |
+| 单元测试（后端） | pytest + mock | Service 层逻辑 | `backend/api/tests/{panel}/{domain}[/{sub}]/test_service.py` |
+| 接口测试（后端） | pytest + httpx | 直连 API 容器的接口测试 | `backend/api/tests/{panel}/{domain}[/{sub}]/test_router.py` |
 | 网关集成测试（后端） | pytest + httpx | 通过网关的完整链路测试 | `backend/api/tests/e2e/test_*.py` |
 | 单元测试（前端） | Vitest + RTL | 组件渲染、交互、hooks | `frontend/src/**/*.test.tsx` |
 | E2E 测试（前端） | Playwright | 浏览器端用户交互流程 | `frontend/e2e/**/*.spec.ts` |
@@ -89,11 +89,14 @@ backend/api/tests/
 │   ├── config/
 │   ├── content/
 │   ├── case/
-│   └── university/
+│   ├── university/
+│   ├── students/
+│   └── contacts/
 ├── portal/
-│   ├── user/
-│   ├── document/
-│   └── content/
+│   ├── profile/
+│   │   ├── sessions/
+│   │   └── two_factor/
+│   └── document/
 └── e2e/                         # 网关集成测试
 ```
 
