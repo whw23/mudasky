@@ -1,7 +1,7 @@
 """RBAC 权限管理业务逻辑层。
 
-处理权限查询、角色管理、用户权限分配等业务。
-用户与角色为一对多关系。
+处理角色管理、用户权限分配等业务。
+用户与角色为一对多关系，权限以 JSON 列表存储在角色中。
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,6 @@ from app.db.rbac.models import Role
 from app.db.user import repository as user_repo
 
 from .schemas import (
-    PermissionResponse,
     RoleCreate,
     RoleReorder,
     RoleResponse,
@@ -33,13 +32,6 @@ class RbacService:
     def __init__(self, session: AsyncSession) -> None:
         """初始化服务，注入数据库会话。"""
         self.session = session
-
-    async def list_permissions(self) -> list[PermissionResponse]:
-        """查询所有权限列表。"""
-        perms = await repository.list_permissions(self.session)
-        return [
-            PermissionResponse.model_validate(p) for p in perms
-        ]
 
     async def list_roles(self) -> list[RoleResponse]:
         """查询所有角色，包含权限和用户数量。"""
@@ -66,7 +58,7 @@ class RbacService:
     ) -> RoleResponse:
         """创建角色。
 
-        检查名称唯一性，关联指定权限。
+        检查名称唯一性，设置权限列表。
         """
         existing = await repository.get_role_by_name(
             self.session, data.name
@@ -74,16 +66,12 @@ class RbacService:
         if existing:
             raise ConflictException(message="角色名称已存在", code="ROLE_NAME_EXISTS")
 
-        permissions = await repository.get_permissions_by_ids(
-            self.session, data.permission_ids
-        )
-
         max_order = await repository.get_max_sort_order(self.session)
 
         role = Role(
             name=data.name,
             description=data.description,
-            permissions=permissions,
+            permissions=data.permissions,
             is_builtin=False,
             sort_order=max_order + 1,
         )
@@ -117,13 +105,8 @@ class RbacService:
         if data.description is not None:
             role.description = data.description
 
-        if data.permission_ids is not None:
-            permissions = (
-                await repository.get_permissions_by_ids(
-                    self.session, data.permission_ids
-                )
-            )
-            role.permissions = permissions
+        if data.permissions is not None:
+            role.permissions = data.permissions
 
         await repository.update_role(self.session, role)
         return RoleResponse.model_validate(role)

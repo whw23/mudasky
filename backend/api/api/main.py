@@ -11,7 +11,7 @@ from typing import Any
 from fastapi import FastAPI
 
 # RBAC 模型需在其他领域模块之前导入，确保关系映射正确注册
-from app.db.rbac.models import Permission, Role  # noqa: F401
+from app.db.rbac.models import Role  # noqa: F401
 import app.db.config.models  # noqa: F401
 
 from app.core.config import settings

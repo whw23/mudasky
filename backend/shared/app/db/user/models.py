@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -74,4 +74,16 @@ class User(Base):
         DateTime(timezone=True),
         onupdate=func.now(),
         nullable=True,
+    )
+    contact_status: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )
+    contact_note: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    advisor_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("user.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
     )

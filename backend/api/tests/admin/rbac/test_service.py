@@ -1,6 +1,6 @@
 """RBAC Service 单元测试。
 
-测试 RbacService 的权限查询、角色增删改、用户权限分配等业务逻辑。
+测试 RbacService 的角色增删改、用户权限分配等业务逻辑。
 使用 mock 隔离数据库层。
 """
 
@@ -10,21 +10,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.core.exceptions import ConflictException, ForbiddenException
-from app.db.rbac.models import Permission, Role
+from app.db.rbac.models import Role
 from api.admin.rbac.schemas import RoleCreate, RoleUpdate
 from api.admin.rbac.service import RbacService
-
-
-def _make_permission(
-    code: str, perm_id: str = "", description: str = ""
-) -> Permission:
-    """创建模拟 Permission 对象。"""
-    p = MagicMock(spec=Permission)
-    p.id = perm_id or f"perm-{code}"
-    p.code = code
-    p.name_key = f"{code}.name"
-    p.description = description or f"{code} 权限"
-    return p
 
 
 def _make_role(
@@ -65,9 +53,8 @@ def service() -> RbacService:
 @patch(REPO)
 async def test_list_roles(mock_repo, mock_user_repo, service):
     """查询所有角色列表，包含用户数量。"""
-    perm = _make_permission("admin/users/list")
     roles = [
-        _make_role("管理员", role_id="r1", permissions=[perm]),
+        _make_role("管理员", role_id="r1", permissions=["admin/*"]),
         _make_role("编辑", role_id="r2", permissions=[]),
     ]
     mock_repo.list_roles = AsyncMock(return_value=roles)
@@ -183,29 +170,9 @@ async def test_assign_user_role_none(mock_user_repo, service):
 
 @pytest.mark.asyncio
 @patch(REPO)
-async def test_list_permissions(mock_repo, service):
-    """返回所有权限列表。"""
-    perms = [
-        _make_permission("admin/users/list"),
-        _make_permission("admin/users/edit"),
-    ]
-    mock_repo.list_permissions = AsyncMock(return_value=perms)
-
-    result = await service.list_permissions()
-
-    assert len(result) == 2
-    assert result[0].code == "admin/users/list"
-    assert result[1].code == "admin/users/edit"
-    mock_repo.list_permissions.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-@patch(REPO)
 async def test_create_role(mock_repo, service):
-    """创建角色并关联权限，自动设置 sort_order。"""
+    """创建角色，自动设置 sort_order。"""
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
-    perm = _make_permission("admin/users/list")
-    mock_repo.get_permissions_by_ids = AsyncMock(return_value=[perm])
     mock_repo.get_max_sort_order = AsyncMock(return_value=4)
 
     async def _fake_create(session, role):
@@ -218,7 +185,7 @@ async def test_create_role(mock_repo, service):
     data = RoleCreate(
         name="测试角色",
         description="测试描述",
-        permission_ids=["perm-admin/users/list"],
+        permissions=["admin/users/*"],
     )
     result = await service.create_role(data)
 
@@ -240,7 +207,7 @@ async def test_create_role_duplicate_name(mock_repo, service):
     data = RoleCreate(
         name="已存在角色",
         description="描述",
-        permission_ids=[],
+        permissions=[],
     )
     with pytest.raises(ConflictException):
         await service.create_role(data)
@@ -253,15 +220,11 @@ async def test_update_role(mock_repo, service):
     role = _make_role("旧名称", role_id="r1")
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
-    perm = _make_permission("admin/users/edit")
-    mock_repo.get_permissions_by_ids = AsyncMock(
-        return_value=[perm]
-    )
     mock_repo.update_role = AsyncMock()
 
     data = RoleUpdate(
         name="新名称",
-        permission_ids=["perm-admin/users/edit"],
+        permissions=["admin/users/*"],
     )
     result = await service.update_role("r1", data)
 
@@ -325,16 +288,15 @@ async def test_get_user_permissions(
     )
     mock_repo.get_permissions_by_role = AsyncMock(
         return_value=[
-            "admin/users/list",
-            "admin/users/edit",
-            "admin/content/edit",
+            "admin/users/*",
+            "admin/content/*",
         ]
     )
 
     result = await service.get_user_permissions("user-1")
 
-    assert "admin/users/list" in result
-    assert "admin/content/edit" in result
+    assert "admin/users/*" in result
+    assert "admin/content/*" in result
     mock_user_repo.get_role_id.assert_awaited_once_with(
         service.session, "user-1"
     )

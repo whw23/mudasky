@@ -11,7 +11,8 @@ from app.db import Base
 
 # 导入所有模型，确保 Alembic 能检测到
 # RBAC 模型需在 User 之前导入，确保 Role 在 User 关系解析前注册
-from app.db.rbac.models import Permission, Role  # noqa: F401
+from app.db.rbac.models import Role  # noqa: F401
+from app.db.contact.models import ContactRecord  # noqa: F401
 from app.db.user.models import User  # noqa: F401
 from app.db.auth.models import SmsCode, RefreshToken  # noqa: F401
 from app.db.case.models import SuccessCase  # noqa: F401

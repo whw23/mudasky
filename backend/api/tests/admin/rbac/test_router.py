@@ -1,6 +1,6 @@
 """RBAC 权限路由集成测试。
 
-覆盖权限查询和角色 CRUD 端点。
+覆盖角色 CRUD 端点。
 """
 
 from datetime import datetime, timezone
@@ -9,18 +9,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from api.admin.rbac.router import _filter_openapi_spec
-
-
-def _make_permission(**kwargs) -> dict:
-    """创建权限响应数据。"""
-    return {
-        "id": kwargs.get("id", "perm-001"),
-        "code": kwargs.get("code", "admin.content.edit"),
-        "name_key": kwargs.get("name_key", ""),
-        "description": kwargs.get(
-            "description", "写文章"
-        ),
-    }
 
 
 def _make_role(**kwargs) -> dict:
@@ -37,35 +25,6 @@ def _make_role(**kwargs) -> dict:
         ),
         "updated_at": kwargs.get("updated_at", None),
     }
-
-
-class TestListPermissions:
-    """权限列表查询端点测试。"""
-
-    @pytest.fixture(autouse=True)
-    def _patch_service(self):
-        """模拟 RbacService。"""
-        with patch(
-            "api.admin.rbac.router.RbacService"
-        ) as mock_cls:
-            self.mock_svc = AsyncMock()
-            mock_cls.return_value = self.mock_svc
-            yield
-
-    async def test_list_permissions_success(
-        self, client, superuser_headers
-    ):
-        """可查看权限列表。"""
-        self.mock_svc.list_permissions.return_value = [
-            _make_permission()
-        ]
-        resp = await client.get(
-            "/admin/roles/permissions",
-            headers=superuser_headers,
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert len(data) == 1
 
 
 class TestListRoles:
@@ -120,7 +79,7 @@ class TestCreateRole:
             json={
                 "name": "新角色",
                 "description": "测试",
-                "permission_ids": ["perm-001"],
+                "permissions": ["admin/users/*"],
             },
             headers=superuser_headers,
         )

@@ -1,6 +1,6 @@
 """RBAC 权限管理 Pydantic 数据模型。
 
-定义权限、角色的创建、更新、响应等数据传输对象。
+定义角色的创建、更新、响应等数据传输对象。
 """
 
 from datetime import datetime
@@ -8,24 +8,13 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class PermissionResponse(BaseModel):
-    """权限信息响应。"""
-
-    id: str
-    code: str
-    name_key: str
-    description: str
-
-    model_config = {"from_attributes": True}
-
-
 class RoleCreate(BaseModel):
     """角色创建请求。"""
 
     name: str = Field(..., max_length=50, description="角色名称")
     description: str = Field("", max_length=200, description="描述")
-    permission_ids: list[str] = Field(
-        ..., description="权限 ID 列表"
+    permissions: list[str] = Field(
+        ..., description="权限路径列表"
     )
 
 
@@ -38,8 +27,8 @@ class RoleUpdate(BaseModel):
     description: str | None = Field(
         None, max_length=200, description="描述"
     )
-    permission_ids: list[str] | None = Field(
-        None, description="权限 ID 列表"
+    permissions: list[str] | None = Field(
+        None, description="权限路径列表"
     )
 
 
@@ -51,7 +40,7 @@ class RoleResponse(BaseModel):
     description: str
     is_builtin: bool = False
     sort_order: int = 0
-    permissions: list[PermissionResponse]
+    permissions: list[str] = []
     user_count: int = 0
     created_at: datetime
     updated_at: datetime | None = None

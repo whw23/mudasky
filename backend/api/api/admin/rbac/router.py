@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from api.core.dependencies import DbSession
 
 from .schemas import (
-    PermissionResponse,
     RoleCreate,
     RoleReorder,
     RoleResponse,
@@ -26,19 +25,6 @@ class MessageResponse(BaseModel):
     """通用消息响应。"""
 
     message: str
-
-
-@router.get(
-    "/permissions",
-    response_model=list[PermissionResponse],
-    summary="查询权限列表",
-)
-async def list_permissions(
-    session: DbSession,
-) -> list[PermissionResponse]:
-    """查询所有权限列表。"""
-    svc = RbacService(session)
-    return await svc.list_permissions()
 
 
 @router.get(

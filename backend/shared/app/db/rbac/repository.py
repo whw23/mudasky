@@ -1,44 +1,19 @@
 """RBAC 权限领域数据访问层。
 
-封装所有权限、角色相关的数据库操作。
+封装所有角色相关的数据库操作。
 """
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from app.db.rbac.models import Permission, Role
-
-
-async def list_permissions(
-    session: AsyncSession,
-) -> list[Permission]:
-    """查询所有权限，按 code 排序。"""
-    stmt = select(Permission).order_by(Permission.code)
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
-async def get_permissions_by_ids(
-    session: AsyncSession, perm_ids: list[str]
-) -> list[Permission]:
-    """根据 ID 列表查询权限。"""
-    if not perm_ids:
-        return []
-    stmt = select(Permission).where(Permission.id.in_(perm_ids))
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
+from app.db.rbac.models import Role
 
 
 async def list_roles(
     session: AsyncSession,
 ) -> list[Role]:
-    """查询所有角色，包含权限列表，按排序值排序。"""
-    stmt = (
-        select(Role)
-        .options(selectinload(Role.permissions))
-        .order_by(Role.sort_order)
-    )
+    """查询所有角色，按排序值排序。"""
+    stmt = select(Role).order_by(Role.sort_order)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
@@ -64,12 +39,8 @@ async def bulk_update_sort_order(session: AsyncSession, items: list[tuple[str, i
 async def get_role_by_id(
     session: AsyncSession, role_id: str
 ) -> Role | None:
-    """根据 ID 查询角色，加载权限关系。"""
-    stmt = (
-        select(Role)
-        .where(Role.id == role_id)
-        .options(selectinload(Role.permissions))
-    )
+    """根据 ID 查询角色。"""
+    stmt = select(Role).where(Role.id == role_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
@@ -112,8 +83,8 @@ async def delete_role(
 async def get_permissions_by_role(
     session: AsyncSession, role_id: str
 ) -> list[str]:
-    """根据角色 ID 查询该角色的所有权限码。"""
+    """根据角色 ID 查询该角色的权限列表。"""
     role = await get_role_by_id(session, role_id)
     if not role:
         return []
-    return [p.code for p in role.permissions]
+    return role.permissions or []
