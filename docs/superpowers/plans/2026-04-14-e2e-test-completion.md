@@ -10,6 +10,7 @@
 
 **参考文档：**
 - `docs/superpowers/specs/2026-04-14-permission-hierarchy-design.md` — 后端权限层级重构设计（含完整端点列表、权限匹配规则、角色定义），用于理解 API 结构
+- `http://localhost/api/openapi.json` — 后端 OpenAPI 规范（实时），可查询所有端点的路径、方法、参数、响应结构
 
 **前置条件：**
 - 容器完全启动并稳定运行（所有页面返回 200）
