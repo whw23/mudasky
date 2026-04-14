@@ -5,7 +5,7 @@
  * 包含搜索、表格、分页和行内展开面板。
  */
 
-import { useEffect, useState, useCallback } from "react"
+import { Fragment, useEffect, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { Pagination } from "@/components/common/Pagination"
@@ -113,9 +113,8 @@ export function UserTable() {
               </tr>
             ) : (
               users.map((user) => (
-                <>
+                <Fragment key={user.id}>
                   <tr
-                    key={user.id}
                     className={`cursor-pointer border-b transition-colors hover:bg-muted/30 ${
                       expandedUserId === user.id ? "bg-muted/20" : ""
                     }`}
@@ -157,7 +156,7 @@ export function UserTable() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))
             )}
           </tbody>
