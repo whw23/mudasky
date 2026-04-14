@@ -70,19 +70,19 @@ def service() -> ContentService:
 @pytest.mark.asyncio
 @patch(REPO)
 async def test_list_published(mock_repo, service):
-    """分页查询已发布文章，返回列表和总数。"""
+    """分页查询所有文章，返回列表和总数。"""
     articles = [_make_article(), _make_article(article_id="art-2")]
-    mock_repo.list_published = AsyncMock(
+    mock_repo.list_all_articles = AsyncMock(
         return_value=(articles, 2)
     )
 
-    result, total = await service.list_published(
+    result, total = await service.list_all_articles(
         offset=0, limit=10
     )
 
     assert total == 2
     assert len(result) == 2
-    mock_repo.list_published.assert_awaited_once_with(
+    mock_repo.list_all_articles.assert_awaited_once_with(
         service.session, 0, 10, None
     )
 
@@ -145,7 +145,7 @@ async def test_create_article_success(mock_repo, service):
 async def test_update_own_article_success(
     mock_repo, service
 ):
-    """作者更新自己的文章成功。"""
+    """管理员更新文章成功。"""
     article = _make_article(author_id="user-1")
     mock_repo.get_article_by_id = AsyncMock(
         return_value=article
@@ -155,8 +155,8 @@ async def test_update_own_article_success(
     )
 
     data = ArticleUpdate(title="新标题")
-    result = await service.update_own_article(
-        "art-1", data, "user-1"
+    result = await service.update_article(
+        "art-1", data
     )
 
     assert result is not None
@@ -168,16 +168,15 @@ async def test_update_own_article_success(
 async def test_update_own_article_forbidden(
     mock_repo, service
 ):
-    """非作者更新文章时抛出 ForbiddenException。"""
-    article = _make_article(author_id="user-1")
+    """更新不存在的文章抛出 NotFoundException。"""
     mock_repo.get_article_by_id = AsyncMock(
-        return_value=article
+        return_value=None
     )
 
     data = ArticleUpdate(title="新标题")
-    with pytest.raises(ForbiddenException):
-        await service.update_own_article(
-            "art-1", data, "other-user"
+    with pytest.raises(NotFoundException):
+        await service.update_article(
+            "nonexistent", data
         )
 
 
@@ -189,14 +188,14 @@ async def test_update_own_article_forbidden(
 async def test_delete_own_article_success(
     mock_repo, service
 ):
-    """作者删除自己的文章成功。"""
+    """管理员删除文章成功。"""
     article = _make_article(author_id="user-1")
     mock_repo.get_article_by_id = AsyncMock(
         return_value=article
     )
     mock_repo.delete_article = AsyncMock()
 
-    await service.delete_own_article("art-1", "user-1")
+    await service.delete_article_admin("art-1")
 
     mock_repo.delete_article.assert_awaited_once()
 
@@ -206,16 +205,13 @@ async def test_delete_own_article_success(
 async def test_delete_own_article_forbidden(
     mock_repo, service
 ):
-    """非作者删除文章时抛出 ForbiddenException。"""
-    article = _make_article(author_id="user-1")
+    """删除不存在的文章抛出 NotFoundException。"""
     mock_repo.get_article_by_id = AsyncMock(
-        return_value=article
+        return_value=None
     )
 
-    with pytest.raises(ForbiddenException):
-        await service.delete_own_article(
-            "art-1", "other-user"
-        )
+    with pytest.raises(NotFoundException):
+        await service.delete_article_admin("nonexistent")
 
 
 # ---- 分类：list_categories ----

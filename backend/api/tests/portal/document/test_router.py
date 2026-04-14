@@ -20,8 +20,8 @@ def _make_document(**kwargs) -> MagicMock:
     doc.original_name = kwargs.get(
         "original_name", "成绩单.pdf"
     )
-    doc.file_path = kwargs.get(
-        "file_path", "uploads/user-1/abc123.pdf"
+    doc.file_data = kwargs.get(
+        "file_data", b"fake file content"
     )
     doc.file_size = kwargs.get("file_size", 1024)
     doc.mime_type = kwargs.get(
@@ -128,11 +128,11 @@ class TestListDocuments:
             [_make_document()],
             1,
         )
-        self.mock_repo.get_user_storage_used.return_value = (
-            1024
+        self.mock_repo.get_user_storage_used = AsyncMock(
+            return_value=1024
         )
-        self.mock_user_repo.get_by_id.return_value = (
-            _make_user_model()
+        self.mock_user_repo.get_by_id = AsyncMock(
+            return_value=_make_user_model()
         )
         resp = await client.get(
             "/portal/documents/list",

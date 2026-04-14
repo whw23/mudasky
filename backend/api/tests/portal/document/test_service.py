@@ -33,7 +33,7 @@ def _make_document(
     d.user_id = user_id
     d.filename = "uuid_test.pdf"
     d.original_name = "test.pdf"
-    d.file_path = f"{user_id}/other/uuid_test.pdf"
+    d.file_data = b"fake file content"
     d.file_size = 1024
     d.mime_type = "application/pdf"
     d.category = DocumentCategory.OTHER
@@ -127,7 +127,7 @@ async def test_upload_document_duplicate(
     mock_user_repo,
     mock_doc_repo,
 ):
-    """上传重复文件时抛出 ConflictException。"""
+    """上传重复文件时返回已有文档（哈希去重）。"""
     session = AsyncMock()
     user = _make_user()
     mock_user_repo.get_by_id = AsyncMock(return_value=user)
@@ -141,10 +141,12 @@ async def test_upload_document_duplicate(
     )
 
     file = _make_upload_file()
-    with pytest.raises(ConflictException):
-        await doc_service.upload_document(
-            session, "user-1", file, DocumentCategory.OTHER
-        )
+    result = await doc_service.upload_document(
+        session, "user-1", file, DocumentCategory.OTHER
+    )
+
+    assert result == existing_doc
+    mock_doc_repo.create.assert_not_called()
 
 
 # ---- list_documents ----

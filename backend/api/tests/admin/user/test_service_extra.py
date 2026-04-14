@@ -199,25 +199,23 @@ async def test_assign_role_success(
 ):
     """分配用户角色。"""
     user = _make_user()
-    mock_user_repo.get_by_id = AsyncMock(return_value=user)
-    mock_rbac_repo.get_permissions_by_role = AsyncMock(
-        return_value=[]
-    )
     role_mock = MagicMock()
     role_mock.name = "角色1"
     mock_rbac_repo.get_role_by_id = AsyncMock(
         return_value=role_mock
     )
+    mock_user_repo.set_role_id = AsyncMock()
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
+        return_value=[]
+    )
 
-    with patch("api.admin.user.service.RbacService") as MockRbac:
-        mock_rbac_svc = AsyncMock()
-        MockRbac.return_value = mock_rbac_svc
-
-        result = await service.assign_role(
-            "user-1", "r1"
-        )
+    result = await service.assign_role(
+        "user-1", "r1"
+    )
 
     assert result.id == "user-1"
+    mock_user_repo.set_role_id.assert_awaited_once()
 
 
 @patch(RBAC_REPO)
@@ -226,16 +224,18 @@ async def test_assign_role_user_not_found(
     mock_user_repo, mock_rbac_repo, service
 ):
     """分配角色时用户不存在。"""
+    role_mock = MagicMock()
+    role_mock.name = "角色1"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
+    )
+    mock_user_repo.set_role_id = AsyncMock()
     mock_user_repo.get_by_id = AsyncMock(return_value=None)
 
-    with patch("api.admin.user.service.RbacService") as MockRbac:
-        mock_rbac_svc = AsyncMock()
-        MockRbac.return_value = mock_rbac_svc
-
-        with pytest.raises(NotFoundException):
-            await service.assign_role(
-                "nonexistent", "r1"
-            )
+    with pytest.raises(NotFoundException):
+        await service.assign_role(
+            "nonexistent", "r1"
+        )
 
 
 # ---- force_logout ----

@@ -234,11 +234,9 @@ class TestOpenApiSpec:
     """OpenAPI spec 端点测试。"""
 
     @pytest.fixture(autouse=True)
-    def _patch_get_openapi_spec(self):
-        """模拟 get_openapi_spec 函数。"""
+    def _patch_filter_openapi_spec(self):
+        """模拟 _filter_openapi_spec 函数。"""
         mock_schema = {
-            "openapi": "3.1.0",
-            "info": {"title": "Test API", "version": "0.1.0"},
             "paths": {
                 "/admin/roles/list": {
                     "get": {"summary": "查询角色列表"}
@@ -246,7 +244,7 @@ class TestOpenApiSpec:
             },
         }
         with patch(
-            "api.admin.rbac.router.get_openapi_spec",
+            "api.admin.rbac.router._filter_openapi_spec",
             return_value=mock_schema,
         ) as mock_fn:
             self.mock_fn = mock_fn

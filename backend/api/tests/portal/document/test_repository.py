@@ -31,7 +31,7 @@ async def test_create_document(session):
         user_id="user-1",
         filename="test.pdf",
         original_name="test.pdf",
-        file_path="user-1/docs/test.pdf",
+        file_data=b"test file content",
         file_size=1024,
         mime_type="application/pdf",
         file_hash="abc123",

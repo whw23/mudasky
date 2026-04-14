@@ -243,7 +243,7 @@ class TestAdminArticles:
             0,
         )
         resp = await client.get(
-            "/admin/content/list",
+            "/admin/articles/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -256,7 +256,7 @@ class TestAdminArticles:
             _make_article()
         )
         resp = await client.post(
-            "/admin/content/edit/article-001",
+            "/admin/articles/edit/article-001",
             json={"status": "published"},
             headers=superuser_headers,
         )
@@ -270,7 +270,7 @@ class TestAdminArticles:
             None
         )
         resp = await client.post(
-            "/admin/content/delete/article-001",
+            "/admin/articles/delete/article-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 204
