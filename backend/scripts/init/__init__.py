@@ -6,16 +6,16 @@
 import asyncio
 import logging
 
-from app.auth.models import RefreshToken, SmsCode  # noqa: F401
-from app.case.models import SuccessCase  # noqa: F401
-from app.config.models import SystemConfig  # noqa: F401
-from app.content.models import Article, Category  # noqa: F401
-from app.core.database import Base, async_session_factory, engine
-from app.document.models import Document  # noqa: F401
-from app.rbac.models import Permission, Role  # noqa: F401
-from app.university.models import University  # noqa: F401
-from app.user.models import User  # noqa: F401
-from app.worker.models import Task  # noqa: F401
+from app.db import Base, async_session_factory, engine
+from app.db.auth.models import RefreshToken, SmsCode  # noqa: F401
+from app.db.case.models import SuccessCase  # noqa: F401
+from app.db.config.models import SystemConfig  # noqa: F401
+from app.db.content.models import Article, Category  # noqa: F401
+from app.db.document.models import Document  # noqa: F401
+from app.db.rbac.models import Permission, Role  # noqa: F401
+from app.db.university.models import University  # noqa: F401
+from app.db.user.models import User  # noqa: F401
+from app.db.worker.models import Task  # noqa: F401
 
 from .seed_config import init_system_config
 from .seed_content import init_categories

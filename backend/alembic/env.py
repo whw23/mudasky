@@ -7,19 +7,19 @@ from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import settings
-from app.core.database import Base
+from app.db import Base
 
 # 导入所有模型，确保 Alembic 能检测到
 # RBAC 模型需在 User 之前导入，确保 Role 在 User 关系解析前注册
-from app.rbac.models import Permission, Role  # noqa: F401
-from app.user.models import User  # noqa: F401
-from app.auth.models import SmsCode, RefreshToken  # noqa: F401
-from app.case.models import SuccessCase  # noqa: F401
-from app.content.models import Article, Category  # noqa: F401
-from app.document.models import Document  # noqa: F401
-from app.worker.models import Task  # noqa: F401
-from app.config.models import SystemConfig  # noqa: F401
-from app.university.models import University  # noqa: F401
+from app.db.rbac.models import Permission, Role  # noqa: F401
+from app.db.user.models import User  # noqa: F401
+from app.db.auth.models import SmsCode, RefreshToken  # noqa: F401
+from app.db.case.models import SuccessCase  # noqa: F401
+from app.db.content.models import Article, Category  # noqa: F401
+from app.db.document.models import Document  # noqa: F401
+from app.db.worker.models import Task  # noqa: F401
+from app.db.config.models import SystemConfig  # noqa: F401
+from app.db.university.models import University  # noqa: F401
 
 config = context.config
 

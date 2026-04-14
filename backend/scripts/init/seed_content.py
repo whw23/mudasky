@@ -4,7 +4,7 @@ import logging
 
 from sqlalchemy import select
 
-from app.content.models import Category
+from app.db.content.models import Category
 
 logger = logging.getLogger(__name__)
 

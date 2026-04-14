@@ -4,8 +4,8 @@ import logging
 
 from sqlalchemy import select
 
-from app.rbac.models import Permission, Role
-from app.rbac.tables import role_permission
+from app.db.rbac.models import Permission, Role
+from app.db.rbac.tables import role_permission
 
 logger = logging.getLogger(__name__)
 
