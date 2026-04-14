@@ -4,7 +4,6 @@
 """
 
 import logging
-import shutil
 
 import pyotp
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +22,6 @@ from app.utils.crypto import decrypt_password
 from app.utils.security import hash_password
 
 # TODO: Task 12 - BYTEA migration
-# from app.core.storage import UPLOAD_BASE_DIR
 
 from .schemas import (
     PasswordChange,
@@ -220,11 +218,6 @@ class UserService:
                     code="SUPERUSER_CANNOT_BE_DELETED",
                 )
 
-        # 收集磁盘文件路径（事务后删除）
-        file_paths = await doc_repo.list_file_paths_by_user(
-            self.session, user_id
-        )
-
         # 事务内按依赖顺序删除数据库记录
         await auth_repo.delete_refresh_tokens_by_user(
             self.session, user_id
@@ -236,10 +229,3 @@ class UserService:
         await doc_repo.delete_by_user(self.session, user_id)
         await repository.delete(self.session, user)
         await self.session.commit()
-
-        # TODO: Task 12 - BYTEA migration
-        # 事务成功后删除磁盘文件
-        # user_dir = UPLOAD_BASE_DIR / user_id
-        # if user_dir.exists():
-        #     shutil.rmtree(user_dir, ignore_errors=True)
-        #     logger.info("用户文件目录已删除: %s", user_dir)

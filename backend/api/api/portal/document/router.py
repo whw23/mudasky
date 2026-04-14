@@ -4,7 +4,7 @@
 """
 
 from fastapi import APIRouter, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 
 from api.core.dependencies import CurrentUserId, DbSession
 from api.core.pagination import PaginationParams
@@ -90,12 +90,15 @@ async def download_document(
     doc_id: str,
     user_id: CurrentUserId,
     session: DbSession,
-) -> JSONResponse:
-    """下载文档文件流。"""
-    # TODO: Task 12 - BYTEA migration
-    return JSONResponse(
-        status_code=501,
-        content={"detail": "文件下载功能待 BYTEA 迁移后实现"},
+) -> Response:
+    """从数据库读取文件二进制数据并返回。"""
+    doc = await get_document(session, doc_id, user_id)
+    return Response(
+        content=doc.file_data,
+        media_type=doc.mime_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{doc.original_name}"',
+        },
     )
 
 

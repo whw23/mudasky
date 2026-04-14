@@ -4,12 +4,10 @@
 """
 
 import logging
-import shutil
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ForbiddenException, NotFoundException
-from app.core.storage import UPLOAD_BASE_DIR
 from app.db.auth import repository as auth_repo
 from app.db.document import repository as doc_repo
 from app.db.rbac import repository as rbac_repo
@@ -177,11 +175,6 @@ class AdminService:
                     code="SUPERUSER_CANNOT_BE_DELETED",
                 )
 
-        # 收集磁盘文件路径（事务后删除）
-        file_paths = await doc_repo.list_file_paths_by_user(
-            self.session, user_id
-        )
-
         # 事务内按依赖顺序删除数据库记录
         await auth_repo.delete_refresh_tokens_by_user(
             self.session, user_id
@@ -193,11 +186,6 @@ class AdminService:
         await doc_repo.delete_by_user(self.session, user_id)
         await user_repo.delete(self.session, user)
         await self.session.commit()
-
-        # 事务成功后删除磁盘文件
-        user_dir = UPLOAD_BASE_DIR / user_id
-        if user_dir.exists():
-            shutil.rmtree(user_dir, ignore_errors=True)
 
     async def get_user_model(
         self, user_id: str

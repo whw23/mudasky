@@ -1,6 +1,7 @@
 """Portal 文档领域业务逻辑层。
 
 处理文件上传、去重、配额检查、文档管理等业务。
+文件存储在 PostgreSQL BYTEA 列中。
 """
 
 import hashlib
@@ -9,23 +10,23 @@ import logging
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.exceptions import (
-    ConflictException,
     ForbiddenException,
     NotFoundException,
+    QuotaExceededException,
 )
 from app.db.document import repository
 from app.db.document.models import Document, DocumentCategory
 from app.db.user import repository as user_repo
 
-# TODO: Task 12 - BYTEA migration
-# from app.core.storage import (
-#     delete_file,
-#     save_file,
-#     validate_storage_quota,
-# )
-
 logger = logging.getLogger(__name__)
+
+
+def _validate_storage_quota(used: int, file_size: int, quota: int) -> None:
+    """校验用户存储配额是否充足。"""
+    if used + file_size > quota:
+        raise QuotaExceededException(message="存储配额不足", code="STORAGE_QUOTA_EXCEEDED")
 
 
 async def upload_document(
@@ -34,21 +35,52 @@ async def upload_document(
     file: UploadFile,
     category: DocumentCategory,
 ) -> Document:
-    """上传文件。
+    """上传文件，存入 PostgreSQL BYTEA。
 
-    包含文件大小检查、配额检查、哈希去重、磁盘保存。
+    包含文件大小检查、配额检查、哈希去重。
     """
-    # TODO: Task 12 - BYTEA migration
-    raise NotImplementedError("文件上传功能待 BYTEA 迁移后实现")
+    data = await file.read()
+    file_size = len(data)
+
+    # 校验单文件大小
+    if file_size > settings.max_upload_size_bytes:
+        raise QuotaExceededException(
+            message=f"文件大小超过限制（{settings.MAX_UPLOAD_SIZE_MB}MB）",
+            code="FILE_SIZE_EXCEEDED",
+        )
+
+    # 校验存储配额
+    user = await user_repo.get_by_id(session, user_id)
+    if not user:
+        raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
+    storage_used = await repository.get_user_storage_used(session, user_id)
+    _validate_storage_quota(storage_used, file_size, user.storage_quota)
+
+    # SHA-256 哈希去重
+    file_hash = hashlib.sha256(data).hexdigest()
+    existing = await repository.get_by_hash(session, file_hash, user_id)
+    if existing:
+        return existing
+
+    original_name = file.filename or "untitled"
+    doc = Document(
+        user_id=user_id,
+        filename=original_name,
+        original_name=original_name,
+        file_data=data,
+        file_size=file_size,
+        mime_type=file.content_type or "application/octet-stream",
+        category=category,
+        file_hash=file_hash,
+    )
+    return await repository.create(session, doc)
 
 
 async def list_documents(
     session: AsyncSession, user_id: str, offset: int, limit: int
 ) -> tuple[list[Document], int]:
     """分页查询用户的文档列表。"""
-    return await repository.list_by_user(
-        session, user_id, offset, limit
-    )
+    return await repository.list_by_user(session, user_id, offset, limit)
 
 
 async def get_document(
@@ -66,9 +98,7 @@ async def get_document(
 async def delete_document(
     session: AsyncSession, doc_id: str, user_id: str
 ) -> None:
-    """删除文档，检查所有权，同时删除数据库记录。"""
+    """删除文档，检查所有权。"""
     doc = await get_document(session, doc_id, user_id)
-    # TODO: Task 12 - BYTEA migration
-    # await delete_file(doc.file_path)
     await repository.delete(session, doc)
     logger.info("文档已删除: id=%s, user=%s", doc_id, user_id)

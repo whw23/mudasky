@@ -7,7 +7,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, Integer, String, func
+from sqlalchemy import DateTime, Enum, Integer, LargeBinary, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -45,8 +45,8 @@ class Document(Base):
     original_name: Mapped[str] = mapped_column(
         String(255), nullable=False
     )
-    file_path: Mapped[str] = mapped_column(
-        String(500), nullable=False
+    file_data: Mapped[bytes] = mapped_column(
+        LargeBinary, nullable=False, doc="文件二进制数据"
     )
     file_size: Mapped[int] = mapped_column(
         Integer, nullable=False

@@ -75,17 +75,6 @@ async def list_by_user(
     return docs, total
 
 
-async def list_file_paths_by_user(
-    session: AsyncSession, user_id: str
-) -> list[str]:
-    """获取用户所有文档的文件路径。"""
-    stmt = select(Document.file_path).where(
-        Document.user_id == user_id
-    )
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
 async def delete_by_user(
     session: AsyncSession, user_id: str
 ) -> None:
