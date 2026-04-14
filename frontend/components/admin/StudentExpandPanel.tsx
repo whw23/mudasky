@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,6 +31,7 @@ interface StudentExpandPanelProps {
 
 /** 学生详情行内展开面板 */
 export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps) {
+  const t = useTranslations("AdminStudents")
 
   const [student, setStudent] = useState<Student | null>(null)
   const [documents, setDocuments] = useState<Document[]>([])
@@ -51,7 +53,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
       setContactNote(data.contact_note ?? "")
       setAdvisorId(data.advisor_id ?? "")
     } catch {
-      toast.error("加载学生信息失败")
+      toast.error(t("fetchError"))
     }
   }, [userId])
 
@@ -81,7 +83,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
       toast.success(successMsg)
       onUpdate()
     } catch (err) {
-      toast.error("操作失败")
+      toast.error(t("operationError"))
     } finally {
       setSaving(false)
     }
@@ -95,7 +97,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
         is_active: isActive,
         contact_note: contactNote,
       }),
-      "保存成功",
+      t("saveSuccess"),
     )
   }
 
@@ -106,7 +108,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
         user_id: userId,
         advisor_id: advisorId || null,
       }),
-      "分配顾问成功",
+      t("assignAdvisorSuccess"),
     )
   }
 
@@ -115,11 +117,11 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
     setSaving(true)
     try {
       await api.post("/admin/students/list/detail/downgrade", { user_id: userId })
-      toast.success("降级成功")
+      toast.success(t("downgradeSuccess"))
       setShowDowngradeDialog(false)
       onUpdate()
     } catch (err) {
-      toast.error("操作失败")
+      toast.error(t("operationError"))
     } finally {
       setSaving(false)
     }
@@ -145,7 +147,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
   if (!student) {
     return (
       <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-        {"加载中..."}
+        {t("loading")}
       </div>
     )
   }
@@ -156,16 +158,16 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
         {/* 基本信息 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {"基本信息"}
+            {t("basicInfo")}
           </h3>
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-            <span className="text-muted-foreground">{"用户名"}</span>
+            <span className="text-muted-foreground">{t("col_username")}</span>
             <span>{student.username ?? "-"}</span>
-            <span className="text-muted-foreground">{"手机号"}</span>
+            <span className="text-muted-foreground">{t("col_phone")}</span>
             <span>{student.phone ?? "-"}</span>
-            <span className="text-muted-foreground">{"状态"}</span>
-            <span>{student.is_active ? "已激活" : "已禁用"}</span>
-            <span className="text-muted-foreground">{"创建时间"}</span>
+            <span className="text-muted-foreground">{t("col_status")}</span>
+            <span>{student.is_active ? t("statusActive") : t("statusInactive")}</span>
+            <span className="text-muted-foreground">{t("col_createdAt")}</span>
             <span>{formatDate(student.created_at)}</span>
           </div>
         </section>
@@ -173,7 +175,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
         {/* 编辑区域 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {"编辑"}
+            {t("edit")}
           </h3>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -182,10 +184,10 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
               onChange={(e) => setIsActive(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300"
             />
-            {"已激活"}
+            {t("statusActive")}
           </label>
           <div className="space-y-1">
-            <label className="text-sm text-muted-foreground">{"备注"}</label>
+            <label className="text-sm text-muted-foreground">{t("note")}</label>
             <textarea
               value={contactNote}
               onChange={(e) => setContactNote(e.target.value)}
@@ -194,42 +196,42 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
             />
           </div>
           <Button size="sm" disabled={saving} onClick={handleSaveEdit}>
-            {"保存"}
+            {t("save")}
           </Button>
         </section>
 
         {/* 顾问分配 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {"分配顾问"}
+            {t("assignAdvisor")}
           </h3>
           <Input
-            placeholder="顾问 ID"
+            placeholder={t("advisorIdPlaceholder")}
             value={advisorId}
             onChange={(e) => setAdvisorId(e.target.value)}
           />
           <Button size="sm" disabled={saving} onClick={handleAssignAdvisor}>
-            {"确认"}
+            {t("confirm")}
           </Button>
         </section>
 
         {/* 文档列表 */}
         <section className="space-y-2 sm:col-span-2 lg:col-span-3">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {"文件列表"}
+            {t("fileList")}
           </h3>
           {documents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{"暂无文件"}</p>
+            <p className="text-sm text-muted-foreground">{t("noFiles")}</p>
           ) : (
             <div className="overflow-x-auto rounded border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/30">
-                    <th className="px-3 py-2 text-left font-medium">{"文件名"}</th>
-                    <th className="px-3 py-2 text-left font-medium">{"分类"}</th>
-                    <th className="px-3 py-2 text-left font-medium">{"大小"}</th>
-                    <th className="px-3 py-2 text-left font-medium">{"创建时间"}</th>
-                    <th className="px-3 py-2 text-left font-medium">{"操作"}</th>
+                    <th className="px-3 py-2 text-left font-medium">{t("col_fileName")}</th>
+                    <th className="px-3 py-2 text-left font-medium">{t("col_category")}</th>
+                    <th className="px-3 py-2 text-left font-medium">{t("col_size")}</th>
+                    <th className="px-3 py-2 text-left font-medium">{t("col_createdAt")}</th>
+                    <th className="px-3 py-2 text-left font-medium">{t("col_actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,7 +248,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
                           className="h-auto p-0"
                           onClick={() => handleDownloadDoc(doc.id)}
                         >
-                          {"下载"}
+                          {t("download")}
                         </Button>
                       </td>
                     </tr>
@@ -262,16 +264,16 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
         {/* 降级操作 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {"降为访客"}
+            {t("downgrade")}
           </h3>
-          <p className="text-xs text-muted-foreground">{"将学生降级为访客角色，此操作不可撤销"}</p>
+          <p className="text-xs text-muted-foreground">{t("downgradeDesc")}</p>
           <Button
             variant="destructive"
             size="sm"
             disabled={saving}
             onClick={() => setShowDowngradeDialog(true)}
           >
-            {"降为访客"}
+            {t("downgrade")}
           </Button>
         </section>
       </div>
@@ -280,17 +282,17 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
       <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{"确认降级"}</AlertDialogTitle>
-            <AlertDialogDescription>{"确定要将该学生降级为访客吗？此操作不可撤销。"}</AlertDialogDescription>
+            <AlertDialogTitle>{t("confirmDowngradeTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("confirmDowngradeDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{"取消"}</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={handleDowngrade}
               disabled={saving}
             >
-              {"确认降级"}
+              {t("confirmDowngrade")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

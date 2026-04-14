@@ -6,6 +6,7 @@
  */
 
 import { Fragment, useEffect, useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { Pagination } from "@/components/common/Pagination"
 import { StudentExpandPanel } from "./StudentExpandPanel"
@@ -15,6 +16,7 @@ import type { Student, PaginatedResponse } from "@/types"
 
 /** 学生管理列表 */
 export function StudentTable() {
+  const t = useTranslations("AdminStudents")
   const pathname = usePathname()
 
   const [students, setStudents] = useState<Student[]>([])
@@ -86,10 +88,10 @@ export function StudentTable() {
             onChange={(e) => setMyStudents(e.target.checked)}
             className="h-4 w-4 rounded border-gray-300"
           />
-          {"仅我的学生"}
+          {t("filterMyStudents")}
         </label>
         <Input
-          placeholder="顾问 ID"
+          placeholder={t("advisorIdPlaceholder")}
           value={filterAdvisor}
           onChange={(e) => setFilterAdvisor(e.target.value)}
           className="max-w-xs"
@@ -101,25 +103,25 @@ export function StudentTable() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">{"用户名"}</th>
-              <th className="px-4 py-3 text-left font-medium">{"手机号"}</th>
-              <th className="px-4 py-3 text-left font-medium">{"状态"}</th>
-              <th className="px-4 py-3 text-left font-medium">{"联系状态"}</th>
-              <th className="px-4 py-3 text-left font-medium">{"顾问"}</th>
-              <th className="px-4 py-3 text-left font-medium">{"创建时间"}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_username")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_phone")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_status")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_contactStatus")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_advisor")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_createdAt")}</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  {"加载中..."}
+                  {t("loading")}
                 </td>
               </tr>
             ) : students.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  {"暂无数据"}
+                  {t("noData")}
                 </td>
               </tr>
             ) : (
@@ -141,7 +143,7 @@ export function StudentTable() {
                             : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
                         }`}
                       >
-                        {student.is_active ? "已激活" : "已禁用"}
+                        {student.is_active ? t("statusActive") : t("statusInactive")}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -181,7 +183,7 @@ export function StudentTable() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {`共 ${total} 条`}
+            {t("totalCount", { count: total })}
           </span>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>

@@ -6,6 +6,7 @@
  */
 
 import { Fragment, useEffect, useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Pagination } from "@/components/common/Pagination"
 import { ContactExpandPanel } from "./ContactExpandPanel"
 import api from "@/lib/api"
@@ -18,16 +19,17 @@ type ContactUser = User & {
   contact_note: string | null
 }
 
-/** 联系状态中文映射 */
-const STATUS_LABELS: Record<string, string> = {
-  new: "新",
-  contacted: "已联系",
-  interested: "有意向",
-  not_interested: "无意向",
+/** 联系状态 → 翻译键后缀映射 */
+const STATUS_KEY_MAP: Record<string, string> = {
+  new: "New",
+  contacted: "Contacted",
+  interested: "Interested",
+  not_interested: "NotInterested",
 }
 
 /** 联系人管理列表 */
 export function ContactTable() {
+  const t = useTranslations("AdminContacts")
   const pathname = usePathname()
 
   const [contacts, setContacts] = useState<ContactUser[]>([])
@@ -96,24 +98,24 @@ export function ContactTable() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">用户名</th>
-              <th className="px-4 py-3 text-left font-medium">手机号</th>
-              <th className="px-4 py-3 text-left font-medium">联系状态</th>
-              <th className="px-4 py-3 text-left font-medium">备注</th>
-              <th className="px-4 py-3 text-left font-medium">创建时间</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_username")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_phone")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_contactStatus")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_note")}</th>
+              <th className="px-4 py-3 text-left font-medium">{t("col_createdAt")}</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  加载中...
+                  {t("loading")}
                 </td>
               </tr>
             ) : contacts.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  暂无数据
+                  {t("noData")}
                 </td>
               </tr>
             ) : (
@@ -131,7 +133,7 @@ export function ContactTable() {
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${getStatusStyle(contact.contact_status ?? null)}`}
                       >
-                        {STATUS_LABELS[contact.contact_status ?? "new"] ?? "新"}
+                        {t(`status${STATUS_KEY_MAP[contact.contact_status ?? "new"] ?? "New"}`)}
                       </span>
                     </td>
                     <td className="px-4 py-3 max-w-xs truncate text-muted-foreground">
@@ -162,7 +164,7 @@ export function ContactTable() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {`共 ${total} 条`}
+            {t("totalCount", { count: total })}
           </span>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
