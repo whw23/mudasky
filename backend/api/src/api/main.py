@@ -9,7 +9,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 
 # RBAC 模型需在其他领域模块之前导入，确保关系映射正确注册
 from app.rbac.models import Permission, Role  # noqa: F401
@@ -138,29 +138,35 @@ if settings.DEBUG:
 
     api.openapi = custom_openapi
 
-# Auth
+# Auth（独立，不挂在 panel 下）
 api.include_router(auth_router)
 
-# Public
-api.include_router(public_config_router)
-api.include_router(public_content_router)
-api.include_router(case_router)
-api.include_router(university_public_router)
+# Public（/public 前缀）
+public = APIRouter(prefix="/public")
+public.include_router(public_config_router)
+public.include_router(public_content_router)
+public.include_router(case_router)
+public.include_router(university_public_router)
+api.include_router(public)
 
-# Admin
-api.include_router(admin_general_settings_router)
-api.include_router(admin_web_settings_router)
-api.include_router(admin_router)
-api.include_router(rbac_router)
-api.include_router(admin_category_router)
-api.include_router(admin_content_router)
-api.include_router(case_admin_router)
-api.include_router(university_admin_router)
+# Admin（/admin 前缀）
+admin = APIRouter(prefix="/admin")
+admin.include_router(admin_general_settings_router)
+admin.include_router(admin_web_settings_router)
+admin.include_router(admin_router)
+admin.include_router(rbac_router)
+admin.include_router(admin_category_router)
+admin.include_router(admin_content_router)
+admin.include_router(case_admin_router)
+admin.include_router(university_admin_router)
+api.include_router(admin)
 
-# Portal
-api.include_router(user_router)
-api.include_router(document_router)
-api.include_router(portal_article_router)
+# Portal（/portal 前缀）
+portal = APIRouter(prefix="/portal")
+portal.include_router(user_router)
+portal.include_router(document_router)
+portal.include_router(portal_article_router)
+api.include_router(portal)
 
 
 @api.get("/health", summary="健康检查")

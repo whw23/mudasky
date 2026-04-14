@@ -26,11 +26,11 @@ from app.core.pagination import (
 )
 
 admin_category_router = APIRouter(
-    prefix="/admin/categories", tags=["admin-category"]
+    prefix="/categories", tags=["admin-category"]
 )
 
 admin_content_router = APIRouter(
-    prefix="/admin/content", tags=["admin-content"]
+    prefix="/articles", tags=["admin-articles"]
 )
 
 

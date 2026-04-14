@@ -24,11 +24,11 @@ from app.core.pagination import (
 )
 
 public_content_router = APIRouter(
-    prefix="/public/content", tags=["content"]
+    prefix="/content", tags=["content"]
 )
 
 portal_article_router = APIRouter(
-    prefix="/portal/articles", tags=["portal-article"]
+    prefix="/articles", tags=["portal-article"]
 )
 
 

@@ -22,7 +22,7 @@ from app.university.service import UniversityService
 # ---- 公开路由 ----
 
 public_router = APIRouter(
-    prefix="/public/university", tags=["universities"]
+    prefix="/universities", tags=["universities"]
 )
 
 
@@ -151,7 +151,7 @@ async def get_university(
 # ---- 管理员路由 ----
 
 admin_router = APIRouter(
-    prefix="/admin/universities",
+    prefix="/universities",
     tags=["admin-universities"],
 )
 

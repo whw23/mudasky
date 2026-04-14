@@ -17,6 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { SuccessCase } from "@/types"
 
 interface CaseDialogProps {
@@ -30,6 +31,7 @@ interface CaseDialogProps {
 /** 成功案例创建/编辑对话框 */
 export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogProps) {
   const t = useTranslations("AdminCases")
+  const pathname = usePathname()
   const isEdit = !!successCase
 
   const [studentName, setStudentName] = useState("")
@@ -89,9 +91,9 @@ export function CaseDialog({ successCase, open, onClose, onSave }: CaseDialogPro
         sort_order: sortOrder,
       }
       if (isEdit) {
-        await api.post(`/admin/cases/edit/${successCase.id}`, payload)
+        await api.post(`${pathname}/edit/${successCase.id}`, payload)
       } else {
-        await api.post("/admin/cases/create", payload)
+        await api.post(`${pathname}/create`, payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button"
 import { Pagination } from "@/components/common/Pagination"
 import { CaseDialog } from "@/components/admin/CaseDialog"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { SuccessCase, PaginatedResponse } from "@/types"
 
 /** 管理员成功案例列表 */
 export function CaseTable() {
   const t = useTranslations("AdminCases")
+  const pathname = usePathname()
 
   const [cases, setCases] = useState<SuccessCase[]>([])
   const [total, setTotal] = useState(0)
@@ -31,7 +33,7 @@ export function CaseTable() {
     setLoading(true)
     try {
       const { data } = await api.get<PaginatedResponse<SuccessCase>>(
-        "/admin/case/list",
+        `${pathname}/list`,
         { params: { page, page_size: 20 } },
       )
       setCases(data.items)
@@ -63,7 +65,7 @@ export function CaseTable() {
   /** 切换推荐状态 */
   const toggleFeatured = async (c: SuccessCase) => {
     try {
-      await api.post(`/admin/cases/edit/${c.id}`, {
+      await api.post(`${pathname}/edit/${c.id}`, {
         is_featured: !c.is_featured,
       })
       toast.success(t(c.is_featured ? "unfeaturedSuccess" : "featuredSuccess"))
@@ -77,7 +79,7 @@ export function CaseTable() {
   const handleDelete = async (c: SuccessCase) => {
     if (!confirm(t("deleteConfirm", { name: c.student_name }))) return
     try {
-      await api.post(`/admin/cases/delete/${c.id}`)
+      await api.post(`${pathname}/delete/${c.id}`)
       toast.success(t("deleteSuccess"))
       fetchCases()
     } catch {

@@ -34,11 +34,11 @@ PERMISSIONS = [
     ("admin/users/reset-password", "permission.admin.users.reset-password", "重置用户密码"),
     ("admin/users/assign-role", "permission.admin.users.assign-role", "分配用户角色"),
     ("admin/users/force-logout", "permission.admin.users.force-logout", "强制下线用户"),
-    # 管理后台 - 内容管理
-    ("admin/content/list", "permission.admin.content.list", "查看内容列表"),
-    ("admin/content/create", "permission.admin.content.create", "创建内容"),
-    ("admin/content/edit", "permission.admin.content.edit", "编辑内容"),
-    ("admin/content/delete", "permission.admin.content.delete", "删除内容"),
+    # 管理后台 - 文章管理
+    ("admin/articles/list", "permission.admin.articles.list", "查看文章列表"),
+    ("admin/articles/create", "permission.admin.articles.create", "创建文章"),
+    ("admin/articles/edit", "permission.admin.articles.edit", "编辑文章"),
+    ("admin/articles/delete", "permission.admin.articles.delete", "删除文章"),
     # 管理后台 - 分类管理
     ("admin/categories/list", "permission.admin.categories.list", "查看分类列表"),
     ("admin/categories/create", "permission.admin.categories.create", "创建分类"),
@@ -76,7 +76,7 @@ PERMISSIONS = [
     ("admin/*", "permission.admin.all", "所有管理后台权限"),
     ("portal/*", "permission.portal.all", "所有用户面板权限"),
     ("admin/users/*", "permission.admin.users.all", "所有用户管理权限"),
-    ("admin/content/*", "permission.admin.content.all", "所有内容管理权限"),
+    ("admin/articles/*", "permission.admin.articles.all", "所有文章管理权限"),
     ("admin/categories/*", "permission.admin.categories.all", "所有分类管理权限"),
     ("admin/cases/*", "permission.admin.cases.all", "所有案例管理权限"),
     ("admin/universities/*", "permission.admin.universities.all", "所有院校管理权限"),
@@ -95,7 +95,7 @@ PERMISSIONS = [
 ROLES = [
     ("superuser", "超级管理员", ["*"], 0),
     ("website_admin", "网站管理员", ["admin/*", "portal/*"], 1),
-    ("student_advisor", "留学顾问", ["admin/users/*", "admin/content/*", "admin/cases/*", "portal/*"], 2),
+    ("student_advisor", "留学顾问", ["admin/users/*", "admin/articles/*", "admin/cases/*", "portal/*"], 2),
     ("student", "学员", ["portal/*"], 3),
     ("visitor", "访客", ["portal/profile/view"], 4),
 ]

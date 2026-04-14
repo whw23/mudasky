@@ -10,15 +10,15 @@ from app.core.dependencies import DbSession
 public_config_router = APIRouter(tags=["config"])
 
 admin_general_settings_router = APIRouter(
-    prefix="/admin/general-settings", tags=["admin-settings"]
+    prefix="/general-settings", tags=["admin-settings"]
 )
 
 admin_web_settings_router = APIRouter(
-    prefix="/admin/web-settings", tags=["admin-settings"]
+    prefix="/web-settings", tags=["admin-settings"]
 )
 
 
-@public_config_router.get("/public/config/{key}", summary="获取单个配置值")
+@public_config_router.get("/config/{key}", summary="获取单个配置值")
 async def get_config(
     key: str,
     session: DbSession,
@@ -37,7 +37,7 @@ async def get_config(
     return config
 
 
-@public_config_router.get("/public/panel-config", summary="获取面板页面配置")
+@public_config_router.get("/panel-config", summary="获取面板页面配置")
 async def get_panel_config(
     session: DbSession,
     response: Response,

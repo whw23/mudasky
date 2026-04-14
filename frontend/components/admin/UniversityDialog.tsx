@@ -17,6 +17,7 @@ import {
   Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { University } from "@/types"
 
 interface UniversityDialogProps {
@@ -28,6 +29,7 @@ interface UniversityDialogProps {
 
 /** 合作院校创建/编辑对话框 */
 export function UniversityDialog({ university, open, onClose, onSave }: UniversityDialogProps) {
+  const pathname = usePathname()
   const t = useTranslations("AdminUniversities")
   const isEdit = !!university
 
@@ -107,9 +109,9 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
         sort_order: sortOrder,
       }
       if (isEdit) {
-        await api.post(`/admin/universities/edit/${university.id}`, payload)
+        await api.post(`${pathname}/edit/${university.id}`, payload)
       } else {
-        await api.post("/admin/universities/create", payload)
+        await api.post(`${pathname}/create`, payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

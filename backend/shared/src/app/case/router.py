@@ -15,7 +15,7 @@ from app.core.pagination import (
     build_paginated,
 )
 
-router = APIRouter(prefix="/public/case", tags=["cases"])
+router = APIRouter(prefix="/cases", tags=["cases"])
 
 
 @router.get(

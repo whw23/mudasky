@@ -11,11 +11,13 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { CategoryDialog } from "@/components/admin/CategoryDialog"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { Category } from "@/types"
 
 /** 分类管理列表 */
 export function CategoryTable() {
   const t = useTranslations("AdminCategories")
+  const pathname = usePathname()
 
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
@@ -26,7 +28,7 @@ export function CategoryTable() {
   const fetchCategories = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await api.get<Category[]>("/admin/categories/list")
+      const { data } = await api.get<Category[]>(`${pathname}/list`)
       setCategories(data)
     } catch {
       toast.error(t("fetchError"))
@@ -55,7 +57,7 @@ export function CategoryTable() {
   const handleDelete = async (category: Category) => {
     if (!confirm(t("deleteConfirm", { name: category.name }))) return
     try {
-      await api.post(`/admin/categories/delete/${category.id}`)
+      await api.post(`${pathname}/delete/${category.id}`)
       toast.success(t("deleteSuccess"))
       fetchCategories()
     } catch {

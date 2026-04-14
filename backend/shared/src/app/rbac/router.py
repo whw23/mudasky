@@ -18,7 +18,7 @@ from app.rbac.schemas import (
 )
 from app.rbac.service import RbacService
 
-router = APIRouter(prefix="/admin/roles", tags=["rbac"])
+router = APIRouter(prefix="/roles", tags=["rbac"])
 
 
 class MessageResponse(BaseModel):

@@ -16,7 +16,7 @@ from app.core.pagination import PaginatedResponse, PaginationParams
 from app.user.schemas import UserAdminUpdate, UserResponse
 
 router = APIRouter(
-    prefix="/admin/users",
+    prefix="/users",
     tags=["admin"],
 )
 

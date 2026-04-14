@@ -28,6 +28,10 @@ const ADMIN_PAGES: PageConfig[] = [
   { key: "dashboard", href: "/admin/dashboard", apiPrefix: "admin/dashboard" },
   { key: "userManagement", href: "/admin/users", apiPrefix: "admin/users" },
   { key: "roleManagement", href: "/admin/roles", apiPrefix: "admin/roles" },
+  { key: "articleManagement", href: "/admin/articles", apiPrefix: "admin/articles" },
+  { key: "categoryManagement", href: "/admin/categories", apiPrefix: "admin/categories" },
+  { key: "universityManagement", href: "/admin/universities", apiPrefix: "admin/universities" },
+  { key: "caseManagement", href: "/admin/cases", apiPrefix: "admin/cases" },
   { key: "generalSettings", href: "/admin/general-settings", apiPrefix: "admin/general-settings" },
   { key: "webSettings", href: "/admin/web-settings", apiPrefix: "admin/web-settings" },
 ]
@@ -44,3 +48,15 @@ export const PANEL_CONFIG: PanelConfig[] = [
   { key: "admin", prefix: "admin", pages: ADMIN_PAGES },
   { key: "portal", prefix: "portal", pages: PORTAL_PAGES },
 ]
+
+/**
+ * 根据页面 key 获取 API 路径前缀。
+ * 组件用此前缀拼接 CRUD 路径：`/${prefix}/list`、`/${prefix}/create` 等。
+ */
+export function getApiPrefix(pageKey: string): string {
+  for (const panel of PANEL_CONFIG) {
+    const page = panel.pages.find((p) => p.key === pageKey)
+    if (page) return `/${page.apiPrefix}`
+  }
+  return ""
+}

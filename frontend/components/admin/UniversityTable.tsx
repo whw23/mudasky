@@ -11,11 +11,13 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { UniversityDialog } from "@/components/admin/UniversityDialog"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { University } from "@/types"
 
 /** 合作院校管理列表 */
 export function UniversityTable() {
   const t = useTranslations("AdminUniversities")
+  const pathname = usePathname()
 
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(false)
@@ -27,7 +29,7 @@ export function UniversityTable() {
     setLoading(true)
     try {
       const { data } = await api.get<{ items: University[] }>(
-        "/admin/universities/list",
+        `${pathname}/list`,
         { params: { page_size: 100 } },
       )
       setUniversities(data.items)
@@ -58,7 +60,7 @@ export function UniversityTable() {
   const handleDelete = async (university: University) => {
     if (!confirm(t("deleteConfirm", { name: university.name }))) return
     try {
-      await api.post(`/admin/universities/delete/${university.id}`)
+      await api.post(`${pathname}/delete/${university.id}`)
       toast.success(t("deleteSuccess"))
       fetchUniversities()
     } catch {

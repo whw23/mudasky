@@ -15,6 +15,7 @@ import {
   Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
+import { usePathname } from "@/i18n/navigation"
 import type { Category } from "@/types"
 
 interface CategoryDialogProps {
@@ -27,6 +28,7 @@ interface CategoryDialogProps {
 /** 分类创建/编辑对话框 */
 export function CategoryDialog({ category, open, onClose, onSave }: CategoryDialogProps) {
   const t = useTranslations("AdminCategories")
+  const pathname = usePathname()
   const isEdit = !!category
 
   const [name, setName] = useState("")
@@ -65,9 +67,9 @@ export function CategoryDialog({ category, open, onClose, onSave }: CategoryDial
     try {
       const payload = { name, slug, description, sort_order: sortOrder }
       if (isEdit) {
-        await api.post(`/admin/categories/edit/${category.id}`, payload)
+        await api.post(`${pathname}/edit/${category.id}`, payload)
       } else {
-        await api.post("/admin/categories/create", payload)
+        await api.post(`${pathname}/create`, payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

@@ -23,7 +23,7 @@ from app.user.schemas import (
 )
 from app.user.service import UserService
 
-router = APIRouter(prefix="/portal/profile", tags=["users"])
+router = APIRouter(prefix="/profile", tags=["users"])
 
 
 class TotpCodeBody(BaseModel):
