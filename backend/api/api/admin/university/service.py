@@ -1,0 +1,101 @@
+"""合作院校管理业务逻辑层。
+
+处理院校的增删改查业务。
+"""
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.exceptions import NotFoundException
+from app.db.model_utils import apply_updates
+from app.db.university import repository
+from app.db.university.models import University
+
+from .schemas import (
+    UniversityCreate,
+    UniversityUpdate,
+)
+
+
+class UniversityService:
+    """院校业务服务。"""
+
+    def __init__(self, session: AsyncSession) -> None:
+        """初始化服务，注入数据库会话。"""
+        self.session = session
+
+    async def create_university(
+        self, data: UniversityCreate
+    ) -> University:
+        """创建院校。"""
+        university = University(
+            name=data.name,
+            name_en=data.name_en,
+            country=data.country,
+            province=data.province,
+            city=data.city,
+            logo_url=data.logo_url,
+            description=data.description,
+            programs=data.programs,
+            website=data.website,
+            is_featured=data.is_featured,
+            sort_order=data.sort_order,
+        )
+        return await repository.create_university(
+            self.session, university
+        )
+
+    async def get_university(
+        self, university_id: str
+    ) -> University:
+        """获取院校详情，不存在则抛出异常。"""
+        university = await repository.get_university_by_id(
+            self.session, university_id
+        )
+        if not university:
+            raise NotFoundException(message="院校不存在", code="UNIVERSITY_NOT_FOUND")
+        return university
+
+    async def update_university(
+        self, university_id: str, data: UniversityUpdate
+    ) -> University:
+        """更新院校。"""
+        university = await self.get_university(
+            university_id
+        )
+        apply_updates(university, data)
+        return await repository.update_university(
+            self.session, university
+        )
+
+    async def delete_university(
+        self, university_id: str
+    ) -> None:
+        """删除院校。"""
+        university = await self.get_university(
+            university_id
+        )
+        await repository.delete_university(
+            self.session, university
+        )
+
+    async def list_universities(
+        self,
+        offset: int,
+        limit: int,
+        country: str | None = None,
+        city: str | None = None,
+        is_featured: bool | None = None,
+        search: str | None = None,
+        program: str | None = None,
+    ) -> tuple[list[University], int]:
+        """分页查询院校列表。"""
+        return await repository.list_universities(
+            self.session,
+            offset,
+            limit,
+            country,
+            city,
+            is_featured,
+            search,
+            program,
+        )

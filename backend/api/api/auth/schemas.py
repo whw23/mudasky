@@ -1,0 +1,148 @@
+"""认证领域 Pydantic 数据模型。
+
+定义短信验证码、注册、登录、认证响应等数据传输对象。
+"""
+
+from datetime import datetime
+
+from pydantic import BaseModel, Field, field_validator
+
+PHONE_PATTERN = r"^\+\d{6,15}$"
+"""国际手机号格式：+ 开头，6-15 位数字。"""
+
+
+class UserResponse(BaseModel):
+    """用户信息响应。"""
+
+    id: str
+    phone: str | None = None
+    username: str | None = None
+    is_active: bool
+    permissions: list[str] = []
+    role_id: str | None = None
+    role_name: str | None = None
+    two_factor_enabled: bool
+    two_factor_method: str | None = None
+    storage_quota: int
+    created_at: datetime
+    updated_at: datetime | None = None
+    model_config = {"from_attributes": True}
+
+
+def _validate_phone(v: str) -> str:
+    """校验手机号格式。"""
+    import re
+
+    if not re.match(PHONE_PATTERN, v):
+        raise ValueError("手机号格式不正确，需包含国家码（如 +8613800138000）")
+    return v
+
+
+class SmsCodeRequest(BaseModel):
+    """短信验证码请求。"""
+
+    phone: str = Field(..., max_length=20, description="手机号（含国家码）")
+
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v: str) -> str:
+        """校验手机号格式。"""
+        return _validate_phone(v)
+
+
+class RegisterRequest(BaseModel):
+    """用户注册请求。"""
+
+    phone: str = Field(..., max_length=20, description="手机号（含国家码）")
+
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v: str) -> str:
+        """校验手机号格式。"""
+        return _validate_phone(v)
+    code: str = Field(..., max_length=6, description="短信验证码")
+    username: str | None = Field(
+        None, max_length=50, description="用户名"
+    )
+    encrypted_password: str | None = Field(
+        None, description="RSA 加密后的密码（Base64）"
+    )
+    nonce: str | None = Field(
+        None, description="一次性 nonce"
+    )
+
+
+class LoginRequest(BaseModel):
+    """用户登录请求。
+
+    支持三种登录方式：
+    1. 手机号 + 短信验证码
+    2. 用户名 + 密码
+    3. 手机号 + 密码
+    """
+
+    phone: str | None = Field(
+        None, max_length=20, description="手机号（含国家码）"
+    )
+
+    @field_validator("phone")
+    @classmethod
+    def check_phone(cls, v: str | None) -> str | None:
+        """校验手机号格式。"""
+        if v is not None:
+            return _validate_phone(v)
+        return v
+    username: str | None = Field(
+        None, max_length=50, description="用户名"
+    )
+    encrypted_password: str | None = Field(
+        None, description="RSA 加密后的密码（Base64）"
+    )
+    nonce: str | None = Field(
+        None, description="一次性 nonce"
+    )
+    code: str | None = Field(
+        None, max_length=6, description="短信验证码"
+    )
+    totp: str | None = Field(
+        None, max_length=6, description="TOTP 验证码"
+    )
+    sms_code_2fa: str | None = Field(
+        None, max_length=6, description="二步验证短信验证码"
+    )
+
+
+class TwoFaMethods(BaseModel):
+    """二步验证可用方式。"""
+
+    has_totp: bool = False
+    has_phone: bool = False
+
+
+class AuthResponse(BaseModel):
+    """认证响应。
+
+    step 字段用于二步验证流程，值为 "2fa_required" 时
+    表示需要提供二步验证码。two_fa_methods 指示可用的验证方式。
+    """
+
+    user: UserResponse
+    step: str | None = None
+    two_fa_methods: TwoFaMethods | None = None
+
+
+class PublicKeyResponse(BaseModel):
+    """公钥响应。"""
+
+    public_key: str
+    nonce: str
+
+
+class SessionResponse(BaseModel):
+    """活跃会话响应。"""
+
+    id: str
+    user_agent: str | None = None
+    ip_address: str | None = None
+    created_at: datetime
+    is_current: bool = False
