@@ -109,9 +109,9 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
         sort_order: sortOrder,
       }
       if (isEdit) {
-        await api.post(`${pathname}/edit/${university.id}`, payload)
+        await api.post(`${pathname}/list/detail/edit`, { university_id: university.id, ...payload })
       } else {
-        await api.post(`${pathname}/create`, payload)
+        await api.post(`${pathname}/list/create`, payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

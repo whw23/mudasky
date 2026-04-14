@@ -50,7 +50,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 加载用户详情 */
   const fetchUser = useCallback(async () => {
     try {
-      const { data } = await api.get<User>(`/admin/users/detail/${userId}`)
+      const { data } = await api.get<User>("/admin/users/list/detail", { params: { user_id: userId } })
       setUser(data)
       setSelectedRoleId(data.role_id || "")
       setStorageQuota(data.storage_quota)
@@ -62,7 +62,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 加载角色列表 */
   const fetchRoles = useCallback(async () => {
     try {
-      const { data } = await api.get<Role[]>("/admin/roles/list")
+      const { data } = await api.get<Role[]>("/admin/roles/meta/list")
       setRoles(data)
     } catch {
       /* 忽略 */
@@ -92,7 +92,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   function handleToggleActive(): void {
     if (!user) return
     runAction(
-      () => api.post(`/admin/users/edit/${userId}`, { is_active: !user.is_active }),
+      () => api.post("/admin/users/list/detail/edit", { user_id: userId, is_active: !user.is_active }),
       t("toggleActiveSuccess"),
     )
   }
@@ -100,7 +100,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 保存角色 */
   function handleSaveRole(): void {
     runAction(
-      () => api.post(`/admin/users/assign-role/${userId}`, { role_id: selectedRoleId || null }),
+      () => api.post("/admin/users/list/detail/assign-role", { user_id: userId, role_id: selectedRoleId || null }),
       t("saveGroupsSuccess"),
     )
   }
@@ -108,7 +108,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 保存存储配额 */
   function handleSaveQuota(): void {
     runAction(
-      () => api.post(`/admin/users/edit/${userId}`, { storage_quota: storageQuota }),
+      () => api.post("/admin/users/list/detail/edit", { user_id: userId, storage_quota: storageQuota }),
       t("saveQuotaSuccess"),
     )
   }
@@ -121,7 +121,8 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
     }
     const encrypted = await encryptPassword(password)
     runAction(
-      () => api.post(`/admin/users/reset-password/${userId}`, {
+      () => api.post("/admin/users/list/detail/reset-password", {
+        user_id: userId,
         encrypted_password: encrypted.encrypted_password,
         nonce: encrypted.nonce,
       }),
@@ -132,7 +133,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 强制登出 */
   function handleForceLogout(): void {
     runAction(
-      () => api.post(`/admin/users/force-logout/${userId}`),
+      () => api.post("/admin/users/list/detail/force-logout", { user_id: userId }),
       t("forceLogoutSuccess"),
     )
   }
@@ -141,7 +142,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   async function handleDeleteUser(): Promise<void> {
     setSaving(true)
     try {
-      await api.post(`/admin/users/delete/${userId}`)
+      await api.post("/admin/users/list/detail/delete", { user_id: userId })
       toast.success(t("deleteUserSuccess"))
       setShowDeleteDialog(false)
       onUpdate()

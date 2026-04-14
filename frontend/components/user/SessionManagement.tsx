@@ -45,7 +45,7 @@ export function SessionManagement() {
   async function fetchSessions(): Promise<void> {
     setSessionsLoading(true)
     try {
-      const res = await api.get<Session[]>('/portal/profile/sessions')
+      const res = await api.get<Session[]>('/portal/profile/sessions/list')
       setSessions(res.data)
     } catch (err) {
       toast.error(getApiError(err, tErr, t('saveFailed')))
@@ -62,7 +62,7 @@ export function SessionManagement() {
   async function revokeSession(tokenId: string): Promise<void> {
     setLoading(true)
     try {
-      await api.post(`/portal/profile/sessions/revoke/${tokenId}`)
+      await api.post('/portal/profile/sessions/list/revoke', { token_id: tokenId })
       toast.success(t('sessionRevoked'))
       await fetchSessions()
     } catch (err) {
@@ -76,7 +76,7 @@ export function SessionManagement() {
   async function revokeAllOthers(): Promise<void> {
     setLoading(true)
     try {
-      await api.post('/portal/profile/sessions/revoke-all')
+      await api.post('/portal/profile/sessions/list/revoke-all')
       toast.success(t('allSessionsRevoked'))
       await fetchSessions()
     } catch (err) {

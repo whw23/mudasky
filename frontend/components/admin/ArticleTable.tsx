@@ -45,7 +45,7 @@ export function ArticleTable({ onEdit, refreshKey }: ArticleTableProps) {
       const params: Record<string, string | number> = { page, page_size: 20 }
       if (statusFilter !== "all") params.status_filter = statusFilter
       const { data } = await api.get<PaginatedResponse<Article>>(
-        "/admin/content/list",
+        "/admin/articles/list",
         { params },
       )
       setArticles(data.items)
@@ -66,7 +66,8 @@ export function ArticleTable({ onEdit, refreshKey }: ArticleTableProps) {
   const togglePublish = async (article: Article) => {
     const newStatus = article.status === "published" ? "draft" : "published"
     try {
-      await api.post(`/admin/content/edit/${article.id}`, {
+      await api.post("/admin/articles/list/detail/edit", {
+        article_id: article.id,
         status: newStatus,
       })
       toast.success(t(newStatus === "published" ? "publishSuccess" : "unpublishSuccess"))
@@ -79,7 +80,8 @@ export function ArticleTable({ onEdit, refreshKey }: ArticleTableProps) {
   /** 切换置顶 */
   const togglePin = async (article: Article) => {
     try {
-      await api.post(`/admin/content/edit/${article.id}`, {
+      await api.post("/admin/articles/list/detail/edit", {
+        article_id: article.id,
         is_pinned: !article.is_pinned,
       })
       toast.success(t(article.is_pinned ? "unpinSuccess" : "pinSuccess"))
@@ -93,7 +95,7 @@ export function ArticleTable({ onEdit, refreshKey }: ArticleTableProps) {
   const handleDelete = async (article: Article) => {
     if (!confirm(t("deleteConfirm", { title: article.title }))) return
     try {
-      await api.post(`/admin/content/delete/${article.id}`)
+      await api.post("/admin/articles/list/detail/delete", { article_id: article.id })
       toast.success(t("deleteSuccess"))
       fetchArticles()
     } catch {

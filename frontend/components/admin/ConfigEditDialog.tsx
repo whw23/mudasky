@@ -45,7 +45,7 @@ interface ConfigEditDialogProps {
 async function uploadImage(file: File): Promise<string> {
   const formData = new FormData()
   formData.append("file", file)
-  const { data } = await api.post("/portal/documents/upload", formData)
+  const { data } = await api.post("/portal/documents/list/upload", formData)
   return data.download_url || data.url
 }
 

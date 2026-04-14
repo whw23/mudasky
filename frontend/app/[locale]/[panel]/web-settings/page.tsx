@@ -113,7 +113,7 @@ export default function WebSettingsPage() {
       return
     }
     if (!dialogState) return
-    await api.post(`/admin/web-settings/edit/${dialogState.configKey}`, { value: data })
+    await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
     toast.success('保存成功')
     await fetchAllConfigs()
   }

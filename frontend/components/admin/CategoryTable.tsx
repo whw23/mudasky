@@ -57,7 +57,7 @@ export function CategoryTable() {
   const handleDelete = async (category: Category) => {
     if (!confirm(t("deleteConfirm", { name: category.name }))) return
     try {
-      await api.post(`${pathname}/delete/${category.id}`)
+      await api.post(`${pathname}/list/detail/delete`, { category_id: category.id })
       toast.success(t("deleteSuccess"))
       fetchCategories()
     } catch {

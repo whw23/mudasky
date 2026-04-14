@@ -3,7 +3,7 @@
 /**
  * 角色创建/编辑对话框组件。
  * 支持表单填写和基于三栏 PermissionTree 的权限勾选。
- * 使用 permission code（如 admin/users/list）作为选中状态，保存时转换为 permission ID。
+ * 权限为字符串路径列表，直接保存为 JSON 数组。
  */
 
 import { useEffect, useState, useCallback } from "react"
@@ -17,9 +17,10 @@ import {
   DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
-import type { Permission, Role } from "@/types"
+import type { Role } from "@/types"
 import { PermissionTree } from "./PermissionTree"
 import { PANEL_CONFIG } from "@/lib/permission-config"
+import { fetchOpenApiSpec, parseRoutes, filterRoutesByPrefix } from "@/lib/openapi"
 
 interface RoleDialogProps {
   role: Role | null
@@ -40,43 +41,38 @@ export function RoleDialog({
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [permissions, setPermissions] = useState<Permission[]>([])
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
 
-  /** 获取所有权限列表 */
-  const fetchPermissions = useCallback(async () => {
-    try {
-      const { data } = await api.get<Permission[]>("/admin/roles/permissions")
-      setPermissions(data)
-    } catch {
-      /* 忽略 */
-    }
-  }, [])
-
   /**
-   * 将角色的通配符权限展开为 permission code 集合（使用 / 分隔符）。
-   * 如 `admin.*` → 所有以 `admin/` 开头的叶子权限码。
+   * 将角色的通配符权限展开为 PermissionTree 使用的 code 集合。
+   * 如 `admin/users/*` → 所有以 `admin/users/` 开头的路由码。
    */
   const expandToCodeSet = useCallback(
-    (rolePerms: Permission[], allPerms: Permission[]): Set<string> => {
+    async (rolePerms: string[]): Promise<Set<string>> => {
       const codes = new Set<string>()
-      /* 过滤出叶子权限（非通配符） */
-      const leafPerms = allPerms.filter(
-        (p) => !p.code.endsWith(".*") && p.code !== "*",
+      let allRoutes: { path: string }[] = []
+      try {
+        const spec = await fetchOpenApiSpec()
+        allRoutes = parseRoutes(spec)
+      } catch {
+        return codes
+      }
+
+      const leafCodes = allRoutes.map((r) =>
+        r.path.startsWith("/") ? r.path.slice(1) : r.path,
       )
 
-      for (const rp of rolePerms) {
-        if (rp.code === "*") {
-          for (const lp of leafPerms) codes.add(lp.code.replaceAll(".", "/"))
-        } else if (rp.code.endsWith(".*")) {
-          const prefix = rp.code.slice(0, -2).replaceAll(".", "/") + "/"
-          for (const lp of leafPerms) {
-            const lpCode = lp.code.replaceAll(".", "/")
-            if (lpCode.startsWith(prefix)) codes.add(lpCode)
+      for (const perm of rolePerms) {
+        if (perm === "*") {
+          for (const lc of leafCodes) codes.add(lc)
+        } else if (perm.endsWith("/*")) {
+          const prefix = perm.slice(0, -1)
+          for (const lc of leafCodes) {
+            if (lc.startsWith(prefix)) codes.add(lc)
           }
         } else {
-          codes.add(rp.code.replaceAll(".", "/"))
+          codes.add(perm)
         }
       }
 
@@ -85,7 +81,9 @@ export function RoleDialog({
         let panelHasAny = false
         for (const page of panel.pages) {
           const prefix = page.apiPrefix + "/"
-          const hasApiUnderPage = [...codes].some((c) => c.startsWith(prefix) || c === page.apiPrefix)
+          const hasApiUnderPage = [...codes].some(
+            (c) => c.startsWith(prefix) || c === page.apiPrefix,
+          )
           if (hasApiUnderPage) {
             codes.add(`@${page.apiPrefix}`)
             panelHasAny = true
@@ -100,40 +98,31 @@ export function RoleDialog({
   )
 
   /**
-   * 将已选中的 permission code 集合转换为 permission ID 列表。
-   * code 使用 / 分隔符，DB 中使用 . 分隔符，需转换后查找。
-   * 跳过 @ 开头的可见性码（面板/页面可见性，不对应 DB 权限）。
+   * 将已选中的 code 集合转换为权限路径列表。
+   * 跳过 @ 开头的可见性码（面板/页面可见性，不存入数据库）。
    */
-  const codesToPermissionIds = (): string[] => {
-    const ids: string[] = []
+  const codesToPermissions = (): string[] => {
+    const perms: string[] = []
     for (const code of selectedCodes) {
       if (code.startsWith("@")) continue
-      const dotCode = code.replaceAll("/", ".")
-      const perm = permissions.find((p) => p.code === dotCode)
-      if (perm) ids.push(perm.id)
+      perms.push(code)
     }
-    return ids
+    return perms
   }
 
   /** 打开对话框时初始化表单 */
   useEffect(() => {
     if (!open) return
-    fetchPermissions()
     if (role) {
       setName(role.name)
       setDescription(role.description)
+      expandToCodeSet(role.permissions).then(setSelectedCodes)
     } else {
       setName("")
       setDescription("")
       setSelectedCodes(new Set())
     }
-  }, [open, role, fetchPermissions])
-
-  /** 权限列表加载后，展开角色的通配符权限为 code 集合 */
-  useEffect(() => {
-    if (!open || !role || permissions.length === 0) return
-    setSelectedCodes(expandToCodeSet(role.permissions, permissions))
-  }, [open, role, permissions, expandToCodeSet])
+  }, [open, role, expandToCodeSet])
 
   /** 保存角色 */
   const handleSave = async () => {
@@ -146,12 +135,12 @@ export function RoleDialog({
       const payload = {
         name,
         description,
-        permission_ids: codesToPermissionIds(),
+        permissions: codesToPermissions(),
       }
       if (isEdit) {
-        await api.post(`/admin/roles/edit/${role.id}`, payload)
+        await api.post("/admin/roles/meta/list/detail/edit", { role_id: role.id, ...payload })
       } else {
-        await api.post("/admin/roles/create", payload)
+        await api.post("/admin/roles/meta/list/create", payload)
       }
       toast.success(t(isEdit ? "updateSuccess" : "createSuccess"))
       onSave()

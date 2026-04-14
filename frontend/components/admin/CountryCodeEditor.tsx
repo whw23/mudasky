@@ -66,7 +66,7 @@ export function CountryCodeEditor() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const payload = items.map(({ _id, ...rest }) => rest)
-      await api.post('/admin/general-settings/edit/phone_country_codes', { value: payload })
+      await api.post("/admin/general-settings/list/edit", { key: "phone_country_codes", value: payload })
       toast.success(t('saveSuccess'))
     } catch (err) {
       toast.error(getApiError(err, tErr, t('saveError')))

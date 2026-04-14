@@ -60,7 +60,7 @@ export function UniversityTable() {
   const handleDelete = async (university: University) => {
     if (!confirm(t("deleteConfirm", { name: university.name }))) return
     try {
-      await api.post(`${pathname}/delete/${university.id}`)
+      await api.post(`${pathname}/list/detail/delete`, { university_id: university.id })
       toast.success(t("deleteSuccess"))
       fetchUniversities()
     } catch {
