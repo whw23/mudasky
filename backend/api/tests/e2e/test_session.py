@@ -27,7 +27,7 @@ class TestSessionManagement:
         assert login_resp.status_code == 200
 
         # 查看会话列表
-        resp = await e2e_client.get("/api/portal/profile/sessions")
+        resp = await e2e_client.get("/api/portal/profile/sessions/list")
         assert resp.status_code == 200
         sessions = resp.json()
         assert len(sessions) >= 1
@@ -46,13 +46,13 @@ class TestSessionManagement:
 
         # 用原 client 踢掉所有其他设备
         resp = await superuser_client.post(
-            "/api/portal/profile/sessions/revoke-all"
+            "/api/portal/profile/sessions/list/revoke-all"
         )
         assert resp.status_code == 200
 
         # 验证只剩当前设备
         list_resp = await superuser_client.get(
-            "/api/portal/profile/sessions"
+            "/api/portal/profile/sessions/list"
         )
         assert list_resp.status_code == 200
         sessions = list_resp.json()
@@ -68,12 +68,12 @@ class TestSessionManagement:
         )
 
         # 验证可以访问 session 列表
-        resp = await e2e_client.get("/api/portal/profile/sessions")
+        resp = await e2e_client.get("/api/portal/profile/sessions/list")
         assert resp.status_code == 200
 
         # 登出
         await e2e_client.post("/api/auth/logout")
 
         # 此时 cookie 已清除,无法访问
-        resp = await e2e_client.get("/api/portal/profile/sessions")
+        resp = await e2e_client.get("/api/portal/profile/sessions/list")
         assert resp.status_code == 401

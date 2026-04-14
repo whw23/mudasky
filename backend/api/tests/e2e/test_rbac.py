@@ -10,7 +10,7 @@ class TestRoles:
     async def test_list_roles(self, superuser_client):
         """获取预置角色列表。"""
         resp = await superuser_client.get(
-            "/api/admin/roles/list"
+            "/api/admin/roles/meta/list"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -25,7 +25,7 @@ class TestRoles:
         """创建自定义角色 -> 查详情 -> 更新 -> 删除。"""
         # 1. 创建自定义角色
         create_resp = await superuser_client.post(
-            "/api/admin/roles/create",
+            "/api/admin/roles/meta/list/create",
             json={
                 "name": "e2e_test_role",
                 "description": "E2E 测试用角色",
@@ -42,7 +42,8 @@ class TestRoles:
         try:
             # 2. 获取详情
             detail_resp = await superuser_client.get(
-                f"/api/admin/roles/detail/{role_id}"
+                "/api/admin/roles/meta/list/detail",
+                params={"role_id": role_id},
             )
             assert detail_resp.status_code == 200
             detail = detail_resp.json()
@@ -52,8 +53,9 @@ class TestRoles:
 
             # 3. 更新名称和描述
             update_resp = await superuser_client.post(
-                f"/api/admin/roles/edit/{role_id}",
+                "/api/admin/roles/meta/list/detail/edit",
                 json={
+                    "role_id": role_id,
                     "name": "e2e_test_role_updated",
                     "description": "更新后的描述",
                 },
@@ -66,14 +68,16 @@ class TestRoles:
         finally:
             # 4. 删除（清理）
             delete_resp = await superuser_client.post(
-                f"/api/admin/roles/delete/{role_id}"
+                "/api/admin/roles/meta/list/detail/delete",
+                json={"role_id": role_id},
             )
             assert delete_resp.status_code == 200
             assert delete_resp.json()["message"] == "角色已删除"
 
         # 5. 验证已删除（404）
         gone_resp = await superuser_client.get(
-            f"/api/admin/roles/detail/{role_id}"
+            "/api/admin/roles/meta/list/detail",
+            params={"role_id": role_id},
         )
         assert gone_resp.status_code == 404
 
@@ -81,7 +85,7 @@ class TestRoles:
         """角色排序。"""
         # 获取所有角色
         resp = await superuser_client.get(
-            "/api/admin/roles/list"
+            "/api/admin/roles/meta/list"
         )
         assert resp.status_code == 200
         roles = resp.json()
@@ -93,7 +97,7 @@ class TestRoles:
             {"id": roles[1]["id"], "sort_order": roles[0].get("sort_order", 0)},
         ]
         reorder_resp = await superuser_client.post(
-            "/api/admin/roles/reorder",
+            "/api/admin/roles/meta/list/reorder",
             json={"items": items},
         )
         assert reorder_resp.status_code == 200
@@ -104,7 +108,7 @@ class TestRoles:
             {"id": roles[1]["id"], "sort_order": roles[1].get("sort_order", 1)},
         ]
         await superuser_client.post(
-            "/api/admin/roles/reorder",
+            "/api/admin/roles/meta/list/reorder",
             json={"items": restore_items},
         )
 
@@ -116,7 +120,7 @@ class TestOpenApiSpec:
     async def test_get_openapi_spec(self, superuser_client):
         """超级管理员获取 OpenAPI spec。"""
         resp = await superuser_client.get(
-            "/api/admin/roles/list/openapi.json"
+            "/api/openapi.json"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -130,7 +134,7 @@ class TestOpenApiSpec:
     ):
         """未登录访问 OpenAPI spec 返回 401。"""
         resp = await e2e_client.get(
-            "/api/admin/roles/list/openapi.json"
+            "/api/openapi.json"
         )
         assert resp.status_code == 401
 
@@ -141,13 +145,13 @@ class TestRbacUnauthorized:
 
     async def test_list_roles_without_auth(self, e2e_client):
         """未登录访问角色列表返回 401。"""
-        resp = await e2e_client.get("/api/admin/roles/list")
+        resp = await e2e_client.get("/api/admin/roles/meta/list")
         assert resp.status_code == 401
 
     async def test_create_role_without_auth(self, e2e_client):
         """未登录创建角色返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/roles/create",
+            "/api/admin/roles/meta/list/create",
             json={
                 "name": "hack_role",
                 "permissions": [],

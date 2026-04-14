@@ -38,14 +38,15 @@ class TestAdminUsers:
         """获取超级管理员自身用户详情。"""
         # 先获取自身 user_id
         me_resp = await superuser_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert me_resp.status_code == 200
         user_id = me_resp.json()["id"]
 
         # 通过管理接口查询
         resp = await superuser_client.get(
-            f"/api/admin/users/detail/{user_id}"
+            "/api/admin/users/list/detail",
+            params={"user_id": user_id},
         )
         assert resp.status_code == 200
         user = resp.json()
@@ -82,23 +83,24 @@ class TestAdminUsers:
         try:
             # 2. 禁用用户
             disable_resp = await superuser_client.post(
-                f"/api/admin/users/edit/{user_id}",
-                json={"is_active": False},
+                "/api/admin/users/list/detail/edit",
+                json={"user_id": user_id, "is_active": False},
             )
             assert disable_resp.status_code == 200
             assert disable_resp.json()["is_active"] is False
 
             # 3. 验证用户已被禁用
             detail_resp = await superuser_client.get(
-                f"/api/admin/users/detail/{user_id}"
+                "/api/admin/users/list/detail",
+                params={"user_id": user_id},
             )
             assert detail_resp.status_code == 200
             assert detail_resp.json()["is_active"] is False
 
             # 4. 恢复激活状态
             enable_resp = await superuser_client.post(
-                f"/api/admin/users/edit/{user_id}",
-                json={"is_active": True},
+                "/api/admin/users/list/detail/edit",
+                json={"user_id": user_id, "is_active": True},
             )
             assert enable_resp.status_code == 200
             assert enable_resp.json()["is_active"] is True
@@ -106,7 +108,8 @@ class TestAdminUsers:
         finally:
             # 5. 清理：强制下线测试用户
             await superuser_client.post(
-                f"/api/admin/users/force-logout/{user_id}"
+                "/api/admin/users/list/detail/force-logout",
+                json={"user_id": user_id},
             )
 
 
@@ -122,15 +125,16 @@ class TestAdminUnauthorized:
     async def test_get_user_without_auth(self, e2e_client):
         """未登录获取用户详情返回 401。"""
         resp = await e2e_client.get(
-            "/api/admin/users/detail/nonexistent-id"
+            "/api/admin/users/list/detail",
+            params={"user_id": "nonexistent-id"},
         )
         assert resp.status_code == 401
 
     async def test_update_user_without_auth(self, e2e_client):
         """未登录更新用户返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/users/edit/nonexistent-id",
-            json={"is_active": False},
+            "/api/admin/users/list/detail/edit",
+            json={"user_id": "nonexistent-id", "is_active": False},
         )
         assert resp.status_code == 401
 
@@ -176,8 +180,8 @@ class TestAdminUserActions:
                 superuser_client, new_pass
             )
             reset_resp = await superuser_client.post(
-                f"/api/admin/users/reset-password/{user_id}",
-                json=new_encrypted,
+                "/api/admin/users/list/detail/reset-password",
+                json={"user_id": user_id, **new_encrypted},
             )
             assert reset_resp.status_code == 200
 
@@ -199,7 +203,8 @@ class TestAdminUserActions:
                 assert login_resp.status_code == 200
         finally:
             await superuser_client.post(
-                f"/api/admin/users/force-logout/{user_id}"
+                "/api/admin/users/list/detail/force-logout",
+                json={"user_id": user_id},
             )
 
     async def test_assign_role(
@@ -212,7 +217,7 @@ class TestAdminUserActions:
 
         # 1. 获取 visitor 角色 ID
         roles_resp = await superuser_client.get(
-            "/api/admin/roles/list"
+            "/api/admin/roles/meta/list"
         )
         assert roles_resp.status_code == 200
         visitor_role = next(
@@ -247,19 +252,21 @@ class TestAdminUserActions:
         try:
             # 3. 分配角色
             assign_resp = await superuser_client.post(
-                f"/api/admin/users/assign-role/{user_id}",
-                json={"role_id": role_id},
+                "/api/admin/users/list/detail/assign-role",
+                json={"user_id": user_id, "role_id": role_id},
             )
             assert assign_resp.status_code == 200
             assert assign_resp.json()["role_id"] == role_id
 
             # 4. 验证
             detail_resp = await superuser_client.get(
-                f"/api/admin/users/detail/{user_id}"
+                "/api/admin/users/list/detail",
+                params={"user_id": user_id},
             )
             assert detail_resp.status_code == 200
             assert detail_resp.json()["role_id"] == role_id
         finally:
             await superuser_client.post(
-                f"/api/admin/users/force-logout/{user_id}"
+                "/api/admin/users/list/detail/force-logout",
+                json={"user_id": user_id},
             )

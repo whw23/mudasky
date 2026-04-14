@@ -31,7 +31,7 @@ class TestCaseCrud:
 
         # 1. 创建案例
         create_resp = await superuser_client.post(
-            "/api/admin/cases/create",
+            "/api/admin/cases/list/create",
             json={
                 "student_name": f"E2E 学生 {suffix}",
                 "university": f"E2E 大学 {suffix}",
@@ -63,8 +63,9 @@ class TestCaseCrud:
 
             # 3. 更新案例
             update_resp = await superuser_client.post(
-                f"/api/admin/cases/edit/{case_id}",
+                "/api/admin/cases/list/detail/edit",
                 json={
+                    "case_id": case_id,
                     "student_name": f"E2E 更新学生 {suffix}",
                     "year": 2027,
                 },
@@ -80,7 +81,8 @@ class TestCaseCrud:
         finally:
             # 4. 删除案例（清理）
             delete_resp = await superuser_client.post(
-                f"/api/admin/cases/delete/{case_id}"
+                "/api/admin/cases/list/detail/delete",
+                json={"case_id": case_id},
             )
             assert delete_resp.status_code == 204
 
@@ -89,7 +91,7 @@ class TestCaseCrud:
     ):
         """未认证创建案例返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/cases/create",
+            "/api/admin/cases/list/create",
             json={
                 "student_name": "unauthorized",
                 "university": "unauthorized",

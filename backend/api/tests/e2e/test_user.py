@@ -15,14 +15,14 @@ async def _assign_student_role_and_relogin(
 ) -> None:
     """为新注册用户分配 student 角色并重新登录以获取含权限的 JWT。"""
     # 分配 student 角色
-    roles_resp = await superuser_client.get("/api/admin/roles/list")
+    roles_resp = await superuser_client.get("/api/admin/roles/meta/list")
     assert roles_resp.status_code == 200
     student_role = next(
         r for r in roles_resp.json() if r["name"] == "student"
     )
     assign_resp = await superuser_client.post(
-        f"/api/admin/users/assign-role/{user_id}",
-        json={"role_id": student_role["id"]},
+        "/api/admin/users/list/detail/assign-role",
+        json={"user_id": user_id, "role_id": student_role["id"]},
     )
     assert assign_resp.status_code == 200
 
@@ -42,7 +42,7 @@ class TestGetMe:
     async def test_get_me_success(self, superuser_client):
         """已认证用户获取个人信息返回 200。"""
         resp = await superuser_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -54,7 +54,7 @@ class TestGetMe:
     async def test_get_me_unauthenticated(self, e2e_client):
         """未认证用户访问个人信息返回 401。"""
         resp = await e2e_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert resp.status_code == 401
 
@@ -69,7 +69,7 @@ class TestUpdateMe:
         """修改用户名后恢复原值。"""
         # 1. 获取原始用户名
         me_resp = await superuser_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert me_resp.status_code == 200
         original_username = me_resp.json()["username"]
@@ -77,7 +77,7 @@ class TestUpdateMe:
         # 2. 更新用户名
         new_username = "e2e_temp_name"
         update_resp = await superuser_client.post(
-            "/api/portal/profile/edit",
+            "/api/portal/profile/meta/list/edit",
             json={"username": new_username},
         )
         assert update_resp.status_code == 200
@@ -85,14 +85,14 @@ class TestUpdateMe:
 
         # 3. 验证更新生效
         verify_resp = await superuser_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert verify_resp.status_code == 200
         assert verify_resp.json()["username"] == new_username
 
         # 4. 恢复原始用户名
         revert_resp = await superuser_client.post(
-            "/api/portal/profile/edit",
+            "/api/portal/profile/meta/list/edit",
             json={"username": original_username},
         )
         assert revert_resp.status_code == 200
@@ -179,7 +179,8 @@ class TestUserProfileActions:
                     assert login_resp.status_code == 200
             finally:
                 await superuser_client.post(
-                    f"/api/admin/users/force-logout/{user_id}"
+                    "/api/admin/users/list/detail/force-logout",
+                    json={"user_id": user_id},
                 )
 
     async def test_change_phone(
@@ -243,7 +244,8 @@ class TestUserProfileActions:
                 assert phone_resp.json()["phone"] == new_phone
             finally:
                 await superuser_client.post(
-                    f"/api/admin/users/force-logout/{user_id}"
+                    "/api/admin/users/list/detail/force-logout",
+                    json={"user_id": user_id},
                 )
 
 
@@ -293,14 +295,15 @@ class TestTwoFactorAuth:
 
                 # 4. 启用 TOTP（返回 QR code PNG）
                 totp_resp = await user_client.post(
-                    "/api/portal/profile/2fa-enable-totp"
+                    "/api/portal/profile/two-factor/enable-totp"
                 )
                 assert totp_resp.status_code == 200
                 assert totp_resp.headers["content-type"] == "image/png"
 
                 # 5. 获取 TOTP secret（通过管理接口查用户）
                 detail_resp = await superuser_client.get(
-                    f"/api/admin/users/detail/{user_id}"
+                    "/api/admin/users/list/detail",
+                    params={"user_id": user_id},
                 )
                 assert detail_resp.status_code == 200
                 # TOTP secret 不一定暴露在 API 中，跳过确认步骤
@@ -314,13 +317,14 @@ class TestTwoFactorAuth:
                 disable_code = disable_sms.json()["code"]
 
                 disable_resp = await user_client.post(
-                    "/api/portal/profile/2fa-disable",
+                    "/api/portal/profile/two-factor/disable",
                     json={"phone": phone, "code": disable_code},
                 )
                 assert disable_resp.status_code == 200
             finally:
                 await superuser_client.post(
-                    f"/api/admin/users/force-logout/{user_id}"
+                    "/api/admin/users/list/detail/force-logout",
+                    json={"user_id": user_id},
                 )
 
     async def test_sms_2fa_enable(
@@ -372,7 +376,7 @@ class TestTwoFactorAuth:
                 enable_code = enable_sms.json()["code"]
 
                 enable_resp = await user_client.post(
-                    "/api/portal/profile/2fa-enable-sms",
+                    "/api/portal/profile/two-factor/enable-sms",
                     json={"phone": phone, "code": enable_code},
                 )
                 assert enable_resp.status_code == 200
@@ -385,11 +389,12 @@ class TestTwoFactorAuth:
                 disable_code = disable_sms.json()["code"]
 
                 disable_resp = await user_client.post(
-                    "/api/portal/profile/2fa-disable",
+                    "/api/portal/profile/two-factor/disable",
                     json={"phone": phone, "code": disable_code},
                 )
                 assert disable_resp.status_code == 200
             finally:
                 await superuser_client.post(
-                    f"/api/admin/users/force-logout/{user_id}"
+                    "/api/admin/users/list/detail/force-logout",
+                    json={"user_id": user_id},
                 )

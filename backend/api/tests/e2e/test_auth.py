@@ -90,7 +90,7 @@ class TestRegister:
 
         # 3. 注册后 cookie 已设置，可以访问 /portal/profile/view
         me_resp = await e2e_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert me_resp.status_code == 200
         assert me_resp.json()["username"] == f"e2e_user_{phone[-6:]}"
@@ -114,7 +114,8 @@ class TestRegister:
 
         # 5. 清理：管理员强制下线测试用户
         await superuser_client.post(
-            f"/api/admin/users/force-logout/{user_id}"
+            "/api/admin/users/list/detail/force-logout",
+            json={"user_id": user_id},
         )
 
 
@@ -168,7 +169,7 @@ class TestCsrf:
     async def test_mutation_without_csrf_rejected(self, anon_client):
         """不带 X-Requested-With 的 mutation 请求被拒绝。"""
         resp = await anon_client.post(
-            "/api/portal/profile/2fa-enable-totp"
+            "/api/portal/profile/two-factor/enable-totp"
         )
         assert resp.status_code == 403
 
@@ -194,6 +195,6 @@ class TestUnauthenticated:
     async def test_protected_endpoint_returns_401(self, e2e_client):
         """未登录访问受保护端点返回 401。"""
         resp = await e2e_client.get(
-            "/api/portal/profile/view"
+            "/api/portal/profile/meta/list"
         )
         assert resp.status_code == 401

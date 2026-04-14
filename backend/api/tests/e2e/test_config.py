@@ -71,8 +71,8 @@ class TestAdminConfig:
         # 2. 修改值（更新 tagline 字段）
         updated_value = {**original_value, "hotline": "000-0000-0000"}
         update_resp = await superuser_client.post(
-            f"/api/admin/general-settings/edit/{key}",
-            json={"value": updated_value},
+            "/api/admin/general-settings/list/edit",
+            json={"key": key, "value": updated_value},
         )
         assert update_resp.status_code == 200
         assert update_resp.json()["value"]["hotline"] == "000-0000-0000"
@@ -86,8 +86,8 @@ class TestAdminConfig:
 
         # 4. 恢复原始值
         revert_resp = await superuser_client.post(
-            f"/api/admin/general-settings/edit/{key}",
-            json={"value": original_value},
+            "/api/admin/general-settings/list/edit",
+            json={"key": key, "value": original_value},
         )
         assert revert_resp.status_code == 200
         assert revert_resp.json()["value"] == original_value
@@ -107,8 +107,8 @@ class TestConfigUnauthorized:
     async def test_update_config_without_auth(self, e2e_client):
         """未登录更新配置返回 401。"""
         resp = await e2e_client.post(
-            "/api/admin/general-settings/edit/site_info",
-            json={"value": {"brand_name": "hack"}},
+            "/api/admin/general-settings/list/edit",
+            json={"key": "site_info", "value": {"brand_name": "hack"}},
         )
         assert resp.status_code == 401
 
@@ -143,16 +143,16 @@ class TestWebSettings:
         # 2. 修改值
         updated_value = {**original_value, "hotline": "111-1111-1111"}
         update_resp = await superuser_client.post(
-            f"/api/admin/web-settings/edit/{key}",
-            json={"value": updated_value},
+            "/api/admin/web-settings/list/edit",
+            json={"key": key, "value": updated_value},
         )
         assert update_resp.status_code == 200
         assert update_resp.json()["value"]["hotline"] == "111-1111-1111"
 
         # 3. 恢复原始值
         revert_resp = await superuser_client.post(
-            f"/api/admin/web-settings/edit/{key}",
-            json={"value": original_value},
+            "/api/admin/web-settings/list/edit",
+            json={"key": key, "value": original_value},
         )
         assert revert_resp.status_code == 200
 
