@@ -27,7 +27,7 @@ export function UniversityTable() {
     setLoading(true)
     try {
       const { data } = await api.get<{ items: University[] }>(
-        "/admin/university/list",
+        "/admin/universities/list",
         { params: { page_size: 100 } },
       )
       setUniversities(data.items)
