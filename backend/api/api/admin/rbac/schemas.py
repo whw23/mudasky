@@ -16,6 +16,9 @@ class RoleCreate(BaseModel):
     permissions: list[str] = Field(
         ..., description="权限路径列表"
     )
+    merge_from: list[str] | None = Field(
+        None, description="合并来源角色名称列表，取并集"
+    )
 
 
 class RoleUpdate(BaseModel):

@@ -11,6 +11,7 @@ from app.core.exceptions import (
     ForbiddenException,
     NotFoundException,
 )
+from app.db.auth import repository as auth_repo
 from app.db.rbac import repository
 from app.db.rbac.models import Role
 from app.db.user import repository as user_repo
@@ -59,6 +60,8 @@ class RbacService:
         """创建角色。
 
         检查名称唯一性，设置权限列表。
+        如果指定 merge_from，合并这些角色的权限（去重）；
+        如果同时传了 permissions，以 permissions 为准。
         """
         existing = await repository.get_role_by_name(
             self.session, data.name
@@ -66,12 +69,23 @@ class RbacService:
         if existing:
             raise ConflictException(message="角色名称已存在", code="ROLE_NAME_EXISTS")
 
+        permissions = data.permissions
+        if data.merge_from and not data.permissions:
+            merged: set[str] = set()
+            for role_name in data.merge_from:
+                source = await repository.get_role_by_name(
+                    self.session, role_name
+                )
+                if source and source.permissions:
+                    merged.update(source.permissions)
+            permissions = sorted(merged)
+
         max_order = await repository.get_max_sort_order(self.session)
 
         role = Role(
             name=data.name,
             description=data.description,
-            permissions=data.permissions,
+            permissions=permissions,
             is_builtin=False,
             sort_order=max_order + 1,
         )
@@ -81,7 +95,10 @@ class RbacService:
     async def update_role(
         self, role_id: str, data: RoleUpdate
     ) -> RoleResponse:
-        """更新角色。"""
+        """更新角色。
+
+        如果权限变更，踢下线该角色下的所有用户（删除 refresh_token）。
+        """
         role = await repository.get_role_by_id(
             self.session, role_id
         )
@@ -105,10 +122,24 @@ class RbacService:
         if data.description is not None:
             role.description = data.description
 
+        permissions_changed = False
         if data.permissions is not None:
+            if set(role.permissions or []) != set(data.permissions):
+                permissions_changed = True
             role.permissions = data.permissions
 
         await repository.update_role(self.session, role)
+
+        # 权限变更时踢下线该角色下的所有用户
+        if permissions_changed:
+            users = await user_repo.list_by_role_id(
+                self.session, role.id
+            )
+            for user in users:
+                await auth_repo.delete_refresh_tokens_by_user(
+                    self.session, user.id
+                )
+
         return RoleResponse.model_validate(role)
 
     async def delete_role(self, role_id: str) -> None:

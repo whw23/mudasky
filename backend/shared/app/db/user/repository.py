@@ -113,6 +113,15 @@ async def delete(session: AsyncSession, user: User) -> None:
     await session.delete(user)
 
 
+async def list_by_role_id(
+    session: AsyncSession, role_id: str
+) -> list[User]:
+    """查询指定角色下的所有用户。"""
+    stmt = select(User).where(User.role_id == role_id)
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def count_by_role(
     session: AsyncSession,
 ) -> dict[str, int]:

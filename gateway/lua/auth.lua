@@ -6,28 +6,48 @@ local cjson = require("cjson.safe")
 local config = require("init")
 local rate_limit = require("rate_limit")
 
---- 从路径提取权限字符串。
--- /api/admin/users/list/xxx → admin/users/list
+--- 从路径提取权限码。
+-- URL 路径完全静态，权限码 = 去掉 /api/ 前缀。
 local function extract_permission(uri)
   local path = string.match(uri, "^/api/(.+)$")
-  if not path then return nil end
-  local segments = {}
-  for seg in string.gmatch(path, "[^/]+") do
-    table.insert(segments, seg)
-    if #segments == 3 then break end
-  end
-  if #segments < 3 then return nil end
-  return table.concat(segments, "/")
+  return path
 end
 
 --- 检查用户是否拥有指定权限。
+-- 支持通配符（path/*）和精确匹配，两者都包含祖先路径。
 local function has_permission(user_perms, required)
   for _, p in ipairs(user_perms) do
+    -- 全部权限
     if p == "*" then return true end
-    if p == required then return true end
+
     if string.sub(p, -2) == "/*" then
-      local prefix = string.sub(p, 1, -2)
+      -- 通配符：path/* 格式
+      local prefix = string.sub(p, 1, -2)  -- 去掉 *，保留 /
+
+      -- 子路径匹配：required 在权限前缀之下
       if string.find(required, prefix, 1, true) == 1 then
+        return true
+      end
+
+      -- 祖先匹配：权限前缀在 required 之下（required 是祖先）
+      if string.find(prefix, required .. "/", 1, true) == 1 then
+        return true
+      end
+
+    else
+      -- 精确匹配（去掉可能的尾部斜杠）
+      local target = p
+      if string.sub(target, -1) == "/" then
+        target = string.sub(target, 1, -2)
+      end
+
+      -- 精确匹配当前节点
+      if required == target then
+        return true
+      end
+
+      -- 祖先匹配：target 路径在 required 之下（required 是祖先）
+      if string.find(target, required .. "/", 1, true) == 1 then
         return true
       end
     end

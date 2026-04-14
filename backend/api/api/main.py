@@ -19,6 +19,7 @@ from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 
 from .auth import router as auth_router
+from .core.permission_tree import build_permission_tree
 from .public import router as public_router
 from .admin import router as admin_router
 from .portal import router as portal_router
@@ -31,6 +32,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """应用生命周期管理。"""
+    # 权限树在 api 子应用上缓存（路由注册完成后生成）
+    api.state.permission_tree = build_permission_tree(api)
     yield
 
 
