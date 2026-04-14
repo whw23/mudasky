@@ -67,7 +67,7 @@ class TestUploadDocument:
             _make_document()
         )
         resp = await client.post(
-            "/portal/documents/upload",
+            "/portal/documents/list/upload",
             files={
                 "file": ("test.pdf", b"fake-content", "application/pdf")
             },
@@ -80,7 +80,7 @@ class TestUploadDocument:
     async def test_upload_no_auth(self, client):
         """未认证无法上传文件。"""
         resp = await client.post(
-            "/portal/documents/upload",
+            "/portal/documents/list/upload",
             files={
                 "file": ("test.pdf", b"fake-content", "application/pdf")
             },
@@ -92,7 +92,7 @@ class TestUploadDocument:
     ):
         """缺少文件返回 422。"""
         resp = await client.post(
-            "/portal/documents/upload",
+            "/portal/documents/list/upload",
             headers=user_headers,
         )
         assert resp.status_code == 422
@@ -170,7 +170,7 @@ class TestGetDocument:
             _make_document()
         )
         resp = await client.get(
-            "/portal/documents/detail/doc-001",
+            "/portal/documents/list/detail?doc_id=doc-001",
             headers=user_headers,
         )
         assert resp.status_code == 200
@@ -187,7 +187,7 @@ class TestGetDocument:
             NotFoundException(message="文档不存在")
         )
         resp = await client.get(
-            "/portal/documents/detail/nonexistent",
+            "/portal/documents/list/detail?doc_id=nonexistent",
             headers=user_headers,
         )
         assert resp.status_code == 404
@@ -195,7 +195,7 @@ class TestGetDocument:
     async def test_get_document_no_auth(self, client):
         """未认证无法获取文档详情。"""
         resp = await client.get(
-            "/portal/documents/detail/doc-001"
+            "/portal/documents/list/detail?doc_id=doc-001"
         )
         assert resp.status_code == 403
 
@@ -218,7 +218,8 @@ class TestDeleteDocument:
         """删除文档成功返回 204。"""
         self.mock_delete.return_value = None
         resp = await client.post(
-            "/portal/documents/delete/doc-001",
+            "/portal/documents/list/detail/delete",
+            json={"doc_id": "doc-001"},
             headers=user_headers,
         )
         assert resp.status_code == 204
@@ -233,7 +234,8 @@ class TestDeleteDocument:
             NotFoundException(message="文档不存在")
         )
         resp = await client.post(
-            "/portal/documents/delete/nonexistent",
+            "/portal/documents/list/detail/delete",
+            json={"doc_id": "nonexistent"},
             headers=user_headers,
         )
         assert resp.status_code == 404
@@ -241,6 +243,7 @@ class TestDeleteDocument:
     async def test_delete_document_no_auth(self, client):
         """未认证无法删除文档。"""
         resp = await client.post(
-            "/portal/documents/delete/doc-001"
+            "/portal/documents/list/detail/delete",
+            json={"doc_id": "doc-001"},
         )
         assert resp.status_code == 403

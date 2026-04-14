@@ -94,7 +94,7 @@ class TestGetUser:
             _make_user_response()
         )
         resp = await client.get(
-            "/admin/users/detail/target-001",
+            "/admin/users/list/detail?user_id=target-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -121,8 +121,11 @@ class TestUpdateUser:
             _make_user_response(is_active=False)
         )
         resp = await client.post(
-            "/admin/users/edit/target-001",
-            json={"is_active": False},
+            "/admin/users/list/detail/edit",
+            json={
+                "user_id": "target-001",
+                "is_active": False,
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -147,8 +150,9 @@ class TestResetPassword:
         """管理员可重置用户密码。"""
         self.mock_svc.reset_password.return_value = None
         resp = await client.post(
-            "/admin/users/reset-password/target-001",
+            "/admin/users/list/detail/reset-password",
             json={
+                "user_id": "target-001",
                 "encrypted_password": "enc_data",
                 "nonce": "test_nonce",
             },
@@ -182,8 +186,11 @@ class TestAssignRole:
             )
         )
         resp = await client.post(
-            "/admin/users/assign-role/target-001",
-            json={"role_id": "role-001"},
+            "/admin/users/list/detail/assign-role",
+            json={
+                "user_id": "target-001",
+                "role_id": "role-001",
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -208,8 +215,47 @@ class TestForceLogout:
         """管理员可强制下线用户。"""
         self.mock_svc.force_logout.return_value = None
         resp = await client.post(
-            "/admin/users/force-logout/target-001",
+            "/admin/users/list/detail/force-logout",
+            json={"user_id": "target-001"},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "用户已强制下线"
+
+
+class TestDeleteUser:
+    """删除用户端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 AdminService。"""
+        with patch(
+            "api.admin.user.router.AdminService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_delete_user_success(
+        self, client, superuser_headers
+    ):
+        """管理员可删除用户。"""
+        self.mock_svc.delete_user.return_value = None
+        resp = await client.post(
+            "/admin/users/list/detail/delete",
+            json={"user_id": "target-001"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "用户已删除"
+
+    async def test_delete_self_forbidden(
+        self, client, superuser_headers
+    ):
+        """管理员不能删除自己。"""
+        resp = await client.post(
+            "/admin/users/list/detail/delete",
+            json={"user_id": "admin-1"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 403

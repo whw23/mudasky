@@ -117,7 +117,7 @@ class TestAdminCreateUniversity:
             _make_university()
         )
         resp = await client.post(
-            "/admin/universities/create",
+            "/admin/universities/list/create",
             json={
                 "name": "北京大学",
                 "country": "中国",
@@ -134,7 +134,7 @@ class TestAdminCreateUniversity:
     ):
         """缺少必填字段返回 422。"""
         resp = await client.post(
-            "/admin/universities/create",
+            "/admin/universities/list/create",
             json={"name": "北京大学"},
             headers=superuser_headers,
         )
@@ -162,8 +162,11 @@ class TestAdminUpdateUniversity:
             _make_university(name="清华大学")
         )
         resp = await client.post(
-            "/admin/universities/edit/uni-001",
-            json={"name": "清华大学"},
+            "/admin/universities/list/detail/edit",
+            json={
+                "university_id": "uni-001",
+                "name": "清华大学",
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -183,8 +186,11 @@ class TestAdminUpdateUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/edit/nonexistent",
-            json={"name": "不存在"},
+            "/admin/universities/list/detail/edit",
+            json={
+                "university_id": "nonexistent",
+                "name": "不存在",
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 404
@@ -209,7 +215,8 @@ class TestAdminDeleteUniversity:
         """管理员删除院校返回 204。"""
         self.mock_svc.delete_university.return_value = None
         resp = await client.post(
-            "/admin/universities/delete/uni-001",
+            "/admin/universities/list/detail/delete",
+            json={"university_id": "uni-001"},
             headers=superuser_headers,
         )
         assert resp.status_code == 204
@@ -227,7 +234,8 @@ class TestAdminDeleteUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/delete/nonexistent",
+            "/admin/universities/list/detail/delete",
+            json={"university_id": "nonexistent"},
             headers=superuser_headers,
         )
         assert resp.status_code == 404

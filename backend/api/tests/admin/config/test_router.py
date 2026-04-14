@@ -100,8 +100,8 @@ class TestAdminUpdateConfig:
             "description": "国家码列表",
         }
         resp = await client.post(
-            "/admin/general-settings/edit/phone_country_codes",
-            json={"value": []},
+            "/admin/general-settings/list/edit",
+            json={"key": "phone_country_codes", "value": []},
             headers=superuser_headers,
         )
         assert resp.status_code == 200

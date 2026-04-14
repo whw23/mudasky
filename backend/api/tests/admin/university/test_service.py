@@ -147,7 +147,7 @@ async def test_update_university_success(
         return_value=university
     )
 
-    data = UniversityUpdate(name="清华大学")
+    data = UniversityUpdate(university_id="uni-1", name="清华大学")
     result = await service.update_university("uni-1", data)
 
     assert result is not None
@@ -164,7 +164,7 @@ async def test_update_university_not_found(
         return_value=None
     )
 
-    data = UniversityUpdate(name="清华大学")
+    data = UniversityUpdate(university_id="uni-1", name="清华大学")
     with pytest.raises(NotFoundException):
         await service.update_university(
             "nonexistent", data

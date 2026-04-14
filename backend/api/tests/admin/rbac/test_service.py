@@ -39,6 +39,7 @@ from app.core.exceptions import NotFoundException
 
 REPO = "api.admin.rbac.service.repository"
 USER_REPO = "api.admin.rbac.service.user_repo"
+AUTH_REPO = "api.admin.rbac.service.auth_repo"
 
 
 @pytest.fixture
@@ -105,7 +106,7 @@ async def test_update_role_name_conflict(mock_repo, service):
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
     mock_repo.get_role_by_name = AsyncMock(return_value=existing)
 
-    data = RoleUpdate(name="新名称")
+    data = RoleUpdate(role_id="r1", name="新名称")
     with pytest.raises(ConflictException):
         await service.update_role("r1", data)
 
@@ -116,7 +117,7 @@ async def test_update_role_not_found(mock_repo, service):
     """更新不存在的角色抛出 NotFoundException。"""
     mock_repo.get_role_by_id = AsyncMock(return_value=None)
 
-    data = RoleUpdate(name="新名称")
+    data = RoleUpdate(role_id="nonexistent", name="新名称")
     with pytest.raises(NotFoundException):
         await service.update_role("nonexistent", data)
 
@@ -214,15 +215,22 @@ async def test_create_role_duplicate_name(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(AUTH_REPO)
+@patch(USER_REPO)
 @patch(REPO)
-async def test_update_role(mock_repo, service):
+async def test_update_role(
+    mock_repo, mock_user_repo, mock_auth_repo, service
+):
     """更新角色名称和权限。"""
     role = _make_role("旧名称", role_id="r1")
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
     mock_repo.get_role_by_name = AsyncMock(return_value=None)
     mock_repo.update_role = AsyncMock()
+    mock_user_repo.list_by_role_id = AsyncMock(return_value=[])
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
 
     data = RoleUpdate(
+        role_id="r1",
         name="新名称",
         permissions=["admin/users/*"],
     )
@@ -241,7 +249,7 @@ async def test_update_role_protected_name(mock_repo, service):
     )
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
 
-    data = RoleUpdate(name="试图改名")
+    data = RoleUpdate(role_id="r-sys", name="试图改名")
     with pytest.raises(ForbiddenException):
         await service.update_role("r-sys", data)
 
@@ -345,3 +353,68 @@ async def test_reorder_roles(mock_repo, service):
         service.session,
         [("r1", 0), ("r2", 1), ("r3", 2)],
     )
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_create_role_with_merge_from(mock_repo, service):
+    """使用 merge_from 合并角色权限创建新角色。"""
+    mock_repo.get_role_by_name = AsyncMock(side_effect=[
+        None,  # 检查名称唯一性
+        _make_role("角色A", permissions=["admin/users/*", "admin/content/*"]),
+        _make_role("角色B", permissions=["admin/content/*", "admin/rbac/*"]),
+    ])
+    mock_repo.get_max_sort_order = AsyncMock(return_value=2)
+
+    async def _fake_create(session, role):
+        role.id = "new-merged"
+        role.created_at = datetime.now(timezone.utc)
+        role.updated_at = None
+
+    mock_repo.create_role = AsyncMock(side_effect=_fake_create)
+
+    data = RoleCreate(
+        name="合并角色",
+        description="测试合并",
+        permissions=[],
+        merge_from=["角色A", "角色B"],
+    )
+    result = await service.create_role(data)
+
+    assert result.name == "合并角色"
+    # 权限取并集
+    created_role = mock_repo.create_role.call_args[0][1]
+    assert set(created_role.permissions) == {
+        "admin/users/*", "admin/content/*", "admin/rbac/*"
+    }
+
+
+@pytest.mark.asyncio
+@patch(AUTH_REPO)
+@patch(USER_REPO)
+@patch(REPO)
+async def test_update_role_permissions_kick_users(
+    mock_repo, mock_user_repo, mock_auth_repo, service
+):
+    """权限变更时踢下线该角色下的所有用户。"""
+    role = _make_role("编辑", role_id="r1", permissions=["admin/users/*"])
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+    mock_repo.update_role = AsyncMock()
+
+    user1 = MagicMock()
+    user1.id = "user-1"
+    user2 = MagicMock()
+    user2.id = "user-2"
+    mock_user_repo.list_by_role_id = AsyncMock(
+        return_value=[user1, user2]
+    )
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
+
+    data = RoleUpdate(
+        role_id="r1",
+        permissions=["admin/content/*"],
+    )
+    await service.update_role("r1", data)
+
+    # 两个用户都被踢下线
+    assert mock_auth_repo.delete_refresh_tokens_by_user.await_count == 2

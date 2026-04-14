@@ -1,6 +1,6 @@
-"""用户路由集成测试。
+"""Portal 用户资料路由集成测试。
 
-覆盖用户个人信息查询、更新、密码修改等端点。
+覆盖个人资料查看、编辑、密码修改、手机号修改、注销等端点。
 """
 
 from datetime import datetime, timezone
@@ -52,47 +52,74 @@ def _make_user_model(**kwargs) -> MagicMock:
     return user
 
 
-class TestGetMe:
-    """获取当前用户信息端点测试。"""
+class TestGetMeta:
+    """获取前置数据端点测试。"""
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 UserService。"""
+        """模拟 ProfileService。"""
         with patch(
-            "api.portal.user.router.UserService"
+            "api.portal.profile.router.ProfileService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
             yield
 
-    async def test_get_me_success(
+    async def test_get_meta_success(
         self, client, user_headers
     ):
-        """认证用户获取自身信息返回 200。"""
+        """认证用户获取前置数据返回 200。"""
         self.mock_svc.get_user_response.return_value = (
             _make_user_response()
         )
         resp = await client.get(
-            "/portal/profile/view", headers=user_headers
+            "/portal/profile/meta", headers=user_headers
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["id"] == "user-1"
 
-    async def test_get_me_no_auth(self, client):
+    async def test_get_meta_no_auth(self, client):
         """未认证请求返回 403。"""
-        resp = await client.get("/portal/profile/view")
+        resp = await client.get("/portal/profile/meta")
         assert resp.status_code == 403
 
 
-class TestUpdateMe:
-    """更新用户个人信息端点测试。"""
+class TestGetProfile:
+    """查看个人资料端点测试。"""
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 UserService。"""
+        """模拟 ProfileService。"""
         with patch(
-            "api.portal.user.router.UserService"
+            "api.portal.profile.router.ProfileService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_get_profile_success(
+        self, client, user_headers
+    ):
+        """认证用户查看个人资料返回 200。"""
+        self.mock_svc.get_user_response.return_value = (
+            _make_user_response()
+        )
+        resp = await client.get(
+            "/portal/profile/meta/list",
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+
+
+class TestUpdateProfile:
+    """编辑个人资料端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 ProfileService。"""
+        with patch(
+            "api.portal.profile.router.ProfileService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -106,16 +133,17 @@ class TestUpdateMe:
             _make_user_model(username="newname")
         )
         resp = await client.post(
-            "/portal/profile/edit",
+            "/portal/profile/meta/list/edit",
             json={"username": "newname"},
             headers=user_headers,
         )
         assert resp.status_code == 200
 
-    async def test_update_me_no_auth(self, client):
+    async def test_update_profile_no_auth(self, client):
         """未认证无法更新个人信息。"""
         resp = await client.post(
-            "/portal/profile/edit", json={"username": "newname"}
+            "/portal/profile/meta/list/edit",
+            json={"username": "newname"},
         )
         assert resp.status_code == 403
 
@@ -125,9 +153,9 @@ class TestChangePassword:
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 UserService。"""
+        """模拟 ProfileService。"""
         with patch(
-            "api.portal.user.router.UserService"
+            "api.portal.profile.router.ProfileService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -170,9 +198,9 @@ class TestChangePhone:
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 UserService。"""
+        """模拟 ProfileService。"""
         with patch(
-            "api.portal.user.router.UserService"
+            "api.portal.profile.router.ProfileService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -210,65 +238,26 @@ class TestChangePhone:
         assert resp.status_code == 422
 
 
-class TestTwoFactor:
-    """双因素认证端点测试。"""
+class TestDeleteAccount:
+    """注销账号端点测试。"""
 
     @pytest.fixture(autouse=True)
     def _patch_service(self):
-        """模拟 UserService。"""
+        """模拟 ProfileService 和 auth_repo。"""
         with patch(
-            "api.portal.user.router.UserService"
-        ) as mock_cls:
+            "api.portal.profile.router.ProfileService"
+        ) as mock_cls, patch(
+            "api.portal.profile.router.auth_repo"
+        ) as mock_auth:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
+            self.mock_auth = mock_auth
             yield
 
-    async def test_confirm_totp_no_auth(self, client):
-        """未认证无法确认 TOTP。"""
+    async def test_delete_account_no_auth(self, client):
+        """未认证无法注销账号。"""
         resp = await client.post(
-            "/portal/profile/2fa-confirm-totp",
-            json={"totp_code": "123456"},
+            "/portal/profile/delete-account",
+            json={"code": "123456"},
         )
         assert resp.status_code == 403
-
-    async def test_confirm_totp_success(
-        self, client, user_headers
-    ):
-        """确认 TOTP 成功返回 200。"""
-        self.mock_svc.confirm_2fa_totp.return_value = None
-        resp = await client.post(
-            "/portal/profile/2fa-confirm-totp",
-            json={"totp_code": "123456"},
-            headers=user_headers,
-        )
-        assert resp.status_code == 200
-
-    async def test_enable_sms_2fa_success(
-        self, client, user_headers
-    ):
-        """启用短信 2FA 成功返回 200。"""
-        self.mock_svc.enable_2fa_sms.return_value = None
-        resp = await client.post(
-            "/portal/profile/2fa-enable-sms",
-            json={
-                "phone": "+8613800138000",
-                "code": "123456",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 200
-
-    async def test_disable_2fa_success(
-        self, client, user_headers
-    ):
-        """关闭 2FA 成功返回 200。"""
-        self.mock_svc.disable_2fa.return_value = None
-        resp = await client.post(
-            "/portal/profile/2fa-disable",
-            json={
-                "phone": "+8613800138000",
-                "code": "123456",
-            },
-            headers=user_headers,
-        )
-        assert resp.status_code == 200

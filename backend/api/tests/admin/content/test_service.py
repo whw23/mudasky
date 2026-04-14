@@ -154,7 +154,7 @@ async def test_update_own_article_success(
         return_value=article
     )
 
-    data = ArticleUpdate(title="新标题")
+    data = ArticleUpdate(article_id="art-1", title="新标题")
     result = await service.update_article(
         "art-1", data
     )
@@ -173,7 +173,7 @@ async def test_update_own_article_forbidden(
         return_value=None
     )
 
-    data = ArticleUpdate(title="新标题")
+    data = ArticleUpdate(article_id="art-1", title="新标题")
     with pytest.raises(NotFoundException):
         await service.update_article(
             "nonexistent", data
@@ -267,7 +267,7 @@ async def test_update_category_success(mock_repo, service):
         return_value=category
     )
 
-    data = CategoryUpdate(name="新分类名")
+    data = CategoryUpdate(category_id="cat-1", name="新分类名")
     result = await service.update_category("cat-1", data)
 
     assert result is not None
@@ -284,7 +284,7 @@ async def test_update_category_not_found(
         return_value=None
     )
 
-    data = CategoryUpdate(name="新分类名")
+    data = CategoryUpdate(category_id="cat-1", name="新分类名")
     with pytest.raises(NotFoundException):
         await service.update_category("nonexistent", data)
 

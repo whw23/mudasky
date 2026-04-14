@@ -4,11 +4,9 @@
 """
 
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
-from api.admin.rbac.router import _filter_openapi_spec
 
 
 def _make_role(**kwargs) -> dict:
@@ -17,6 +15,8 @@ def _make_role(**kwargs) -> dict:
         "id": kwargs.get("id", "role-001"),
         "name": kwargs.get("name", "编辑"),
         "description": kwargs.get("description", ""),
+        "is_builtin": kwargs.get("is_builtin", False),
+        "sort_order": kwargs.get("sort_order", 0),
         "permissions": kwargs.get("permissions", []),
         "user_count": kwargs.get("user_count", 0),
         "created_at": kwargs.get(
@@ -48,7 +48,7 @@ class TestListRoles:
             _make_role()
         ]
         resp = await client.get(
-            "/admin/roles/list",
+            "/admin/roles/meta/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -75,7 +75,7 @@ class TestCreateRole:
             _make_role()
         )
         resp = await client.post(
-            "/admin/roles/create",
+            "/admin/roles/meta/list/create",
             json={
                 "name": "新角色",
                 "description": "测试",
@@ -90,7 +90,7 @@ class TestCreateRole:
     ):
         """缺少必填字段返回 422。"""
         resp = await client.post(
-            "/admin/roles/create",
+            "/admin/roles/meta/list/create",
             json={"description": "缺少名称"},
             headers=superuser_headers,
         )
@@ -116,7 +116,7 @@ class TestGetRole:
         """可查看角色详情。"""
         self.mock_svc.get_role.return_value = _make_role()
         resp = await client.get(
-            "/admin/roles/detail/role-001",
+            "/admin/roles/meta/list/detail?role_id=role-001",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -131,7 +131,7 @@ class TestGetRole:
             NotFoundException(message="角色不存在")
         )
         resp = await client.get(
-            "/admin/roles/detail/nonexistent",
+            "/admin/roles/meta/list/detail?role_id=nonexistent",
             headers=superuser_headers,
         )
         assert resp.status_code == 404
@@ -158,8 +158,11 @@ class TestUpdateRole:
             _make_role(name="更新后")
         )
         resp = await client.post(
-            "/admin/roles/edit/role-001",
-            json={"name": "更新后"},
+            "/admin/roles/meta/list/detail/edit",
+            json={
+                "role_id": "role-001",
+                "name": "更新后",
+            },
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -184,44 +187,12 @@ class TestDeleteRole:
         """可删除角色。"""
         self.mock_svc.delete_role.return_value = None
         resp = await client.post(
-            "/admin/roles/delete/role-001",
+            "/admin/roles/meta/list/detail/delete",
+            json={"role_id": "role-001"},
             headers=superuser_headers,
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "角色已删除"
-
-
-class TestOpenApiSpec:
-    """OpenAPI spec 端点测试。"""
-
-    @pytest.fixture(autouse=True)
-    def _patch_filter_openapi_spec(self):
-        """模拟 _filter_openapi_spec 函数。"""
-        mock_schema = {
-            "paths": {
-                "/admin/roles/list": {
-                    "get": {"summary": "查询角色列表"}
-                }
-            },
-        }
-        with patch(
-            "api.admin.rbac.router._filter_openapi_spec",
-            return_value=mock_schema,
-        ) as mock_fn:
-            self.mock_fn = mock_fn
-            yield
-
-    async def test_get_openapi_json_success(
-        self, client, superuser_headers
-    ):
-        """可获取 OpenAPI spec，响应 200 且包含 paths。"""
-        resp = await client.get(
-            "/admin/roles/list/openapi.json",
-            headers=superuser_headers,
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "paths" in data
 
 
 class TestReorderRoles:
@@ -243,7 +214,7 @@ class TestReorderRoles:
         """可更新角色排序。"""
         self.mock_svc.reorder_roles.return_value = None
         resp = await client.post(
-            "/admin/roles/reorder",
+            "/admin/roles/meta/list/reorder",
             json={
                 "items": [
                     {"id": "r1", "sort_order": 0},
@@ -256,75 +227,25 @@ class TestReorderRoles:
         assert resp.json()["message"] == "排序已更新"
 
 
-class TestFilterOpenApiSpec:
-    """_filter_openapi_spec 函数单元测试。"""
+class TestGetRolesMeta:
+    """获取角色前置数据端点测试。"""
 
-    def test_filter_with_openapi_method(self):
-        """使用 app.openapi() 方法获取 spec 并过滤。"""
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {
-            "paths": {
-                "/admin/roles/list": {"get": {}},
-                "/portal/user/profile": {"get": {}},
-                "/auth/login": {"post": {}},
-                "/public/config": {"get": {}},
-                "/health": {"get": {}},
-                "/other/path": {"get": {}},
-            }
-        }
+    @pytest.fixture(autouse=True)
+    def _set_permission_tree(self):
+        """设置 permission_tree 应用状态。"""
+        from api.main import api
+        if not hasattr(api.state, "permission_tree"):
+            api.state.permission_tree = {"admin": {}, "portal": {}}
+        yield
 
-        result = _filter_openapi_spec(mock_app)
-
-        assert "/admin/roles/list" in result["paths"]
-        assert "/portal/user/profile" in result["paths"]
-        assert "/auth/login" not in result["paths"]
-        assert "/public/config" not in result["paths"]
-        assert "/health" not in result["paths"]
-        assert "/other/path" not in result["paths"]
-
-    def test_filter_without_openapi_method(self):
-        """无 openapi 方法时使用 get_openapi 回退。"""
-        mock_app = MagicMock(spec=[])
-        mock_app.title = "test"
-        mock_app.version = "1.0"
-        mock_app.routes = []
-
-        with patch(
-            "api.admin.rbac.router.get_openapi",
-            create=True,
-        ) as mock_get:
-            mock_get.return_value = {
-                "paths": {
-                    "/admin/users/list": {"get": {}},
-                }
-            }
-            # 需要 mock fastapi.openapi.utils.get_openapi
-            with patch(
-                "fastapi.openapi.utils.get_openapi",
-                return_value={
-                    "paths": {
-                        "/admin/users/list": {"get": {}},
-                    }
-                },
-            ):
-                result = _filter_openapi_spec(mock_app)
-
-        assert "/admin/users/list" in result["paths"]
-
-    def test_filter_empty_paths(self):
-        """空 paths 返回空结果。"""
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {"paths": {}}
-
-        result = _filter_openapi_spec(mock_app)
-
-        assert result["paths"] == {}
-
-    def test_filter_none_paths(self):
-        """paths 为 None 时返回空结果。"""
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {}
-
-        result = _filter_openapi_spec(mock_app)
-
-        assert result["paths"] == {}
+    async def test_get_roles_meta_success(
+        self, client, superuser_headers
+    ):
+        """可获取权限树前置数据。"""
+        resp = await client.get(
+            "/admin/roles/meta",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "permission_tree" in data

@@ -143,7 +143,7 @@ async def test_update_user_success(
         return_value=None
     )
 
-    data = UserAdminUpdate(is_active=False, storage_quota=500)
+    data = UserAdminUpdate(user_id="user-1", is_active=False, storage_quota=500)
     result = await service.update_user("user-1", data)
 
     assert user.is_active is False
@@ -156,7 +156,7 @@ async def test_update_user_not_found(mock_user_repo, service):
     """更新不存在的用户抛出异常。"""
     mock_user_repo.get_by_id = AsyncMock(return_value=None)
 
-    data = UserAdminUpdate(is_active=True)
+    data = UserAdminUpdate(user_id="nonexistent", is_active=True)
     with pytest.raises(NotFoundException):
         await service.update_user("nonexistent", data)
 
