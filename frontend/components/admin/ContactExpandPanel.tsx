@@ -38,15 +38,29 @@ interface ContactExpandPanelProps {
 
 /** 联系状态选项 */
 const CONTACT_STATUS_OPTIONS = [
-  "new",
-  "contacted",
-  "interested",
-  "not_interested",
+  { value: "new", label: "新" },
+  { value: "contacted", label: "已联系" },
+  { value: "interested", label: "有意向" },
+  { value: "not_interested", label: "无意向" },
 ] as const
+
+/** 联系状态中文映射 */
+const STATUS_LABELS: Record<string, string> = {
+  new: "新",
+  contacted: "已联系",
+  interested: "有意向",
+  not_interested: "无意向",
+}
+
+/** 操作类型中文映射 */
+const ACTION_LABELS: Record<string, string> = {
+  mark_status: "标记状态",
+  add_note: "添加备注",
+  upgrade: "升级为学生",
+}
 
 /** 联系人详情行内展开面板 */
 export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps) {
-  const t = useTranslations("AdminContacts")
   const tErr = useTranslations("ApiErrors")
 
   const [user, setUser] = useState<ContactUser | null>(null)
@@ -66,9 +80,9 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
       setUser(data)
       setSelectedStatus(data.contact_status ?? "new")
     } catch {
-      toast.error(t("fetchError"))
+      toast.error("加载联系人详情失败")
     }
-  }, [userId, t])
+  }, [userId])
 
   /** 加载联系历史 */
   const fetchHistory = useCallback(async () => {
@@ -96,7 +110,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
       toast.success(successMsg)
       onUpdate()
     } catch (err) {
-      toast.error(getApiError(err, tErr, t("operationError")))
+      toast.error(getApiError(err, tErr, "操作失败"))
     } finally {
       setSaving(false)
     }
@@ -109,14 +123,14 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
         user_id: userId,
         contact_status: selectedStatus,
       }),
-      t("markStatusSuccess"),
+      "状态已更新",
     )
   }
 
   /** 添加备注 */
   function handleAddNote(): void {
     if (!noteText.trim()) {
-      toast.error(t("noteRequired"))
+      toast.error("请输入备注内容")
       return
     }
     runAction(
@@ -127,7 +141,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
         })
         setNoteText("")
       },
-      t("addNoteSuccess"),
+      "备注已添加",
     )
   }
 
@@ -136,11 +150,11 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
     setSaving(true)
     try {
       await api.post("/admin/contacts/list/detail/upgrade", { user_id: userId })
-      toast.success(t("upgradeSuccess"))
+      toast.success("已升级为学生")
       setShowUpgradeDialog(false)
       onUpdate()
     } catch (err) {
-      toast.error(getApiError(err, tErr, t("operationError")))
+      toast.error(getApiError(err, tErr, "操作失败"))
     } finally {
       setSaving(false)
     }
@@ -154,7 +168,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
   if (!user) {
     return (
       <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-        {t("loading")}
+        加载中...
       </div>
     )
   }
@@ -165,16 +179,16 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
         {/* 基本信息 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {t("basicInfo")}
+            基本信息
           </h3>
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-            <span className="text-muted-foreground">{t("col_username")}</span>
+            <span className="text-muted-foreground">用户名</span>
             <span>{user.username ?? "-"}</span>
-            <span className="text-muted-foreground">{t("col_phone")}</span>
+            <span className="text-muted-foreground">手机号</span>
             <span>{user.phone ?? "-"}</span>
-            <span className="text-muted-foreground">{t("col_contactStatus")}</span>
-            <span>{t(`status_${user.contact_status ?? "new"}`)}</span>
-            <span className="text-muted-foreground">{t("col_createdAt")}</span>
+            <span className="text-muted-foreground">联系状态</span>
+            <span>{STATUS_LABELS[user.contact_status ?? "new"] ?? "新"}</span>
+            <span className="text-muted-foreground">创建时间</span>
             <span>{formatDateTime(user.created_at)}</span>
           </div>
         </section>
@@ -182,7 +196,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
         {/* 标记状态 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {t("markStatus")}
+            标记状态
           </h3>
           <select
             value={selectedStatus}
@@ -190,45 +204,45 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
             className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {CONTACT_STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {t(`status_${status}`)}
+              <option key={status.value} value={status.value}>
+                {status.label}
               </option>
             ))}
           </select>
           <Button size="sm" disabled={saving} onClick={handleMarkStatus}>
-            {t("saveStatus")}
+            保存
           </Button>
         </section>
 
         {/* 添加备注 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {t("addNote")}
+            添加备注
           </h3>
           <Textarea
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            placeholder={t("notePlaceholder")}
+            placeholder="请输入备注..."
             rows={3}
           />
           <Button size="sm" disabled={saving} onClick={handleAddNote}>
-            {t("saveNote")}
+            保存
           </Button>
         </section>
 
         {/* 升级为学生 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {t("upgradeToStudent")}
+            升级为学生
           </h3>
-          <p className="text-xs text-muted-foreground">{t("upgradeHint")}</p>
+          <p className="text-xs text-muted-foreground">将此联系人升级为正式学生账号</p>
           <Button
             variant="default"
             size="sm"
             disabled={saving}
             onClick={() => setShowUpgradeDialog(true)}
           >
-            {t("upgradeToStudent")}
+            升级为学生
           </Button>
         </section>
       </div>
@@ -238,10 +252,10 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
       {/* 联系历史 */}
       <div className="px-4 py-5">
         <h3 className="mb-3 text-xs uppercase tracking-wide text-muted-foreground font-medium">
-          {t("contactHistory")}
+          联系历史
         </h3>
         {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("noHistory")}</p>
+          <p className="text-sm text-muted-foreground">暂无历史记录</p>
         ) : (
           <div className="space-y-3">
             {history.map((record) => (
@@ -250,7 +264,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
                 className="rounded-md border px-3 py-2 text-sm"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{t(`action_${record.action}`)}</span>
+                  <span className="font-medium">{ACTION_LABELS[record.action] ?? record.action}</span>
                   <span className="text-xs text-muted-foreground">
                     {formatDateTime(record.created_at)}
                   </span>
@@ -268,16 +282,16 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("upgradeConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("upgradeConfirmDesc")}</AlertDialogDescription>
+            <AlertDialogTitle>确认升级</AlertDialogTitle>
+            <AlertDialogDescription>确定要将此联系人升级为正式学生账号吗？此操作不可撤销。</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleUpgrade}
               disabled={saving}
             >
-              {t("confirmUpgrade")}
+              确认升级
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
