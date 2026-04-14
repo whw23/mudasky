@@ -271,6 +271,17 @@ export default function WebSettingsPage() {
       case 'about_partnership':
         openAboutDialog('partnership', '编辑合作介绍')
         break
+      case 'destinations':
+        setDialogState({
+          open: true,
+          title: '编辑热门留学国家',
+          fields: [
+            { key: 'destinations_title', label: '板块标题', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
       default:
         break
     }
