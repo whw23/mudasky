@@ -65,8 +65,8 @@
 - 使用 `gotoAdmin`、`clickAndWaitDialog` 等项目自定义辅助函数
 - 配置文件：`frontend/e2e/playwright.config.ts`
 - fixture 文件：`frontend/e2e/fixtures/base.ts`
-- 禁止并发执行，单线程串行运行（宿主机压力大）
-- 运行命令：`pnpm --prefix frontend exec playwright test --workers=1`
+- 默认 6 worker 并发执行
+- 运行命令：`pnpm --prefix frontend exec playwright test`
 
 ### 测试目录结构
 
