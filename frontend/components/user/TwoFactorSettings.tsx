@@ -96,7 +96,7 @@ export function TwoFactorSettings() {
     setDisabling(true)
     try {
       await api.post('/portal/profile/two-factor/disable', {
-        phone: user.phone,
+        phone: user!.phone,
         code: disableSmsCode,
       })
       toast.success(t('twoFaDisabled'))
