@@ -48,7 +48,7 @@ export default function AdminArticlesPage() {
         </h1>
         <ArticleEditor
           article={editingArticle}
-          apiPrefix="/admin/content"
+          apiPrefix="/admin/articles"
           onSave={handleSaved}
           onCancel={() => { setEditing(false); setEditingArticle(null) }}
         />

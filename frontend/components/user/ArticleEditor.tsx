@@ -27,7 +27,7 @@ interface ArticleEditorProps {
 }
 
 /** 文章编辑器 */
-export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave, onCancel }: ArticleEditorProps) {
+export function ArticleEditor({ article, apiPrefix = "/admin/articles", onSave, onCancel }: ArticleEditorProps) {
   const t = useTranslations("UserArticles")
   const isEdit = !!article
 
@@ -109,10 +109,10 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
       const formData = new FormData()
       formData.append("file", file)
       formData.append("category", "application")
-      const { data } = await api.post("/portal/documents/upload", formData, {
+      const { data } = await api.post("/portal/documents/list/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
-      setFileUrl(`/api/portal/documents/download/${data.id}`)
+      setFileUrl(`/api/portal/documents/list/detail/download?doc_id=${data.id}`)
       setFileName(file.name)
       toast.success(t("fileUploaded"))
     } catch {
@@ -149,9 +149,9 @@ export function ArticleEditor({ article, apiPrefix = "/portal/articles", onSave,
         status,
       }
       if (isEdit) {
-        await api.post(`${apiPrefix}/edit/${article.id}`, payload)
+        await api.post(`${apiPrefix}/list/detail/edit`, { article_id: article.id, ...payload })
       } else {
-        await api.post(`${apiPrefix}/create`, payload)
+        await api.post(`${apiPrefix}/list/create`, payload)
       }
       toast.success(t(status === "published" ? "publishSuccess" : "saveSuccess"))
       onSave()
