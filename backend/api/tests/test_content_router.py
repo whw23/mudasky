@@ -15,7 +15,9 @@ def _make_article(**kwargs) -> MagicMock:
     article.id = kwargs.get("id", "article-001")
     article.title = kwargs.get("title", "测试文章")
     article.slug = kwargs.get("slug", "test-article")
+    article.content_type = kwargs.get("content_type", "markdown")
     article.content = kwargs.get("content", "内容")
+    article.file_url = kwargs.get("file_url", None)
     article.excerpt = kwargs.get("excerpt", "摘要")
     article.cover_image = kwargs.get("cover_image", None)
     article.category_id = kwargs.get(

@@ -28,7 +28,9 @@ def _make_article(
     a.id = article_id
     a.title = "测试文章"
     a.slug = "test-article"
+    a.content_type = "markdown"
     a.content = "正文内容"
+    a.file_url = None
     a.excerpt = "摘要"
     a.cover_image = None
     a.category_id = "cat-1"
