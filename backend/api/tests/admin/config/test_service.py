@@ -115,3 +115,63 @@ async def test_update_value_not_found(mock_repo, service):
 
     with pytest.raises(NotFoundException):
         await service.update_value("nonexistent", {"v": 1})
+
+
+# ---- get_value_with_timestamp ----
+
+
+@pytest.mark.asyncio
+@patch(CONFIG_REPO)
+async def test_get_value_with_timestamp_success(
+    mock_repo, service
+):
+    """获取配置值及更新时间成功。"""
+    config = _make_config(key="site_name")
+    mock_repo.get_by_key = AsyncMock(return_value=config)
+
+    result, timestamp = await service.get_value_with_timestamp(
+        "site_name"
+    )
+
+    assert result.key == "site_name"
+    assert timestamp == config.updated_at
+    mock_repo.get_by_key.assert_awaited_once_with(
+        service.session, "site_name"
+    )
+
+
+@pytest.mark.asyncio
+@patch(CONFIG_REPO)
+async def test_get_value_with_timestamp_not_found(
+    mock_repo, service
+):
+    """配置项不存在时抛出 NotFoundException。"""
+    mock_repo.get_by_key = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.get_value_with_timestamp("nonexistent")
+
+
+# ---- list_all ----
+
+
+@pytest.mark.asyncio
+@patch(CONFIG_REPO)
+async def test_list_all_success(mock_repo, service):
+    """获取所有配置列表。"""
+    configs = [
+        _make_config(key="site_name"),
+        _make_config(
+            key="phone_country_codes",
+            value=[],
+            description="国家码列表",
+        ),
+    ]
+    mock_repo.list_all = AsyncMock(return_value=configs)
+
+    result = await service.list_all()
+
+    assert len(result) == 2
+    assert result[0].key == "site_name"
+    assert result[1].key == "phone_country_codes"
+    mock_repo.list_all.assert_awaited_once_with(service.session)

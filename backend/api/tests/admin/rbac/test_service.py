@@ -47,6 +47,8 @@ def _make_role(
     return r
 
 
+from app.core.exceptions import NotFoundException
+
 REPO = "api.admin.rbac.service.repository"
 USER_REPO = "api.admin.rbac.service.user_repo"
 
@@ -56,6 +58,127 @@ def service() -> RbacService:
     """构建 RbacService 实例，注入 mock session。"""
     session = AsyncMock()
     return RbacService(session)
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(REPO)
+async def test_list_roles(mock_repo, mock_user_repo, service):
+    """查询所有角色列表，包含用户数量。"""
+    perm = _make_permission("admin/users/list")
+    roles = [
+        _make_role("管理员", role_id="r1", permissions=[perm]),
+        _make_role("编辑", role_id="r2", permissions=[]),
+    ]
+    mock_repo.list_roles = AsyncMock(return_value=roles)
+    mock_user_repo.count_by_role = AsyncMock(
+        return_value={"r1": 3, "r2": 1}
+    )
+
+    result = await service.list_roles()
+
+    assert len(result) == 2
+    assert result[0].user_count == 3
+    assert result[1].user_count == 1
+    mock_repo.list_roles.assert_awaited_once()
+    mock_user_repo.count_by_role.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_get_role_success(mock_repo, service):
+    """查询角色详情成功。"""
+    role = _make_role("编辑", role_id="r1")
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+
+    result = await service.get_role("r1")
+
+    assert result.name == "编辑"
+    mock_repo.get_role_by_id.assert_awaited_once_with(
+        service.session, "r1"
+    )
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_get_role_not_found(mock_repo, service):
+    """查询不存在的角色抛出 NotFoundException。"""
+    mock_repo.get_role_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.get_role("nonexistent")
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_update_role_name_conflict(mock_repo, service):
+    """更新角色名称与其他角色冲突时抛出 ConflictException。"""
+    role = _make_role("旧名称", role_id="r1")
+    existing = _make_role("新名称", role_id="r2")
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+    mock_repo.get_role_by_name = AsyncMock(return_value=existing)
+
+    data = RoleUpdate(name="新名称")
+    with pytest.raises(ConflictException):
+        await service.update_role("r1", data)
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_update_role_not_found(mock_repo, service):
+    """更新不存在的角色抛出 NotFoundException。"""
+    mock_repo.get_role_by_id = AsyncMock(return_value=None)
+
+    data = RoleUpdate(name="新名称")
+    with pytest.raises(NotFoundException):
+        await service.update_role("nonexistent", data)
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_delete_role_not_found(mock_repo, service):
+    """删除不存在的角色抛出 NotFoundException。"""
+    mock_repo.get_role_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.delete_role("nonexistent")
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_get_user_permissions_no_role(mock_user_repo, service):
+    """用户无角色时返回空权限列表。"""
+    mock_user_repo.get_role_id = AsyncMock(return_value=None)
+
+    result = await service.get_user_permissions("user-no-role")
+
+    assert result == []
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(REPO)
+async def test_assign_user_role_not_found(
+    mock_repo, mock_user_repo, service
+):
+    """分配不存在的角色抛出 NotFoundException。"""
+    mock_repo.get_role_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.assign_user_role("user-1", "nonexistent")
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_assign_user_role_none(mock_user_repo, service):
+    """取消用户角色（设为 None）。"""
+    mock_user_repo.set_role_id = AsyncMock()
+
+    await service.assign_user_role("user-1", None)
+
+    mock_user_repo.set_role_id.assert_awaited_once_with(
+        service.session, "user-1", None
+    )
 
 
 @pytest.mark.asyncio
