@@ -1,7 +1,7 @@
-"""内容展示。"""
+"""双因素认证。"""
 
 from .router import router
 
-description = "内容展示"
+description = "双因素认证"
 
 __all__ = ["router", "description"]

@@ -20,9 +20,16 @@ class CategoryCreate(BaseModel):
     sort_order: int = Field(0, description="排序序号")
 
 
+class CategoryDeleteRequest(BaseModel):
+    """分类删除请求。"""
+
+    category_id: str = Field(..., description="分类 ID")
+
+
 class CategoryUpdate(BaseModel):
     """分类更新请求。"""
 
+    category_id: str = Field(..., description="分类 ID")
     name: str | None = Field(None, max_length=50, description="分类名称")
     slug: str | None = Field(None, max_length=50, description="分类标识")
     description: str | None = Field(
@@ -64,9 +71,16 @@ class ArticleCreate(BaseModel):
     status: str = Field("draft", description="状态: draft/published")
 
 
+class ArticleDeleteRequest(BaseModel):
+    """文章删除请求。"""
+
+    article_id: str = Field(..., description="文章 ID")
+
+
 class ArticleUpdate(BaseModel):
     """文章更新请求。"""
 
+    article_id: str = Field(..., description="文章 ID")
     title: str | None = Field(
         None, max_length=200, description="标题"
     )

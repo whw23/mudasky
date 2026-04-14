@@ -42,9 +42,16 @@ class UniversityCreate(BaseModel):
     sort_order: int = Field(0, description="排序")
 
 
+class UniversityDeleteRequest(BaseModel):
+    """院校删除请求。"""
+
+    university_id: str = Field(..., description="院校 ID")
+
+
 class UniversityUpdate(BaseModel):
     """院校更新请求。"""
 
+    university_id: str = Field(..., description="院校 ID")
     name: str | None = Field(
         None, max_length=200, description="校名"
     )

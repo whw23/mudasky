@@ -1,4 +1,7 @@
-"""认证模块（独立挂载）。"""
+"""认证。"""
+
 from .router import router
 
-__all__ = ["router"]
+description = "认证"
+
+__all__ = ["router", "description"]

@@ -3,12 +3,14 @@
 提供用户管理、密码重置、权限分配、强制下线等管理员 API 端点。
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from api.core.dependencies import CurrentUserId, DbSession
 from api.core.pagination import PaginatedResponse, PaginationParams
 
 from .schemas import (
+    DeleteUserRequest,
+    ForceLogoutRequest,
     MessageResponse,
     PasswordReset,
     RoleAssignment,
@@ -54,13 +56,13 @@ async def list_users(
 
 
 @router.get(
-    "/detail/{user_id}",
+    "/list/detail",
     response_model=UserResponse,
     summary="查询用户详情",
 )
 async def get_user(
-    user_id: str,
     session: DbSession,
+    user_id: str = Query(..., description="用户 ID"),
 ) -> UserResponse:
     """查询用户详情。"""
     svc = AdminService(session)
@@ -68,86 +70,83 @@ async def get_user(
 
 
 @router.post(
-    "/edit/{user_id}",
+    "/list/detail/edit",
     response_model=UserResponse,
     summary="更新用户信息",
 )
 async def update_user(
-    user_id: str,
     data: UserAdminUpdate,
     session: DbSession,
 ) -> UserResponse:
     """管理员更新用户信息（激活状态、存储配额）。"""
     svc = AdminService(session)
-    return await svc.update_user(user_id, data)
+    return await svc.update_user(data.user_id, data)
 
 
 @router.post(
-    "/reset-password/{user_id}",
+    "/list/detail/reset-password",
     response_model=MessageResponse,
     summary="重置用户密码",
 )
 async def reset_password(
-    user_id: str,
     data: PasswordReset,
     session: DbSession,
 ) -> MessageResponse:
     """重置用户密码。"""
     svc = AdminService(session)
     await svc.reset_password(
-        user_id, data.encrypted_password, data.nonce
+        data.user_id, data.encrypted_password, data.nonce
     )
     return MessageResponse(message="密码重置成功")
 
 
 @router.post(
-    "/assign-role/{user_id}",
+    "/list/detail/assign-role",
     response_model=UserResponse,
     summary="分配用户角色",
 )
 async def assign_role(
-    user_id: str,
     data: RoleAssignment,
     session: DbSession,
 ) -> UserResponse:
     """分配用户角色（单个）。"""
     svc = AdminService(session)
-    return await svc.assign_role(user_id, data.role_id)
+    return await svc.assign_role(data.user_id, data.role_id)
 
 
 @router.post(
-    "/force-logout/{user_id}",
+    "/list/detail/force-logout",
     response_model=MessageResponse,
     summary="强制下线用户",
 )
 async def force_logout(
-    user_id: str,
+    data: ForceLogoutRequest,
     session: DbSession,
 ) -> MessageResponse:
     """强制下线用户，撤销所有刷新令牌。"""
     svc = AdminService(session)
-    await svc.force_logout(user_id)
+    await svc.force_logout(data.user_id)
     return MessageResponse(message="用户已强制下线")
 
 
 @router.post(
-    "/delete/{user_id}",
+    "/list/detail/delete",
     response_model=MessageResponse,
     summary="删除用户",
 )
 async def delete_user(
-    user_id: str,
+    data: DeleteUserRequest,
     admin_user_id: CurrentUserId,
     session: DbSession,
 ) -> MessageResponse:
     """管理员删除用户，清理所有关联数据。"""
     from app.core.exceptions import ForbiddenException
 
-    if user_id == admin_user_id:
+    if data.user_id == admin_user_id:
         raise ForbiddenException(
             message="不能删除自己的账号",
             code="CANNOT_DELETE_SELF",
         )
     svc = AdminService(session)
-    await svc.delete_user(user_id)
+    await svc.delete_user(data.user_id)
     return MessageResponse(message="用户已删除")

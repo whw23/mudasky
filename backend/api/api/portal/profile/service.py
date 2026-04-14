@@ -1,11 +1,10 @@
-"""Portal 用户领域业务逻辑层。
+"""Portal 用户资料业务逻辑层。
 
-处理用户资料更新、密码修改、双因素认证等业务。
+处理用户资料查看、更新、密码修改、手机号修改、账号注销等业务。
 """
 
 import logging
 
-import pyotp
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -21,8 +20,6 @@ from app.db.user.models import User
 from app.utils.crypto import decrypt_password
 from app.utils.security import hash_password
 
-# TODO: Task 12 - BYTEA migration
-
 from .schemas import (
     PasswordChange,
     PhoneChange,
@@ -33,8 +30,8 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 
-class UserService:
-    """用户业务服务。"""
+class ProfileService:
+    """用户资料业务服务。"""
 
     def __init__(self, session: AsyncSession) -> None:
         """初始化服务，注入数据库会话。"""
@@ -44,7 +41,9 @@ class UserService:
         """获取用户 ORM 对象，不存在则抛出异常。"""
         user = await repository.get_by_id(self.session, user_id)
         if not user:
-            raise NotFoundException(message="用户不存在", code="USER_NOT_FOUND")
+            raise NotFoundException(
+                message="用户不存在", code="USER_NOT_FOUND"
+            )
         return user
 
     async def get_user_response(self, user_id: str) -> UserResponse:
@@ -92,7 +91,10 @@ class UserService:
                 self.session, data.username
             )
             if existing and existing.id != user_id:
-                raise ConflictException(message="用户名已被使用", code="USERNAME_ALREADY_USED")
+                raise ConflictException(
+                    message="用户名已被使用",
+                    code="USERNAME_ALREADY_USED",
+                )
             user.username = data.username
         return await repository.update(self.session, user)
 
@@ -105,9 +107,16 @@ class UserService:
         """
         user = await self.get_user(user_id)
         if user.phone != data.phone:
-            raise ConflictException(message="手机号与当前账号不匹配", code="PHONE_MISMATCH")
-        await auth_repo.verify_sms_code(self.session, data.phone, data.code)
-        password = decrypt_password(data.encrypted_password, data.nonce)
+            raise ConflictException(
+                message="手机号与当前账号不匹配",
+                code="PHONE_MISMATCH",
+            )
+        await auth_repo.verify_sms_code(
+            self.session, data.phone, data.code
+        )
+        password = decrypt_password(
+            data.encrypted_password, data.nonce
+        )
         user.password_hash = hash_password(password)
         await repository.update(self.session, user)
 
@@ -119,90 +128,24 @@ class UserService:
         通过短信验证码验证新手机号后修改。
         """
         user = await self.get_user(user_id)
-        # 先检查唯一性，避免浪费验证码
         existing = await repository.get_by_phone(
             self.session, data.new_phone
         )
         if existing and existing.id != user_id:
-            raise ConflictException(message="手机号已被使用", code="PHONE_ALREADY_USED")
-        await auth_repo.verify_sms_code(self.session, data.new_phone, data.code)
+            raise ConflictException(
+                message="手机号已被使用",
+                code="PHONE_ALREADY_USED",
+            )
+        await auth_repo.verify_sms_code(
+            self.session, data.new_phone, data.code
+        )
         user.phone = data.new_phone
         return await repository.update(self.session, user)
-
-    async def enable_2fa_totp(self, user_id: str) -> str:
-        """启用 TOTP 双因素认证，生成密钥。
-
-        返回 TOTP 密钥字符串，供生成二维码使用。
-        """
-        user = await self.get_user(user_id)
-        secret = pyotp.random_base32()
-        user.totp_secret = secret
-        await repository.update(self.session, user)
-        return secret
-
-    async def confirm_2fa_totp(
-        self, user_id: str, totp_code: str
-    ) -> None:
-        """确认启用 TOTP 双因素认证。
-
-        验证 TOTP 代码正确后，设置 two_factor_enabled 和 method。
-        """
-        user = await self.get_user(user_id)
-        if not user.totp_secret:
-            raise ConflictException(message="请先启用双因素认证", code="TWO_FA_NOT_ENABLED")
-        totp = pyotp.TOTP(user.totp_secret)
-        if not totp.verify(totp_code):
-            raise ConflictException(message="验证码不正确", code="TWO_FA_CODE_INCORRECT")
-        user.two_factor_enabled = True
-        user.two_factor_method = "totp"
-        await repository.update(self.session, user)
-
-    async def enable_2fa_sms(
-        self, user_id: str, phone: str, code: str
-    ) -> None:
-        """启用短信双因素认证。
-
-        验证手机号匹配和短信验证码后直接启用。
-        """
-        user = await self.get_user(user_id)
-        if not user.phone:
-            raise ConflictException(message="请先绑定手机号", code="PHONE_NOT_BOUND")
-        if user.phone != phone:
-            raise ConflictException(message="手机号与当前账号不匹配", code="PHONE_MISMATCH")
-        await auth_repo.verify_sms_code(self.session, phone, code)
-        user.two_factor_enabled = True
-        user.two_factor_method = "sms"
-        user.totp_secret = None
-        await repository.update(self.session, user)
-
-    async def disable_2fa(
-        self, user_id: str, phone: str, code: str
-    ) -> None:
-        """关闭双因素认证。
-
-        需验证手机短信验证码。
-        """
-        user = await self.get_user(user_id)
-        if user.phone != phone:
-            raise ConflictException(message="手机号不匹配", code="PHONE_MISMATCH")
-        await auth_repo.verify_sms_code(self.session, phone, code)
-        user.two_factor_enabled = False
-        user.two_factor_method = None
-        user.totp_secret = None
-        await repository.update(self.session, user)
-
-    async def list_users(
-        self, offset: int, limit: int
-    ) -> tuple[list[User], int]:
-        """分页查询用户列表。"""
-        return await repository.list_users(
-            self.session, offset, limit
-        )
 
     async def delete_user(self, user_id: str) -> None:
         """删除用户及其所有关联数据。
 
-        清理顺序：RefreshToken → SmsCode → Document → User。
+        清理顺序：RefreshToken -> SmsCode -> Document -> User。
         磁盘文件在事务提交后删除。
         """
         user = await self.get_user(user_id)

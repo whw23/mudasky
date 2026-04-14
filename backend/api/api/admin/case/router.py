@@ -8,7 +8,12 @@ from fastapi import APIRouter, status
 from api.core.dependencies import DbSession
 from api.core.pagination import PaginatedResponse, PaginationParams
 
-from .schemas import CaseCreate, CaseResponse, CaseUpdate
+from .schemas import (
+    CaseCreate,
+    CaseDeleteRequest,
+    CaseResponse,
+    CaseUpdate,
+)
 from .service import CaseService
 
 router = APIRouter(
@@ -41,7 +46,7 @@ async def admin_list_cases(
 
 
 @router.post(
-    "/create",
+    "/list/create",
     response_model=CaseResponse,
     status_code=status.HTTP_201_CREATED,
     summary="创建成功案例",
@@ -56,29 +61,28 @@ async def admin_create_case(
 
 
 @router.post(
-    "/edit/{case_id}",
+    "/list/detail/edit",
     response_model=CaseResponse,
     summary="更新成功案例",
 )
 async def admin_update_case(
-    case_id: str,
     data: CaseUpdate,
     session: DbSession,
 ) -> CaseResponse:
     """管理员更新成功案例。"""
     svc = CaseService(session)
-    case = await svc.update_case(case_id, data)
+    case = await svc.update_case(data.case_id, data)
     return CaseResponse.model_validate(case)
 
 
 @router.post(
-    "/delete/{case_id}",
+    "/list/detail/delete",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="删除成功案例",
 )
 async def admin_delete_case(
-    case_id: str, session: DbSession
+    data: CaseDeleteRequest, session: DbSession
 ) -> None:
     """管理员删除成功案例。"""
     svc = CaseService(session)
-    await svc.delete_case(case_id)
+    await svc.delete_case(data.case_id)

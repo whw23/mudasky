@@ -30,6 +30,7 @@ class UserResponse(BaseModel):
 class UserAdminUpdate(BaseModel):
     """管理员更新用户信息请求。"""
 
+    user_id: str = Field(..., description="用户 ID")
     is_active: bool | None = Field(None, description="是否激活")
     storage_quota: int | None = Field(
         None, ge=0, description="存储配额（字节）"
@@ -39,6 +40,7 @@ class UserAdminUpdate(BaseModel):
 class PasswordReset(BaseModel):
     """重置密码请求。"""
 
+    user_id: str = Field(..., description="用户 ID")
     encrypted_password: str = Field(
         ..., description="RSA 加密后的新密码（Base64）"
     )
@@ -48,9 +50,22 @@ class PasswordReset(BaseModel):
 class RoleAssignment(BaseModel):
     """分配角色请求。"""
 
+    user_id: str = Field(..., description="用户 ID")
     role_id: str | None = Field(
         None, description="角色 ID（null 表示取消分配）"
     )
+
+
+class ForceLogoutRequest(BaseModel):
+    """强制下线请求。"""
+
+    user_id: str = Field(..., description="用户 ID")
+
+
+class DeleteUserRequest(BaseModel):
+    """删除用户请求。"""
+
+    user_id: str = Field(..., description="用户 ID")
 
 
 class MessageResponse(BaseModel):

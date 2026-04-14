@@ -1,4 +1,4 @@
-"""Portal 用户领域 Pydantic 数据模型。
+"""Portal 用户资料 Pydantic 数据模型。
 
 定义用户更新、密码修改、手机号修改、响应等数据传输对象。
 """
@@ -70,13 +70,3 @@ class UserResponse(BaseModel):
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
-
-
-class SessionResponse(BaseModel):
-    """活跃会话响应。"""
-
-    id: str
-    user_agent: str | None = None
-    ip_address: str | None = None
-    created_at: datetime
-    is_current: bool = False

@@ -1,7 +1,7 @@
-"""内容展示。"""
+"""会话管理。"""
 
 from .router import router
 
-description = "内容展示"
+description = "会话管理"
 
 __all__ = ["router", "description"]

@@ -122,6 +122,32 @@ async def list_by_role_id(
     return list(result.scalars().all())
 
 
+async def list_by_role_and_advisor(
+    session: AsyncSession,
+    role_id: str,
+    offset: int,
+    limit: int,
+    advisor_id: str | None = None,
+) -> tuple[list[User], int]:
+    """按角色和顾问分页查询用户。"""
+    conditions = [User.role_id == role_id]
+    if advisor_id is not None:
+        conditions.append(User.advisor_id == advisor_id)
+
+    count_stmt = select(func.count()).select_from(User).where(*conditions)
+    total = (await session.execute(count_stmt)).scalar_one()
+
+    stmt = (
+        select(User)
+        .where(*conditions)
+        .order_by(User.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all()), total
+
+
 async def count_by_role(
     session: AsyncSession,
 ) -> dict[str, int]:

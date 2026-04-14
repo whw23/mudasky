@@ -144,4 +144,5 @@ class ConfigDetailResponse(ConfigResponse):
 class ConfigUpdateRequest(BaseModel):
     """配置更新请求。"""
 
+    key: str = Field(..., description="配置键")
     value: Any = Field(..., description="配置值")

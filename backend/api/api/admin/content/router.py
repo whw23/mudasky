@@ -17,9 +17,11 @@ from api.core.pagination import (
 
 from .schemas import (
     ArticleCreate,
+    ArticleDeleteRequest,
     ArticleResponse,
     ArticleUpdate,
     CategoryCreate,
+    CategoryDeleteRequest,
     CategoryResponse,
     CategoryUpdate,
 )
@@ -64,7 +66,7 @@ async def admin_list_categories(
 
 
 @category_router.post(
-    "/create",
+    "/list/create",
     response_model=CategoryResponse,
     status_code=status.HTTP_201_CREATED,
     summary="创建分类",
@@ -79,32 +81,33 @@ async def admin_create_category(
 
 
 @category_router.post(
-    "/edit/{category_id}",
+    "/list/detail/edit",
     response_model=CategoryResponse,
     summary="更新分类",
 )
 async def admin_update_category(
-    category_id: str,
     data: CategoryUpdate,
     session: DbSession,
 ) -> CategoryResponse:
     """管理员更新分类。"""
     svc = ContentService(session)
-    category = await svc.update_category(category_id, data)
+    category = await svc.update_category(
+        data.category_id, data
+    )
     return CategoryResponse.model_validate(category)
 
 
 @category_router.post(
-    "/delete/{category_id}",
+    "/list/detail/delete",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="删除分类",
 )
 async def admin_delete_category(
-    category_id: str, session: DbSession
+    data: CategoryDeleteRequest, session: DbSession
 ) -> None:
     """管理员删除分类。"""
     svc = ContentService(session)
-    await svc.delete_category(category_id)
+    await svc.delete_category(data.category_id)
 
 
 @article_router.get(
@@ -130,7 +133,7 @@ async def admin_list_articles(
 
 
 @article_router.post(
-    "/create",
+    "/list/create",
     response_model=ArticleResponse,
     status_code=status.HTTP_201_CREATED,
     summary="创建文章",
@@ -147,32 +150,33 @@ async def admin_create_article(
 
 
 @article_router.post(
-    "/edit/{article_id}",
+    "/list/detail/edit",
     response_model=ArticleResponse,
     summary="更新文章",
 )
 async def admin_update_article(
-    article_id: str,
     data: ArticleUpdate,
     session: DbSession,
 ) -> ArticleResponse:
     """管理员更新文章（发布/取消发布/置顶等）。"""
     svc = ContentService(session)
-    article = await svc.update_article(article_id, data)
+    article = await svc.update_article(
+        data.article_id, data
+    )
     return ArticleResponse.model_validate(article)
 
 
 @article_router.post(
-    "/delete/{article_id}",
+    "/list/detail/delete",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="删除文章",
 )
 async def admin_delete_article(
-    article_id: str, session: DbSession
+    data: ArticleDeleteRequest, session: DbSession
 ) -> None:
     """管理员删除文章。"""
     svc = ContentService(session)
-    await svc.delete_article_admin(article_id)
+    await svc.delete_article_admin(data.article_id)
 
 
 # 挂载子路由到主路由

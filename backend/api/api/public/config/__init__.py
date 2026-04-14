@@ -1,3 +1,7 @@
+"""配置查询。"""
+
 from .router import router
 
-__all__ = ["router"]
+description = "配置查询"
+
+__all__ = ["router", "description"]

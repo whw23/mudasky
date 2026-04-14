@@ -35,18 +35,17 @@ async def list_general_configs(
 
 
 @general_settings_router.post(
-    "/edit/{key}",
+    "/list/edit",
     response_model=ConfigResponse,
     summary="更新通用配置值",
 )
 async def update_general_config(
-    key: str,
     data: ConfigUpdateRequest,
     session: DbSession,
 ) -> ConfigResponse:
     """更新通用配置值。"""
     svc = ConfigService(session)
-    return await svc.update_value(key, data.value)
+    return await svc.update_value(data.key, data.value)
 
 
 @web_settings_router.get(
@@ -63,18 +62,17 @@ async def list_web_configs(
 
 
 @web_settings_router.post(
-    "/edit/{key}",
+    "/list/edit",
     response_model=ConfigResponse,
     summary="更新网站配置值",
 )
 async def update_web_config(
-    key: str,
     data: ConfigUpdateRequest,
     session: DbSession,
 ) -> ConfigResponse:
     """更新网站配置值。"""
     svc = ConfigService(session)
-    return await svc.update_value(key, data.value)
+    return await svc.update_value(data.key, data.value)
 
 
 # 挂载子路由到主路由

@@ -3,8 +3,9 @@
 提供文件上传、查询、下载、删除等 API 端点。
 """
 
-from fastapi import APIRouter, UploadFile, status
+from fastapi import APIRouter, Query, UploadFile, status
 from fastapi.responses import Response
+from pydantic import BaseModel, Field
 
 from api.core.dependencies import CurrentUserId, DbSession
 from api.core.pagination import PaginationParams
@@ -23,26 +24,17 @@ from .service import (
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-@router.post(
-    "/upload",
-    response_model=DocumentResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="上传文件",
+class DeleteDocumentBody(BaseModel):
+    """删除文档请求体。"""
+
+    doc_id: str = Field(..., description="文档 ID")
+
+
+@router.get(
+    "/list",
+    response_model=DocumentListResponse,
+    summary="查询文档列表",
 )
-async def upload_document_endpoint(
-    file: UploadFile,
-    user_id: CurrentUserId,
-    session: DbSession,
-    category: DocumentCategory = DocumentCategory.OTHER,
-) -> DocumentResponse:
-    """上传文件。"""
-    doc = await upload_document(
-        session, user_id, file, category
-    )
-    return DocumentResponse.model_validate(doc)
-
-
-@router.get("/list", response_model=DocumentListResponse, summary="查询文档列表")
 async def list_documents_endpoint(
     user_id: CurrentUserId,
     session: DbSession,
@@ -74,22 +66,45 @@ async def list_documents_endpoint(
     )
 
 
-@router.get("/detail/{doc_id}", response_model=DocumentResponse, summary="获取文档详情")
-async def get_document_endpoint(
-    doc_id: str,
+@router.post(
+    "/list/upload",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="上传文件",
+)
+async def upload_document_endpoint(
+    file: UploadFile,
     user_id: CurrentUserId,
     session: DbSession,
+    category: DocumentCategory = DocumentCategory.OTHER,
+) -> DocumentResponse:
+    """上传文件。"""
+    doc = await upload_document(
+        session, user_id, file, category
+    )
+    return DocumentResponse.model_validate(doc)
+
+
+@router.get(
+    "/list/detail",
+    response_model=DocumentResponse,
+    summary="获取文档详情",
+)
+async def get_document_endpoint(
+    user_id: CurrentUserId,
+    session: DbSession,
+    doc_id: str = Query(..., description="文档 ID"),
 ) -> DocumentResponse:
     """获取文档详情。"""
     doc = await get_document(session, doc_id, user_id)
     return DocumentResponse.model_validate(doc)
 
 
-@router.get("/download/{doc_id}", summary="下载文档")
+@router.get("/list/detail/download", summary="下载文档")
 async def download_document(
-    doc_id: str,
     user_id: CurrentUserId,
     session: DbSession,
+    doc_id: str = Query(..., description="文档 ID"),
 ) -> Response:
     """从数据库读取文件二进制数据并返回。"""
     doc = await get_document(session, doc_id, user_id)
@@ -97,20 +112,22 @@ async def download_document(
         content=doc.file_data,
         media_type=doc.mime_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{doc.original_name}"',
+            "Content-Disposition": (
+                f'attachment; filename="{doc.original_name}"'
+            ),
         },
     )
 
 
 @router.post(
-    "/delete/{doc_id}",
+    "/list/detail/delete",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="删除文档",
 )
 async def delete_document_endpoint(
-    doc_id: str,
+    data: DeleteDocumentBody,
     user_id: CurrentUserId,
     session: DbSession,
 ) -> None:
     """删除文档。"""
-    await delete_document(session, doc_id, user_id)
+    await delete_document(session, data.doc_id, user_id)

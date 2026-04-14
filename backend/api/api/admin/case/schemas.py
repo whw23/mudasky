@@ -33,9 +33,16 @@ class CaseCreate(BaseModel):
     sort_order: int = Field(0, description="排序序号")
 
 
+class CaseDeleteRequest(BaseModel):
+    """成功案例删除请求。"""
+
+    case_id: str = Field(..., description="案例 ID")
+
+
 class CaseUpdate(BaseModel):
     """成功案例更新请求。"""
 
+    case_id: str = Field(..., description="案例 ID")
     student_name: str | None = Field(
         None, max_length=100, description="学生姓名"
     )

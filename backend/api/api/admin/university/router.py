@@ -13,6 +13,7 @@ from api.core.pagination import (
 
 from .schemas import (
     UniversityCreate,
+    UniversityDeleteRequest,
     UniversityResponse,
     UniversityUpdate,
 )
@@ -46,7 +47,7 @@ async def admin_list_universities(
 
 
 @router.post(
-    "/create",
+    "/list/create",
     response_model=UniversityResponse,
     status_code=status.HTTP_201_CREATED,
     summary="创建院校",
@@ -61,31 +62,30 @@ async def admin_create_university(
 
 
 @router.post(
-    "/edit/{university_id}",
+    "/list/detail/edit",
     response_model=UniversityResponse,
     summary="更新院校",
 )
 async def admin_update_university(
-    university_id: str,
     data: UniversityUpdate,
     session: DbSession,
 ) -> UniversityResponse:
     """管理员更新院校。"""
     svc = UniversityService(session)
     university = await svc.update_university(
-        university_id, data
+        data.university_id, data
     )
     return UniversityResponse.model_validate(university)
 
 
 @router.post(
-    "/delete/{university_id}",
+    "/list/detail/delete",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="删除院校",
 )
 async def admin_delete_university(
-    university_id: str, session: DbSession
+    data: UniversityDeleteRequest, session: DbSession
 ) -> None:
     """管理员删除院校。"""
     svc = UniversityService(session)
-    await svc.delete_university(university_id)
+    await svc.delete_university(data.university_id)

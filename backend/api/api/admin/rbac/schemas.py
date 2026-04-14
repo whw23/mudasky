@@ -24,6 +24,7 @@ class RoleCreate(BaseModel):
 class RoleUpdate(BaseModel):
     """角色更新请求。"""
 
+    role_id: str = Field(..., description="角色 ID")
     name: str | None = Field(
         None, max_length=50, description="角色名称"
     )
@@ -49,6 +50,12 @@ class RoleResponse(BaseModel):
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class RoleDeleteRequest(BaseModel):
+    """角色删除请求。"""
+
+    role_id: str = Field(..., description="角色 ID")
 
 
 class ReorderItem(BaseModel):
