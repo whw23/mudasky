@@ -30,10 +30,18 @@ class TestSmsCode:
 
     async def test_send_sms_code(self, e2e_client):
         """发送验证码成功（DEBUG 模式返回 code）。"""
-        resp = await e2e_client.post(
-            "/api/auth/sms-code",
-            json={"phone": "+8613800000001"},
-        )
+        import asyncio
+
+        # 限流：同一手机号 60 秒内只能发送一次，遇到 429 则等待重试
+        for _ in range(3):
+            resp = await e2e_client.post(
+                "/api/auth/sms-code",
+                json={"phone": "+8613800000001"},
+            )
+            if resp.status_code == 429:
+                await asyncio.sleep(61)
+                continue
+            break
         assert resp.status_code == 200
         data = resp.json()
         assert "code" in data  # DEBUG 模式返回验证码
