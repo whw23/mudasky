@@ -34,6 +34,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
   const [name, setName] = useState("")
   const [nameEn, setNameEn] = useState("")
   const [country, setCountry] = useState("")
+  const [province, setProvince] = useState("")
   const [city, setCity] = useState("")
   const [description, setDescription] = useState("")
   const [programs, setPrograms] = useState("")
@@ -50,6 +51,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
       setName(university.name)
       setNameEn(university.name_en ?? "")
       setCountry(university.country)
+      setProvince(university.province ?? "")
       setCity(university.city)
       setDescription(university.description ?? "")
       setPrograms(university.programs.join(", "))
@@ -61,6 +63,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
       setName("")
       setNameEn("")
       setCountry("")
+      setProvince("")
       setCity("")
       setDescription("")
       setPrograms("")
@@ -91,6 +94,7 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
         name,
         name_en: nameEn || null,
         country,
+        province: province || null,
         city,
         description: description || null,
         programs: programs
@@ -145,14 +149,22 @@ export function UniversityDialog({ university, open, onClose, onSave }: Universi
             />
           </div>
 
-          {/* 国家 + 城市 */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* 国家 + 省份 + 城市 */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("country")}</Label>
               <Input
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 placeholder={t("countryPlaceholder")}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("province")}</Label>
+              <Input
+                value={province}
+                onChange={(e) => setProvince(e.target.value)}
+                placeholder={t("provincePlaceholder")}
               />
             </div>
             <div className="space-y-1">

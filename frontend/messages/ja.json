@@ -1200,6 +1200,8 @@
     "country": "国",
     "countryPlaceholder": "国を入力",
     "countryRequired": "国は必須です",
+    "province": "州/県",
+    "provincePlaceholder": "州/県を入力（任意）",
     "city": "都市",
     "cityPlaceholder": "都市を入力",
     "cityRequired": "都市は必須です",

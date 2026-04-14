@@ -1209,6 +1209,8 @@
     "country": "国家",
     "countryPlaceholder": "请输入国家",
     "countryRequired": "国家不能为空",
+    "province": "省份/州",
+    "provincePlaceholder": "请输入省份（可选）",
     "city": "城市",
     "cityPlaceholder": "请输入城市",
     "cityRequired": "城市不能为空",

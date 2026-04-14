@@ -1200,6 +1200,8 @@
     "country": "Land",
     "countryPlaceholder": "Land eingeben",
     "countryRequired": "Land ist erforderlich",
+    "province": "Bundesland",
+    "provincePlaceholder": "Bundesland eingeben (optional)",
     "city": "Stadt",
     "cityPlaceholder": "Stadt eingeben",
     "cityRequired": "Stadt ist erforderlich",
