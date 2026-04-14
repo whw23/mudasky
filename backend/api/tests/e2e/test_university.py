@@ -12,7 +12,7 @@ class TestPublicUniversity:
     async def test_list_universities(self, anon_client):
         """匿名访问院校列表返回 200。"""
         resp = await anon_client.get(
-            "/api/public/university/list"
+            "/api/public/universities/list"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -23,7 +23,7 @@ class TestPublicUniversity:
     async def test_list_countries(self, anon_client):
         """匿名访问国家列表返回 200。"""
         resp = await anon_client.get(
-            "/api/public/university/countries"
+            "/api/public/universities/countries"
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -70,7 +70,7 @@ class TestUniversityCrud:
         try:
             # 2. 匿名用户可以访问院校详情
             public_resp = await anon_client.get(
-                f"/api/public/university/detail/{university_id}"
+                f"/api/public/universities/detail/{university_id}"
             )
             assert public_resp.status_code == 200
             assert (

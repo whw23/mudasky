@@ -11,7 +11,7 @@ class TestPublicCase:
 
     async def test_list_cases(self, anon_client):
         """匿名访问案例列表返回 200。"""
-        resp = await anon_client.get("/api/public/case/list")
+        resp = await anon_client.get("/api/public/cases/list")
         assert resp.status_code == 200
         data = resp.json()
         assert "items" in data
@@ -53,7 +53,7 @@ class TestCaseCrud:
         try:
             # 2. 匿名用户可以访问案例详情
             public_resp = await anon_client.get(
-                f"/api/public/case/detail/{case_id}"
+                f"/api/public/cases/detail/{case_id}"
             )
             assert public_resp.status_code == 200
             assert (

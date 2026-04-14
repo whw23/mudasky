@@ -210,7 +210,7 @@ class TestAdminContentCrud:
         try:
             # 3. 管理员创建文章
             create_resp = await superuser_client.post(
-                "/api/admin/content/create",
+                "/api/admin/articles/create",
                 json={
                     "title": f"E2E Admin 文章 {suffix}",
                     "slug": f"e2e-admin-article-{suffix}",
@@ -224,14 +224,14 @@ class TestAdminContentCrud:
 
             # 4. 管理员文章列表
             list_resp = await superuser_client.get(
-                "/api/admin/content/list"
+                "/api/admin/articles/list"
             )
             assert list_resp.status_code == 200
             assert "items" in list_resp.json()
 
             # 5. 管理员编辑文章（发布）
             edit_resp = await superuser_client.post(
-                f"/api/admin/content/edit/{article_id}",
+                f"/api/admin/articles/edit/{article_id}",
                 json={"status": "published"},
             )
             assert edit_resp.status_code == 200
@@ -241,7 +241,7 @@ class TestAdminContentCrud:
 
             # 6. 管理员删除文章
             del_resp = await superuser_client.post(
-                f"/api/admin/content/delete/{article_id}"
+                f"/api/admin/articles/delete/{article_id}"
             )
             assert del_resp.status_code == 204
         finally:
