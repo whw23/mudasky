@@ -15,7 +15,9 @@ test.describe("用户管理操作", () => {
     await adminPage.locator("table tbody tr").first().waitFor({ timeout: 15000 })
     // 展开第一个用户
     await adminPage.locator("table tbody tr").first().click()
-    await adminPage.waitForTimeout(1500)
+    // 等待展开面板内容加载（面板会调 API 获取详情）
+    await adminPage.getByText("基本信息").waitFor({ timeout: 15_000 })
+    await adminPage.waitForTimeout(1000)
   })
 
   test("展开面板显示基本信息区域", async ({ adminPage }) => {
