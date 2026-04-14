@@ -24,6 +24,7 @@ const STAT_FIELDS = [
 const HERO_FIELDS = [
   { key: 'hero_title', label: '标题', type: 'text' as const, localized: true },
   { key: 'hero_subtitle', label: '副标题', type: 'text' as const, localized: true },
+  { key: 'hero_image', label: 'Banner 背景图', type: 'image' as const, localized: false },
 ]
 
 /** 服务区域字段定义 */
