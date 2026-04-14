@@ -114,7 +114,9 @@
     "settings": "システム設定",
     "universityManagement": "大学管理",
     "generalSettings": "一般設定",
-    "webSettings": "ウェブ設定"
+    "webSettings": "ウェブ設定",
+    "studentManagement": "学生管理",
+    "contactManagement": "連絡先管理"
   },
   "User": {
     "title": "ユーザーセンター",

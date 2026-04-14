@@ -15,14 +15,6 @@ export interface User {
   updated_at: string | null
 }
 
-/** 权限定义 */
-export interface Permission {
-  id: string
-  code: string
-  name_key: string
-  description: string
-}
-
 /** 角色定义 */
 export interface Role {
   id: string
@@ -30,10 +22,34 @@ export interface Role {
   description: string
   is_builtin: boolean
   sort_order: number
-  permissions: Permission[]
+  permissions: string[]
   user_count: number
   created_at: string
   updated_at: string | null
+}
+
+/** 学生信息 */
+export interface Student {
+  id: string
+  phone: string | null
+  username: string | null
+  is_active: boolean
+  contact_status: string | null
+  contact_note: string | null
+  advisor_id: string | null
+  storage_quota: number
+  created_at: string
+  updated_at: string | null
+}
+
+/** 联系记录 */
+export interface ContactRecord {
+  id: string
+  user_id: string
+  staff_id: string
+  action: string
+  note: string | null
+  created_at: string
 }
 
 export interface Article {

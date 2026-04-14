@@ -114,7 +114,9 @@
     "settings": "System Settings",
     "universityManagement": "University Management",
     "generalSettings": "General Settings",
-    "webSettings": "Web Settings"
+    "webSettings": "Web Settings",
+    "studentManagement": "Student Management",
+    "contactManagement": "Contact Management"
   },
   "User": {
     "title": "User Center",

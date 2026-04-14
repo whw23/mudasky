@@ -114,7 +114,9 @@
     "settings": "系统设置",
     "universityManagement": "院校管理",
     "generalSettings": "通用配置",
-    "webSettings": "网页设置"
+    "webSettings": "网页设置",
+    "studentManagement": "学生管理",
+    "contactManagement": "联系人管理"
   },
   "User": {
     "title": "用户中心",

@@ -19,6 +19,8 @@ import {
   FolderOpen,
   GraduationCap,
   Trophy,
+  BookUser,
+  Contact,
 } from "lucide-react"
 import { usePermissions } from "@/hooks/use-permissions"
 
@@ -41,6 +43,8 @@ const MENU_KEYS: MenuItem[] = [
   { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["admin/cases/*"] },
   { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin/general-settings/*"] },
   { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin/web-settings/*"] },
+  { key: "studentManagement", href: "/admin/students", icon: BookUser, permissions: ["admin/students/*"] },
+  { key: "contactManagement", href: "/admin/contacts", icon: Contact, permissions: ["admin/contacts/*"] },
 ]
 
 /** 后台管理侧边栏 */
