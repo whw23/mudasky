@@ -8,6 +8,9 @@
 
 **Tech Stack:** Playwright, TypeScript, next-intl (zh-CN locale)
 
+**参考文档：**
+- `docs/superpowers/specs/2026-04-14-permission-hierarchy-design.md` — 后端权限层级重构设计（含完整端点列表、权限匹配规则、角色定义），用于理解 API 结构
+
 **前置条件：**
 - 容器完全启动并稳定运行（所有页面返回 200）
 - 运行前预热所有页面：
