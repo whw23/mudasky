@@ -91,7 +91,12 @@
 - 不修改/删除种子数据（superuser、预设角色等）
 - 未登录测试使用 `test.use({ storageState: { cookies: [], origins: [] } })`
 - 展开面板是行内渲染（非 dialog），用 `getByText("基本信息").waitFor()` 等待加载
-- 等待 API 响应后断言，不依赖固定 `waitForTimeout`（必要时可用，但优先用 `waitFor`）
+- **禁止使用 `waitForTimeout` 作为主要等待手段**，优先使用条件等待：
+  - 等待元素：`await page.locator("main").waitFor()` 或 `await expect(el).toBeVisible()`
+  - 等待弹窗：`await expect(page.getByRole("dialog")).toBeVisible()`
+  - 等待导航：`await page.waitForURL(/pattern/)`
+  - 等待 API：`await page.waitForResponse(r => r.url().includes("/list"))`
+  - 搜索防抖：允许 `waitForTimeout(500)`（唯一合理场景）
 
 #### E2E 测试目录结构
 

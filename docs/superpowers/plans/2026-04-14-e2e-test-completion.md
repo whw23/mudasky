@@ -24,7 +24,113 @@ done
 
 **运行命令：**
 ```bash
-source ~/.nvm/nvm.sh && cd /home/whw23/code/mudasky/frontend/e2e && npx playwright test --config=playwright.config.ts
+cd /home/whw23/code/mudasky/frontend/e2e && npx playwright test --config=playwright.config.ts
+```
+
+---
+
+## Task 0: E2E 测试性能优化（在补全测试前执行）
+
+当前测试有 84 处 `waitForTimeout` 硬编码等待，总计约 164 秒浪费。加上 `gotoAdmin` 每次多等 1s、120s 超时，整体运行很慢。
+
+### Step 0.1: 优化 gotoAdmin
+
+**File:** `frontend/e2e/fixtures/base.ts`
+
+- [ ] **修改 gotoAdmin，去掉固定 1s 等待，改为等待 main 可见**
+
+当前代码：
+```typescript
+export async function gotoAdmin(page: Page, pagePath: string) {
+  await page.goto(pagePath, { waitUntil: "load", timeout: 60_000 })
+  await page.waitForFunction(
+    () => !document.body.textContent?.includes("Compiling"),
+    { timeout: 60_000 },
+  ).catch(() => {})
+  await page.waitForLoadState("networkidle")
+  await page.waitForTimeout(1000)  // ← 删掉
+}
+```
+
+改为：
+```typescript
+export async function gotoAdmin(page: Page, pagePath: string) {
+  await page.goto(pagePath, { waitUntil: "load", timeout: 60_000 })
+  await page.waitForFunction(
+    () => !document.body.textContent?.includes("Compiling"),
+    { timeout: 60_000 },
+  ).catch(() => {})
+  await page.waitForLoadState("networkidle")
+  // 等待 main 区域渲染完成，替代固定等待
+  await page.locator("main").waitFor({ timeout: 15_000 }).catch(() => {})
+}
+```
+
+### Step 0.2: 降低超时配置
+
+**File:** `frontend/e2e/playwright.config.ts`
+
+- [ ] **超时从 120s 降到 60s，action timeout 从 15s 降到 10s**
+
+```typescript
+timeout: 60_000,       // 从 120_000 降低
+// ...
+actionTimeout: 10_000, // 从 15_000 降低
+```
+
+### Step 0.3: 批量替换 waitForTimeout
+
+**Files:** 所有 `frontend/e2e/**/*.spec.ts`
+
+- [ ] **逐文件替换 `waitForTimeout` 为条件等待**
+
+替换规则：
+
+| 场景 | 旧写法 | 新写法 |
+|---|---|---|
+| 等待页面加载 | `await page.waitForTimeout(3000)` | `await page.locator("main").waitFor()` |
+| 等待搜索防抖 | `await page.waitForTimeout(1000)` | `await page.waitForResponse(resp => resp.url().includes("/list"))` 或保留 `waitForTimeout(500)` |
+| 等待弹窗关闭 | `await page.waitForTimeout(500)` | `await expect(dialog).toBeHidden()` |
+| 等待数据刷新 | `await page.waitForTimeout(2000)` | `await page.locator("tr").first().waitFor()` |
+| 导航后等待 | `await page.waitForTimeout(3000)` | 已由 `gotoAdmin` 处理，删掉 |
+| 等待弹窗出现 | `await page.waitForTimeout(2000)` | `await expect(page.getByRole("dialog")).toBeVisible()` |
+| 展开面板加载 | `await page.waitForTimeout(1500)` | `await page.getByText("基本信息").waitFor({ timeout: 10_000 })` |
+| 权限守卫重定向 | `await page.waitForTimeout(5000)` | `await page.waitForURL(/\/$/,{ timeout: 10_000 })` |
+
+具体操作：
+
+1. 搜索所有 `waitForTimeout(3000)` — 大部分在 `gotoAdmin` 之后，直接删除（`gotoAdmin` 已等待 main 可见）
+2. 搜索所有 `waitForTimeout(2000)` — 替换为具体的元素等待
+3. 搜索所有 `waitForTimeout(1000)` — 搜索防抖场景保留 `waitForTimeout(500)`，其他替换
+4. `waitForTimeout(500)` — 大部分可删除或保留
+5. `waitForTimeout(5000)` — 替换为 `waitForURL` 或条件等待
+
+**操作方法：**
+
+对每个 spec 文件：
+1. 读取文件内容
+2. 分析每个 `waitForTimeout` 的上下文（它在等什么？）
+3. 替换为最精确的条件等待
+4. 如果确实无法用条件等待（如动画过渡），保留但缩短到最小值
+
+**预期效果：**
+- 84 处 `waitForTimeout` 减少到 ~15 处（仅保留搜索防抖等必要场景）
+- 总固定等待从 ~164s 降到 ~10s
+- 测试总时间预计从 12-15 分钟降到 5-8 分钟
+
+- [ ] **Step 0.4: 运行验证**
+
+```bash
+cd /home/whw23/code/mudasky/frontend/e2e && npx playwright test --config=playwright.config.ts
+```
+
+Expected: 全部通过，耗时明显降低
+
+- [ ] **Step 0.5: 提交**
+
+```bash
+git add frontend/e2e/
+git commit -m "perf: E2E 测试性能优化 — 消除硬编码等待、降低超时"
 ```
 
 ---
