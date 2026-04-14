@@ -8,6 +8,7 @@ from api.core.pagination import (
     PaginationParams,
     build_paginated,
 )
+
 from .schemas import (
     AssignAdvisor,
     MessageResponse,
@@ -68,12 +69,11 @@ async def get_student_detail(
 async def edit_student(
     data: StudentEdit,
     session: DbSession,
-    student_id: str = Query(..., description="学生 ID"),
 ) -> StudentResponse:
     """编辑学生信息。"""
     svc = StudentService(session)
     student = await svc.edit_student(
-        student_id, data.is_active, data.contact_note
+        data.user_id, data.is_active, data.contact_note
     )
     return StudentResponse.model_validate(student)
 

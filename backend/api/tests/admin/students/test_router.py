@@ -133,8 +133,8 @@ class TestEditStudent:
             _make_student(is_active=False)
         )
         resp = await client.post(
-            "/admin/students/list/detail/edit?student_id=student-001",
-            json={"is_active": False},
+            "/admin/students/list/detail/edit",
+            json={"user_id": "student-001", "is_active": False},
             headers=superuser_headers,
         )
         assert resp.status_code == 200

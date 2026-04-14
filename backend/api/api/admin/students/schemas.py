@@ -25,6 +25,7 @@ class StudentResponse(BaseModel):
 class StudentEdit(BaseModel):
     """编辑学生信息请求。"""
 
+    user_id: str = Field(..., description="学生 ID")
     is_active: bool | None = Field(None, description="是否激活")
     contact_note: str | None = Field(None, description="备注")
 
