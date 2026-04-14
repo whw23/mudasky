@@ -36,17 +36,21 @@ PERMISSIONS = [
     ("admin/users/force-logout", "permission.admin.users.force-logout", "强制下线用户"),
     # 管理后台 - 内容管理
     ("admin/content/list", "permission.admin.content.list", "查看内容列表"),
+    ("admin/content/create", "permission.admin.content.create", "创建内容"),
     ("admin/content/edit", "permission.admin.content.edit", "编辑内容"),
     ("admin/content/delete", "permission.admin.content.delete", "删除内容"),
     # 管理后台 - 分类管理
+    ("admin/categories/list", "permission.admin.categories.list", "查看分类列表"),
     ("admin/categories/create", "permission.admin.categories.create", "创建分类"),
     ("admin/categories/edit", "permission.admin.categories.edit", "编辑分类"),
     ("admin/categories/delete", "permission.admin.categories.delete", "删除分类"),
     # 管理后台 - 案例管理
+    ("admin/cases/list", "permission.admin.cases.list", "查看成功案例列表"),
     ("admin/cases/create", "permission.admin.cases.create", "创建成功案例"),
     ("admin/cases/edit", "permission.admin.cases.edit", "编辑成功案例"),
     ("admin/cases/delete", "permission.admin.cases.delete", "删除成功案例"),
     # 管理后台 - 院校管理
+    ("admin/universities/list", "permission.admin.universities.list", "查看院校列表"),
     ("admin/universities/create", "permission.admin.universities.create", "创建合作院校"),
     ("admin/universities/edit", "permission.admin.universities.edit", "编辑合作院校"),
     ("admin/universities/delete", "permission.admin.universities.delete", "删除合作院校"),
