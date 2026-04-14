@@ -7,8 +7,10 @@ import httpx
 import pytest
 
 from api.main import app
-from app.auth.models import SmsCode
-from app.user.models import User
+from app.db.auth.models import SmsCode
+from app.db.user.models import User
+
+API_BASE_URL = "http://localhost:8000"
 
 
 @pytest.fixture
@@ -17,6 +19,29 @@ async def client():
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
         base_url="http://test/api",
+    ) as c:
+        yield c
+
+
+@pytest.fixture
+async def api_client():
+    """直连 API 的 httpx 客户端。"""
+    async with httpx.AsyncClient(base_url=API_BASE_URL) as c:
+        yield c
+
+
+@pytest.fixture
+async def admin_api_client():
+    """模拟管理员的直连 API 客户端。"""
+    headers = {
+        "X-User-Id": "test-admin-id",
+        "X-User-Permissions": "admin.user.list,admin.user.create,admin.rbac.list",
+        "X-User-Type": "staff",
+        "X-Is-Superuser": "true",
+    }
+    async with httpx.AsyncClient(
+        base_url=API_BASE_URL,
+        headers=headers,
     ) as c:
         yield c
 
