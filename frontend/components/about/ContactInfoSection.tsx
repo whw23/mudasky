@@ -41,7 +41,7 @@ export function ContactInfoSection() {
   ]
 
   return (
-    <section className="bg-gray-50 py-10 md:py-16">
+    <section id="contact-info" className="bg-gray-50 py-10 md:py-16">
       <div className="mx-auto max-w-7xl px-4">
         <h2 className="mb-8 text-center text-2xl font-bold">
           {t("infoTitle")}

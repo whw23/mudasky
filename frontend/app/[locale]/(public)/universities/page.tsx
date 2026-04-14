@@ -1,5 +1,5 @@
 import { Banner } from "@/components/layout/Banner"
-import { Link } from "@/i18n/navigation"
+import { ConsultButton } from "@/components/common/ConsultButton"
 import { getTranslations } from "next-intl/server"
 import { ArrowRight } from "lucide-react"
 import { UniversityList } from "@/components/public/UniversityList"
@@ -46,12 +46,11 @@ export default async function UniversitiesPage() {
           {t("adviceContent")}
         </p>
         <div className="mt-8 text-center">
-          <Link
-            href="/contact"
+          <ConsultButton
             className="inline-flex items-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white"
           >
             {t("ctaButton")} <ArrowRight className="h-4 w-4" />
-          </Link>
+          </ConsultButton>
         </div>
       </section>
     </>
