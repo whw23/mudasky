@@ -26,7 +26,7 @@ class TestCrossRoleAdminAccess:
     ):
         """正向：管理员可以访问公开端点。"""
         resp = await superuser_client.get(
-            "/api/public/config/list"
+            "/api/public/cases/list"
         )
         assert resp.status_code in (200, 304)
 
