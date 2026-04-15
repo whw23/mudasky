@@ -67,72 +67,83 @@ async function globalSetup(_config: FullConfig) {
 
   await context.storageState({ path: AUTH_FILE })
 
-  /* ── 种子测试数据（E2E 前缀，teardown 清理） ── */
-  const headers = {
-    "Content-Type": "application/json",
-    "X-Requested-With": "XMLHttpRequest",
-  }
-  const api = (url: string, body?: Record<string, unknown>) =>
-    page.request.post(`http://localhost${url}`, { headers, data: body })
-  const apiGet = (url: string) =>
-    page.request.get(`http://localhost${url}`, { headers })
+  /* ── 种子测试数据（通过 page.evaluate 调用 API，自动带 cookie） ── */
+  await page.goto("http://localhost/", { waitUntil: "load", timeout: 30_000 })
 
-  // 1. 注册一个非 superuser 测试用户（会自动成为 visitor）
-  const smsRes = await api("/api/auth/sms-code", { phone: "+8613900000088" }).catch(() => null)
-  if (smsRes?.ok()) {
-    const smsData = await smsRes.json()
-    await api("/api/auth/register", {
-      phone: "+8613900000088",
-      code: smsData.code,
-      username: "E2E测试用户",
-    }).catch(() => {})
-  }
+  await page.evaluate(async () => {
+    const h = { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" }
+    const post = (url: string, body: unknown) =>
+      fetch(url, { method: "POST", headers: h, body: JSON.stringify(body), credentials: "include" })
+    const get = (url: string) =>
+      fetch(url, { headers: h, credentials: "include" })
 
-  // 2. 获取分类列表，每个分类创建一篇文章
-  const catRes = await apiGet("/api/admin/categories/list").catch(() => null)
-  if (catRes?.ok()) {
-    const categories = await catRes.json()
-    for (const cat of Array.isArray(categories) ? categories : []) {
-      await api("/api/admin/articles/list/create", {
-        title: `E2E文章-${cat.name}`,
-        slug: `e2e-article-${cat.slug}-${Date.now()}`,
-        category_id: cat.id,
-        content_type: "markdown",
-        content: "E2E 测试文章内容",
-        status: "published",
+    // 1. 注册一个非 superuser 测试用户 → 清除角色确保不是 superuser
+    try {
+      const smsRes = await post("/api/auth/sms-code", { phone: "+8613900000088" })
+      if (smsRes.ok) {
+        const smsData = await smsRes.json()
+        await post("/api/auth/register", {
+          phone: "+8613900000088", code: smsData.code, username: "E2E测试用户",
+        }).catch(() => {})
+      }
+    } catch { /* 已注册或失败均忽略 */ }
+    // 确保 E2E 用户不是 superuser
+    try {
+      const usersRes = await get("/api/admin/users/list?keyword=E2E")
+      if (usersRes.ok) {
+        const userData = await usersRes.json()
+        const items = userData.items ?? userData ?? []
+        for (const u of items) {
+          if (u.username?.startsWith("E2E") && u.role_name === "superuser") {
+            await post("/api/admin/users/list/detail/assign-role", {
+              user_id: u.id, role_id: null,
+            }).catch(() => {})
+          }
+        }
+      }
+    } catch { /* 忽略 */ }
+
+    // 2. 获取分类列表，每个分类创建一篇文章
+    try {
+      const catRes = await get("/api/admin/categories/list")
+      if (catRes.ok) {
+        const categories = await catRes.json()
+        for (const cat of Array.isArray(categories) ? categories : []) {
+          await post("/api/admin/articles/list/create", {
+            title: `E2E文章-${cat.name}`,
+            slug: `e2e-article-${cat.slug}-${Date.now()}`,
+            category_id: cat.id,
+            content_type: "markdown",
+            content: "E2E 测试文章内容",
+            status: "published",
+          }).catch(() => {})
+        }
+      }
+    } catch { /* 忽略 */ }
+
+    // 3. 创建案例
+    try {
+      await post("/api/admin/cases/list/create", {
+        student_name: "E2E案例学生",
+        university: "E2E大学",
+        program: "E2E专业",
+        year: 2026,
+        testimonial: "E2E 测试感言",
       }).catch(() => {})
-    }
-  }
+    } catch { /* 忽略 */ }
 
-  // 3. 创建案例
-  const caseRes = await apiGet("/api/admin/cases/list").catch(() => null)
-  const caseData = caseRes?.ok() ? await caseRes.json() : null
-  const cases = caseData?.items ?? caseData ?? []
-  if (!cases.some((c: { title?: string; student_name?: string }) =>
-    (c.title ?? c.student_name ?? "").startsWith("E2E"))) {
-    await api("/api/admin/cases/list/create", {
-      student_name: "E2E案例学生",
-      university: "E2E大学",
-      program: "E2E专业",
-      year: 2026,
-      testimonial: "E2E 测试感言",
-    }).catch(() => {})
-  }
-
-  // 4. 创建院校
-  const uniRes = await apiGet("/api/admin/universities/list").catch(() => null)
-  const uniData = uniRes?.ok() ? await uniRes.json() : null
-  const unis = uniData?.items ?? uniData ?? []
-  if (!unis.some((u: { name?: string }) => (u.name ?? "").startsWith("E2E"))) {
-    await api("/api/admin/universities/list/create", {
-      name: "E2E测试大学",
-      name_en: "E2E Test University",
-      country: "德国",
-      city: "柏林",
-      programs: ["计算机科学", "机械工程"],
-      description: "E2E 测试院校",
-    }).catch(() => {})
-  }
+    // 4. 创建院校
+    try {
+      await post("/api/admin/universities/list/create", {
+        name: `E2E测试大学${Date.now()}`,
+        name_en: "E2E Test University",
+        country: "德国",
+        city: "柏林",
+        programs: ["计算机科学", "机械工程"],
+        description: "E2E 测试院校",
+      }).catch(() => {})
+    } catch { /* 忽略 */ }
+  })
 
   /* ── 预热所有页面（触发 Next.js dev 编译） ── */
   for (const p of WARMUP_PAGES) {
