@@ -3,7 +3,7 @@
  * 覆盖弹窗打开/关闭、tab 切换、账号密码登录、空表单验证、保持登录 checkbox。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("登录流程", () => {
   test.use({ storageState: { cookies: [], origins: [] } })

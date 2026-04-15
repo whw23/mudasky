@@ -3,7 +3,7 @@
  * 验证切换语言后 URL 和页面内容变化。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("语言切换", () => {
   test.use({ storageState: { cookies: [], origins: [] } })

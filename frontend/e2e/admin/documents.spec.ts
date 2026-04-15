@@ -4,7 +4,7 @@
  */
 
 import { test, expect, gotoAdmin } from "../fixtures/base"
-import { test as baseTest, expect as baseExpect } from "@playwright/test"
+import { test as baseTest, expect as baseExpect } from "../fixtures/base"
 
 test.describe("文档管理页面", () => {
   test.beforeEach(async ({ adminPage }) => {

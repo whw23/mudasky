@@ -3,7 +3,7 @@
  * 覆盖登录弹窗交互、密码登录、登出、未登录重定向。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.use({ storageState: { cookies: [], origins: [] } })
 

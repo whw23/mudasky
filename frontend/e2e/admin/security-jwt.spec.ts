@@ -3,7 +3,7 @@
  * 验证有效 token 能访问受保护接口，无效/缺失 token 被正确拒绝。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 /** 伪造的 JWT：格式正确但签名无效 */
 const TAMPERED_JWT =

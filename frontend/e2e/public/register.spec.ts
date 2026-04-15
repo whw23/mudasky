@@ -3,7 +3,7 @@
  * 覆盖手机号注册（正向 + 手机号已存在）。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 import { getSmsCode } from "../helpers/sms"
 
 test.use({ storageState: { cookies: [], origins: [] } })

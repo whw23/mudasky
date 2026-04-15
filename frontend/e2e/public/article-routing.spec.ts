@@ -3,7 +3,7 @@
  * 覆盖：各栏目页文章链接指向正确的详情路由。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 import { createArticle } from "../helpers/seed"
 
 const sections = [

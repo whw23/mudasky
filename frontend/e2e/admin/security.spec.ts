@@ -4,7 +4,7 @@
  */
 
 import path from "node:path"
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 const AUTH_FILE = path.join(__dirname, "..", ".auth", "admin.json")
 const XHR_HEADERS = { "X-Requested-With": "XMLHttpRequest" }

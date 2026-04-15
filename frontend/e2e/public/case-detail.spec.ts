@@ -3,7 +3,7 @@
  * 覆盖：详情页加载、数据展示、返回链接、API 响应。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 import { getExistingCaseId, createCase } from "../helpers/seed"
 
 test.describe("案例详情页", () => {

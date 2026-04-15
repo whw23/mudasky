@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { test, expect } from "./fixtures/base"
 
 test.describe("权限拦截测试", () => {
   test.use({ storageState: { cookies: [], origins: [] } })

@@ -4,7 +4,7 @@
  * 返回链接、不存在 ID 和无效 ID 格式。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 import { createArticle } from "../helpers/seed"
 
 const categories = [

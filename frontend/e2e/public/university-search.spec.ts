@@ -3,7 +3,7 @@
  * 覆盖：搜索框输入、国家筛选、重置、分页。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("院校搜索筛选", () => {
   test.beforeEach(async ({ page }) => {

@@ -2,7 +2,7 @@
  * 首页 E2E 测试。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("首页", () => {
   test("页面可达且包含品牌名", async ({ page }) => {

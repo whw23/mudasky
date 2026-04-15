@@ -3,7 +3,7 @@
  * 未登录点击弹出登录弹窗，已登录跳转关于页面。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("立即咨询按钮（未登录）", () => {
   test.use({ storageState: { cookies: [], origins: [] } })

@@ -3,7 +3,7 @@
  * 通过 page.evaluate 直接调用无前端页面的 API 端点。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("公开 API — 案例详情", () => {
   test("GET /public/cases/detail/{id} 正常响应", async ({ page }) => {

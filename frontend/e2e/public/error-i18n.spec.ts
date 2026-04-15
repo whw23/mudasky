@@ -3,7 +3,7 @@
  * 验证 API 错误消息通过前端翻译显示。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 /* 清除认证状态，使用未登录的浏览器 */
 test.use({ storageState: { cookies: [], origins: [] } })

@@ -3,7 +3,7 @@
  * 验证导航栏所有链接可达，页面加载正常。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.use({ storageState: { cookies: [], origins: [] } })
 

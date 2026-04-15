@@ -3,7 +3,7 @@
  * 验证未登录用户和普通用户无法访问管理接口。
  */
 
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.use({ storageState: { cookies: [], origins: [] } })
 

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures/base"
 
 test.describe("留学指南", () => {
   test("页面可达", async ({ page }) => {

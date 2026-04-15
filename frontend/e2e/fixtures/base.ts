@@ -1,10 +1,82 @@
 /**
  * E2E 测试共享 fixtures。
  * 登录通过 globalSetup + storageState 处理。
- * 页面编译通过 globalSetup 预热处理。
+ * 覆盖率收集（API 端点 + 页面路由）自动启用。
  */
 
-import { test as base, type Page } from "@playwright/test"
+import { test as pwTest, expect, type Page } from "@playwright/test"
+import * as fs from "fs"
+import * as path from "path"
+
+/* ── 覆盖率收集 ── */
+
+const COVERAGE_DIR = path.join(__dirname, "..", ".coverage")
+const UUID_RE = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g
+const LOCALE_PREFIX_RE = /^\/[a-z]{2}(?=\/)/
+
+const apiCalls = new Set<string>()
+const visitedRoutes = new Set<string>()
+let exitRegistered = false
+
+/** 注册进程退出钩子，将覆盖率数据写入磁盘。 */
+function ensureExitHook() {
+  if (exitRegistered) return
+  exitRegistered = true
+
+  const workerId = process.env.TEST_WORKER_INDEX || "0"
+
+  process.on("exit", () => {
+    if (apiCalls.size === 0 && visitedRoutes.size === 0) return
+    fs.mkdirSync(COVERAGE_DIR, { recursive: true })
+
+    if (apiCalls.size > 0) {
+      fs.writeFileSync(
+        path.join(COVERAGE_DIR, `api-${workerId}.json`),
+        JSON.stringify([...apiCalls].sort(), null, 2),
+      )
+    }
+    if (visitedRoutes.size > 0) {
+      fs.writeFileSync(
+        path.join(COVERAGE_DIR, `routes-${workerId}.json`),
+        JSON.stringify([...visitedRoutes].sort(), null, 2),
+      )
+    }
+  })
+}
+
+/** 将 API 路径中的 UUID 替换为 {id}。 */
+function normalizeApiPath(urlPath: string): string {
+  return urlPath.replace(UUID_RE, "/{id}")
+}
+
+/** 给 page 绑定覆盖率监听器。 */
+function attachCoverageListeners(page: Page) {
+  ensureExitHook()
+
+  page.on("response", (response) => {
+    try {
+      const parsed = new URL(response.url())
+      if (parsed.pathname.startsWith("/api/")) {
+        apiCalls.add(`${response.request().method()} ${normalizeApiPath(parsed.pathname)}`)
+      }
+    } catch { /* 忽略 */ }
+  })
+
+  page.on("framenavigated", (frame) => {
+    if (frame !== page.mainFrame()) return
+    try {
+      const parsed = new URL(frame.url())
+      if (parsed.pathname !== "/" || parsed.pathname === "/") {
+        const stripped = parsed.pathname.replace(LOCALE_PREFIX_RE, "")
+        if (!stripped.startsWith("/api/")) {
+          visitedRoutes.add(stripped)
+        }
+      }
+    } catch { /* 忽略 */ }
+  })
+}
+
+/* ── 辅助函数 ── */
 
 /**
  * 导航到页面并等待 main 区域渲染。
@@ -36,12 +108,19 @@ export async function clickAndWaitDialog(page: Page, buttonName: string) {
   await dialog.waitFor()
 }
 
-export const test = base.extend<{
+/* ── test fixture ── */
+
+export const test = pwTest.extend<{
   adminPage: Page
 }>({
+  // 自动为每个测试的 page 绑定覆盖率监听器
+  page: async ({ page }, use) => {
+    attachCoverageListeners(page)
+    await use(page)
+  },
   adminPage: async ({ page }, use) => {
     await use(page)
   },
 })
 
-export { expect } from "@playwright/test"
+export { expect }
