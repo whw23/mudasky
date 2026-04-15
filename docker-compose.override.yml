@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G
     volumes:
       - ./frontend:/app
       - next_cache:/app/.next
