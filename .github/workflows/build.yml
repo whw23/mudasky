@@ -31,12 +31,18 @@ jobs:
           context: ./gateway
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-gateway:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 frontend 镜像
         uses: docker/build-push-action@v7
         with:
           context: ./frontend
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-frontend:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 api 镜像
         uses: docker/build-push-action@v7
         with:
@@ -44,12 +50,17 @@ jobs:
           file: ./backend/api/Dockerfile
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-api:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 db 镜像
         uses: docker/build-push-action@v7
         with:
           context: ./db
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-db:latest
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
   cleanup-registry:
     needs: build-and-push
     runs-on: ubuntu-latest

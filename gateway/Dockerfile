@@ -9,5 +9,8 @@ RUN rm -f /etc/nginx/conf.d/default.conf
 COPY conf.d/ /etc/nginx/conf.d/
 COPY lua/ /usr/local/openresty/nginx/lua/
 
+ARG BUILD_VERSION=dev
+ENV BUILD_VERSION=${BUILD_VERSION}
+
 EXPOSE 80
 CMD ["openresty", "-g", "daemon off;"]
