@@ -18,8 +18,12 @@ async function expandNonSuperuserRow(adminPage: import("@playwright/test").Page)
     const text = await row.textContent()
     /* 跳过 superuser 用户，避免对其执行破坏性操作 */
     if (text && !text.includes("superuser") && !text.includes("mudasky")) {
+      const detailPromise = adminPage.waitForResponse(
+        (r) => r.url().includes("/users/") && r.url().includes("/detail"),
+      ).catch(() => {})
       await row.click()
       await adminPage.getByText("基本信息").first().waitFor()
+      await detailPromise
       return true
     }
   }
@@ -34,10 +38,13 @@ test.describe("用户管理操作", () => {
     await expect(adminPage.locator("table")).toBeVisible()
     const firstRow = adminPage.locator("table tbody tr").first()
     await expect(firstRow).toBeVisible()
-    // 展开第一个用户
+    // 展开第一个用户，等待详情 API 完成
+    const detailPromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/users/") && r.url().includes("/detail"),
+    ).catch(() => {})
     await firstRow.click()
-    // 等待展开面板内容加载（面板会调 API 获取详情）
     await adminPage.getByText("基本信息").first().waitFor()
+    await detailPromise
   })
 
   test("展开面板显示基本信息区域", async ({ adminPage }) => {
@@ -296,8 +303,9 @@ test.describe("用户管理实际操作", () => {
     await adminPage.getByText("基本信息").first().waitFor()
     await expect(adminPage.getByText("基本信息")).toBeVisible()
 
-    /* 再次点击收起 */
+    /* 再次点击收起 — 等待面板隐藏 */
     await firstRow.click()
+    await adminPage.getByText("基本信息").first().waitFor({ state: "hidden" })
     await expect(adminPage.getByText("基本信息")).not.toBeVisible()
   })
 })

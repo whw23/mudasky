@@ -16,8 +16,12 @@ async function expandFirstContactRow(adminPage: import("@playwright/test").Page)
   const text = await row.textContent()
   if (text?.includes("暂无数据") || text?.includes("暂无")) return false
 
+  const responsePromise = adminPage.waitForResponse(
+    (r) => r.url().includes("/contacts/") && r.url().includes("/detail"),
+  ).catch(() => {})
   await row.click()
   await adminPage.getByText("基本信息").first().waitFor()
+  await responsePromise
   return true
 }
 
