@@ -9,18 +9,11 @@ import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
 
-/** 需要预热的所有页面路径 */
+/** 预热关键入口页（触发共享 JS bundle 编译，其他页面复用） */
 const WARMUP_PAGES = [
-  /* 公开页面 */
-  "/", "/news", "/universities", "/cases",
-  "/study-abroad", "/visa", "/life", "/requirements", "/about",
-  /* 管理后台 */
-  "/admin/dashboard", "/admin/users", "/admin/roles",
-  "/admin/articles", "/admin/categories", "/admin/universities",
-  "/admin/cases", "/admin/students", "/admin/contacts",
-  "/admin/general-settings", "/admin/web-settings",
-  /* 用户中心 */
-  "/portal/overview", "/portal/profile", "/portal/documents",
+  "/",
+  "/admin/dashboard",
+  "/portal/overview",
 ]
 
 async function globalSetup(_config: FullConfig) {
