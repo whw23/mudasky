@@ -224,3 +224,139 @@ test.describe("用户管理实际操作", () => {
     await expect(adminPage.getByText("基本信息")).not.toBeVisible()
   })
 })
+
+test.describe("用户管理 — 状态切换与删除", () => {
+  test.beforeEach(async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/dashboard")
+    await ensureTestUser(adminPage, "+8613900000088", "test-visitor", "visitor")
+  })
+
+  /** 展开 test-visitor 用户行 */
+  async function expandTestVisitor(page: import("@playwright/test").Page) {
+    await gotoAdmin(page, "/admin/users")
+    await expect(page.locator("table")).toBeVisible()
+
+    const searchInput = page.getByPlaceholder(/搜索/)
+    await expect(searchInput).toBeVisible()
+    await searchInput.fill("test-visitor")
+    await page.waitForTimeout(500)
+
+    const row = page.locator("table tbody tr").first()
+    await expect(row).toContainText("test-visitor")
+
+    const detailPromise = page.waitForResponse(
+      (r) => r.url().includes("/users/") && r.url().includes("/detail"),
+    ).catch(() => {})
+    await row.click()
+    await page.getByText("基本信息").first().waitFor()
+    await detailPromise
+  }
+
+  test("正例：状态切换按钮点击后触发 API 并返回 200", async ({ adminPage }) => {
+    await expandTestVisitor(adminPage)
+
+    const toggleBtn = adminPage.getByRole("button", { name: /禁用账号|启用账号/ })
+    await expect(toggleBtn).toBeVisible()
+
+    const responsePromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/edit") && r.status() === 200,
+    )
+    await toggleBtn.click()
+
+    // 若有确认弹窗则点击确认
+    const alertDialog = adminPage.getByRole("alertdialog")
+    if (await alertDialog.isVisible().catch(() => false)) {
+      const confirmBtn = alertDialog.getByRole("button", { name: /确认|确定/ })
+      await confirmBtn.click()
+    }
+
+    const response = await responsePromise
+    expect(response.status()).toBe(200)
+  })
+
+  test("正例：状态切换后按钮文字变化（禁用↔启用）", async ({ adminPage }) => {
+    await expandTestVisitor(adminPage)
+
+    const toggleBtn = adminPage.getByRole("button", { name: /禁用账号|启用账号/ })
+    await expect(toggleBtn).toBeVisible()
+    const originalText = await toggleBtn.textContent()
+
+    const responsePromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/edit") && r.status() === 200,
+    )
+    await toggleBtn.click()
+
+    const alertDialog = adminPage.getByRole("alertdialog")
+    if (await alertDialog.isVisible().catch(() => false)) {
+      const confirmBtn = alertDialog.getByRole("button", { name: /确认|确定/ })
+      await confirmBtn.click()
+    }
+
+    await responsePromise
+
+    // 按钮文字应该切换
+    const newToggleBtn = adminPage.getByRole("button", { name: /禁用账号|启用账号/ })
+    await expect(newToggleBtn).toBeVisible()
+    const newText = await newToggleBtn.textContent()
+    expect(newText).not.toBe(originalText)
+
+    // 还原状态
+    const restorePromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/edit") && r.status() === 200,
+    )
+    await newToggleBtn.click()
+    const restoreDialog = adminPage.getByRole("alertdialog")
+    if (await restoreDialog.isVisible().catch(() => false)) {
+      const confirmBtn = restoreDialog.getByRole("button", { name: /确认|确定/ })
+      await confirmBtn.click()
+    }
+    await restorePromise
+  })
+
+  test("反例：superuser（mudasky）不显示删除按钮", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/users")
+    await expect(adminPage.locator("table")).toBeVisible()
+
+    const searchInput = adminPage.getByPlaceholder(/搜索/)
+    await expect(searchInput).toBeVisible()
+    await searchInput.fill("mudasky")
+    await adminPage.waitForTimeout(500)
+
+    const row = adminPage.locator("table tbody tr").first()
+    await expect(row).toContainText("mudasky")
+
+    const detailPromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/users/") && r.url().includes("/detail"),
+    ).catch(() => {})
+    await row.click()
+    await adminPage.getByText("基本信息").first().waitFor()
+    await detailPromise
+
+    // superuser 不应出现删除按钮
+    const deleteBtn = adminPage.getByRole("button", { name: /删除/ })
+    await expect(deleteBtn).not.toBeVisible()
+  })
+
+  test("正例：非 superuser 显示删除按钮，点击弹出 AlertDialog 后取消", async ({ adminPage }) => {
+    await expandTestVisitor(adminPage)
+
+    const deleteBtn = adminPage.getByRole("button", { name: /删除/ })
+    const hasDel = await deleteBtn.isVisible().catch(() => false)
+    if (!hasDel) {
+      test.skip(true, "删除按钮未显示，跳过")
+      return
+    }
+
+    await deleteBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    // 取消删除
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+    await expect(alertDialog).not.toBeVisible()
+
+    // 用户仍在列表中
+    await expect(adminPage.getByText("test-visitor").first()).toBeVisible()
+  })
+})

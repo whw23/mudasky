@@ -1,9 +1,13 @@
 /**
  * 安全性 E2E 测试。
- * 覆盖 XSS 注入、SQL 注入、接口参数篡改、CSRF 等。
+ * 覆盖 XSS 注入、SQL 注入、接口参数篡改、CSRF、用户禁用、文件上传、Token 轮换等。
  */
 
+import path from "node:path"
 import { test, expect } from "@playwright/test"
+
+const AUTH_FILE = path.join(__dirname, "..", ".auth", "admin.json")
+const XHR_HEADERS = { "X-Requested-With": "XMLHttpRequest" }
 
 test.use({ storageState: { cookies: [], origins: [] } })
 
@@ -220,5 +224,136 @@ test.describe("安全 — 路径遍历", () => {
     })
     expect([401, 403, 404, 422]).toContain(response.status)
     expect(response.text).not.toContain("root:")
+  })
+})
+
+test.describe("安全 — 禁用用户", () => {
+  test.describe("已认证用户", () => {
+    test.use({ storageState: AUTH_FILE })
+
+    test("活跃用户可以访问 portal API", async ({ page }) => {
+      const res = await page.request.get("/api/portal/profile/meta/list", {
+        headers: XHR_HEADERS,
+      })
+      expect(res.status()).toBe(200)
+    })
+
+    test("活跃用户可以调用 refresh 端点", async ({ page }) => {
+      const res = await page.request.post("/api/auth/refresh", {
+        headers: XHR_HEADERS,
+      })
+      expect(res.status()).toBeLessThan(500)
+    })
+  })
+
+  test("toggle-status 传入不存在的 user_id 返回 400+", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post("/api/admin/users/list/detail/toggle-status", {
+      headers: { ...XHR_HEADERS, "Content-Type": "application/json" },
+      data: { user_id: "00000000-0000-0000-0000-000000000000" },
+    })
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+  })
+
+  test("toggle-status 传入伪造 UUID 返回 400+ 而非 500", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post("/api/admin/users/list/detail/toggle-status", {
+      headers: { ...XHR_HEADERS, "Content-Type": "application/json" },
+      data: { user_id: "fake-uuid-not-valid" },
+    })
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+    expect(res.status()).not.toBe(500)
+  })
+})
+
+test.describe("安全 — 文件上传", () => {
+  test.describe("已认证上传", () => {
+    test.use({ storageState: AUTH_FILE })
+
+    test("上传文本文件不返回 500", async ({ page }) => {
+      const res = await page.request.post("/api/portal/documents/list/upload", {
+        headers: XHR_HEADERS,
+        multipart: {
+          file: { name: "test.txt", mimeType: "text/plain", buffer: Buffer.from("test content") },
+        },
+      })
+      expect(res.status()).toBeLessThan(500)
+    })
+
+    test("上传 PDF 文件不返回 500", async ({ page }) => {
+      const res = await page.request.post("/api/portal/documents/list/upload", {
+        headers: XHR_HEADERS,
+        multipart: {
+          file: { name: "test.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4 test") },
+        },
+      })
+      expect(res.status()).toBeLessThan(500)
+    })
+  })
+
+  test("无文件 body 的上传请求返回 400+", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post("/api/portal/documents/list/upload", {
+      headers: XHR_HEADERS,
+    })
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+  })
+
+  test("空 multipart 请求返回 400+", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post("/api/portal/documents/list/upload", {
+      headers: XHR_HEADERS,
+      multipart: {},
+    })
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+  })
+})
+
+test.describe("安全 — Token 轮换", () => {
+  test.describe("已认证轮换", () => {
+    test.use({ storageState: AUTH_FILE })
+
+    test("refresh 端点返回有效响应", async ({ page }) => {
+      const res = await page.request.post("/api/auth/refresh", {
+        headers: XHR_HEADERS,
+      })
+      expect([200, 401]).toContain(res.status())
+    })
+
+    test("refresh 尝试后 API 仍可访问", async ({ page }) => {
+      await page.request.post("/api/auth/refresh", {
+        headers: XHR_HEADERS,
+      })
+      const res = await page.request.get("/api/portal/profile/meta/list", {
+        headers: XHR_HEADERS,
+      })
+      expect(res.status()).toBe(200)
+    })
+  })
+
+  test("清除所有 cookie 后 refresh 返回 401", async ({ page }) => {
+    await page.goto("/")
+    await page.context().clearCookies()
+    const res = await page.request.post("/api/auth/refresh", {
+      headers: XHR_HEADERS,
+    })
+    expect(res.status()).toBe(401)
+  })
+
+  test("伪造 refresh_token cookie 后 refresh 返回 401", async ({ page }) => {
+    await page.goto("/")
+    await page.context().clearCookies()
+    await page.context().addCookies([
+      {
+        name: "refresh_token",
+        value: "fake-refresh-token-value",
+        domain: "localhost",
+        path: "/",
+      },
+    ])
+    const res = await page.request.post("/api/auth/refresh", {
+      headers: XHR_HEADERS,
+    })
+    expect(res.status()).toBe(401)
   })
 })

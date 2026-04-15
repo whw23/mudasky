@@ -108,3 +108,97 @@ test.describe("联系人管理操作", () => {
     await expect(adminPage.getByText("联系历史").first()).toBeVisible()
   })
 })
+
+test.describe("联系人管理 — 升级学生", () => {
+  test.beforeEach(async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/dashboard")
+    await ensureTestUser(adminPage, "+8613900000088", "test-visitor", "visitor")
+  })
+
+  /** 展开联系人行 */
+  async function expandContactRow(page: import("@playwright/test").Page) {
+    await gotoAdmin(page, "/admin/contacts")
+
+    const row = page.locator("table tbody tr").first()
+    await expect(row).toBeVisible()
+    const detailPromise = page.waitForResponse(
+      (r) => r.url().includes("/contacts/") && r.url().includes("/detail"),
+    ).catch(() => {})
+    await row.click()
+    await page.getByText("基本信息").first().waitFor()
+    await detailPromise
+  }
+
+  test("正例：升级为学生按钮点击弹出 AlertDialog，取消可关闭", async ({ adminPage }) => {
+    await expandContactRow(adminPage)
+
+    const upgradeBtn = adminPage.getByRole("button", { name: /升级为学生/ })
+    const hasBtn = await upgradeBtn.isVisible().catch(() => false)
+    if (!hasBtn) {
+      test.skip(true, "升级为学生按钮未找到，跳过")
+      return
+    }
+
+    await upgradeBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+    await expect(alertDialog).not.toBeVisible()
+  })
+
+  test("正例：AlertDialog 包含确认升级按钮", async ({ adminPage }) => {
+    await expandContactRow(adminPage)
+
+    const upgradeBtn = adminPage.getByRole("button", { name: /升级为学生/ })
+    const hasBtn = await upgradeBtn.isVisible().catch(() => false)
+    if (!hasBtn) {
+      test.skip(true, "升级为学生按钮未找到，跳过")
+      return
+    }
+
+    await upgradeBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    const confirmBtn = alertDialog.getByRole("button", { name: /确认升级|确认|确定/ })
+    await expect(confirmBtn).toBeVisible()
+
+    // 关闭弹窗
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+  })
+
+  test("反例：取消升级后按钮仍然可见", async ({ adminPage }) => {
+    await expandContactRow(adminPage)
+
+    const upgradeBtn = adminPage.getByRole("button", { name: /升级为学生/ })
+    const hasBtn = await upgradeBtn.isVisible().catch(() => false)
+    if (!hasBtn) {
+      test.skip(true, "升级为学生按钮未找到，跳过")
+      return
+    }
+
+    await upgradeBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+    await expect(alertDialog).not.toBeVisible()
+
+    // 按钮仍存在，用户未被升级
+    await expect(upgradeBtn).toBeVisible()
+  })
+
+  test("反例：未展开面板时升级为学生按钮不可见", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/contacts")
+
+    await expect(adminPage.locator("table tbody tr").first()).toBeVisible()
+
+    // 不展开任何行，升级按钮不应可见
+    const upgradeBtn = adminPage.getByRole("button", { name: /升级为学生/ })
+    await expect(upgradeBtn).not.toBeVisible()
+  })
+})

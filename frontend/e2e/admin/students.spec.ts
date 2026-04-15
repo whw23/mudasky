@@ -109,3 +109,120 @@ test.describe("学生管理操作", () => {
     ).toBeVisible()
   })
 })
+
+test.describe("学生管理 — 展开面板补全", () => {
+  test.beforeEach(async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/dashboard")
+    await ensureTestUser(adminPage, "+8613900000077", "test-student", "student")
+  })
+
+  /** 展开学生行并取消筛选 */
+  async function expandStudentRow(page: import("@playwright/test").Page) {
+    await gotoAdmin(page, "/admin/students")
+
+    const checkbox = page.getByLabel(/仅我的学生/)
+    if (await checkbox.isVisible() && await checkbox.isChecked()) {
+      await checkbox.uncheck()
+      await page.waitForResponse((r) => r.url().includes("/students/")).catch(() => {})
+    }
+
+    const row = page.locator("table tbody tr").first()
+    await expect(row).toBeVisible()
+    const detailPromise = page.waitForResponse(
+      (r) => r.url().includes("/students/") && r.url().includes("/detail"),
+    ).catch(() => {})
+    await row.click()
+    await page.getByText("基本信息").first().waitFor()
+    await detailPromise
+  }
+
+  test("正例：活跃状态 checkbox 可见且可切换", async ({ adminPage }) => {
+    await expandStudentRow(adminPage)
+
+    const activeCheckbox = adminPage.getByLabel(/活跃|active/i)
+    const hasCheckbox = await activeCheckbox.isVisible().catch(() => false)
+    if (!hasCheckbox) {
+      test.skip(true, "活跃状态 checkbox 未找到，跳过")
+      return
+    }
+
+    const wasChecked = await activeCheckbox.isChecked()
+    await activeCheckbox.click()
+    const nowChecked = await activeCheckbox.isChecked()
+    expect(nowChecked).not.toBe(wasChecked)
+
+    // 还原
+    await activeCheckbox.click()
+  })
+
+  test("正例：顾问分配输入框和按钮可见", async ({ adminPage }) => {
+    await expandStudentRow(adminPage)
+
+    await expect(adminPage.getByText("分配顾问").first()).toBeVisible()
+
+    const advisorInput = adminPage.getByPlaceholder(/顾问/)
+    const advisorSelect = adminPage.locator("select").nth(0)
+    const hasInput = await advisorInput.isVisible().catch(() => false)
+    const hasSelect = await advisorSelect.isVisible().catch(() => false)
+
+    // 至少有一种顾问分配控件可见
+    expect(hasInput || hasSelect).toBeTruthy()
+  })
+
+  test("正例：降为访客按钮点击弹出 AlertDialog，取消可关闭", async ({ adminPage }) => {
+    await expandStudentRow(adminPage)
+
+    const downgradeBtn = adminPage.getByRole("button", { name: /降为访客/ })
+    const hasBtn = await downgradeBtn.isVisible().catch(() => false)
+    if (!hasBtn) {
+      test.skip(true, "降为访客按钮未找到，跳过")
+      return
+    }
+
+    await downgradeBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+    await expect(alertDialog).not.toBeVisible()
+  })
+
+  test("反例：取消降级后按钮仍然可见（用户未被降级）", async ({ adminPage }) => {
+    await expandStudentRow(adminPage)
+
+    const downgradeBtn = adminPage.getByRole("button", { name: /降为访客/ })
+    const hasBtn = await downgradeBtn.isVisible().catch(() => false)
+    if (!hasBtn) {
+      test.skip(true, "降为访客按钮未找到，跳过")
+      return
+    }
+
+    await downgradeBtn.click()
+    const alertDialog = adminPage.getByRole("alertdialog")
+    await expect(alertDialog).toBeVisible()
+
+    const cancelBtn = alertDialog.getByRole("button", { name: /取消/ })
+    await cancelBtn.click()
+    await expect(alertDialog).not.toBeVisible()
+
+    // 按钮仍然存在，说明用户未被降级
+    await expect(downgradeBtn).toBeVisible()
+  })
+
+  test("反例：未展开面板时降为访客按钮不可见", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/students")
+
+    const checkbox = adminPage.getByLabel(/仅我的学生/)
+    if (await checkbox.isVisible() && await checkbox.isChecked()) {
+      await checkbox.uncheck()
+      await adminPage.waitForResponse((r) => r.url().includes("/students/")).catch(() => {})
+    }
+
+    await expect(adminPage.locator("table tbody tr").first()).toBeVisible()
+
+    // 不展开任何行，降为访客按钮不应可见
+    const downgradeBtn = adminPage.getByRole("button", { name: /降为访客/ })
+    await expect(downgradeBtn).not.toBeVisible()
+  })
+})

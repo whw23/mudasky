@@ -80,6 +80,68 @@ async function globalTeardown(_config: FullConfig) {
   }
 
   await browser.close()
+
+  /* === 覆盖率报告 === */
+  const coverageDir = path.join(__dirname, ".coverage")
+  if (fs.existsSync(coverageDir)) {
+    try {
+      const { API_ENDPOINTS } = await import("./helpers/api-endpoints")
+      const { PAGE_ROUTES, matchRoute } = await import("./helpers/page-routes")
+
+      /* 合并所有 worker 的 API 调用数据 */
+      const allApiCalls = new Set<string>()
+      const allRoutes = new Set<string>()
+
+      const files = fs.readdirSync(coverageDir)
+      for (const file of files) {
+        const filePath = path.join(coverageDir, file)
+        if (file.startsWith("api-") && file.endsWith(".json")) {
+          const data: string[] = JSON.parse(fs.readFileSync(filePath, "utf-8"))
+          data.forEach((ep) => allApiCalls.add(ep))
+        } else if (file.startsWith("routes-") && file.endsWith(".json")) {
+          const data: string[] = JSON.parse(fs.readFileSync(filePath, "utf-8"))
+          data.forEach((r) => allRoutes.add(r))
+        }
+      }
+
+      /* API 覆盖率 */
+      const coveredApis = API_ENDPOINTS.filter((ep) => allApiCalls.has(ep))
+      const uncoveredApis = API_ENDPOINTS.filter((ep) => !allApiCalls.has(ep))
+      const apiPct = API_ENDPOINTS.length > 0
+        ? ((coveredApis.length / API_ENDPOINTS.length) * 100).toFixed(1)
+        : "0.0"
+
+      console.log(`\n[API Coverage] ${coveredApis.length}/${API_ENDPOINTS.length} (${apiPct}%)`)
+      if (uncoveredApis.length > 0) {
+        console.log("  Uncovered:")
+        uncoveredApis.forEach((ep) => console.log(`    - ${ep}`))
+      }
+
+      /* 路由覆盖率 */
+      const matchedRoutes = new Set<string>()
+      for (const url of allRoutes) {
+        const matched = matchRoute(url)
+        if (matched) matchedRoutes.add(matched)
+      }
+      const coveredRoutes = PAGE_ROUTES.filter((r) => matchedRoutes.has(r))
+      const uncoveredRoutes = PAGE_ROUTES.filter((r) => !matchedRoutes.has(r))
+      const routePct = PAGE_ROUTES.length > 0
+        ? ((coveredRoutes.length / PAGE_ROUTES.length) * 100).toFixed(1)
+        : "0.0"
+
+      console.log(`\n[Route Coverage] ${coveredRoutes.length}/${PAGE_ROUTES.length} (${routePct}%)`)
+      if (uncoveredRoutes.length > 0) {
+        console.log("  Uncovered:")
+        uncoveredRoutes.forEach((r) => console.log(`    - ${r}`))
+      }
+      console.log()
+
+      /* 清理 .coverage/ 目录 */
+      fs.rmSync(coverageDir, { recursive: true, force: true })
+    } catch (e) {
+      console.warn("[Coverage] 报告生成失败:", e)
+    }
+  }
 }
 
 export default globalTeardown
