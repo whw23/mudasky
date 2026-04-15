@@ -1,8 +1,9 @@
 /**
  * RSA 密码加密工具。
- * 使用 Web Crypto API 和后端公钥加密密码，防止明文传输。
+ * 使用 node-forge 加密密码，兼容 HTTP 环境（不依赖浏览器 crypto.subtle）。
  */
 
+import forge from "node-forge"
 import api from "./api"
 
 interface PublicKeyResponse {
@@ -23,19 +24,7 @@ export async function encryptPassword(password: string): Promise<EncryptedPasswo
   const { data } = await api.get<PublicKeyResponse>("/auth/public-key")
   const { public_key, nonce } = data
 
-  const pemBody = public_key
-    .replace("-----BEGIN PUBLIC KEY-----", "")
-    .replace("-----END PUBLIC KEY-----", "")
-    .replace(/\s/g, "")
-  const binaryDer = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0))
-
-  const cryptoKey = await crypto.subtle.importKey(
-    "spki",
-    binaryDer,
-    { name: "RSA-OAEP", hash: "SHA-256" },
-    false,
-    ["encrypt"],
-  )
+  const publicKey = forge.pki.publicKeyFromPem(public_key)
 
   const payload = JSON.stringify({
     password,
@@ -43,15 +32,11 @@ export async function encryptPassword(password: string): Promise<EncryptedPasswo
     timestamp: Math.floor(Date.now() / 1000),
   })
 
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "RSA-OAEP" },
-    cryptoKey,
-    new TextEncoder().encode(payload),
-  )
+  const encrypted = publicKey.encrypt(payload, "RSA-OAEP", {
+    md: forge.md.sha256.create(),
+  })
 
-  const encrypted_password = btoa(
-    String.fromCharCode(...new Uint8Array(encrypted)),
-  )
+  const encrypted_password = forge.util.encode64(encrypted)
 
   return { encrypted_password, nonce }
 }
