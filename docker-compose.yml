@@ -3,6 +3,7 @@ services:
     build:
       context: ./gateway
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "80:80"
     env_file: env/gateway.env
@@ -16,6 +17,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -28,6 +30,7 @@ services:
     build:
       context: ./backend
       dockerfile: api/Dockerfile
+    restart: unless-stopped
     env_file: env/backend.env
     depends_on:
       db:
@@ -53,6 +56,7 @@ services:
     build:
       context: ./db
       dockerfile: Dockerfile
+    restart: unless-stopped
     env_file: env/db.env
     command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=mudasky
     ports:
