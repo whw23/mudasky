@@ -27,16 +27,16 @@ test.describe("用户管理 — 行内展开面板", () => {
     const firstRow = adminPage.locator("table tbody tr").first()
     await firstRow.click()
     // 展开面板应该出现
-    await expect(adminPage.getByText("基本信息")).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("基本信息")).toBeVisible()
   })
 
   test("再次点击收起面板", async ({ adminPage }) => {
     const firstRow = adminPage.locator("table tbody tr").first()
     await firstRow.click()
-    await expect(adminPage.getByText("基本信息")).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("基本信息")).toBeVisible()
     // 再次点击收起
     await firstRow.click()
-    await expect(adminPage.getByText("基本信息")).not.toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("基本信息")).not.toBeVisible()
   })
 })
 

@@ -21,7 +21,7 @@ test.describe("认证 — 登录弹窗", () => {
   test("点击登录按钮打开弹窗", async ({ page }) => {
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await expect(dialog).toBeVisible({ timeout: 10_000 })
+    await expect(dialog).toBeVisible()
     await expect(dialog.getByRole("tab", { name: "手机验证码" })).toBeVisible()
     await expect(dialog.getByRole("tab", { name: "账号密码" })).toBeVisible()
   })
@@ -29,7 +29,7 @@ test.describe("认证 — 登录弹窗", () => {
   test("手机验证码 tab 默认选中", async ({ page }) => {
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.waitFor()
     const smsTab = dialog.getByRole("tab", { name: "手机验证码" })
     await expect(smsTab).toHaveAttribute("aria-selected", "true")
   })
@@ -37,7 +37,7 @@ test.describe("认证 — 登录弹窗", () => {
   test("切换到账号密码 tab", async ({ page }) => {
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.waitFor()
     await dialog.getByRole("tab", { name: "账号密码" }).click()
     await expect(dialog.getByRole("tabpanel")).toContainText("密码")
   })
@@ -45,7 +45,7 @@ test.describe("认证 — 登录弹窗", () => {
   test("关闭弹窗", async ({ page }) => {
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.waitFor()
     await dialog.getByRole("button", { name: "Close" }).click()
     await expect(dialog).not.toBeVisible()
   })
@@ -57,7 +57,7 @@ test.describe("认证 — 密码登录", () => {
     await page.waitForLoadState("networkidle")
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.waitFor()
     await dialog.getByRole("tab", { name: "账号密码" }).click()
     await expect(page.getByRole("tabpanel")).toBeVisible()
   })
@@ -70,7 +70,7 @@ test.describe("认证 — 密码登录", () => {
     await inputs.nth(1).fill("wrongpassword")
     await panel.getByRole("button", { name: "登录" }).click()
     // 等待错误提示
-    await expect(page.locator(".text-destructive")).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator(".text-destructive")).toBeVisible()
   })
 
   test("正确凭据登录成功", async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe("认证 — 密码登录", () => {
     await inputs.nth(1).fill("mudasky@12321.")
     await panel.getByRole("button", { name: "登录" }).click()
     // 弹窗关闭
-    await expect(dialog).not.toBeVisible({ timeout: 15_000 })
+    await expect(dialog).not.toBeVisible()
   })
 })
 
@@ -92,7 +92,7 @@ test.describe("认证 — 登出", () => {
     await page.waitForLoadState("networkidle")
     await page.getByRole("button", { name: /登录/ }).click()
     const dialog = page.getByRole("dialog")
-    await dialog.waitFor({ timeout: 10_000 })
+    await dialog.waitFor()
     await dialog.getByRole("tab", { name: "账号密码" }).click()
     await expect(page.getByRole("tabpanel")).toBeVisible()
     const panel = dialog.getByRole("tabpanel")
@@ -100,19 +100,19 @@ test.describe("认证 — 登出", () => {
     await inputs.first().fill("mudasky")
     await inputs.nth(1).fill("mudasky@12321.")
     await panel.getByRole("button", { name: "登录" }).click()
-    await expect(dialog).not.toBeVisible({ timeout: 15_000 })
+    await expect(dialog).not.toBeVisible()
 
     // 登出
     // 导航到 portal 触发已登录状态
     await page.goto("/portal/profile")
     await page.waitForLoadState("networkidle")
-    await page.locator("main").waitFor({ timeout: 10_000 }).catch(() => {})
+    await page.locator("main").waitFor().catch(() => {})
     // 可能有登出按钮或需要通过 API 登出
     await page.evaluate(() => fetch("/api/auth/logout", { method: "POST", credentials: "include" }))
     await page.reload()
     await page.waitForLoadState("networkidle")
     // 刷新后应该被重定向到首页（因为 portal 需要登录）
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 })
@@ -120,13 +120,13 @@ test.describe("认证 — 登出", () => {
 test.describe("认证 — 未登录重定向", () => {
   test("未登录访问 portal 重定向到首页", async ({ page }) => {
     await page.goto("/portal/profile")
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 
   test("未登录访问 admin 重定向到首页", async ({ page }) => {
     await page.goto("/admin/dashboard")
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 })

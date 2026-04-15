@@ -8,16 +8,16 @@ import { test, expect, gotoAdmin } from "../fixtures/base"
 /** 展开第一个联系人行，返回是否成功 */
 async function expandFirstContactRow(adminPage: import("@playwright/test").Page): Promise<boolean> {
   const noData = adminPage.getByText("暂无数据")
-  if (await noData.isVisible({ timeout: 3_000 }).catch(() => false)) return false
+  if (await noData.isVisible().catch(() => false)) return false
 
   const row = adminPage.locator("table tbody tr").first()
-  if (!(await row.isVisible({ timeout: 5_000 }).catch(() => false))) return false
+  if (!(await row.isVisible().catch(() => false))) return false
 
   const text = await row.textContent()
   if (text?.includes("暂无数据") || text?.includes("暂无")) return false
 
   await row.click()
-  await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
+  await adminPage.getByText("基本信息").first().waitFor()
   return true
 }
 
@@ -28,12 +28,12 @@ test.describe("联系人管理", () => {
 
   test("页面加载并展示联系人列表", async ({ adminPage }) => {
     const main = adminPage.locator("main")
-    await expect(main.locator("th").first()).toBeVisible({ timeout: 10_000 })
+    await expect(main.locator("th").first()).toBeVisible()
   })
 
   test("列表展示联系人信息列头", async ({ adminPage }) => {
     const main = adminPage.locator("main")
-    await expect(main.locator("th, [role='columnheader']").first()).toBeVisible({ timeout: 10_000 })
+    await expect(main.locator("th, [role='columnheader']").first()).toBeVisible()
   })
 
   test("展开面板显示全部操作区域", async ({ adminPage }) => {
@@ -109,6 +109,6 @@ test.describe("联系人管理实际操作", () => {
       return
     }
 
-    await expect(adminPage.getByText("联系历史").first()).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("联系历史").first()).toBeVisible()
   })
 })

@@ -19,7 +19,7 @@ async function expandNonSuperuserRow(adminPage: import("@playwright/test").Page)
     /* 跳过 superuser 用户，避免对其执行破坏性操作 */
     if (text && !text.includes("superuser") && !text.includes("mudasky")) {
       await row.click()
-      await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
+      await adminPage.getByText("基本信息").first().waitFor()
       return true
     }
   }
@@ -31,13 +31,13 @@ test.describe("用户管理操作", () => {
   test.beforeEach(async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
     /* 等待表格和数据行加载完成 */
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
     const firstRow = adminPage.locator("table tbody tr").first()
-    await expect(firstRow).toBeVisible({ timeout: 15_000 })
+    await expect(firstRow).toBeVisible()
     // 展开第一个用户
     await firstRow.click()
     // 等待展开面板内容加载（面板会调 API 获取详情）
-    await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
+    await adminPage.getByText("基本信息").first().waitFor()
   })
 
   test("展开面板显示基本信息区域", async ({ adminPage }) => {
@@ -56,7 +56,7 @@ test.describe("用户管理操作", () => {
   })
 
   test("展开面板显示重置密码区域", async ({ adminPage }) => {
-    await expect(adminPage.getByText("重置密码").first()).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("重置密码").first()).toBeVisible()
   })
 
   test("展开面板显示强制登出按钮", async ({ adminPage }) => {
@@ -73,7 +73,7 @@ test.describe("用户管理操作", () => {
 test.describe("用户管理实际操作", () => {
   test("角色分配 — 选择角色触发 API", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
     if (!found) {
@@ -139,7 +139,7 @@ test.describe("用户管理实际操作", () => {
 
   test("存储配额编辑 — 修改配额值并保存", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
     if (!found) {
@@ -182,7 +182,7 @@ test.describe("用户管理实际操作", () => {
 
   test("密码重置 — 填写密码并提交", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
     if (!found) {
@@ -190,7 +190,7 @@ test.describe("用户管理实际操作", () => {
       return
     }
 
-    await expect(adminPage.getByText("重置密码").first()).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("重置密码").first()).toBeVisible()
 
     /* 找到密码输入框（使用 id 前缀定位，因为 type 可能是 text/password 动态切换） */
     const passwordInputs = adminPage.locator("input[id^='reset-pwd']")
@@ -214,7 +214,7 @@ test.describe("用户管理实际操作", () => {
 
   test("强制登出 — 点击按钮并处理确认", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
     if (!found) {
@@ -238,7 +238,7 @@ test.describe("用户管理实际操作", () => {
 
   test("搜索防抖 — 输入后等待结果更新", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const searchInput = adminPage.getByPlaceholder(/搜索/)
     await expect(searchInput).toBeVisible()
@@ -249,19 +249,17 @@ test.describe("用户管理实际操作", () => {
     await adminPage.waitForTimeout(500)
 
     /* 验证搜索结果包含目标文本 */
-    await expect(adminPage.locator("table tbody tr").first()).toContainText("mudasky", {
-      timeout: 10_000,
-    })
+    await expect(adminPage.locator("table tbody tr").first()).toContainText("mudasky")
 
     /* 清空搜索，验证列表恢复 */
     await searchInput.clear()
     await adminPage.waitForTimeout(500)
-    await expect(adminPage.locator("table tbody tr").first()).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.locator("table tbody tr").first()).toBeVisible()
   })
 
   test("分页 — 如果存在分页按钮则翻页", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     /* 检查是否有分页组件（页码按钮或下一页按钮） */
     const nextBtn = adminPage.getByRole("button", { name: /下一页|>/ }).last()
@@ -283,23 +281,23 @@ test.describe("用户管理实际操作", () => {
       (r) => r.url().includes("users/list") && r.status() === 200,
     ).catch(() => {})
 
-    await expect(adminPage.locator("table tbody tr").first()).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.locator("table tbody tr").first()).toBeVisible()
   })
 
   test("再次点击行收起面板", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.locator("table")).toBeVisible()
 
     const firstRow = adminPage.locator("table tbody tr").first()
-    await expect(firstRow).toBeVisible({ timeout: 15_000 })
+    await expect(firstRow).toBeVisible()
 
     /* 展开 */
     await firstRow.click()
-    await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
+    await adminPage.getByText("基本信息").first().waitFor()
     await expect(adminPage.getByText("基本信息")).toBeVisible()
 
     /* 再次点击收起 */
     await firstRow.click()
-    await expect(adminPage.getByText("基本信息")).not.toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByText("基本信息")).not.toBeVisible()
   })
 })

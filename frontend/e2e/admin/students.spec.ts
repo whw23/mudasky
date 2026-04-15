@@ -16,17 +16,17 @@ async function expandFirstStudentRow(adminPage: import("@playwright/test").Page)
 
   // 检查是否有"暂无数据"提示
   const noData = adminPage.getByText("暂无数据")
-  if (await noData.isVisible({ timeout: 3_000 }).catch(() => false)) return false
+  if (await noData.isVisible().catch(() => false)) return false
 
   const row = adminPage.locator("table tbody tr").first()
-  if (!(await row.isVisible({ timeout: 5_000 }).catch(() => false))) return false
+  if (!(await row.isVisible().catch(() => false))) return false
 
   // 检查行内容不是空状态
   const text = await row.textContent()
   if (text?.includes("暂无数据") || text?.includes("暂无")) return false
 
   await row.click()
-  await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
+  await adminPage.getByText("基本信息").first().waitFor()
   return true
 }
 
@@ -38,7 +38,7 @@ test.describe("学生管理", () => {
   test("页面加载并展示学生列表", async ({ adminPage }) => {
     const main = adminPage.locator("main")
     // 表格 header 应该可见（即使无数据也有列头）
-    await expect(main.locator("th").first()).toBeVisible({ timeout: 10_000 })
+    await expect(main.locator("th").first()).toBeVisible()
   })
 
   test("默认筛选我的学生", async ({ adminPage }) => {
@@ -54,7 +54,7 @@ test.describe("学生管理", () => {
     const checkbox = main.getByLabel(/仅我的学生/)
     if (await checkbox.isVisible()) {
       await checkbox.uncheck()
-      await expect(main.locator("table").or(main.locator("[class*='grid']"))).toBeVisible({ timeout: 10_000 })
+      await expect(main.locator("table").or(main.locator("[class*='grid']"))).toBeVisible()
     }
   })
 
@@ -139,7 +139,7 @@ test.describe("学生管理实际操作", () => {
     await expect(
       adminPage.getByText("文件列表")
         .or(adminPage.getByText("暂无文件")),
-    ).toBeVisible({ timeout: 10_000 })
+    ).toBeVisible()
   })
 
   test("学生文件列表 API 可正常调用", async ({ adminPage }) => {

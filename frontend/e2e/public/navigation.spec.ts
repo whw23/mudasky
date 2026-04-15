@@ -68,13 +68,13 @@ test.describe("院校页搜索和筛选", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/universities")
     await page.waitForLoadState("networkidle")
-    await page.locator("main").waitFor({ timeout: 10_000 }).catch(() => {})
+    await page.locator("main").waitFor().catch(() => {})
   })
 
   /* 院校页搜索和筛选功能尚未实现，跳过 */
   test.skip("搜索框可见", async ({ page }) => {
     const searchInput = page.getByPlaceholder(/搜索院校/)
-    await expect(searchInput).toBeVisible({ timeout: 15000 })
+    await expect(searchInput).toBeVisible()
   })
 
   test.skip("国家筛选下拉可见", async ({ page }) => {

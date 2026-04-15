@@ -18,7 +18,7 @@ test.describe("院校管理 CRUD", () => {
     const createBtn = adminPage.getByRole("button", { name: /创建|添加/ })
     await createBtn.click()
     const dialog = adminPage.getByRole("dialog")
-    await expect(dialog).toBeVisible({ timeout: 10_000 })
+    await expect(dialog).toBeVisible()
   })
 
   test("空状态提示", async ({ adminPage }) => {
@@ -39,31 +39,31 @@ test.describe("院校管理 CRUD", () => {
     const createBtn = adminPage.getByRole("button", { name: /创建|添加/ })
     await createBtn.click()
     const dialog = adminPage.getByRole("dialog")
-    await expect(dialog).toBeVisible({ timeout: 10_000 })
+    await expect(dialog).toBeVisible()
     const inputs = dialog.getByRole("textbox")
     await inputs.nth(0).fill(NAME)        /* name */
     await inputs.nth(2).fill("E2E国家")    /* country (跳过 nameEn) */
     await inputs.nth(4).fill("E2E城市")    /* city (跳过 province) */
     await dialog.getByRole("button", { name: /保存|确定/ }).click()
-    await expect(dialog).toBeHidden({ timeout: 15_000 })
-    await expect(adminPage.getByText(NAME)).toBeVisible({ timeout: 10_000 })
+    await expect(dialog).toBeHidden()
+    await expect(adminPage.getByText(NAME)).toBeVisible()
 
     /* 编辑 */
     const row = adminPage.locator("tr", { hasText: NAME })
     await row.getByRole("button", { name: /编辑/ }).click()
-    await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByRole("dialog")).toBeVisible()
     const editDialog = adminPage.getByRole("dialog")
     const editInputs = editDialog.getByRole("textbox")
     await editInputs.nth(0).clear()
     await editInputs.nth(0).fill(EDITED)
     await editDialog.getByRole("button", { name: /保存|确定/ }).click()
-    await expect(editDialog).toBeHidden({ timeout: 15_000 })
-    await expect(adminPage.getByText(EDITED)).toBeVisible({ timeout: 10_000 })
+    await expect(editDialog).toBeHidden()
+    await expect(adminPage.getByText(EDITED)).toBeVisible()
 
     /* 删除 */
     adminPage.on("dialog", (d) => d.accept())
     const delRow = adminPage.locator("tr", { hasText: EDITED })
     await delRow.getByRole("button", { name: /删除/ }).click()
-    await expect(adminPage.getByText(EDITED)).toBeHidden({ timeout: 15_000 })
+    await expect(adminPage.getByText(EDITED)).toBeHidden()
   })
 })

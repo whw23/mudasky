@@ -16,7 +16,7 @@ test.describe("立即咨询按钮（未登录）", () => {
     await ctaBtn.scrollIntoViewIfNeeded()
     await ctaBtn.click()
 
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
   })
 })
 
@@ -29,7 +29,7 @@ test.describe("立即咨询按钮（已登录）", () => {
     await ctaBtn.scrollIntoViewIfNeeded()
     await ctaBtn.click()
 
-    await page.waitForURL(/\/about/, { timeout: 10_000 })
+    await page.waitForURL(/\/about/)
     expect(page.url()).toContain("/about")
   })
 })

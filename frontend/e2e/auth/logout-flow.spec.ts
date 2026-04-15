@@ -10,10 +10,10 @@ test.describe("退出登录", () => {
     await gotoAdmin(adminPage, "/")
 
     const logoutBtn = adminPage.getByRole("button", { name: /退出/ })
-    await expect(logoutBtn).toBeVisible({ timeout: 10_000 })
+    await expect(logoutBtn).toBeVisible()
     await logoutBtn.click()
 
     /* 退出后应显示登录/注册按钮 */
-    await expect(adminPage.getByRole("button", { name: /登录/ })).toBeVisible({ timeout: 15_000 })
+    await expect(adminPage.getByRole("button", { name: /登录/ })).toBeVisible()
   })
 })

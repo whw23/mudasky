@@ -10,19 +10,19 @@ test.use({ storageState: { cookies: [], origins: [] } })
 test.describe("越权 — 未登录用户", () => {
   test("访问 /admin/dashboard 被重定向", async ({ page }) => {
     await page.goto("/admin/dashboard")
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 
   test("访问 /admin/users 被重定向", async ({ page }) => {
     await page.goto("/admin/users")
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 
   test("访问 /portal/profile 被重定向", async ({ page }) => {
     await page.goto("/portal/profile")
-    await page.waitForURL(/\/$/, { timeout: 10_000 })
+    await page.waitForURL(/\/$/)
     await expect(page).toHaveURL(/\/$/)
   })
 

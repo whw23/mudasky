@@ -15,7 +15,7 @@ const sections = [
 for (const { path, name } of sections) {
   test(`${name}页面文章链接指向 ${path}/[id]`, async ({ page }) => {
     await page.goto(path)
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const articleLink = page.locator(`a[href*='${path}/']`).first()
     if (!(await articleLink.isVisible().catch(() => false))) {

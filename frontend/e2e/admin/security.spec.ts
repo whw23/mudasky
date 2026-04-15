@@ -24,7 +24,7 @@ test.describe("安全 — XSS 注入", () => {
 
   test("搜索框 XSS 注入不执行", async ({ page }) => {
     await page.goto("/universities")
-    await page.locator("main").waitFor({ timeout: 10_000 })
+    await page.locator("main").waitFor()
     const searchInput = page.getByPlaceholder(/搜索|search/i)
     if (await searchInput.isVisible()) {
       await searchInput.fill('<script>alert("xss")</script>')

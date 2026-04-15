@@ -8,13 +8,13 @@ import { test, expect } from "@playwright/test"
 test.describe("新闻列表页", () => {
   test("页面加载并显示文章列表", async ({ page }) => {
     await page.goto("/news")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
     await expect(page.locator("main")).toBeVisible()
   })
 
   test("点击文章链接进入详情页", async ({ page }) => {
     await page.goto("/news")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const articleLink = page.locator("a[href*='/news/']").first()
     if (!(await articleLink.isVisible().catch(() => false))) {
@@ -23,7 +23,7 @@ test.describe("新闻列表页", () => {
     }
 
     await articleLink.click()
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
     // 返回按钮可见
     await expect(page.locator("a[href*='/news']").first()).toBeVisible()
   })

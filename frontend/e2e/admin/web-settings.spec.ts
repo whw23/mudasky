@@ -16,6 +16,6 @@ test.describe("网站设置", () => {
     /* 预览容器应存在 */
     await expect(main.locator("[class*='preview'], [class*='Preview']").first().or(
       main.locator("header").first()
-    )).toBeVisible({ timeout: 10_000 })
+    )).toBeVisible()
   })
 })

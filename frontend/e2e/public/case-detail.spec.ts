@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test"
 test.describe("案例详情页", () => {
   test("列表页卡片可点击进入详情", async ({ page }) => {
     await page.goto("/cases")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const caseLink = page.locator("a[href*='/cases/']").first()
     if (!(await caseLink.isVisible().catch(() => false))) {
@@ -17,13 +17,13 @@ test.describe("案例详情页", () => {
     }
 
     await caseLink.click()
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
     await expect(page.locator("a[href*='/cases']").first()).toBeVisible()
   })
 
   test("详情页 API 正常响应", async ({ page }) => {
     await page.goto("/cases")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const caseLink = page.locator("a[href*='/cases/']").first()
     if (!(await caseLink.isVisible().catch(() => false))) {

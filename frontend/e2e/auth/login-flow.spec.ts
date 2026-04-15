@@ -13,11 +13,11 @@ test.describe("登录流程", () => {
     await page.waitForLoadState("networkidle")
 
     await page.getByRole("button", { name: /登录/ }).click()
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
 
     /* 关闭弹窗 -- 按 Escape */
     await page.keyboard.press("Escape")
-    await expect(page.getByRole("dialog")).toBeHidden({ timeout: 5_000 })
+    await expect(page.getByRole("dialog")).toBeHidden()
   })
 
   test("登录弹窗 tab 切换", async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe("登录流程", () => {
     await page.waitForLoadState("networkidle")
 
     await page.getByRole("button", { name: /登录/ }).click()
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
 
     /* 默认是手机验证码 tab */
     await expect(page.getByRole("tab", { name: /手机验证码/ })).toBeVisible()
@@ -34,7 +34,7 @@ test.describe("登录流程", () => {
     /* 切换到账号密码 */
     await page.getByRole("tab", { name: /账号密码/ }).click()
     const tabpanel = page.getByRole("tabpanel")
-    await expect(tabpanel).toBeVisible({ timeout: 5_000 })
+    await expect(tabpanel).toBeVisible()
   })
 
   test("保持登录 checkbox 默认选中", async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe("登录流程", () => {
     await page.waitForLoadState("networkidle")
 
     await page.getByRole("button", { name: /登录/ }).click()
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
 
     const checkbox = page.getByRole("checkbox", { name: /保持登录/ })
     await expect(checkbox).toBeChecked()
@@ -53,10 +53,10 @@ test.describe("登录流程", () => {
     await page.waitForLoadState("networkidle")
 
     await page.getByRole("button", { name: /登录/ }).click()
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
 
     await page.getByRole("tab", { name: /账号密码/ }).click()
-    await expect(page.getByRole("tabpanel")).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole("tabpanel")).toBeVisible()
 
     /* 不填写直接点登录 */
     await page.getByRole("tabpanel").getByRole("button", { name: /登录/ }).click()
@@ -70,11 +70,11 @@ test.describe("登录流程", () => {
     await page.waitForLoadState("networkidle")
 
     await page.getByRole("button", { name: /登录/ }).click()
-    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("dialog")).toBeVisible()
 
     /* 切到账号密码 tab */
     await page.getByRole("tab", { name: /账号密码/ }).click()
-    await expect(page.getByRole("tabpanel")).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole("tabpanel")).toBeVisible()
 
     /* 填写登录信息 */
     const dialog = page.getByRole("dialog")
@@ -85,9 +85,9 @@ test.describe("登录流程", () => {
     await page.getByRole("tabpanel").getByRole("button", { name: /登录/ }).click()
 
     /* 弹窗应关闭 */
-    await expect(page.getByRole("dialog")).toBeHidden({ timeout: 15_000 })
+    await expect(page.getByRole("dialog")).toBeHidden()
 
     /* 应显示用户名 */
-    await expect(page.getByText("mudasky")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText("mudasky")).toBeVisible()
   })
 })

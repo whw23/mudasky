@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test"
 test.describe("院校详情页", () => {
   test("列表页卡片可点击进入详情", async ({ page }) => {
     await page.goto("/universities")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const uniLink = page.locator("a[href*='/universities/']").first()
     if (!(await uniLink.isVisible().catch(() => false))) {
@@ -17,13 +17,13 @@ test.describe("院校详情页", () => {
     }
 
     await uniLink.click()
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
     await expect(page.locator("a[href*='/universities']").first()).toBeVisible()
   })
 
   test("详情页展示院校信息", async ({ page }) => {
     await page.goto("/universities")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
 
     const uniLink = page.locator("a[href*='/universities/']").first()
     if (!(await uniLink.isVisible().catch(() => false))) {
@@ -40,7 +40,7 @@ test.describe("院校详情页", () => {
       expect(response.status()).toBe(200)
     }
 
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
     await expect(page.locator("main")).toBeVisible()
   })
 })

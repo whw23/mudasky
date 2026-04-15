@@ -12,7 +12,7 @@ const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
 export default defineConfig({
   testDir: ".",
   testMatch: "**/*.spec.ts",
-  timeout: 120_000,
+  timeout: 30_000,
   retries: 1,
   workers: 6,
   globalSetup: "./global-setup.ts",
@@ -23,8 +23,8 @@ export default defineConfig({
     storageState: AUTH_FILE,
     screenshot: "only-on-failure",
     trace: "on-first-retry",
-    actionTimeout: 15_000,
-    navigationTimeout: 60_000,
+    actionTimeout: 5_000,
+    navigationTimeout: 15_000,
   },
   projects: [
     {

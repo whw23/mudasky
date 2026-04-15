@@ -11,7 +11,7 @@ test.describe("文章 CRUD", () => {
 
     // 点击写文章
     await adminPage.getByRole("button", { name: /写文章/ }).click()
-    await expect(adminPage.getByPlaceholder(/标题/)).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByPlaceholder(/标题/)).toBeVisible()
 
     // 填写标题
     const titleInput = adminPage.getByPlaceholder(/标题/)
@@ -31,7 +31,7 @@ test.describe("文章 CRUD", () => {
 
     // 取消返回列表
     await adminPage.getByRole("button", { name: /取消/ }).click()
-    await expect(adminPage.getByRole("heading", { name: "文章管理" })).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByRole("heading", { name: "文章管理" })).toBeVisible()
   })
 
   test("文章列表状态筛选 tab 交互", async ({ adminPage }) => {
@@ -44,15 +44,15 @@ test.describe("文章 CRUD", () => {
 
     // 切换到草稿 tab
     await adminPage.getByRole("tab", { name: "草稿" }).click()
-    await expect(adminPage.getByRole("tab", { name: "草稿" })).toHaveAttribute("aria-selected", "true", { timeout: 5_000 })
+    await expect(adminPage.getByRole("tab", { name: "草稿" })).toHaveAttribute("aria-selected", "true")
 
     // 切换到已发布 tab
     await adminPage.getByRole("tab", { name: "已发布" }).click()
-    await expect(adminPage.getByRole("tab", { name: "已发布" })).toHaveAttribute("aria-selected", "true", { timeout: 5_000 })
+    await expect(adminPage.getByRole("tab", { name: "已发布" })).toHaveAttribute("aria-selected", "true")
 
     // 切回全部
     await adminPage.getByRole("tab", { name: "全部" }).click()
-    await expect(adminPage.getByRole("tab", { name: "全部" })).toHaveAttribute("aria-selected", "true", { timeout: 5_000 })
+    await expect(adminPage.getByRole("tab", { name: "全部" })).toHaveAttribute("aria-selected", "true")
   })
 
   test("发布/取消发布按钮可见", async ({ adminPage }) => {

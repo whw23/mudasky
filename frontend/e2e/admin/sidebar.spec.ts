@@ -29,25 +29,25 @@ test.describe("管理后台侧边栏", () => {
 
   test("点击文章管理导航到正确页面", async ({ adminPage }) => {
     await adminPage.getByRole("link", { name: "文章管理" }).click()
-    await adminPage.waitForURL(/\/admin\/articles/, { timeout: 10_000 })
+    await adminPage.waitForURL(/\/admin\/articles/)
     await expect(adminPage).toHaveURL(/\/admin\/articles/)
   })
 
   test("点击分类管理导航到正确页面", async ({ adminPage }) => {
     await adminPage.getByRole("link", { name: "分类管理" }).click()
-    await adminPage.waitForURL(/\/admin\/categories/, { timeout: 10_000 })
+    await adminPage.waitForURL(/\/admin\/categories/)
     await expect(adminPage).toHaveURL(/\/admin\/categories/)
   })
 
   test("点击院校管理导航到正确页面", async ({ adminPage }) => {
     await adminPage.getByRole("link", { name: "院校管理" }).click()
-    await adminPage.waitForURL(/\/admin\/universities/, { timeout: 10_000 })
+    await adminPage.waitForURL(/\/admin\/universities/)
     await expect(adminPage).toHaveURL(/\/admin\/universities/)
   })
 
   test("点击案例管理导航到正确页面", async ({ adminPage }) => {
     await adminPage.getByRole("link", { name: "案例管理" }).click()
-    await adminPage.waitForURL(/\/admin\/cases/, { timeout: 10_000 })
+    await adminPage.waitForURL(/\/admin\/cases/)
     await expect(adminPage).toHaveURL(/\/admin\/cases/)
   })
 })

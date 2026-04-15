@@ -44,13 +44,13 @@ test.describe("分类管理 CRUD", () => {
     await inputs.nth(0).fill(NAME)
     await inputs.nth(1).fill(`e2e-slug-${TS}`)
     await dialog.getByRole("button", { name: /保存|确定/ }).click()
-    await expect(dialog).toBeHidden({ timeout: 15_000 })
-    await expect(adminPage.getByText(NAME)).toBeVisible({ timeout: 10_000 })
+    await expect(dialog).toBeHidden()
+    await expect(adminPage.getByText(NAME)).toBeVisible()
 
     /* 编辑 */
     const row = adminPage.locator("tr", { hasText: NAME })
     await row.getByRole("button", { name: /编辑/ }).click()
-    await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByRole("dialog")).toBeVisible()
     const editDialog = adminPage.getByRole("dialog")
     const editInputs = editDialog.getByRole("textbox")
     await editInputs.nth(0).clear()
@@ -58,13 +58,13 @@ test.describe("分类管理 CRUD", () => {
     await editInputs.nth(1).clear()
     await editInputs.nth(1).fill(`e2e-slug-edited-${TS}`)
     await editDialog.getByRole("button", { name: /保存|确定/ }).click()
-    await expect(editDialog).toBeHidden({ timeout: 15_000 })
-    await expect(adminPage.getByText(EDITED)).toBeVisible({ timeout: 10_000 })
+    await expect(editDialog).toBeHidden()
+    await expect(adminPage.getByText(EDITED)).toBeVisible()
 
     /* 删除 */
     adminPage.on("dialog", (d) => d.accept())
     const delRow = adminPage.locator("tr", { hasText: EDITED })
     await delRow.getByRole("button", { name: /删除/ }).click()
-    await expect(adminPage.getByText(EDITED)).toBeHidden({ timeout: 15_000 })
+    await expect(adminPage.getByText(EDITED)).toBeHidden()
   })
 })

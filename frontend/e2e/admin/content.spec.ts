@@ -19,7 +19,7 @@ test.describe("文章管理页面", () => {
   test("点击写文章进入编辑器", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/articles")
     await adminPage.getByRole("button", { name: /写文章/ }).click()
-    await expect(adminPage.getByRole("heading", { name: /写文章/ })).toBeVisible({ timeout: 10_000 })
+    await expect(adminPage.getByRole("heading", { name: /写文章/ })).toBeVisible()
   })
 })
 

@@ -15,7 +15,7 @@ test.describe("语言切换", () => {
     const langSelect = page.locator("select").first()
     await langSelect.selectOption("en")
 
-    await page.waitForURL(/\/en/, { timeout: 15_000 })
+    await page.waitForURL(/\/en/)
     expect(page.url()).toContain("/en")
   })
 
@@ -27,7 +27,7 @@ test.describe("语言切换", () => {
     await langSelect.selectOption("zh")
 
     /* 中文是默认 locale，URL 可能是 / 而不是 /zh/ */
-    await page.waitForURL((url) => !url.pathname.startsWith("/en"), { timeout: 15_000 })
+    await page.waitForURL((url) => !url.pathname.startsWith("/en"))
     expect(page.url()).not.toContain("/en")
   })
 })

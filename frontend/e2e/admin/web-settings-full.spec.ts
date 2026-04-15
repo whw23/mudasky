@@ -36,13 +36,13 @@ test.describe("网页设置 — 预览和编辑", () => {
   test("点击预览区域可编辑", async ({ adminPage }) => {
     /* 品牌名有可编辑的 wrapper div[title="编辑品牌名称"]，点击它触发编辑弹窗 */
     const editWrapper = adminPage.locator("[title*='编辑']").first()
-    const hasWrapper = await editWrapper.isVisible({ timeout: 5_000 }).catch(() => false)
+    const hasWrapper = await editWrapper.isVisible().catch(() => false)
     if (hasWrapper) {
       await editWrapper.click()
-      await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+      await expect(adminPage.getByRole("dialog")).toBeVisible()
       /* 关闭弹窗 */
       await adminPage.keyboard.press("Escape")
-      await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 5_000 })
+      await expect(adminPage.getByRole("dialog")).toBeHidden()
     }
   })
 })

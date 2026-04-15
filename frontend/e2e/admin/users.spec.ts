@@ -23,7 +23,7 @@ test.describe("用户管理", () => {
 
     await main.getByPlaceholder("搜索用户名或手机号").fill("mudasky")
     await adminPage.waitForTimeout(500)
-    await expect(main.getByText("mudasky")).toBeVisible({ timeout: 10_000 })
+    await expect(main.getByText("mudasky")).toBeVisible()
   })
 
   test("点击用户行展开详情面板", async ({ adminPage }) => {
@@ -34,10 +34,10 @@ test.describe("用户管理", () => {
     await adminPage.waitForTimeout(500)
 
     const row = main.locator("tr", { hasText: "mudasky" })
-    await expect(row).toBeVisible({ timeout: 10_000 })
+    await expect(row).toBeVisible()
     await row.click()
 
     /* 展开面板是行内渲染，不是 dialog；等待面板内容出现 */
-    await expect(main.getByText(/基本信息|分配角色|重置密码/).first()).toBeVisible({ timeout: 15_000 })
+    await expect(main.getByText(/基本信息|分配角色|重置密码/).first()).toBeVisible()
   })
 })

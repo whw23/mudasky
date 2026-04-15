@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test"
 test.describe("院校搜索筛选", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/universities")
-    await page.locator("main").waitFor({ timeout: 15_000 })
+    await page.locator("main").waitFor()
   })
 
   test("搜索框输入并触发筛选", async ({ page }) => {
