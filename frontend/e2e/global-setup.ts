@@ -29,7 +29,6 @@ async function globalSetup(_config: FullConfig) {
   /* 等待水合完成 */
   const loginBtn = page.getByRole("button", { name: /登录/ })
   await loginBtn.waitFor({ timeout: 30_000 })
-  await page.waitForTimeout(3000)
 
   await loginBtn.click()
 
@@ -39,7 +38,7 @@ async function globalSetup(_config: FullConfig) {
 
   /* 切到账号密码 tab */
   await page.getByRole("tab", { name: "账号密码" }).click()
-  await page.waitForTimeout(1000)
+  await page.getByRole("tabpanel").waitFor({ timeout: 5_000 })
 
   /* 用 role=textbox 定位输入框 */
   const inputs = dialog.getByRole("textbox")

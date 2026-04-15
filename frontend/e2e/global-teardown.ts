@@ -19,23 +19,36 @@ async function globalTeardown(_config: FullConfig) {
   })
   const page = await context.newPage()
 
-  try {
-    /* 获取并删除测试角色 */
-    const roleRes = await page.request.get("http://localhost/api/admin/roles/list", {
-      headers: { "X-Requested-With": "XMLHttpRequest" },
-    })
-    if (roleRes.ok()) {
-      const roles = await roleRes.json()
-      for (const r of roles) {
-        if (r.name?.startsWith("E2E")) {
-          await page.request.post(`http://localhost/api/admin/roles/delete/${r.id}`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" },
-          })
+  const headers = { "X-Requested-With": "XMLHttpRequest" }
+
+  /* 清理所有以 E2E 开头的测试数据 */
+  const cleanups: { endpoint: string; nameField: string }[] = [
+    { endpoint: "roles", nameField: "name" },
+    { endpoint: "categories", nameField: "name" },
+    { endpoint: "cases", nameField: "title" },
+    { endpoint: "universities", nameField: "name" },
+  ]
+
+  for (const { endpoint, nameField } of cleanups) {
+    try {
+      const res = await page.request.get(
+        `http://localhost/api/admin/${endpoint}/list`,
+        { headers },
+      )
+      if (res.ok()) {
+        const items = await res.json()
+        for (const item of items) {
+          if (item[nameField]?.startsWith("E2E")) {
+            await page.request.post(
+              `http://localhost/api/admin/${endpoint}/delete`,
+              { headers, data: { id: item.id } },
+            ).catch(() => {})
+          }
         }
       }
+    } catch {
+      /* 清理失败不阻塞 */
     }
-  } catch {
-    /* 清理失败不阻塞 */
   }
 
   await browser.close()
