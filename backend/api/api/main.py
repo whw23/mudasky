@@ -116,5 +116,30 @@ async def api_health_check() -> dict:
     return {"status": "ok", "version": os.environ.get("BUILD_VERSION", "dev")}
 
 
+@api.get("/version", summary="版本信息")
+async def api_version() -> dict:
+    """返回 API 和数据库的构建版本。"""
+    import os
+
+    from sqlalchemy import text
+
+    from app.db import async_session_factory
+
+    db_version = "unknown"
+    try:
+        async with async_session_factory() as session:
+            row = await session.execute(
+                text("SELECT current_setting('app.build_version')")
+            )
+            db_version = row.scalar() or "unknown"
+    except Exception:
+        pass
+
+    return {
+        "version": os.environ.get("BUILD_VERSION", "dev"),
+        "db_version": db_version,
+    }
+
+
 # 挂载子应用
 app.mount("/api", api)

@@ -38,8 +38,8 @@ function _M.is_public(method, uri)
   if method == "GET" and string.find(uri, "/api/public/", 1, true) == 1 then
     return true
   end
-  -- 健康检查
-  if method == "GET" and uri == "/api/health" then
+  -- 健康检查 & 版本查询
+  if method == "GET" and (uri == "/api/health" or uri == "/api/version") then
     return true
   end
   return false

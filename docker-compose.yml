@@ -1,5 +1,10 @@
+x-common: &common
+  environment:
+    TZ: Asia/Shanghai
+
 services:
   gateway:
+    <<: *common
     image: ghcr.io/whw23/mudasky-gateway:latest
     restart: unless-stopped
     deploy:
@@ -16,6 +21,7 @@ services:
         condition: service_started
 
   frontend:
+    <<: *common
     image: ghcr.io/whw23/mudasky-frontend:latest
     restart: unless-stopped
     deploy:
@@ -27,6 +33,7 @@ services:
         condition: service_healthy
 
   api:
+    <<: *common
     image: ghcr.io/whw23/mudasky-api:latest
     restart: unless-stopped
     deploy:
@@ -45,6 +52,7 @@ services:
       start_period: 10s
 
   worker:
+    <<: *common
     image: ghcr.io/whw23/mudasky-api:latest
     env_file: env/worker.env
     depends_on:
@@ -53,6 +61,7 @@ services:
     profiles: ["worker"]
 
   db:
+    <<: *common
     image: ghcr.io/whw23/mudasky-db:latest
     restart: unless-stopped
     deploy:
@@ -60,12 +69,12 @@ services:
         limits:
           memory: 512M
     env_file: env/db.env
-    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=mudasky
+    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=mudasky -c app.build_version=${DB_VERSION:-dev}
     ports:
       - "47293:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mudasky"]
       interval: 5s
