@@ -710,7 +710,13 @@
     },
     "ctaTitle": "You Could Be Our Next Success Story",
     "ctaDesc": "Every successful study abroad story begins with a professional consultation",
-    "ctaButton": "Start Your Journey"
+    "ctaButton": "Start Your Journey",
+    "backToList": "Back to Cases",
+    "admittedTo": "Admitted To",
+    "major": "Program",
+    "year": "Year",
+    "testimonialTitle": "Testimonial",
+    "detailTitle": "Case Detail"
   },
   "Visa": {
     "processTitle": "Visa Application Process",

@@ -710,7 +710,13 @@
     },
     "ctaTitle": "あなたも次の成功事例になれます",
     "ctaDesc": "すべての成功した留学ストーリーは、専門的な相談から始まります",
-    "ctaButton": "留学の旅を始める"
+    "ctaButton": "留学の旅を始める",
+    "backToList": "事例一覧に戻る",
+    "admittedTo": "合格大学",
+    "major": "専攻",
+    "year": "年度",
+    "testimonialTitle": "学生の声",
+    "detailTitle": "事例詳細"
   },
   "Visa": {
     "processTitle": "ビザ申請プロセス",

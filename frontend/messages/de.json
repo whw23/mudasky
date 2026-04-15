@@ -710,7 +710,13 @@
     },
     "ctaTitle": "Sie könnten unsere nächste Erfolgsgeschichte sein",
     "ctaDesc": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
-    "ctaButton": "Starten Sie Ihre Reise"
+    "ctaButton": "Starten Sie Ihre Reise",
+    "backToList": "Zurück zur Übersicht",
+    "admittedTo": "Zugelassen an",
+    "major": "Studiengang",
+    "year": "Jahr",
+    "testimonialTitle": "Erfahrungsbericht",
+    "detailTitle": "Falldetails"
   },
   "Visa": {
     "processTitle": "Visumsantragsprozess",

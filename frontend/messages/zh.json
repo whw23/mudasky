@@ -710,7 +710,13 @@
     },
     "ctaTitle": "你也可以成为下一个成功案例",
     "ctaDesc": "每一个成功的留学故事都始于一次专业的咨询",
-    "ctaButton": "开始你的留学之旅"
+    "ctaButton": "开始你的留学之旅",
+    "backToList": "返回案例列表",
+    "admittedTo": "录取院校",
+    "major": "专业",
+    "year": "年份",
+    "testimonialTitle": "学生感言",
+    "detailTitle": "案例详情"
   },
   "Visa": {
     "processTitle": "签证办理流程",
