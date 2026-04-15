@@ -150,11 +150,75 @@ test.describe("安全 — CSRF", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: "hacked" }),
-        // 不带 credentials
       })
       return { status: res.status }
     })
-    // 网关 CSRF 保护返回 403，或未认证返回 401
     expect([401, 403]).toContain(response.status)
+  })
+})
+
+test.describe("安全 — 参数注入扩展", () => {
+  test("分页参数注入不导致错误", async ({ page }) => {
+    await page.goto("/")
+    const response = await page.evaluate(async () => {
+      const res = await fetch("/api/public/university/list?page=1%27+OR+1%3D1&page_size=10")
+      return { status: res.status }
+    })
+    expect(response.status).not.toBe(500)
+  })
+})
+
+test.describe("安全 — 越权扩展", () => {
+  test("未认证用户调用 portal 修改密码被拒绝", async ({ page }) => {
+    await page.goto("/")
+    const response = await page.evaluate(async () => {
+      const res = await fetch("/api/portal/profile/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: "+8613900000001", code: "123456", encrypted_password: "x", nonce: "y" }),
+      })
+      return { status: res.status }
+    })
+    expect([401, 403]).toContain(response.status)
+  })
+
+  test("未认证用户调用文档上传被拒绝", async ({ page }) => {
+    await page.goto("/")
+    const response = await page.evaluate(async () => {
+      const formData = new FormData()
+      formData.append("file", new Blob(["test"]), "test.txt")
+      formData.append("category", "other")
+      const res = await fetch("/api/portal/documents/list/upload", {
+        method: "POST",
+        body: formData,
+      })
+      return { status: res.status }
+    })
+    expect([401, 403]).toContain(response.status)
+  })
+
+  test("未认证用户调用学生降级被拒绝", async ({ page }) => {
+    await page.goto("/")
+    const response = await page.evaluate(async () => {
+      const res = await fetch("/api/admin/students/list/detail/downgrade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: "fake-id" }),
+      })
+      return { status: res.status }
+    })
+    expect([401, 403]).toContain(response.status)
+  })
+})
+
+test.describe("安全 — 路径遍历", () => {
+  test("文档下载 — 无效 doc_id 不返回敏感信息", async ({ page }) => {
+    await page.goto("/")
+    const response = await page.evaluate(async () => {
+      const res = await fetch("/api/portal/documents/list/detail/download?doc_id=../../../etc/passwd")
+      return { status: res.status, text: await res.text().catch(() => "") }
+    })
+    expect([401, 403, 404, 422]).toContain(response.status)
+    expect(response.text).not.toContain("root:")
   })
 })

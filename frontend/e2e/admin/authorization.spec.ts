@@ -53,7 +53,81 @@ test.describe("越权 — 未登录用户", () => {
       })
       return { status: res.status }
     })
-    // 网关 CSRF 保护返回 403，或未认证返回 401
     expect([401, 403]).toContain(response.status)
   })
+})
+
+test.describe("未登录 — admin 写操作全覆盖", () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  const adminEndpoints = [
+    { path: "/api/admin/users/list/detail/edit", body: { user_id: "x" } },
+    { path: "/api/admin/roles/meta/list/create", body: { name: "x" } },
+    { path: "/api/admin/roles/meta/list/detail/delete", body: { role_id: "x" } },
+    { path: "/api/admin/categories/list/create", body: { name: "x" } },
+    { path: "/api/admin/articles/list/create", body: { title: "x" } },
+    { path: "/api/admin/cases/list/create", body: { title: "x" } },
+    { path: "/api/admin/universities/list/create", body: { name: "x" } },
+    { path: "/api/admin/students/list/detail/edit", body: { user_id: "x" } },
+    { path: "/api/admin/students/list/detail/assign-advisor", body: { user_id: "x" } },
+    { path: "/api/admin/contacts/list/detail/mark", body: { user_id: "x" } },
+    { path: "/api/admin/contacts/list/detail/upgrade", body: { user_id: "x" } },
+    { path: "/api/admin/general-settings/list/edit", body: { key: "x", value: "x" } },
+    { path: "/api/admin/web-settings/list/edit", body: { key: "x", value: "x" } },
+  ]
+
+  for (const { path, body } of adminEndpoints) {
+    const shortPath = path.replace("/api/admin/", "")
+    test(`未认证 POST ${shortPath} 被拒绝`, async ({ page }) => {
+      await page.goto("/")
+      const response = await page.evaluate(
+        async ({ url, data }) => {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+          return { status: res.status }
+        },
+        { url: path, data: body },
+      )
+      expect([401, 403]).toContain(response.status)
+    })
+  }
+})
+
+test.describe("未登录 — portal 写操作全覆盖", () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  const portalEndpoints = [
+    { path: "/api/portal/profile/meta/list/edit", body: { username: "x" } },
+    { path: "/api/portal/profile/password", body: { phone: "x", code: "x" } },
+    { path: "/api/portal/profile/phone", body: { new_phone: "x", code: "x" } },
+    { path: "/api/portal/profile/delete-account", body: { code: "x" } },
+    { path: "/api/portal/profile/sessions/list/revoke", body: { token_id: "x" } },
+    { path: "/api/portal/profile/sessions/list/revoke-all", body: {} },
+    { path: "/api/portal/profile/two-factor/enable-totp", body: {} },
+    { path: "/api/portal/profile/two-factor/confirm-totp", body: { totp_code: "x" } },
+    { path: "/api/portal/profile/two-factor/disable", body: { phone: "x", code: "x" } },
+    { path: "/api/portal/documents/list/detail/delete", body: { doc_id: "x" } },
+  ]
+
+  for (const { path, body } of portalEndpoints) {
+    const shortPath = path.replace("/api/portal/", "")
+    test(`未认证 POST ${shortPath} 被拒绝`, async ({ page }) => {
+      await page.goto("/")
+      const response = await page.evaluate(
+        async ({ url, data }) => {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+          return { status: res.status }
+        },
+        { url: path, data: body },
+      )
+      expect([401, 403]).toContain(response.status)
+    })
+  }
 })
