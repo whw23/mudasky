@@ -1,22 +1,8 @@
 services:
-  api:
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-
-  frontend:
-    build:
-      dockerfile: Dockerfile.dev
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-    volumes:
-      - ./frontend:/app
-      - next_cache:/app/.next
-
   gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
     entrypoint: ["sh", "/usr/local/openresty/nginx/dev-entrypoint.sh"]
     environment:
       - RATE_LIMIT_MULTIPLIER=10
@@ -26,10 +12,33 @@ services:
       - ./gateway/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./gateway/dev-entrypoint.sh:/usr/local/openresty/nginx/dev-entrypoint.sh
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    volumes:
+      - ./frontend:/app
+      - next_cache:/app/.next
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: api/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
   db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     ports:
       - "15432:5432"
 
 volumes:
   next_cache:
-
