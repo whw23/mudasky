@@ -22,4 +22,12 @@ test.describe("管理仪表盘", () => {
     await adminPage.locator("main").getByText("用户管理").click()
     await expect(adminPage).toHaveURL(/admin\/users/, { timeout: 30_000 })
   })
+
+  test("统计卡片显示数字", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/dashboard")
+    const main = adminPage.locator("main")
+    /* 统计卡片应显示数字 */
+    await expect(main.locator("text=/\\d+/").first()).toBeVisible({ timeout: 15_000 })
+  })
+
 })

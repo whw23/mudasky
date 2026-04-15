@@ -3,13 +3,11 @@
  * 覆盖预览区域、编辑浮层、页面切换、配置编辑弹窗。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin } from "../fixtures/base"
 
 test.describe("网页设置 — 预览和编辑", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/admin/web-settings")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(3000)
+    await gotoAdmin(adminPage, "/admin/web-settings")
   })
 
   test("页面加载显示预览区域", async ({ adminPage }) => {
@@ -31,8 +29,20 @@ test.describe("网页设置 — 预览和编辑", () => {
     // 点击院校选择
     const uniLink = adminPage.getByText("院校选择").first()
     await uniLink.click()
-    await adminPage.waitForTimeout(1000)
     // 应该切换到院校预览
     await expect(adminPage.locator("body")).toContainText("院校")
+  })
+
+  test("点击预览区域可编辑", async ({ adminPage }) => {
+    /* 品牌名有可编辑的 wrapper div[title="编辑品牌名称"]，点击它触发编辑弹窗 */
+    const editWrapper = adminPage.locator("[title*='编辑']").first()
+    const hasWrapper = await editWrapper.isVisible({ timeout: 5_000 }).catch(() => false)
+    if (hasWrapper) {
+      await editWrapper.click()
+      await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 10_000 })
+      /* 关闭弹窗 */
+      await adminPage.keyboard.press("Escape")
+      await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 5_000 })
+    }
   })
 })

@@ -59,7 +59,7 @@ test.describe("认证 — 密码登录", () => {
     const dialog = page.getByRole("dialog")
     await dialog.waitFor({ timeout: 10_000 })
     await dialog.getByRole("tab", { name: "账号密码" }).click()
-    await page.waitForTimeout(500)
+    await expect(page.getByRole("tabpanel")).toBeVisible()
   })
 
   test("错误密码显示错误提示", async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe("认证 — 登出", () => {
     const dialog = page.getByRole("dialog")
     await dialog.waitFor({ timeout: 10_000 })
     await dialog.getByRole("tab", { name: "账号密码" }).click()
-    await page.waitForTimeout(500)
+    await expect(page.getByRole("tabpanel")).toBeVisible()
     const panel = dialog.getByRole("tabpanel")
     const inputs = panel.getByRole("textbox")
     await inputs.first().fill("mudasky")
@@ -103,18 +103,16 @@ test.describe("认证 — 登出", () => {
     await expect(dialog).not.toBeVisible({ timeout: 15_000 })
 
     // 登出
-    // 找到用户菜单或登出按钮
-    await page.waitForTimeout(1000)
     // 导航到 portal 触发已登录状态
     await page.goto("/portal/profile")
     await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(2000)
+    await page.locator("main").waitFor({ timeout: 10_000 }).catch(() => {})
     // 可能有登出按钮或需要通过 API 登出
     await page.evaluate(() => fetch("/api/auth/logout", { method: "POST", credentials: "include" }))
     await page.reload()
     await page.waitForLoadState("networkidle")
     // 刷新后应该被重定向到首页（因为 portal 需要登录）
-    await page.waitForTimeout(2000)
+    await page.waitForURL(/\/$/, { timeout: 10_000 })
     await expect(page).toHaveURL(/\/$/)
   })
 })
@@ -122,15 +120,13 @@ test.describe("认证 — 登出", () => {
 test.describe("认证 — 未登录重定向", () => {
   test("未登录访问 portal 重定向到首页", async ({ page }) => {
     await page.goto("/portal/profile")
-    await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(3000)
+    await page.waitForURL(/\/$/, { timeout: 10_000 })
     await expect(page).toHaveURL(/\/$/)
   })
 
   test("未登录访问 admin 重定向到首页", async ({ page }) => {
     await page.goto("/admin/dashboard")
-    await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(3000)
+    await page.waitForURL(/\/$/, { timeout: 10_000 })
     await expect(page).toHaveURL(/\/$/)
   })
 })

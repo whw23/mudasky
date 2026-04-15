@@ -3,13 +3,11 @@
  * 覆盖页面加载、上传区域、存储空间显示。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin } from "../fixtures/base"
 
 test.describe("文档管理", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/portal/documents")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(2000)
+    await gotoAdmin(adminPage, "/portal/documents")
   })
 
   test("页面加载显示文档管理标题", async ({ adminPage }) => {

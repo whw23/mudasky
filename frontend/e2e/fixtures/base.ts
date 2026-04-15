@@ -19,7 +19,8 @@ export async function gotoAdmin(page: Page, pagePath: string) {
     /* 如果没有 Compiling 指示器也不报错 */
   })
   await page.waitForLoadState("networkidle")
-  await page.waitForTimeout(1000)
+  /* 等待 main 区域渲染完成，替代固定等待 */
+  await page.locator("main").waitFor({ timeout: 15_000 }).catch(() => {})
 }
 
 /**
@@ -36,7 +37,7 @@ export async function clickAndWaitDialog(page: Page, buttonName: string) {
       await dialog.waitFor({ timeout: 3_000 })
       return
     } catch {
-      await page.waitForTimeout(2000)
+      await page.waitForTimeout(1000)
     }
   }
   await btn.click()

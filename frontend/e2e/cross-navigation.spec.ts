@@ -18,11 +18,9 @@ test.describe("路径乱序交叉测试", () => {
   test("admin 和 portal 之间切换", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
     await expect(adminPage.locator("main")).toBeVisible()
-    await adminPage.waitForTimeout(1000)
 
     await gotoAdmin(adminPage, "/portal/profile")
     await expect(adminPage.locator("main")).toBeVisible()
-    await adminPage.waitForTimeout(1000)
 
     await gotoAdmin(adminPage, "/admin/roles")
     await expect(adminPage.locator("main")).toBeVisible()
@@ -38,7 +36,6 @@ test.describe("路径乱序交叉测试", () => {
     for (const path of pages) {
       await gotoAdmin(adminPage, path)
       await expect(adminPage.locator("main")).toBeVisible()
-      await adminPage.waitForTimeout(500)
     }
   })
 
@@ -47,15 +44,12 @@ test.describe("路径乱序交叉测试", () => {
     for (const path of pages) {
       await gotoAdmin(adminPage, path)
       await expect(adminPage.locator("main")).toBeVisible()
-      await adminPage.waitForTimeout(500)
     }
   })
 
   test("CRUD 中间切换页面后返回", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/categories")
-    await adminPage.waitForTimeout(2000)
     await gotoAdmin(adminPage, "/admin/universities")
-    await adminPage.waitForTimeout(1000)
     await gotoAdmin(adminPage, "/admin/categories")
     await expect(adminPage.locator("main")).toBeVisible()
   })

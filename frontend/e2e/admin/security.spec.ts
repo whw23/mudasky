@@ -24,12 +24,11 @@ test.describe("安全 — XSS 注入", () => {
 
   test("搜索框 XSS 注入不执行", async ({ page }) => {
     await page.goto("/universities")
-    await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(2000)
+    await page.locator("main").waitFor({ timeout: 10_000 })
     const searchInput = page.getByPlaceholder(/搜索|search/i)
     if (await searchInput.isVisible()) {
       await searchInput.fill('<script>alert("xss")</script>')
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(500)
       // 页面不应该有 alert 弹窗（Playwright 会自动捕获）
       // 验证页面还正常
       await expect(page.locator("body")).toBeVisible()

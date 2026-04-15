@@ -3,13 +3,11 @@
  * 覆盖行内展开面板、状态切换、角色分配、密码重置、强制登出、删除。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin } from "../fixtures/base"
 
 test.describe("用户管理 — 行内展开面板", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/admin/users")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(2000)
+    await gotoAdmin(adminPage, "/admin/users")
   })
 
   test("页面加载显示用户表格", async ({ adminPage }) => {
@@ -28,27 +26,23 @@ test.describe("用户管理 — 行内展开面板", () => {
   test("点击用户行展开详情面板", async ({ adminPage }) => {
     const firstRow = adminPage.locator("table tbody tr").first()
     await firstRow.click()
-    await adminPage.waitForTimeout(500)
     // 展开面板应该出现
-    await expect(adminPage.getByText("基本信息")).toBeVisible()
+    await expect(adminPage.getByText("基本信息")).toBeVisible({ timeout: 10_000 })
   })
 
   test("再次点击收起面板", async ({ adminPage }) => {
     const firstRow = adminPage.locator("table tbody tr").first()
     await firstRow.click()
-    await adminPage.waitForTimeout(500)
-    await expect(adminPage.getByText("基本信息")).toBeVisible()
+    await expect(adminPage.getByText("基本信息")).toBeVisible({ timeout: 10_000 })
     // 再次点击收起
     await firstRow.click()
-    await adminPage.waitForTimeout(500)
-    await expect(adminPage.getByText("基本信息")).not.toBeVisible()
+    await expect(adminPage.getByText("基本信息")).not.toBeVisible({ timeout: 10_000 })
   })
 })
 
 test.describe("用户管理 — 导航入口", () => {
   test("侧边栏有用户管理链接", async ({ adminPage }) => {
-    await adminPage.goto("/admin/dashboard")
-    await adminPage.waitForLoadState("networkidle")
+    await gotoAdmin(adminPage, "/admin/dashboard")
     const link = adminPage.getByRole("link", { name: "用户管理" })
     await expect(link).toBeVisible()
   })

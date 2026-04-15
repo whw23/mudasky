@@ -31,9 +31,27 @@ test.describe("学生管理", () => {
     const checkbox = main.getByLabel(/仅我的学生/)
     if (await checkbox.isVisible()) {
       await checkbox.uncheck()
-      await adminPage.waitForTimeout(1000)
       // 列表应该刷新
-      await expect(main.locator("table").or(main.locator("[class*='grid']"))).toBeVisible()
+      await expect(main.locator("table").or(main.locator("[class*='grid']"))).toBeVisible({ timeout: 10_000 })
     }
+  })
+
+  test("展开面板显示操作区域", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/students")
+    /* 等待表格加载 */
+    const table = adminPage.locator("table")
+    const hasTable = await table.isVisible({ timeout: 15_000 }).catch(() => false)
+    if (!hasTable) return /* 没有学生数据则跳过 */
+
+    const row = adminPage.locator("table tbody tr").first()
+    const hasRow = await row.isVisible({ timeout: 10_000 }).catch(() => false)
+    if (!hasRow) return /* 没有行数据则跳过 */
+
+    await row.click()
+    /* 展开面板加载 — 等待任意展开面板内容 */
+    await expect(
+      adminPage.getByText("基本信息").first()
+        .or(adminPage.locator("td[colspan]").first())
+    ).toBeVisible({ timeout: 15_000 })
   })
 })

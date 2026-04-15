@@ -24,7 +24,6 @@ test.describe("错误码国际化", () => {
     /* 点击登录按钮 */
     const loginBtn = page.getByRole("button", { name: /登录/ })
     await loginBtn.waitFor({ timeout: 30_000 })
-    await page.waitForTimeout(2000)
     await loginBtn.click()
 
     /* 等待弹窗出现 */
@@ -33,7 +32,7 @@ test.describe("错误码国际化", () => {
 
     /* 切换到账号密码 tab */
     await page.getByRole("tab", { name: "账号密码" }).click()
-    await page.waitForTimeout(1000)
+    await expect(page.getByRole("tabpanel")).toBeVisible()
 
     /* 填写错误的登录凭据 */
     const accountInput = dialog.getByPlaceholder("用户名或手机号")

@@ -3,21 +3,20 @@
  * 覆盖展开面板后的状态切换、角色分配、密码重置、强制登出等操作 UI。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin } from "../fixtures/base"
 
 /* 此测试需要有效的登录状态，单独运行或在 globalSetup 后立即运行 */
 test.describe("用户管理操作", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/admin/users")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(3000)
-    // 等待表格数据加载
-    await adminPage.locator("table tbody tr").first().waitFor({ timeout: 15000 })
+    await gotoAdmin(adminPage, "/admin/users")
+    /* 等待表格和数据行加载完成 */
+    await expect(adminPage.locator("table")).toBeVisible({ timeout: 15_000 })
+    const firstRow = adminPage.locator("table tbody tr").first()
+    await expect(firstRow).toBeVisible({ timeout: 15_000 })
     // 展开第一个用户
-    await adminPage.locator("table tbody tr").first().click()
+    await firstRow.click()
     // 等待展开面板内容加载（面板会调 API 获取详情）
-    await adminPage.getByText("基本信息").waitFor({ timeout: 15_000 })
-    await adminPage.waitForTimeout(1000)
+    await adminPage.getByText("基本信息").first().waitFor({ timeout: 15_000 })
   })
 
   test("展开面板显示基本信息区域", async ({ adminPage }) => {
@@ -36,7 +35,7 @@ test.describe("用户管理操作", () => {
   })
 
   test("展开面板显示重置密码区域", async ({ adminPage }) => {
-    await expect(adminPage.getByText("重置密码")).toBeVisible()
+    await expect(adminPage.getByText("重置密码").first()).toBeVisible({ timeout: 10_000 })
   })
 
   test("展开面板显示强制登出按钮", async ({ adminPage }) => {

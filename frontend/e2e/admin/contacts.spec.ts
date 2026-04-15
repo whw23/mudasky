@@ -19,7 +19,18 @@ test.describe("联系人管理", () => {
   test("列表展示联系人信息", async ({ adminPage }) => {
     const main = adminPage.locator("main")
     // 表格应有列头
-    await adminPage.waitForTimeout(2000)
-    await expect(main.locator("th, [role='columnheader']").first()).toBeVisible()
+    await expect(main.locator("th, [role='columnheader']").first()).toBeVisible({ timeout: 10_000 })
+  })
+
+  test("展开面板显示操作区域", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/contacts")
+    const table = adminPage.locator("table")
+    await expect(table).toBeVisible({ timeout: 15_000 })
+
+    const row = adminPage.locator("table tbody tr").first()
+    if (await row.isVisible()) {
+      await row.click()
+      await expect(adminPage.getByText("基本信息").first()).toBeVisible({ timeout: 15_000 })
+    }
   })
 })

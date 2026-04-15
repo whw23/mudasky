@@ -3,13 +3,11 @@
  * 覆盖用户名编辑、手机号修改UI、密码修改UI、2FA、会话管理、注销账号。
  */
 
-import { test, expect } from "../fixtures/base"
+import { test, expect, gotoAdmin } from "../fixtures/base"
 
 test.describe("个人资料页", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/portal/profile")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(2000)
+    await gotoAdmin(adminPage, "/portal/profile")
   })
 
   test("页面加载显示基本信息", async ({ adminPage }) => {
@@ -28,7 +26,6 @@ test.describe("个人资料页", () => {
 
   test("点击修改用户名展开编辑表单", async ({ adminPage }) => {
     await adminPage.getByRole("button", { name: "修改" }).first().click()
-    await adminPage.waitForTimeout(1000)
     // 应该出现输入框和取消按钮
     await expect(adminPage.getByRole("button", { name: "取消" }).first()).toBeVisible()
   })
@@ -53,9 +50,7 @@ test.describe("个人资料页", () => {
 
 test.describe("用户中心侧边栏", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.goto("/portal/overview")
-    await adminPage.waitForLoadState("networkidle")
-    await adminPage.waitForTimeout(2000)
+    await gotoAdmin(adminPage, "/portal/overview")
   })
 
   test("显示用户中心菜单", async ({ adminPage }) => {

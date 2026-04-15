@@ -68,7 +68,7 @@ test.describe("院校页搜索和筛选", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/universities")
     await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(2000)
+    await page.locator("main").waitFor({ timeout: 10_000 }).catch(() => {})
   })
 
   /* 院校页搜索和筛选功能尚未实现，跳过 */

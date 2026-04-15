@@ -17,7 +17,7 @@ test.describe("角色管理", () => {
     /* === 反向测试：空名称 === */
     await clickAndWaitDialog(adminPage, "创建角色")
     await adminPage.getByRole("dialog").getByRole("button", { name: "保存" }).click()
-    await adminPage.waitForTimeout(500)
+    // 空名称提交后弹窗应仍可见（验证未通过）
     await expect(adminPage.getByRole("dialog")).toBeVisible()
     await adminPage.getByRole("dialog").getByRole("button", { name: "取消" }).click()
     await expect(adminPage.getByRole("dialog")).toBeHidden({ timeout: 30_000 })
@@ -53,5 +53,29 @@ test.describe("角色管理", () => {
     const delRow = adminPage.locator("div.grid").filter({ hasText: ROLE_NAME_EDITED }).first()
     await delRow.getByRole("button", { name: "删除" }).click()
     await expect(adminPage.getByText(ROLE_NAME_EDITED)).toBeHidden({ timeout: 30_000 })
+  })
+
+  test("权限树三栏交互", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/roles")
+    await clickAndWaitDialog(adminPage, "创建角色")
+    const dialog = adminPage.getByRole("dialog")
+
+    /* 面板栏应显示 admin 和 portal */
+    await expect(dialog.getByText("管理后台")).toBeVisible()
+    await expect(dialog.getByText("用户中心")).toBeVisible()
+
+    /* 点击 admin 面板 */
+    await dialog.getByText("管理后台").click()
+
+    /* 页面栏应显示管理页面列表 */
+    await expect(dialog.getByText("用户管理")).toBeVisible({ timeout: 10_000 })
+
+    /* 点击一个页面，第三栏显示 API 路由 */
+    await dialog.getByText("用户管理").click()
+    await expect(dialog.getByText("GET").first()).toBeVisible({ timeout: 15_000 })
+
+    /* 关闭弹窗 */
+    await dialog.getByRole("button", { name: /取消/ }).click()
+    await expect(dialog).toBeHidden({ timeout: 10_000 })
   })
 })

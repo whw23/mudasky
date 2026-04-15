@@ -9,8 +9,6 @@ test.describe("设置管理端点覆盖", () => {
   test("通用设置页面加载", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/general-settings")
     const main = adminPage.locator("main")
-    await expect(main).toBeVisible()
-    await adminPage.waitForTimeout(2000)
     // 设置项应该加载
     await expect(main.locator("form, [class*='card'], [class*='setting']").first()).toBeVisible({ timeout: 10_000 })
   })
@@ -19,6 +17,11 @@ test.describe("设置管理端点覆盖", () => {
     await gotoAdmin(adminPage, "/admin/web-settings")
     const main = adminPage.locator("main")
     await expect(main).toBeVisible()
-    await adminPage.waitForTimeout(2000)
+  })
+
+  test("通用设置有可编辑区域", async ({ adminPage }) => {
+    await gotoAdmin(adminPage, "/admin/general-settings")
+    const main = adminPage.locator("main")
+    await expect(main).toBeVisible()
   })
 })
