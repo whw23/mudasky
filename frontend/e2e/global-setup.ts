@@ -53,7 +53,7 @@ async function globalSetup(_config: FullConfig) {
   const page = await context.newPage()
 
   /* ── 登录 ── */
-  await page.goto("http://localhost/", { waitUntil: "networkidle", timeout: 60_000 })
+  await page.goto("http://localhost/", { waitUntil: "load", timeout: 60_000 })
   const loginBtn = page.getByRole("button", { name: /登录/ })
   await loginBtn.waitFor({ timeout: 30_000 })
   await loginBtn.click()
