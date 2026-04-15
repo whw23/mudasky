@@ -112,7 +112,6 @@ jobs:
           package-name: ${{ matrix.package }}
           package-type: container
           min-versions-to-keep: 1
-          delete-only-untagged-versions: true
 
   deploy:
     needs: [detect-changes, build-and-push]

@@ -3,7 +3,7 @@
 
 local cjson = require("cjson")
 
-local gateway_version = os.getenv("BUILD_VERSION") or "dev"
+local gateway_version = ngx.shared.config:get("build_version") or "dev"
 
 -- 并发请求 API 和 Frontend 的版本接口
 local api_res, frontend_res = ngx.location.capture_multi({
