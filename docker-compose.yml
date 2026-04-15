@@ -16,6 +16,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     depends_on:
       api:
         condition: service_healthy

@@ -8,6 +8,10 @@ services:
   frontend:
     build:
       dockerfile: Dockerfile.dev
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     volumes:
       - ./frontend:/app
       - next_cache:/app/.next
