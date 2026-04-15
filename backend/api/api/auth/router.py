@@ -46,12 +46,19 @@ async def get_public_key() -> PublicKeyResponse:
 
 @router.post("/sms-code", response_model=SmsCodeResponse, summary="发送短信验证码")
 async def send_sms_code(
-    data: SmsCodeRequest, session: DbSession
+    data: SmsCodeRequest,
+    session: DbSession,
+    x_internal_secret: str = Header(""),
 ) -> SmsCodeResponse:
-    """发送短信验证码。DEBUG 模式下返回验证码。"""
+    """发送短信验证码。DEBUG 模式或携带内部密钥时返回验证码。"""
+    from app.core.config import settings
+
     svc = AuthService(session)
     code = await svc.send_code(data.phone)
-    return SmsCodeResponse(message="验证码已发送", code=code)
+    reveal = settings.DEBUG or (
+        settings.INTERNAL_SECRET and x_internal_secret == settings.INTERNAL_SECRET
+    )
+    return SmsCodeResponse(message="验证码已发送", code=code if reveal else None)
 
 
 @router.post("/register", response_model=AuthResponse, summary="用户注册")
