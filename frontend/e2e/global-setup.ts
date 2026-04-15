@@ -1,6 +1,6 @@
 /**
  * Playwright 全局初始化。
- * 登录管理员 → 种子测试数据 → 保存 storageState → 预热入口页。
+ * 登录管理员 → 保存 storageState → 种子测试数据 → 预热入口页。
  */
 
 import { chromium, type FullConfig } from "@playwright/test"
@@ -8,8 +8,6 @@ import * as fs from "fs"
 import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
-
-/** 预热关键入口页（触发共享 JS bundle 编译，其他页面复用） */
 const WARMUP_PAGES = ["/", "/admin/dashboard", "/portal/overview"]
 
 async function globalSetup(_config: FullConfig) {
@@ -53,92 +51,93 @@ async function globalSetup(_config: FullConfig) {
     throw new Error("登录失败 — 截图已保存到 e2e/.auth/login-failed.png")
   }
 
-  /* ── 种子测试数据（用 context.request，自动带管理员 cookie） ── */
-  const req = context.request
-  const h = { "X-Requested-With": "XMLHttpRequest" }
+  /* ── 先保存登录状态 ── */
+  await context.storageState({ path: AUTH_FILE })
 
-  // 1. 注册测试用户（不用 context.request，避免覆盖管理员 cookie）
-  try {
-    const smsRes = await req.post("http://localhost/api/auth/sms-code", {
-      headers: h, data: { phone: "+8613900000088" },
-    })
-    if (smsRes.ok()) {
-      const smsData = await smsRes.json()
-      // 用裸 fetch 注册，不带管理员 cookie
-      await req.post("http://localhost/api/auth/register", {
-        headers: h,
-        data: { phone: "+8613900000088", code: smsData.code, username: "E2E测试用户" },
-      }).catch(() => {})
+  /* ── 种子测试数据（用 page.evaluate 调 API，浏览器自动带 HttpOnly cookie） ── */
+  const seedResult = await page.evaluate(async () => {
+    const h: Record<string, string> = { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" }
+    const log: string[] = []
+
+    async function post(url: string, body: unknown) {
+      const res = await fetch(url, {
+        method: "POST", headers: h, credentials: "include",
+        body: JSON.stringify(body),
+      })
+      return res
     }
-  } catch { /* 已注册 */ }
 
-  // 清除 E2E 用户的 superuser 角色
-  try {
-    const usersRes = await req.get("http://localhost/api/admin/users/list?keyword=E2E", { headers: h })
-    if (usersRes.ok()) {
-      const userData = await usersRes.json()
-      for (const u of userData.items ?? []) {
-        if (u.username?.startsWith("E2E") && u.role_name === "superuser") {
-          await req.post("http://localhost/api/admin/users/list/detail/assign-role", {
-            headers: h, data: { user_id: u.id, role_id: null },
-          }).catch(() => {})
+    async function get(url: string) {
+      return fetch(url, { headers: h, credentials: "include" })
+    }
+
+    // 1. 注册测试用户（不带 credentials 避免覆盖管理员 cookie）
+    try {
+      const smsRes = await fetch("/api/auth/sms-code", {
+        method: "POST", headers: h,
+        body: JSON.stringify({ phone: "+8613900000088" }),
+      })
+      if (smsRes.ok) {
+        const smsData = await smsRes.json()
+        const regRes = await fetch("/api/auth/register", {
+          method: "POST", headers: h,
+          body: JSON.stringify({ phone: "+8613900000088", code: smsData.code, username: "E2E测试用户" }),
+        })
+        log.push(`register: ${regRes.status}`)
+      }
+    } catch { log.push("register: skipped") }
+
+    // 2. 清除 E2E 用户的 superuser 角色
+    try {
+      const usersRes = await get("/api/admin/users/list?keyword=E2E")
+      if (usersRes.ok) {
+        const userData = await usersRes.json()
+        for (const u of userData.items ?? []) {
+          if (u.username?.startsWith("E2E") && u.role_name === "superuser") {
+            const r = await post("/api/admin/users/list/detail/assign-role", { user_id: u.id, role_id: null })
+            log.push(`unassign-role ${u.username}: ${r.status}`)
+          }
         }
       }
-    }
-  } catch { /* 忽略 */ }
+    } catch { log.push("unassign: error") }
 
-  // 2. 创建文章（每个分类一篇）
-  try {
-    const catRes = await req.get("http://localhost/api/admin/categories/list", { headers: h })
-    if (catRes.ok()) {
-      const categories = await catRes.json()
-      for (const cat of Array.isArray(categories) ? categories : []) {
-        await req.post("http://localhost/api/admin/articles/list/create", {
-          headers: h,
-          data: {
-            title: `E2E文章-${cat.name}`,
-            slug: `e2e-${cat.slug}-${Date.now()}`,
-            category_id: cat.id,
-            content_type: "markdown",
-            content: "E2E 测试文章内容",
-            status: "published",
-          },
-        }).catch(() => {})
+    // 3. 创建文章
+    try {
+      const catRes = await get("/api/admin/categories/list")
+      if (catRes.ok) {
+        const cats = await catRes.json()
+        for (const cat of Array.isArray(cats) ? cats : []) {
+          const r = await post("/api/admin/articles/list/create", {
+            title: `E2E文章-${cat.name}`, slug: `e2e-${cat.slug}-${Date.now()}`,
+            category_id: cat.id, content_type: "markdown", content: "E2E测试", status: "published",
+          })
+          log.push(`article ${cat.slug}: ${r.status}`)
+        }
       }
-    }
-  } catch { /* 忽略 */ }
+    } catch { log.push("articles: error") }
 
-  // 3. 创建案例
-  try {
-    await req.post("http://localhost/api/admin/cases/list/create", {
-      headers: h,
-      data: {
-        student_name: "E2E案例学生",
-        university: "E2E大学",
-        program: "E2E专业",
-        year: 2026,
-        testimonial: "E2E 测试感言",
-      },
-    }).catch(() => {})
-  } catch { /* 忽略 */ }
+    // 4. 创建案例
+    try {
+      const r = await post("/api/admin/cases/list/create", {
+        student_name: "E2E案例学生", university: "E2E大学", program: "E2E专业", year: 2026, testimonial: "E2E感言",
+      })
+      log.push(`case: ${r.status}`)
+    } catch { log.push("case: error") }
 
-  // 4. 创建院校
-  try {
-    await req.post("http://localhost/api/admin/universities/list/create", {
-      headers: h,
-      data: {
-        name: `E2E测试大学${Date.now()}`,
-        name_en: "E2E Test University",
-        country: "德国",
-        city: "柏林",
-        programs: ["计算机科学", "机械工程"],
-        description: "E2E 测试院校",
-      },
-    }).catch(() => {})
-  } catch { /* 忽略 */ }
+    // 5. 创建院校
+    try {
+      const r = await post("/api/admin/universities/list/create", {
+        name: `E2E测试大学${Date.now()}`, name_en: "E2E Test Uni", country: "德国", city: "柏林",
+        programs: ["计算机", "机械"], description: "E2E测试",
+      })
+      log.push(`university: ${r.status}`)
+    } catch { log.push("university: error") }
 
-  /* ── 保存登录状态（种子数据之后，确保 cookie 不被注册覆盖） ── */
-  await context.storageState({ path: AUTH_FILE })
+    return log
+  })
+
+  // eslint-disable-next-line no-console
+  console.log("[global-setup] seed results:", seedResult)
 
   /* ── 预热入口页 ── */
   for (const p of WARMUP_PAGES) {
