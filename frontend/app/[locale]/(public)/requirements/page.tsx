@@ -191,6 +191,7 @@ export default async function RequirementsPage() {
         title={n("relatedArticles")}
         emptyText={n("noContent")}
         readMoreText={n("readMore")}
+        basePath="/requirements"
       />
 
       {/* CTA */}

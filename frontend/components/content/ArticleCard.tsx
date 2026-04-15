@@ -32,7 +32,7 @@ export function ArticleCard({
   const { day, monthYear } = formatDate(date)
 
   return (
-    <Link href={`/articles/${id}`} className="group block">
+    <Link href={`/news/${id}`} className="group block">
       <div className="flex gap-4 rounded-lg border p-4 transition-colors group-hover:bg-primary group-hover:text-white">
         {/* 日期显示 */}
         <div className="flex shrink-0 flex-col items-center justify-center">

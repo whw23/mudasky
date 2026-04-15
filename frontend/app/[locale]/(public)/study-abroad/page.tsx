@@ -161,6 +161,7 @@ export default async function StudyAbroadPage() {
         title={n("relatedArticles")}
         emptyText={n("noContent")}
         readMoreText={n("readMore")}
+        basePath="/study-abroad"
       />
 
       {/* CTA */}

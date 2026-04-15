@@ -151,6 +151,7 @@ export default async function LifePage() {
         title={n("relatedArticles")}
         emptyText={n("noContent")}
         readMoreText={n("readMore")}
+        basePath="/life"
       />
 
       {/* CTA */}

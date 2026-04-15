@@ -16,6 +16,8 @@ interface ArticleSectionProps {
   emptyText: string
   /** 阅读更多文本 */
   readMoreText: string
+  /** 文章详情页基础路径，如 "/study-abroad" */
+  basePath?: string
 }
 
 /** 相关文章区块 */
@@ -24,6 +26,7 @@ export function ArticleSection({
   title,
   emptyText,
   readMoreText,
+  basePath = "/news",
 }: ArticleSectionProps) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
@@ -40,7 +43,7 @@ export function ArticleSection({
           {articles.map((article) => (
             <Link
               key={article.id}
-              href={`/news/${article.id}`}
+              href={`${basePath}/${article.id}`}
               className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
             >
               <span className="text-xs text-muted-foreground">

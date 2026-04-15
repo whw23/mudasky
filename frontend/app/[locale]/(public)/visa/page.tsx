@@ -150,6 +150,7 @@ export default async function VisaPage() {
         title={n("relatedArticles")}
         emptyText={n("noContent")}
         readMoreText={n("readMore")}
+        basePath="/visa"
       />
 
       {/* CTA */}
