@@ -4,10 +4,10 @@
 - [x] 验证线上登录修复
 - [ ] E2E 测试全覆盖
 - [ ] 前端 UI 审查
-- [ ] 清理过期文档
-- [ ] 重启服务器 db 容器
-- [ ] 合并 dev 到 main
-- [ ] WSL 网络代理
+- [x] 清理过期文档
+- [x] 重启服务器 db 容器
+- [x] 合并 dev 到 main
+- [x] WSL 网络代理
 - [x] CI 路径过滤补全
 
 ---
@@ -64,21 +64,24 @@ docker-compose.yml 已设 `TZ=Asia/Shanghai`，但 db 容器未重建，PostgreS
 ssh mudasky "cd ~/mudasky && docker compose restart db"
 ```
 
-## 合并 dev 到 main
+## ~~合并 dev 到 main~~
 
-dev 上有未合并的 commit：
+~~dev 上的所有 commit 已合并到 main 并推送：~~
 
-- gateway 版本号从 shared dict 读取（修复 /api/version 返回 "dev"）
-- cleanup-registry 去掉 delete-only-untagged-versions 限制
+- ~~gateway 版本号从 shared dict 读取~~
+- ~~cleanup-registry 去掉 delete-only-untagged-versions 限制~~
+- ~~CI 路径过滤补全~~
+- ~~短信验证码接口支持 INTERNAL_SECRET~~
 
-## WSL 网络代理
+## ~~WSL 网络代理~~
 
-已将 `.wslconfig` 改为 `networkingMode=mirrored`，需要 `wsl --shutdown` 重启后验证：
+~~已将 `.wslconfig` 改为 `networkingMode=mirrored`，`wsl --shutdown` 重启后验证通过：~~
 
-- WSL 内 `127.0.0.1:7897` 代理是否可用
-- git push 到 GitHub 是否稳定
+- ~~WSL 内 `127.0.0.1:7897` 代理可用~~
+- ~~`autoProxy=true` 自动注入 `http_proxy`/`https_proxy` 环境变量~~
+- ~~git push 到 GitHub 稳定~~
 
-## CI 路径过滤补全
+## ~~CI 路径过滤补全~~
 
 当前 paths-filter 配置：
 
