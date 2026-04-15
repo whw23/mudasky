@@ -80,6 +80,8 @@ test.describe("用户管理操作", () => {
 test.describe("用户管理实际操作", () => {
   test("角色分配 — 选择角色触发 API", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
+    // 等待用户列表 API 响应完成再操作表格
+    await adminPage.waitForResponse((r) => r.url().includes("/users/list")).catch(() => {})
     await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
