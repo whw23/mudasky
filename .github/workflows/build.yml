@@ -9,7 +9,33 @@ env:
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/mudasky
 
 jobs:
+  # 检测哪些服务的代码有改动
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      api: ${{ steps.filter.outputs.api }}
+      db: ${{ steps.filter.outputs.db }}
+      any: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.db == 'true' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gateway:
+              - 'gateway/**'
+            frontend:
+              - 'frontend/**'
+            api:
+              - 'backend/**'
+            db:
+              - 'db/**'
+
   build-and-push:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,32 +52,48 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 构建并推送 gateway 镜像
+        if: needs.detect-changes.outputs.gateway == 'true'
         uses: docker/build-push-action@v7
         with:
           context: ./gateway
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-gateway:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 frontend 镜像
+        if: needs.detect-changes.outputs.frontend == 'true'
         uses: docker/build-push-action@v7
         with:
           context: ./frontend
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-frontend:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 api 镜像
+        if: needs.detect-changes.outputs.api == 'true'
         uses: docker/build-push-action@v7
         with:
           context: ./backend
           file: ./backend/api/Dockerfile
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-api:latest
+          build-args: BUILD_VERSION=${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
       - name: 构建并推送 db 镜像
+        if: needs.detect-changes.outputs.db == 'true'
         uses: docker/build-push-action@v7
         with:
           context: ./db
           push: true
           tags: ${{ env.IMAGE_PREFIX }}-db:latest
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
   cleanup-registry:
     needs: build-and-push
+    if: always() && needs.build-and-push.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -70,11 +112,13 @@ jobs:
           delete-only-untagged-versions: true
 
   deploy:
-    needs: build-and-push
+    needs: [detect-changes, build-and-push]
+    if: always() && (needs.build-and-push.result == 'success' || needs.detect-changes.outputs.any != 'true')
     runs-on: ubuntu-latest
 
     steps:
       - name: 部署到服务器
+        if: needs.detect-changes.outputs.any == 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}

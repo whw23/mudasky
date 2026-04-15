@@ -7,6 +7,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
+ARG BUILD_VERSION=dev
+ENV NEXT_PUBLIC_BUILD_VERSION=${BUILD_VERSION}
+
 COPY . .
 
 RUN pnpm build

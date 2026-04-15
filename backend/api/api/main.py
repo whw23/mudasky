@@ -112,7 +112,8 @@ api.include_router(portal_router)
 @api.get("/health", summary="健康检查")
 async def api_health_check() -> dict:
     """API 健康检查端点。"""
-    return {"status": "ok"}
+    import os
+    return {"status": "ok", "version": os.environ.get("BUILD_VERSION", "dev")}
 
 
 # 挂载子应用
