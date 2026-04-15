@@ -8,7 +8,7 @@ import * as fs from "fs"
 import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
-const BASE = process.env.BASE_URL || "${BASE}"
+const BASE = process.env.BASE_URL || "http://localhost"
 const ADMIN_USER = process.env.E2E_ADMIN_USER || "mudasky"
 const ADMIN_PASS = process.env.E2E_ADMIN_PASS || "mudasky@12321."
 const WARMUP_PAGES = ["/", "/admin/dashboard", "/portal/overview"]
@@ -56,7 +56,7 @@ async function globalSetup(_config: FullConfig) {
   const page = await context.newPage()
 
   /* ── 登录 ── */
-  await page.goto("${BASE}/", { waitUntil: "load", timeout: 60_000 })
+  await page.goto(`${BASE}/`, { waitUntil: "load", timeout: 60_000 })
   const loginBtn = page.getByRole("button", { name: /登录/ })
   await loginBtn.waitFor({ timeout: 30_000 })
   await loginBtn.click()
@@ -94,14 +94,14 @@ async function globalSetup(_config: FullConfig) {
   for (const { phone, username, targetRole } of TEST_USERS) {
     // 注册（不带管理员 cookie）
     try {
-      const smsRes = await fetch("${BASE}/api/auth/sms-code", {
+      const smsRes = await fetch(`${BASE}/api/auth/sms-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
         body: JSON.stringify({ phone }),
       })
       if (smsRes.ok) {
         const { code } = await smsRes.json() as { code: string }
-        const regRes = await fetch("${BASE}/api/auth/register", {
+        const regRes = await fetch(`${BASE}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify({ phone, code, username }),

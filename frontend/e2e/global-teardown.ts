@@ -8,7 +8,7 @@ import * as fs from "fs"
 import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
-const BASE = process.env.BASE_URL || "${BASE}"
+const BASE = process.env.BASE_URL || "http://localhost"
 
 async function globalTeardown(_config: FullConfig) {
   if (!fs.existsSync(AUTH_FILE)) return
@@ -60,7 +60,7 @@ async function globalTeardown(_config: FullConfig) {
   /* 清理 E2E 测试用户 */
   try {
     const res = await page.request.get(
-      "${BASE}/api/admin/users/list?keyword=E2E",
+      `${BASE}/api/admin/users/list?keyword=E2E`,
       { headers },
     )
     if (res.ok()) {
@@ -69,7 +69,7 @@ async function globalTeardown(_config: FullConfig) {
       for (const user of items) {
         if (user.username?.startsWith("E2E")) {
           await page.request.post(
-            "${BASE}/api/admin/users/list/detail/delete",
+            `${BASE}/api/admin/users/list/detail/delete`,
             { headers, data: { user_id: user.id } },
           ).catch(() => {})
         }
