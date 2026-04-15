@@ -14,7 +14,7 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   timeout: 30_000,
   retries: 1,
-  workers: 6,
+  workers: 2,
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   use: {
