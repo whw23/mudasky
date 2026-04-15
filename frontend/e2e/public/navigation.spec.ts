@@ -71,13 +71,12 @@ test.describe("院校页搜索和筛选", () => {
     await page.locator("main").waitFor().catch(() => {})
   })
 
-  /* 院校页搜索和筛选功能尚未实现，跳过 */
-  test.skip("搜索框可见", async ({ page }) => {
+  test("搜索框可见", async ({ page }) => {
     const searchInput = page.getByPlaceholder(/搜索院校/)
     await expect(searchInput).toBeVisible()
   })
 
-  test.skip("国家筛选下拉可见", async ({ page }) => {
+  test("国家筛选下拉可见", async ({ page }) => {
     const countrySelect = page.locator("select").first()
     await expect(countrySelect).toBeVisible()
   })
