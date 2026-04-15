@@ -105,17 +105,7 @@ volumes:
   pgdata:
 ```
 
-注意：去掉 db 的 `ports: - "47293:5432"`（生产环境不暴露数据库端口，开发用 override 暴露）。
-
-- [ ] **Step 2: 把 db 端口移到 override**
-
-在 `docker-compose.override.yml` 的 db 部分确认已有：
-
-```yaml
-  db:
-    ports:
-      - "15432:5432"
-```
+保留 db 的 `ports: - "47293:5432"`（通过云服务器安全组控制端口访问）。
 
 - [ ] **Step 3: 验证本地 docker compose 正常**
 
@@ -196,6 +186,8 @@ services:
           memory: 512M
     env_file: env/db.env
     command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=mudasky
+    ports:
+      - "47293:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
