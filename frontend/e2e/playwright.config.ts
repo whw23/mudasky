@@ -18,7 +18,7 @@ export default defineConfig({
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   use: {
-    baseURL: "http://localhost",
+    baseURL: process.env.BASE_URL || "http://localhost",
     locale: "zh-CN",
     storageState: AUTH_FILE,
     screenshot: "only-on-failure",
