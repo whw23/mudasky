@@ -77,13 +77,17 @@ async function globalSetup(_config: FullConfig) {
     const get = (url: string) =>
       fetch(url, { headers: h, credentials: "include" })
 
-    // 1. 注册一个非 superuser 测试用户 → 清除角色确保不是 superuser
+    // 1. 注册一个非 superuser 测试用户（不带 credentials 避免覆盖管理员 cookie）
     try {
-      const smsRes = await post("/api/auth/sms-code", { phone: "+8613900000088" })
+      const smsRes = await fetch("/api/auth/sms-code", {
+        method: "POST", headers: h,
+        body: JSON.stringify({ phone: "+8613900000088" }),
+      })
       if (smsRes.ok) {
         const smsData = await smsRes.json()
-        await post("/api/auth/register", {
-          phone: "+8613900000088", code: smsData.code, username: "E2E测试用户",
+        await fetch("/api/auth/register", {
+          method: "POST", headers: h,
+          body: JSON.stringify({ phone: "+8613900000088", code: smsData.code, username: "E2E测试用户" }),
         }).catch(() => {})
       }
     } catch { /* 已注册或失败均忽略 */ }
