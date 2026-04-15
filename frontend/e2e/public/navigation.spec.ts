@@ -67,8 +67,7 @@ test.describe("公开页面导航", () => {
 test.describe("院校页搜索和筛选", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/universities")
-    await page.waitForLoadState("networkidle")
-    await page.locator("main").waitFor().catch(() => {})
+    await page.locator("main").waitFor()
   })
 
   test("搜索框可见", async ({ page }) => {

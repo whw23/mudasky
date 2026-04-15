@@ -183,20 +183,36 @@ async def test_login_phone_sms_success(
 @pytest.mark.asyncio
 @patch(SMS_SEND, new_callable=AsyncMock)
 @patch(AUTH_REPO)
-async def test_send_code_success(mock_repo, mock_sms, service):
-    """发送验证码成功。"""
+async def test_send_code_skip_sms(mock_repo, mock_sms, service):
+    """skip_sms=True：不发短信，返回验证码。"""
     mock_repo.get_latest_sms_code = AsyncMock(return_value=None)
     mock_repo.count_recent_sms = AsyncMock(return_value=0)
     mock_repo.delete_expired_sms_codes = AsyncMock()
     mock_repo.create_sms_code = AsyncMock()
 
-    with patch("api.auth.service.settings") as mock_settings:
-        mock_settings.DEBUG = True
-        result = await service.send_code("+8613800138000")
+    result = await service.send_code("+8613800138000", skip_sms=True)
 
     assert result is not None
     assert len(result) == 6
     mock_repo.create_sms_code.assert_awaited_once()
+    mock_sms.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@patch(SMS_SEND, new_callable=AsyncMock)
+@patch(AUTH_REPO)
+async def test_send_code_real_sms(mock_repo, mock_sms, service):
+    """skip_sms=False（默认）：发短信，不返回验证码。"""
+    mock_repo.get_latest_sms_code = AsyncMock(return_value=None)
+    mock_repo.count_recent_sms = AsyncMock(return_value=0)
+    mock_repo.delete_expired_sms_codes = AsyncMock()
+    mock_repo.create_sms_code = AsyncMock()
+
+    result = await service.send_code("+8613800138000")
+
+    assert result is None
+    mock_repo.create_sms_code.assert_awaited_once()
+    mock_sms.assert_awaited_once()
 
 
 @pytest.mark.asyncio

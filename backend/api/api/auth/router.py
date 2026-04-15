@@ -5,7 +5,7 @@
 
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Request
 
 from .schemas import (
     AuthResponse,
@@ -47,18 +47,19 @@ async def get_public_key() -> PublicKeyResponse:
 @router.post("/sms-code", response_model=SmsCodeResponse, summary="发送短信验证码")
 async def send_sms_code(
     data: SmsCodeRequest,
+    request: Request,
     session: DbSession,
-    x_internal_secret: str = Header(""),
 ) -> SmsCodeResponse:
-    """发送短信验证码。DEBUG 模式或携带内部密钥时返回验证码。"""
+    """发送短信验证码。DEBUG 模式或携带 internal_secret cookie 时跳过实际发送并返回验证码。"""
     from app.core.config import settings
 
-    svc = AuthService(session)
-    code = await svc.send_code(data.phone)
-    reveal = settings.DEBUG or (
-        settings.INTERNAL_SECRET and x_internal_secret == settings.INTERNAL_SECRET
+    secret = request.cookies.get("internal_secret", "")
+    skip_sms = settings.DEBUG or (
+        settings.INTERNAL_SECRET and secret == settings.INTERNAL_SECRET
     )
-    return SmsCodeResponse(message="验证码已发送", code=code if reveal else None)
+    svc = AuthService(session)
+    code = await svc.send_code(data.phone, skip_sms=skip_sms)
+    return SmsCodeResponse(message="验证码已发送", code=code)
 
 
 @router.post("/register", response_model=AuthResponse, summary="用户注册")

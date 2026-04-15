@@ -68,4 +68,7 @@ Router → Service → Repository → Models
 - **数据库迁移**：alembic（Python/SQLAlchemy），与初始建表保持同一技术栈
 - **定时清理**：pg_cron 在数据库层执行，不在 API 进程中
 
+- **内部密钥（INTERNAL_SECRET）**：通过 `internal_secret` cookie 传递（统一浏览器和 E2E 场景）；网关层：跳过 IP 限流；后端 sms-code 接口：跳过短信发送并返回验证码；网关→后端的内部调用（refresh_proxy、auth_proxy）仍用 `X-Internal-Secret` 请求头
+- **gzip 压缩**：gateway nginx.conf 开启 gzip，覆盖 text/css/js/json/xml/svg
+
 新功能开发遵循面板化组织结构，认证相关改动在网关层处理。

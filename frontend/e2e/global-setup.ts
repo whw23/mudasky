@@ -11,6 +11,7 @@ const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
 const BASE = process.env.BASE_URL || "http://localhost"
 const ADMIN_USER = process.env.E2E_ADMIN_USER || "mudasky"
 const ADMIN_PASS = process.env.E2E_ADMIN_PASS || "mudasky@12321."
+const INTERNAL_SECRET = process.env.INTERNAL_SECRET || ""
 const WARMUP_PAGES = ["/", "/admin/dashboard", "/portal/overview"]
 
 /** 测试用户（不以 E2E 开头，避免被 teardown 删除） */
@@ -25,11 +26,19 @@ function getToken(): string {
   return state.cookies?.find((c: { name: string }) => c.name === "access_token")?.value ?? ""
 }
 
+/** 拼接 cookie 字符串（access_token + internal_secret） */
+function buildCookie(...extra: string[]): string {
+  const parts = [`access_token=${getToken()}`]
+  if (INTERNAL_SECRET) parts.push(`internal_secret=${INTERNAL_SECRET}`)
+  parts.push(...extra.filter(Boolean))
+  return parts.join("; ")
+}
+
 /** 管理员 POST */
 async function apiPost(apiPath: string, body: unknown) {
   return fetch(`${BASE}${apiPath}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", Cookie: `access_token=${getToken()}` },
+    headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", Cookie: buildCookie() },
     body: JSON.stringify(body),
   })
 }
@@ -37,7 +46,7 @@ async function apiPost(apiPath: string, body: unknown) {
 /** 管理员 GET */
 async function apiGet(apiPath: string) {
   return fetch(`${BASE}${apiPath}`, {
-    headers: { "X-Requested-With": "XMLHttpRequest", Cookie: `access_token=${getToken()}` },
+    headers: { "X-Requested-With": "XMLHttpRequest", Cookie: buildCookie() },
   })
 }
 
@@ -111,9 +120,14 @@ async function globalSetup(_config: FullConfig) {
   for (const { phone, username, targetRole } of TEST_USERS) {
     // 注册（不带管理员 cookie）
     try {
+      const smsCookie = INTERNAL_SECRET ? `internal_secret=${INTERNAL_SECRET}` : ""
       const smsRes = await fetch(`${BASE}/api/auth/sms-code`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          ...(smsCookie && { Cookie: smsCookie }),
+        },
         body: JSON.stringify({ phone }),
       })
       if (smsRes.ok) {

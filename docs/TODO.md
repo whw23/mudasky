@@ -4,6 +4,7 @@
 - [x] 验证线上登录修复
 - [ ] E2E 测试全覆盖
 - [ ] 前端 UI 审查
+- [ ] 压力测试
 - [x] 清理过期文档
 - [x] 重启服务器 db 容器
 - [x] 合并 dev 到 main
@@ -26,16 +27,26 @@
 
 ## E2E 测试全覆盖
 
-测试代码已改为"自给自足"模式（每个测试自己创建数据），但还没跑过完整验证。
+### 已完成
 
-- 先在本地跑一次确认全部通过（0 skip, 0 failed）
-- 然后用 `BASE_URL=http://REDACTED_HOST` 跑线上 E2E
-- 修复出现的问题
+- 线上首次完整跑通：197 passed, 2 failed, 16 flaky（2026-04-16）
+- 修复 `getSmsCode` 检查 HTTP 状态码
+- 修复 `global-setup` 传 INTERNAL_SECRET（cookie 方式）
+- gateway 限流对 `internal_secret` cookie 放行
+- 后端 sms-code 接口支持 `skip_sms`（cookie 模式跳过短信发送）
+- gateway 开启 gzip 压缩（首次加载提速）
+- 线上环境 playwright 超时自动增大（`actionTimeout` 5s→15s, `navigationTimeout` 15s→30s）
+- 修复 `navigation.spec.ts` 搜索框 `waitFor` 问题
 
-已知问题：
+### 待完成
 
-- global-setup 登录按钮点击需要重试（JS 水合延迟）
-- 线上生产模式 vs 本地 dev 模式行为差异
+- 部署 gateway + 后端改动到线上
+- 补全缺失的 E2E 测试覆盖：
+  - 文章详情页：`/study-abroad/[id]`、`/visa/[id]`、`/life/[id]`、`/requirements/[id]`
+  - 管理员文档页：`/admin/documents`
+  - 展开面板完整交互：UserExpandPanel、StudentExpandPanel、ContactExpandPanel
+  - ConfigEditDialog 配置编辑弹窗
+- 重跑线上 E2E 确认 0 failed, 0 skipped
 
 ## 前端 UI 审查
 
@@ -161,3 +172,14 @@ deploy:
 ```
 
 同时修改 `any` 输出和 deploy job 的条件，`deploy` 过滤器为 true 时也触发部署（scp + restart）。
+
+## 压力测试
+
+E2E 和安全测试完成后，进行性能/压力测试：
+
+- 并发用户模拟（k6 / locust）
+- 网关限流阈值验证（精确边界：第 N+1 次请求被拒）
+- 数据库连接池压力
+- 文件上传并发
+- SSR 页面渲染在高并发下的表现
+- 长时间运行稳定性（内存泄漏检测）

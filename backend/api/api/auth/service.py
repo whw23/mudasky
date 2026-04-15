@@ -35,11 +35,12 @@ class AuthService:
         """初始化服务，注入数据库会话。"""
         self.session = session
 
-    async def send_code(self, phone: str) -> str:
+    async def send_code(self, phone: str, *, skip_sms: bool = False) -> str | None:
         """发送短信验证码。
 
         限流规则：同一手机号 60 秒内只能发送一次，每小时最多 5 次。
-        始终返回验证码，由 router 层决定是否暴露给客户端。
+        skip_sms=True 时跳过实际短信发送并返回验证码（DEBUG / INTERNAL_SECRET 场景）。
+        skip_sms=False 时发送真实短信，不返回验证码。
         """
         await self._check_sms_rate_limit(phone)
         # 清理该手机号的已过期验证码
@@ -50,8 +51,10 @@ class AuthService:
             phone=phone, code=code, expires_at=expires_at
         )
         await repository.create_sms_code(self.session, sms_code)
+        if skip_sms:
+            return code
         await send_sms_code(phone, code)
-        return code
+        return None
 
     async def register(
         self,

@@ -462,22 +462,21 @@ async def test_send_code_hourly_limit(mock_repo, service):
         await service.send_code("+8613800138000")
 
 
-# ---- send_code: 生产环境返回 None ----
+# ---- send_code: 默认发短信不返回验证码 ----
 
 
 @patch(SMS_SEND, new_callable=AsyncMock)
 @patch(AUTH_REPO)
-async def test_send_code_production_returns_none(
+async def test_send_code_default_returns_none(
     mock_repo, mock_sms, service
 ):
-    """生产环境发送验证码返回 None。"""
+    """默认（skip_sms=False）发短信且不返回验证码。"""
     mock_repo.get_latest_sms_code = AsyncMock(return_value=None)
     mock_repo.count_recent_sms = AsyncMock(return_value=0)
     mock_repo.delete_expired_sms_codes = AsyncMock()
     mock_repo.create_sms_code = AsyncMock()
 
-    with patch("api.auth.service.settings") as mock_settings:
-        mock_settings.DEBUG = False
-        result = await service.send_code("+8613800138000")
+    result = await service.send_code("+8613800138000")
 
     assert result is None
+    mock_sms.assert_awaited_once()

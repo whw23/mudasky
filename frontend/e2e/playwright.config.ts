@@ -8,11 +8,12 @@ import { defineConfig } from "@playwright/test"
 import * as path from "path"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
+const isRemote = !!process.env.BASE_URL
 
 export default defineConfig({
   testDir: ".",
   testMatch: "**/*.spec.ts",
-  timeout: 30_000,
+  timeout: isRemote ? 60_000 : 30_000,
   retries: 1,
   workers: 2,
   globalSetup: "./global-setup.ts",
@@ -23,8 +24,8 @@ export default defineConfig({
     storageState: AUTH_FILE,
     screenshot: "only-on-failure",
     trace: "on-first-retry",
-    actionTimeout: 5_000,
-    navigationTimeout: 15_000,
+    actionTimeout: isRemote ? 15_000 : 5_000,
+    navigationTimeout: isRemote ? 30_000 : 15_000,
   },
   projects: [
     {

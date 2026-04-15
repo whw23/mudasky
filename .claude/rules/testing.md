@@ -22,10 +22,20 @@
 
 ### 测试覆盖要求
 
-- 代码测试覆盖率必须达到 **90% 以上**
+- 代码测试覆盖率必须达到 **100%**
 - **接口测试覆盖率 100%**：每个 API 接口必须有正向测试 + 反向测试（异常/边界/权限拒绝等）
 - 每个 service 方法必须有对应的单元测试
-- 使用 `pytest-cov` 检查覆盖率：`uv run --project backend/api python -m pytest --cov=api --cov-report=term-missing`
+- **每个测试目标至少 2 个正例 + 2 个反例**（正例验证功能正确，反例验证异常/边界/拒绝）
+
+### 覆盖率统计
+
+| 层级 | 工具 | 命令 |
+|------|------|------|
+| 后端 | `pytest-cov`（行级） | `uv run --project backend/api python -m pytest --cov=api --cov-report=term-missing` |
+| 前端单元 | `@vitest/coverage-v8`（V8 引擎级） | `pnpm --prefix frontend test --coverage` |
+| E2E API 端点 | 自定义 fixture 拦截 | 跑完自动输出未覆盖端点 |
+| E2E 页面路由 | 自定义 fixture 拦截 | 跑完自动输出未访问路由 |
+| E2E JS 代码 | `page.coverage` + istanbul | `E2E_COVERAGE=1` 时启用，生成 HTML 报告 |
 
 ### 后端单元测试
 
@@ -63,9 +73,12 @@
 - 使用 Playwright + `adminPage` fixture（已登录的管理员页面）
 - 使用 `gotoAdmin`、`clickAndWaitDialog` 等项目自定义辅助函数
 - 配置文件：`frontend/e2e/playwright.config.ts`
-- fixture 文件：`frontend/e2e/fixtures/base.ts`
-- 默认 6 worker 并发执行
-- 运行命令：`pnpm --prefix frontend exec playwright test`
+- fixture 文件：`frontend/e2e/fixtures/base.ts`（基础）、`frontend/e2e/fixtures/coverage.ts`（覆盖率收集）
+- 默认 2 worker 并发执行
+- 运行命令（本地）：`pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
+- 运行命令（线上）：`BASE_URL=http://REDACTED_HOST INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
+- 线上环境超时自动增大（`actionTimeout` 5s→15s，`navigationTimeout` 15s→30s）
+- `INTERNAL_SECRET` 通过 cookie 传递，跳过网关限流和短信发送
 
 #### 覆盖标准
 
@@ -98,17 +111,32 @@
   - 等待 API：`await page.waitForResponse(r => r.url().includes("/list"))`
   - 搜索防抖：允许 `waitForTimeout(500)`（唯一合理场景）
 
+#### E2E 覆盖率统计
+
+每次跑完 E2E 自动输出三种覆盖率：
+
+| 指标 | 基准 | 收集方式 |
+|------|------|----------|
+| API 端点覆盖率 | 后端 73 个端点 | `page.on("response")` 拦截 API 请求 |
+| 页面路由覆盖率 | 前端 35 个路由 | `page.on("framenavigated")` 拦截导航 |
+| JS 代码覆盖率 | V8 Coverage | `page.coverage` API（`E2E_COVERAGE=1` 时启用） |
+
+覆盖率数据在 `global-teardown` 中汇总输出。端点清单在 `helpers/api-endpoints.ts`，路由清单在 `helpers/page-routes.ts`。
+
 #### E2E 测试目录结构
 
 ```text
 frontend/e2e/
 ├── fixtures/
-│   └── base.ts              # adminPage fixture, gotoAdmin, clickAndWaitDialog
+│   ├── base.ts              # adminPage fixture, gotoAdmin, clickAndWaitDialog
+│   └── coverage.ts          # 覆盖率收集 fixture
 ├── helpers/
-│   └── sms.ts               # SMS 验证码获取
-├── global-setup.ts           # 登录并保存 storageState
-├── global-teardown.ts        # 清理 E2E 测试数据
-├── playwright.config.ts      # 6 worker, 120s timeout, 1 retry
+│   ├── sms.ts               # SMS 验证码获取（cookie 传 INTERNAL_SECRET）
+│   ├── api-endpoints.ts     # 后端全量端点清单
+│   └── page-routes.ts       # 前端全量路由清单
+├── global-setup.ts           # 登录 + 种子数据 + 预热
+├── global-teardown.ts        # 清理 E2E 数据 + 覆盖率报告
+├── playwright.config.ts      # 2 worker, 线上自动增大超时
 ├── auth/                     # 认证流程（登录弹窗、tab 切换、退出）
 ├── public/                   # 公开页面（导航、ConsultButton、语言切换）
 ├── admin/                    # 管理面板（每个模块一个 spec）

@@ -73,9 +73,23 @@ if not string.find(uri, "^/api/") then
 end
 
 -- IP 限流检查（在公开路由放行前执行，覆盖 sms-code 等接口）
+-- 携带有效 internal_secret cookie 的请求跳过限流（E2E 测试 / 浏览器调试）
 local method = ngx.req.get_method()
 local client_ip = ngx.var.remote_addr
-if rate_limit.is_limited(client_ip, method, uri) then
+local internal_secret
+if ngx.var.http_cookie then
+  for pair in string.gmatch(ngx.var.http_cookie, "[^;]+") do
+    local trimmed = string.gsub(pair, "^%s+", "")
+    local k, v = string.match(trimmed, "^(.-)=(.+)$")
+    if k == "internal_secret" then
+      internal_secret = v
+      break
+    end
+  end
+end
+local configured_secret = config.get_internal_secret()
+local skip_rate_limit = configured_secret ~= "" and internal_secret == configured_secret
+if not skip_rate_limit and rate_limit.is_limited(client_ip, method, uri) then
   reject(429, "TOO_MANY_REQUESTS")
 end
 

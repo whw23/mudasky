@@ -10,25 +10,38 @@ import type { Page } from "@playwright/test"
  */
 export async function getSmsCode(page: Page, phone: string): Promise<string> {
   const internalSecret = process.env.INTERNAL_SECRET || "";
+
+  // 通过 cookie 传递 internal_secret
+  if (internalSecret) {
+    const baseURL = page.context().pages()[0]?.url() || "http://localhost";
+    const domain = new URL(baseURL).hostname;
+    await page.context().addCookies([
+      { name: "internal_secret", value: internalSecret, domain, path: "/" },
+    ]);
+  }
+
   const result = await page.evaluate(
-    async ({ ph, secret }) => {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      };
-      if (secret) {
-        headers["X-Internal-Secret"] = secret;
-      }
+    async ({ ph }) => {
       const res = await fetch("/api/auth/sms-code", {
         method: "POST",
-        headers,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
         body: JSON.stringify({ phone: ph }),
         credentials: "include",
       });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`sms-code 请求失败: ${res.status} ${body}`);
+      }
       const data = await res.json();
+      if (!data.code) {
+        throw new Error("sms-code 响应中无验证码（需设置 INTERNAL_SECRET）");
+      }
       return data.code as string;
     },
-    { ph: phone, secret: internalSecret },
+    { ph: phone },
   );
   return result;
 }
