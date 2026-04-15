@@ -7,6 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/mudasky
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # 检测哪些服务的代码有改动
@@ -17,25 +18,38 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       api: ${{ steps.filter.outputs.api }}
       db: ${{ steps.filter.outputs.db }}
-      any: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.db == 'true' }}
+      deploy: ${{ steps.filter.outputs.deploy }}
+      any_build: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.db == 'true' }}
+      any: ${{ steps.filter.outputs.gateway == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.api == 'true' || steps.filter.outputs.db == 'true' || steps.filter.outputs.deploy == 'true' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
             gateway:
               - 'gateway/**'
+              - '!gateway/**/*.md'
             frontend:
               - 'frontend/**'
+              - '!frontend/e2e/**'
+              - '!frontend/**/*.test.*'
+              - '!frontend/vitest.config.ts'
+              - '!frontend/test-results/**'
+              - '!frontend/**/*.md'
             api:
               - 'backend/**'
+              - '!backend/api/tests/**'
+              - '!backend/**/*.md'
             db:
-              - 'db/**'
+              - 'db/Dockerfile'
+            deploy:
+              - 'docker-compose.yml'
+              - 'db/init.sql'
 
   build-and-push:
     needs: detect-changes
-    if: needs.detect-changes.outputs.any == 'true'
+    if: needs.detect-changes.outputs.any_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,7 +129,7 @@ jobs:
 
   deploy:
     needs: [detect-changes, build-and-push]
-    if: always() && (needs.build-and-push.result == 'success' || needs.detect-changes.outputs.any != 'true')
+    if: always() && needs.detect-changes.outputs.any == 'true' && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped')
     runs-on: ubuntu-latest
 
     steps:
@@ -126,7 +140,6 @@ jobs:
         run: echo "tag=$(TZ=Asia/Shanghai date +%Y%m%d)-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
       - name: 同步部署配置到服务器
-        if: needs.detect-changes.outputs.any == 'true'
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -138,7 +151,6 @@ jobs:
           overwrite: true
 
       - name: 部署到服务器
-        if: needs.detect-changes.outputs.any == 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
