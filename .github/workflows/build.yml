@@ -78,6 +78,9 @@ jobs:
             # 滚动更新
             docker compose -f docker-compose.yml up -d --remove-orphans
 
+            # 清理旧镜像
+            docker image prune -af --filter "until=1h"
+
             # 健康检查
             sleep 10
             curl -sf http://localhost/api/health || exit 1
