@@ -14,6 +14,7 @@ import {
   Loader2,
   SearchX,
 } from "lucide-react"
+import { Link } from "@/i18n/navigation"
 import { Pagination } from "@/components/common/Pagination"
 import { UniversitySearch } from "@/components/public/UniversitySearch"
 import api from "@/lib/api"
@@ -126,8 +127,9 @@ export function UniversityList() {
         /* 院校卡片网格 */
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {universities.map((uni) => (
-            <div
+            <Link
               key={uni.id}
+              href={`/universities/${uni.id}`}
               className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
             >
               {/* Logo */}
@@ -164,16 +166,13 @@ export function UniversityList() {
                 </p>
               )}
               {uni.website && (
-                <a
-                  href={uni.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <span
                   className="mt-2 inline-block text-xs text-primary hover:underline"
                 >
                   {uni.website}
-                </a>
+                </span>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       )}

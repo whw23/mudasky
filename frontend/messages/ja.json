@@ -597,7 +597,13 @@
     "totalCount": "{count} 校",
     "adviceTitle": "パーソナライズされた大学選びアドバイス",
     "adviceContent": "適切な大学を選ぶことは留学成功の重要なステップです。シニアコンサルタントが成績、語学力、専攻への関心、キャリアプランに基づき、最適な大学と専攻を推薦します。無料相談を予約して、理想の留学先を見つけましょう。",
-    "ctaButton": "相談を予約"
+    "ctaButton": "相談を予約",
+    "backToList": "大学一覧に戻る",
+    "detailTitle": "大学詳細",
+    "location": "所在地",
+    "programs": "開設プログラム",
+    "about": "大学紹介",
+    "visitWebsite": "公式サイト"
   },
   "Requirements": {
     "overviewTitle": "各国の出願条件",

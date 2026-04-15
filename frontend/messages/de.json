@@ -597,7 +597,13 @@
     "totalCount": "{count} Universitäten",
     "adviceTitle": "Individuelle Hochschulberatung",
     "adviceContent": "Die richtige Universität zu wählen ist ein entscheidender Schritt für den Studienerfolg im Ausland. Unsere erfahrenen Berater empfehlen die am besten passenden Hochschulen und Studiengänge basierend auf Ihren Leistungen, Sprachkenntnissen und Karrierezielen. Buchen Sie eine kostenlose Beratung.",
-    "ctaButton": "Beratung buchen"
+    "ctaButton": "Beratung buchen",
+    "backToList": "Zurück zur Übersicht",
+    "detailTitle": "Hochschuldetails",
+    "location": "Standort",
+    "programs": "Studiengänge",
+    "about": "Über die Hochschule",
+    "visitWebsite": "Zur Webseite"
   },
   "Requirements": {
     "overviewTitle": "Bewerbungsvoraussetzungen nach Land",

@@ -597,7 +597,13 @@
     "totalCount": "共 {count} 所院校",
     "adviceTitle": "个性化选校建议",
     "adviceContent": "选择合适的大学是留学成功的关键一步。我们的资深顾问会根据你的学术成绩、语言水平、专业兴趣和职业规划，为你量身推荐最匹配的院校和专业。预约免费咨询，让我们帮你找到理想的留学目的地。",
-    "ctaButton": "预约选校咨询"
+    "ctaButton": "预约选校咨询",
+    "backToList": "返回院校列表",
+    "detailTitle": "院校详情",
+    "location": "所在地",
+    "programs": "开设专业",
+    "about": "学校简介",
+    "visitWebsite": "访问官网"
   },
   "Requirements": {
     "overviewTitle": "各国申请条件",
