@@ -105,15 +105,16 @@ async function globalSetup(_config: FullConfig) {
     }
   } catch { log.push("register: skipped") }
 
-  // 2. 清除 E2E 用户的 superuser 角色
+  // 2. 清除非管理员用户的 superuser 角色（让 user-actions 测试能操作）
   try {
-    const usersRes = await apiGet("/api/admin/users/list?keyword=E2E")
+    const usersRes = await apiGet("/api/admin/users/list")
     if (usersRes.ok) {
-      const userData = await usersRes.json() as { items: { id: string; username: string; role_name: string }[] }
+      const userData = await usersRes.json() as { items: { id: string; username: string; phone: string; role_name: string }[] }
       for (const u of userData.items ?? []) {
-        if (u.username?.startsWith("E2E") && u.role_name === "superuser") {
+        // 跳过主管理员，只处理其他 superuser 用户
+        if (u.username !== "mudasky" && u.role_name === "superuser") {
           const r = await apiPost("/api/admin/users/list/detail/assign-role", { user_id: u.id, role_id: null })
-          log.push(`unassign ${u.username}: ${r.status}`)
+          log.push(`unassign ${u.phone}: ${r.status}`)
         }
       }
     }
