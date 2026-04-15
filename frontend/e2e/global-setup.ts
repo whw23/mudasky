@@ -70,10 +70,27 @@ async function globalSetup(_config: FullConfig) {
   await inputs.first().waitFor({ timeout: 5_000 })
   await inputs.first().fill(ADMIN_USER)
   await inputs.nth(1).fill(ADMIN_PASS)
-  await page.getByRole("tabpanel").getByRole("button", { name: "登录" }).click()
+  // 重试点击登录（处理 JS 水合未完成导致首次点击无效）
+  const loginBtn2 = page.getByRole("tabpanel").getByRole("button", { name: "登录" })
+  for (let i = 0; i < 5; i++) {
+    const responsePromise = page.waitForResponse(
+      (r) => r.url().includes("/api/auth/login"),
+      { timeout: 10_000 },
+    ).catch(() => null)
+    await loginBtn2.click()
+    const res = await responsePromise
+    if (res) {
+      if (res.status() !== 200) {
+        const body = await res.json().catch(() => ({}))
+        await page.screenshot({ path: path.join(dir, "login-failed.png") })
+        throw new Error(`登录 API 返回 ${res.status()}: ${JSON.stringify(body)}`)
+      }
+      break
+    }
+  }
 
   try {
-    await dialog.waitFor({ state: "hidden", timeout: 15_000 })
+    await dialog.waitFor({ state: "hidden", timeout: 10_000 })
   } catch {
     await page.screenshot({ path: path.join(dir, "login-failed.png") })
     throw new Error("登录失败 — 截图已保存到 e2e/.auth/login-failed.png")
