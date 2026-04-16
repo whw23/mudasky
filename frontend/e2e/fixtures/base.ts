@@ -151,13 +151,29 @@ function wrapApiRequest(page: Page) {
   }
 }
 
+/** 检查 storageState 文件是否存在。W2/W3/W4 的 02+ 测试依赖 01-register 创建的文件。 */
+function checkStorageState(testInfo: { project: { name: string } }) {
+  const project = testInfo.project.name
+  const workerMatch = project.match(/^w([234])/)
+  if (!workerMatch) return // W1 和 shared 不检查
+
+  const authFile = path.join(__dirname, "..", ".auth", `w${workerMatch[1]}.json`)
+  if (!fs.existsSync(authFile)) {
+    throw new Error(
+      `[熔断] ${project} 的 storageState 文件不存在: ${authFile}\n` +
+      `01-register 可能失败了，后续测试无法继续。`,
+    )
+  }
+}
+
 /* ── test fixture ── */
 
 export const test = pwTest.extend<{
   adminPage: Page
 }>({
-  // 自动为每个测试的 page 绑定覆盖率监听器
-  page: async ({ page }, use) => {
+  // 自动为每个测试的 page 绑定覆盖率监听器 + storageState 熔断检查
+  page: async ({ page }, use, testInfo) => {
+    checkStorageState(testInfo)
     attachCoverageListeners(page)
     wrapApiRequest(page)
     await use(page)
