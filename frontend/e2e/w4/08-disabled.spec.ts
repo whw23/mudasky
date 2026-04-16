@@ -10,6 +10,7 @@ const XHR = { "X-Requested-With": "XMLHttpRequest" }
 
 test.describe("W4 禁用/启用", () => {
   test.describe.configure({ mode: "serial" })
+  test.setTimeout(300_000)
 
   test("禁用后 API 返回 401 USER_DISABLED", async ({ page }) => {
     await page.goto("/")

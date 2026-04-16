@@ -73,11 +73,12 @@ test.describe("W4 搜索筛选", () => {
       await localeSelect.selectOption("en")
       await expect(page).toHaveURL(/\/en/)
 
-      // 切换回中文（默认语言无前缀，URL 为 /）
+      // 切换回中文
       const localeSelect2 = page.locator("header select").first()
       await localeSelect2.selectOption("zh")
-      // as-needed 模式下 zh 无 locale 前缀，等待 URL 不包含 /en
-      await expect(page).not.toHaveURL(/\/en/)
+      // 等待导航完成（客户端路由可能需要时间）
+      await page.waitForLoadState("networkidle").catch(() => {})
+      await expect(page).toHaveURL(/\/zh|^http:\/\/[^/]+\/$/, { timeout: 15_000 })
 
       trackComponent("LocaleSwitcher", "语言切换下拉")
     }

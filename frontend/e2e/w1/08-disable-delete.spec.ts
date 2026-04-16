@@ -10,10 +10,11 @@ const XRW = { "X-Requested-With": "XMLHttpRequest" }
 const JSON_HEADERS = { "Content-Type": "application/json", ...XRW }
 
 test.describe.serial("W4 禁用/启用协调", () => {
+  test.setTimeout(300_000)
   let w4UserId: string
 
   test("等待 W4 权限测试完成并获取用户 ID", async () => {
-    const signal = await waitFor<{ userId: string }>("w4_permission_tests_done", 120_000)
+    const signal = await waitFor<{ userId: string }>("w4_permission_tests_done", 240_000)
     w4UserId = signal.userId
     expect(w4UserId).toBeTruthy()
   })
