@@ -12,7 +12,23 @@ const BASE = process.env.BASE_URL || "http://localhost"
 const ADMIN_USER = process.env.E2E_ADMIN_USER || "mudasky"
 const ADMIN_PASS = process.env.E2E_ADMIN_PASS || "mudasky@12321."
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET || ""
-const WARMUP_PAGES = ["/", "/admin/dashboard", "/portal/overview"]
+const WARMUP_PAGES = [
+  "/",
+  "/admin/dashboard",
+  "/admin/articles",
+  "/admin/users",
+  "/admin/cases",
+  "/admin/categories",
+  "/admin/universities",
+  "/admin/roles",
+  "/admin/students",
+  "/admin/contacts",
+  "/admin/general-settings",
+  "/admin/web-settings",
+  "/portal/overview",
+  "/portal/profile",
+  "/portal/documents",
+]
 
 /** 测试用户（不以 E2E 开头，避免被 teardown 删除） */
 const TEST_USERS = [
@@ -65,15 +81,24 @@ async function globalSetup(_config: FullConfig) {
   const page = await context.newPage()
 
   /* ── 登录 ── */
-  await page.goto(`${BASE}/`, { waitUntil: "load", timeout: 60_000 })
+  // 生产模式首次 SSR 编译可能需要 60s+
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 120_000 })
   const loginBtn = page.getByRole("button", { name: /登录/ })
-  await loginBtn.waitFor({ timeout: 30_000 })
-  await loginBtn.click()
+  await loginBtn.waitFor({ timeout: 60_000 })
 
+  // 重试点击登录按钮（生产模式水合较慢）
   const dialog = page.getByRole("dialog")
-  await dialog.waitFor({ timeout: 15_000 })
+  for (let i = 0; i < 5; i++) {
+    await loginBtn.click()
+    try {
+      await dialog.waitFor({ timeout: 5_000 })
+      break
+    } catch {
+      if (i === 4) throw new Error("登录弹窗未打开 — 5 次重试均失败")
+    }
+  }
   await page.getByRole("tab", { name: "账号密码" }).click()
-  await page.getByRole("tabpanel").waitFor({ timeout: 5_000 })
+  await page.getByRole("tabpanel").waitFor({ timeout: 10_000 })
 
   const inputs = dialog.getByRole("textbox")
   await inputs.first().waitFor({ timeout: 5_000 })

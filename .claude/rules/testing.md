@@ -20,6 +20,21 @@
 - 网关集成测试（httpx）：通过网关 `http://localhost/api` 走完整链路（JWT 验签、CSRF、限流、请求头注入）
 - 前端 E2E 测试（Playwright）：通过网关 `http://localhost` 走完整链路
 
+### 测试验证流程
+
+功能开发完成后按以下顺序验证：
+
+| 阶段 | 目标 | 命令 |
+|------|------|------|
+| 1. 后端单元测试 | mock 验证逻辑 | `uv run --project backend/api python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e` |
+| 2. 后端接口测试 | `localhost:8000` 直连 API | `uv run --project backend/api python -m pytest backend/api/tests/ -v -m api` |
+| 3. 后端网关测试 | `localhost:80` 走 gateway | `uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v` |
+| 4. 前端 E2E（本地） | `localhost` 生产容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+| 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://REDACTED_HOST INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+
+- 本地前端 E2E 使用生产构建的容器（速度快、行为一致）
+- 线上 E2E 在部署后执行，验证生产环境实际行为
+
 ### 测试覆盖要求
 
 - 代码测试覆盖率必须达到 **100%**

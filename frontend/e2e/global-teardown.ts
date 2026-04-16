@@ -85,8 +85,33 @@ async function globalTeardown(_config: FullConfig) {
   const coverageDir = path.join(__dirname, ".coverage")
   if (fs.existsSync(coverageDir)) {
     try {
-      const { API_ENDPOINTS } = await import("./helpers/api-endpoints")
-      const { PAGE_ROUTES, matchRoute } = await import("./helpers/page-routes")
+      // 手动解析 TS 文件中的数组（避免 Node 无法 import .ts）
+      const parseArrayFromTs = (filePath: string): string[] => {
+        const content = fs.readFileSync(filePath, "utf-8")
+        const match = content.match(/\[[\s\S]*\]/)
+        if (!match) return []
+        // 提取引号内的字符串
+        const items: string[] = []
+        for (const m of match[0].matchAll(/"([^"]+)"/g)) {
+          items.push(m[1])
+        }
+        return items
+      }
+
+      const API_ENDPOINTS = parseArrayFromTs(path.join(__dirname, "helpers", "api-endpoints.ts"))
+      const PAGE_ROUTES = parseArrayFromTs(path.join(__dirname, "helpers", "page-routes.ts"))
+
+      /** 路由匹配：去掉 locale 前缀，尝试动态段替换 */
+      const matchRoute = (url: string): string | null => {
+        const p = url.replace(/^\/[a-z]{2}(?=\/)/, "")
+        if (PAGE_ROUTES.includes(p)) return p
+        const segments = p.split("/")
+        if (segments.length >= 3) {
+          const pattern = [...segments.slice(0, -1), "[id]"].join("/")
+          if (PAGE_ROUTES.includes(pattern)) return pattern
+        }
+        return null
+      }
 
       /* 合并所有 worker 的 API 调用数据 */
       const allApiCalls = new Set<string>()
