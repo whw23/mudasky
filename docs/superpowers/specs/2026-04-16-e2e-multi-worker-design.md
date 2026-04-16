@@ -8,8 +8,79 @@
 
 - `mudasky`/`whw23`/`nyx` 是真实账号，测试**绝不触碰**
 - `e2e_test_superuser` 只做管理操作（赋权、创建数据），**不对自身做破坏性操作**（不改密码、不改手机号、不启用 2FA、不删除自己）
-- **破坏性管理操作**（重置密码、强制登出、禁用、删除用户）通过创建临时账号 `E2E-temp-xxx` 执行，不影响 W2/W3/W4
-- **破坏性 profile 操作**（改密码、改手机号、2FA）只在自注册的一次性账号（W2/W3/W4）上执行
+- **破坏性管理操作**通过创建临时账号 `E2E-temp-xxx` 执行，不影响 W2/W3/W4
+- **破坏性 profile 操作**只在自注册的一次性账号（W2/W3/W4）上执行
+
+## 破坏性操作清单
+
+所有会改变用户/数据状态的操作，需要在临时账号或自注册账号上执行。
+
+### 用户状态破坏（7 个端点）— 用临时账号
+
+| 端点 | 执行者 | 操作对象 |
+|------|--------|----------|
+| `POST /api/admin/users/list/detail/reset-password` | W1 | 临时账号 |
+| `POST /api/admin/users/list/detail/force-logout` | W1 | 临时账号 |
+| `POST /api/admin/users/list/detail/delete` | W1 | 临时账号 |
+| `POST /api/admin/users/list/detail/assign-role` | W1 | W2/W3（赋权阶段）+ 临时账号（角色变更测试） |
+| `POST /api/admin/users/list/detail/edit`（is_active） | W1 | 临时账号（禁用/启用测试），W4 用于被禁用场景 |
+| `POST /api/admin/students/list/detail/downgrade` | W3 | 临时账号 |
+| `POST /api/admin/contacts/list/detail/upgrade` | W3 | 临时联系人 |
+
+### 2FA 状态变更（4 个端点）— W2 自注册账号
+
+| 端点 | 执行者 |
+|------|--------|
+| `POST /api/portal/profile/two-factor/enable-totp` | W2 |
+| `POST /api/portal/profile/two-factor/confirm-totp` | W2 |
+| `POST /api/portal/profile/two-factor/enable-sms` | W2 |
+| `POST /api/portal/profile/two-factor/disable` | W2 |
+
+### 破坏性 profile 操作（3 个端点）— W2 自注册账号
+
+| 端点 | 执行者 |
+|------|--------|
+| `POST /api/portal/profile/password` | W2 |
+| `POST /api/portal/profile/phone` | W2 |
+| `POST /api/portal/profile/delete-account` | W2（最后执行，测完再删） |
+
+### 会话操作（2 个端点）— W2 自注册账号
+
+| 端点 | 执行者 |
+|------|--------|
+| `POST /api/portal/profile/sessions/list/revoke` | W2 |
+| `POST /api/portal/profile/sessions/list/revoke-all` | W2 |
+
+### 数据删除（6 个端点）— W1 创建后删除
+
+| 端点 | 执行者 | 说明 |
+|------|--------|------|
+| `POST /api/admin/articles/list/detail/delete` | W1 | 创建 → 测试 → 删除 |
+| `POST /api/admin/cases/list/detail/delete` | W1 | 同上 |
+| `POST /api/admin/universities/list/detail/delete` | W1 | 同上 |
+| `POST /api/admin/categories/list/detail/delete` | W1 | 同上 |
+| `POST /api/admin/roles/meta/list/detail/delete` | W1 | 同上 |
+| `POST /api/portal/documents/list/detail/delete` | W2 | 上传 → 测试 → 删除 |
+
+### 数据修改（13 个端点）— 各 worker 操作自己创建的数据
+
+| 端点 | 执行者 |
+|------|--------|
+| `POST /api/admin/articles/list/detail/edit` | W1 |
+| `POST /api/admin/cases/list/detail/edit` | W1 |
+| `POST /api/admin/universities/list/detail/edit` | W1 |
+| `POST /api/admin/categories/list/detail/edit` | W1 |
+| `POST /api/admin/roles/meta/list/detail/edit` | W1 |
+| `POST /api/admin/roles/meta/list/reorder` | W1 |
+| `POST /api/admin/general-settings/list/edit` | W1（改完还原） |
+| `POST /api/admin/web-settings/list/edit` | W1（改完还原） |
+| `POST /api/portal/profile/meta/list/edit` | W2 |
+| `POST /api/admin/contacts/list/detail/mark` | W3 |
+| `POST /api/admin/contacts/list/detail/note` | W3 |
+| `POST /api/admin/students/list/detail/edit` | W3 |
+| `POST /api/admin/students/list/detail/assign-advisor` | W3 |
+
+**总计 35 个破坏性端点**，全部明确分配到具体 worker 和操作对象。
 - Worker 间通过文件信号通信，实现协作测试
 - 覆盖率六维度 100%，0 failed / 0 skipped / 0 flaky
 
