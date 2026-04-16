@@ -92,7 +92,7 @@ def sample_user() -> MagicMock:
     def _factory(**kwargs) -> MagicMock:
         user = MagicMock(spec=User)
         user.id = kwargs.get("id", "user-001")
-        user.phone = kwargs.get("phone", "+8613800138000")
+        user.phone = kwargs.get("phone", "+86-13800138000")
         user.username = kwargs.get("username", "testuser")
         user.password_hash = kwargs.get(
             "password_hash", "hashed_pw"
@@ -125,7 +125,7 @@ def sample_sms_code() -> MagicMock:
     def _factory(**kwargs) -> MagicMock:
         sms = MagicMock(spec=SmsCode)
         sms.id = kwargs.get("id", "sms-001")
-        sms.phone = kwargs.get("phone", "+8613800138000")
+        sms.phone = kwargs.get("phone", "+86-13800138000")
         sms.code = kwargs.get("code", "123456")
         sms.is_used = kwargs.get("is_used", False)
         sms.attempts = kwargs.get("attempts", 0)

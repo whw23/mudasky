@@ -9,7 +9,7 @@ import { getSmsCode } from "../helpers/sms"
 import * as path from "path"
 
 const W3_AUTH = path.join(__dirname, "..", ".auth", "w3.json")
-const PHONE = `+861390001${Date.now().toString().slice(-4)}`
+const PHONE = `+86-1390001${Date.now().toString().slice(-4)}`
 const USERNAME = `E2E-advisor-${Date.now()}`
 
 test.describe("W3 注册", () => {

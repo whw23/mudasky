@@ -111,7 +111,7 @@ class TestUserProfileActions:
         """创建用户 -> 修改密码 -> 用新密码登录 -> 清理。"""
         import random
 
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
         old_pass = "oldpass123"
         new_pass = "newpass456"
         username = f"e2e_pwd_{phone[-6:]}"
@@ -189,8 +189,8 @@ class TestUserProfileActions:
         """创建用户 -> 修改手机号 -> 验证 -> 清理。"""
         import random
 
-        old_phone = f"+86139{random.randint(10000000, 99999999)}"
-        new_phone = f"+86138{random.randint(10000000, 99999999)}"
+        old_phone = f"+86--139{random.randint(10000000, 99999999)}"
+        new_phone = f"+86--138{random.randint(10000000, 99999999)}"
         password = "testpass123"
         username = f"e2e_phone_{old_phone[-6:]}"
 
@@ -259,7 +259,7 @@ class TestTwoFactorAuth:
         """创建用户 -> 启用 TOTP -> 确认 -> 禁用 -> 清理。"""
         import random
 
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
         password = "testpass123"
         username = f"e2e_2fa_{phone[-6:]}"
 
@@ -333,7 +333,7 @@ class TestTwoFactorAuth:
         """创建用户 -> 启用短信 2FA -> 禁用 -> 清理。"""
         import random
 
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
         password = "testpass123"
         username = f"e2e_sms2fa_{phone[-6:]}"
 

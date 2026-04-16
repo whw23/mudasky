@@ -11,7 +11,7 @@ import { getSmsCode } from "../helpers/sms"
 import * as path from "path"
 
 const W2_AUTH = path.join(__dirname, "..", ".auth", "w2.json")
-const PHONE = `+861390000${Date.now().toString().slice(-4)}`
+const PHONE = `+86-1390000${Date.now().toString().slice(-4)}`
 const USERNAME = `E2E-student-${Date.now()}`
 
 test.describe("W2 注册", () => {

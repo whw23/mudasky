@@ -6,6 +6,7 @@
 import asyncio
 import base64
 import json
+import os
 import time
 
 import httpx
@@ -15,8 +16,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 E2E_BASE_URL = "http://localhost"
 CSRF_HEADER = {"X-Requested-With": "XMLHttpRequest"}
-SUPERUSER_USERNAME = "mudasky"
-SUPERUSER_PASSWORD = "mudasky@12321."
+SUPERUSER_USERNAME = os.environ.get("SEED_USER_1_USERNAME", "")
+SUPERUSER_PASSWORD = os.environ.get("SEED_USER_1_PASSWORD", "")
 
 
 async def encrypt_password(

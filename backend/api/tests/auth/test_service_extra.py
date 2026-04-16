@@ -46,7 +46,7 @@ async def test_register_username_conflict(
 
     with pytest.raises(ConflictException):
         await service.register(
-            phone="+8613900139000",
+            phone="+86-13900139000",
             code="123456",
             username="taken",
         )
@@ -64,15 +64,15 @@ async def test_register_no_password_no_username(
     """注册成功（不设置密码和用户名）。"""
     mock_repo.verify_sms_code = AsyncMock()
     mock_user_repo.get_by_phone = AsyncMock(return_value=None)
-    new_user = sample_user(phone="+8613900139000")
+    new_user = sample_user(phone="+86-13900139000")
     mock_user_repo.create = AsyncMock(return_value=new_user)
 
     with patch.object(service, "_get_visitor_role", return_value=None):
         result = await service.register(
-            phone="+8613900139000", code="123456"
+            phone="+86-13900139000", code="123456"
         )
 
-    assert result.phone == "+8613900139000"
+    assert result.phone == "+86-13900139000"
 
 
 # ---- login: 无效凭据 ----
@@ -95,7 +95,7 @@ async def test_login_phone_password_success(
 ):
     """手机号 + 密码登录成功。"""
     user = sample_user(
-        phone="+8613800138000",
+        phone="+86-13800138000",
         password_hash="hashed",
         two_factor_enabled=False,
     )
@@ -103,7 +103,7 @@ async def test_login_phone_password_success(
 
     with patch("api.auth.service.verify_password", return_value=True):
         result_user, step = await service.login(
-            phone="+8613800138000",
+            phone="+86-13800138000",
             encrypted_password="enc",
             nonce="n",
         )
@@ -123,7 +123,7 @@ async def test_login_phone_not_found(
 
     with pytest.raises(NotFoundException):
         await service.login(
-            phone="+8613800138000",
+            phone="+86-13800138000",
             encrypted_password="enc",
             nonce="n",
         )
@@ -199,7 +199,7 @@ async def test_login_sms_auto_register(
             service, "_auto_register", return_value=new_user
         ):
             result_user, step = await service.login(
-                phone="+8613900000000", code="123456"
+                phone="+86-13900000000", code="123456"
             )
 
     assert result_user == new_user
@@ -221,7 +221,7 @@ async def test_login_sms_inactive_user(
 
     with pytest.raises(UnauthorizedException):
         await service.login(
-            phone="+8613800138000", code="123456"
+            phone="+86-13800138000", code="123456"
         )
 
 
@@ -459,7 +459,7 @@ async def test_send_code_hourly_limit(mock_repo, service):
     mock_repo.count_recent_sms = AsyncMock(return_value=5)
 
     with pytest.raises(TooManyRequestsException):
-        await service.send_code("+8613800138000")
+        await service.send_code("+86-13800138000")
 
 
 # ---- send_code: 默认发短信不返回验证码 ----
@@ -476,7 +476,7 @@ async def test_send_code_default_returns_none(
     mock_repo.delete_expired_sms_codes = AsyncMock()
     mock_repo.create_sms_code = AsyncMock()
 
-    result = await service.send_code("+8613800138000")
+    result = await service.send_code("+86-13800138000")
 
     assert result is None
     mock_sms.assert_awaited_once()

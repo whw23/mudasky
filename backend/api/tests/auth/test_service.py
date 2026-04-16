@@ -46,19 +46,19 @@ async def test_register_success(
     mock_user_repo.get_by_phone = AsyncMock(return_value=None)
     mock_user_repo.get_by_username = AsyncMock(return_value=None)
 
-    new_user = sample_user(phone="+8613900139000")
+    new_user = sample_user(phone="+86-13900139000")
     mock_user_repo.create = AsyncMock(return_value=new_user)
 
     with patch.object(service, "_get_visitor_role", return_value=None):
         result = await service.register(
-            phone="+8613900139000",
+            phone="+86-13900139000",
             code="123456",
             username="newuser",
             encrypted_password="encrypted_data",
             nonce="test_nonce",
         )
 
-    assert result.phone == "+8613900139000"
+    assert result.phone == "+86-13900139000"
     mock_repo.verify_sms_code.assert_awaited_once()
     mock_user_repo.create.assert_awaited_once()
 
@@ -71,12 +71,12 @@ async def test_register_phone_already_exists(
 ):
     """注册失败：手机号已注册。"""
     mock_repo.verify_sms_code = AsyncMock()
-    existing = sample_user(phone="+8613800138000")
+    existing = sample_user(phone="+86-13800138000")
     mock_user_repo.get_by_phone = AsyncMock(return_value=existing)
 
     with pytest.raises(ConflictException) as exc_info:
         await service.register(
-            phone="+8613800138000", code="123456"
+            phone="+86-13800138000", code="123456"
         )
     assert exc_info.value.code == "PHONE_ALREADY_REGISTERED"
 
@@ -165,11 +165,11 @@ async def test_login_phone_sms_success(
 ):
     """手机号短信验证码登录成功。"""
     mock_repo.verify_sms_code = AsyncMock()
-    user = sample_user(phone="+8613800138000")
+    user = sample_user(phone="+86-13800138000")
     mock_user_repo.get_by_phone = AsyncMock(return_value=user)
 
     result_user, step = await service.login(
-        phone="+8613800138000", code="123456"
+        phone="+86-13800138000", code="123456"
     )
 
     assert result_user == user
@@ -190,7 +190,7 @@ async def test_send_code_skip_sms(mock_repo, mock_sms, service):
     mock_repo.delete_expired_sms_codes = AsyncMock()
     mock_repo.create_sms_code = AsyncMock()
 
-    result = await service.send_code("+8613800138000", skip_sms=True)
+    result = await service.send_code("+86-13800138000", skip_sms=True)
 
     assert result is not None
     assert len(result) == 6
@@ -208,7 +208,7 @@ async def test_send_code_real_sms(mock_repo, mock_sms, service):
     mock_repo.delete_expired_sms_codes = AsyncMock()
     mock_repo.create_sms_code = AsyncMock()
 
-    result = await service.send_code("+8613800138000")
+    result = await service.send_code("+86-13800138000")
 
     assert result is None
     mock_repo.create_sms_code.assert_awaited_once()
@@ -229,7 +229,7 @@ async def test_send_code_rate_limited(
     )
 
     with pytest.raises(TooManyRequestsException):
-        await service.send_code("+8613800138000")
+        await service.send_code("+86-13800138000")
 
 
 # ---- 2FA flow ----

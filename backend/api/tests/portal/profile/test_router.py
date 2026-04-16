@@ -15,7 +15,7 @@ def _make_user_response() -> dict:
     """构建用户响应数据。"""
     return {
         "id": "user-1",
-        "phone": "+8613800138000",
+        "phone": "+86-13800138000",
         "username": "testuser",
         "is_active": True,
         "permissions": [],
@@ -33,7 +33,7 @@ def _make_user_model(**kwargs) -> MagicMock:
     """创建模拟用户模型对象。"""
     user = MagicMock(spec=User)
     user.id = kwargs.get("id", "user-1")
-    user.phone = kwargs.get("phone", "+8613800138000")
+    user.phone = kwargs.get("phone", "+86-13800138000")
     user.username = kwargs.get("username", "testuser")
     user.is_active = kwargs.get("is_active", True)
     user.two_factor_enabled = kwargs.get(
@@ -169,7 +169,7 @@ class TestChangePassword:
         resp = await client.post(
             "/portal/profile/password",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
                 "encrypted_password": "enc_data",
                 "nonce": "test_nonce",
@@ -184,7 +184,7 @@ class TestChangePassword:
         resp = await client.post(
             "/portal/profile/password",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
                 "encrypted_password": "enc_data",
                 "nonce": "test_nonce",
@@ -211,12 +211,12 @@ class TestChangePhone:
     ):
         """修改手机号成功返回 200。"""
         self.mock_svc.change_phone.return_value = (
-            _make_user_model(phone="+8613900139000")
+            _make_user_model(phone="+86-13900139000")
         )
         resp = await client.post(
             "/portal/profile/phone",
             json={
-                "new_phone": "+8613900139000",
+                "new_phone": "+86-13900139000",
                 "code": "654321",
             },
             headers=user_headers,

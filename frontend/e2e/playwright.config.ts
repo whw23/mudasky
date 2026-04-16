@@ -5,7 +5,19 @@
  */
 
 import { defineConfig } from "@playwright/test"
+import * as fs from "fs"
 import * as path from "path"
+
+/* 自动加载 env/backend.env（SEED_USER_E2E_*、INTERNAL_SECRET） */
+const envPath = path.resolve(__dirname, "../../env/backend.env")
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
+    const match = line.match(/^([A-Z_]+)=(.+)$/)
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2]
+    }
+  }
+}
 
 const isRemote = !!process.env.BASE_URL
 const AUTH_DIR = path.join(__dirname, ".auth")

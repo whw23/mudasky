@@ -14,7 +14,7 @@ class TestErrorCodes:
 
     async def test_register_duplicate_phone(self, e2e_client):
         """注册已存在的手机号返回 PHONE_ALREADY_REGISTERED。"""
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
 
         # 1. 发送验证码
         sms_resp = await e2e_client.post(
@@ -63,7 +63,7 @@ class TestErrorCodes:
 
     async def test_login_wrong_password(self, e2e_client):
         """错误密码登录返回 PASSWORD_INCORRECT。"""
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
 
         # 1. 先注册一个用户
         sms_resp = await e2e_client.post(
@@ -116,7 +116,7 @@ class TestErrorCodes:
 
     async def test_sms_code_incorrect(self, e2e_client):
         """错误的短信验证码返回 SMS_CODE_INCORRECT。"""
-        phone = f"+86139{random.randint(10000000, 99999999)}"
+        phone = f"+86--139{random.randint(10000000, 99999999)}"
 
         # 1. 发送验证码
         sms_resp = await e2e_client.post(
@@ -146,7 +146,7 @@ class TestErrorCodes:
         username = f"e2e_user_{random.randint(100000, 999999)}"
 
         # 1. 注册第一个用户
-        phone1 = f"+86139{random.randint(10000000, 99999999)}"
+        phone1 = f"+86--139{random.randint(10000000, 99999999)}"
         sms_resp1 = await e2e_client.post(
             "/api/auth/sms-code",
             json={"phone": phone1},
@@ -166,7 +166,7 @@ class TestErrorCodes:
         assert reg_resp1.status_code == 200
 
         # 2. 用不同手机号但相同用户名注册第二个用户 → 应返回 USERNAME_ALREADY_USED
-        phone2 = f"+86139{random.randint(10000000, 99999999)}"
+        phone2 = f"+86--139{random.randint(10000000, 99999999)}"
         sms_resp2 = await e2e_client.post(
             "/api/auth/sms-code",
             json={"phone": phone2},

@@ -5,8 +5,8 @@
 
 import { test, expect, trackComponent } from "../fixtures/base"
 
-const ADMIN_USER = "e2e_test_superuser"
-const ADMIN_PASS = "e2e_test_superuser@12321."
+const ADMIN_USER = process.env.SEED_USER_E2E_USERNAME!
+const ADMIN_PASS = process.env.SEED_USER_E2E_PASSWORD!
 
 test.describe("认证流程", () => {
   test.use({ storageState: { cookies: [], origins: [] } })

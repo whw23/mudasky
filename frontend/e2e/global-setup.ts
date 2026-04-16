@@ -12,8 +12,8 @@ import { cleanupBreakers } from "./fixtures/base"
 const AUTH_DIR = path.join(__dirname, ".auth")
 const W1_AUTH = path.join(AUTH_DIR, "w1.json")
 const BASE = process.env.BASE_URL || "http://localhost"
-const ADMIN_USER = "e2e_test_superuser"
-const ADMIN_PASS = "e2e_test_superuser@12321."
+const ADMIN_USER = process.env.SEED_USER_E2E_USERNAME!
+const ADMIN_PASS = process.env.SEED_USER_E2E_PASSWORD!
 
 const WARMUP_PAGES = [
   "/",

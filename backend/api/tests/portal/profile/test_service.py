@@ -117,13 +117,13 @@ async def test_change_password_success(
     mock_repo, mock_auth_repo, mock_decrypt, service, sample_user
 ):
     """修改密码成功。"""
-    user = sample_user(phone="+8613800138000")
+    user = sample_user(phone="+86-13800138000")
     mock_repo.get_by_id = AsyncMock(return_value=user)
     mock_auth_repo.verify_sms_code = AsyncMock()
     mock_repo.update = AsyncMock(return_value=user)
 
     data = PasswordChange(
-        phone="+8613800138000",
+        phone="+86-13800138000",
         code="123456",
         encrypted_password="enc_data",
         nonce="test_nonce",
@@ -145,11 +145,11 @@ async def test_change_password_phone_mismatch(
     mock_repo, service, sample_user
 ):
     """手机号不匹配应抛出 ConflictException。"""
-    user = sample_user(phone="+8613800138000")
+    user = sample_user(phone="+86-13800138000")
     mock_repo.get_by_id = AsyncMock(return_value=user)
 
     data = PasswordChange(
-        phone="+8613900139000",
+        phone="+86-13900139000",
         code="123456",
         encrypted_password="enc_data",
         nonce="test_nonce",
@@ -169,14 +169,14 @@ async def test_change_phone_success(
     mock_repo, mock_auth_repo, service, sample_user
 ):
     """修改手机号成功。"""
-    user = sample_user(id="user-001", phone="+8613800138000")
+    user = sample_user(id="user-001", phone="+86-13800138000")
     mock_repo.get_by_id = AsyncMock(return_value=user)
     mock_auth_repo.verify_sms_code = AsyncMock()
     mock_repo.get_by_phone = AsyncMock(return_value=None)
     mock_repo.update = AsyncMock(return_value=user)
 
     data = PhoneChange(
-        new_phone="+8613900139000", code="654321"
+        new_phone="+86-13900139000", code="654321"
     )
     result = await service.change_phone("user-001", data)
 
@@ -191,13 +191,13 @@ async def test_change_phone_already_used(
     mock_repo, mock_auth_repo, service, sample_user
 ):
     """新手机号已被其他用户使用应抛出 ConflictException。"""
-    user = sample_user(id="user-001", phone="+8613800138000")
+    user = sample_user(id="user-001", phone="+86-13800138000")
     mock_repo.get_by_id = AsyncMock(return_value=user)
     other_user = sample_user(id="user-002")
     mock_repo.get_by_phone = AsyncMock(return_value=other_user)
 
     data = PhoneChange(
-        new_phone="+8613900139000", code="654321"
+        new_phone="+86-13900139000", code="654321"
     )
 
     with pytest.raises(ConflictException):

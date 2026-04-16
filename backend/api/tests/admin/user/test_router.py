@@ -11,7 +11,7 @@ def _make_user_response(**kwargs) -> dict:
     """构建用户响应数据。"""
     return {
         "id": kwargs.get("id", "target-001"),
-        "phone": kwargs.get("phone", "+8613800138000"),
+        "phone": kwargs.get("phone", "+86-13800138000"),
         "username": kwargs.get("username", "target"),
         "is_active": kwargs.get("is_active", True),
         "permissions": kwargs.get("permissions", []),

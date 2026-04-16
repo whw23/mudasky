@@ -13,7 +13,7 @@ def _make_contact(**kwargs) -> MagicMock:
     """创建模拟访客对象。"""
     c = MagicMock()
     c.id = kwargs.get("id", "contact-001")
-    c.phone = kwargs.get("phone", "+8613800138000")
+    c.phone = kwargs.get("phone", "+86-13800138000")
     c.username = kwargs.get("username", "visitor")
     c.contact_status = kwargs.get(
         "contact_status", "pending"

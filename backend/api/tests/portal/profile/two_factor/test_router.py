@@ -87,7 +87,7 @@ class TestEnableSms:
         resp = await client.post(
             "/portal/profile/two-factor/enable-sms",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
             },
             headers=user_headers,
@@ -116,7 +116,7 @@ class TestDisable2fa:
         resp = await client.post(
             "/portal/profile/two-factor/disable",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
             },
             headers=user_headers,

@@ -14,11 +14,14 @@
 
 ### 测试执行环境
 
-- 所有测试在**容器外**运行（宿主机）
-- 单元测试：mock 依赖，不需要容器
-- 后端接口测试（httpx）：直连 API 容器 `http://localhost:8000/api`（开发环境已暴露 8000 端口），不走网关
-- 网关集成测试（httpx）：通过网关 `http://localhost/api` 走完整链路（JWT 验签、CSRF、限流、请求头注入）
-- 前端 E2E 测试（Playwright）：通过网关 `http://localhost` 走完整链路
+- 所有测试在**容器外**运行（宿主机 WSL）
+- 后端测试（1-3）使用**开发容器**（`docker compose up`）：
+  - 单元测试：mock 依赖，不需要连接容器
+  - 接口测试（httpx）：直连 API 容器 `http://localhost:8000/api`（开发环境已暴露 8000 端口），不走网关
+  - 网关集成测试（httpx）：通过网关 `http://localhost/api` 走完整链路（JWT 验签、CSRF、限流、请求头注入）
+- 前端 E2E 测试（4）使用**生产构建容器**（`docker compose -f docker-compose.yml up`）：
+  - 通过网关 `http://localhost` 走完整链路
+  - 生产构建的行为与线上一致（standalone 模式、代码混淆）
 
 ### 测试验证流程
 
@@ -29,7 +32,7 @@
 | 1. 后端单元测试 | mock 验证逻辑 | `uv run --project backend/api python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e` |
 | 2. 后端接口测试 | `localhost:8000` 直连 API | `uv run --project backend/api python -m pytest backend/api/tests/ -v -m api` |
 | 3. 后端网关测试 | `localhost:80` 走 gateway | `uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v` |
-| 4. 前端 E2E（本地） | `localhost` 生产容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+| 4. 前端 E2E（本地） | `localhost` 生产构建容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
 | 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
 
 - 本地前端 E2E 使用生产构建的容器（速度快、行为一致）
@@ -104,7 +107,12 @@
 - 使用 `gotoAdmin`、`clickAndWaitDialog` 等项目自定义辅助函数
 - 配置文件：`frontend/e2e/playwright.config.ts`
 - fixture 文件：`frontend/e2e/fixtures/base.ts`（基础）、`frontend/e2e/fixtures/coverage.ts`（覆盖率收集）
-- 默认 2 worker 并发执行
+- 4 worker 多角色协作模式，三阶段执行：
+  1. **注册阶段**：W2/W3/W4 并行注册各自的测试用户
+  2. **赋权阶段**：W1（superuser）为已注册用户赋权 + 创建种子数据
+  3. **主测试阶段**：4 个 worker 并行执行各自角色的测试
+- Worker 角色分配：W1=superuser、W2=student、W3=advisor、W4=visitor
+- 通过 project dependencies 保证执行顺序（注册→赋权→主测试）
 - 运行命令（本地）：`pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
 - 运行命令（线上）：`BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
 - 线上环境超时自动增大（`actionTimeout` 5s→15s，`navigationTimeout` 15s→30s）
@@ -166,13 +174,12 @@ frontend/e2e/
 │   └── page-routes.ts       # 前端全量路由清单
 ├── global-setup.ts           # 登录 + 种子数据 + 预热
 ├── global-teardown.ts        # 清理 E2E 数据 + 覆盖率报告
-├── playwright.config.ts      # 2 worker, 线上自动增大超时
-├── auth/                     # 认证流程（登录弹窗、tab 切换、退出）
-├── public/                   # 公开页面（导航、ConsultButton、语言切换）
-├── admin/                    # 管理面板（每个模块一个 spec）
-├── portal/                   # 用户面板（profile、sessions、documents）
-├── cross-navigation.spec.ts  # 路径乱序交叉测试
-└── permission-guard.spec.ts  # 权限拦截测试
+├── playwright.config.ts      # 4 worker 多角色协作, 线上自动增大超时
+├── shared/                   # 共享测试（认证流程等，不绑定特定 worker）
+├── w1/                       # superuser：CRUD、角色管理、用户管理、设置、安全
+├── w2/                       # student：注册、个人资料、文档、双因素、会话
+├── w3/                       # advisor：注册、学员管理、学员文档、联系人
+└── w4/                       # visitor：注册、公开页面、搜索、权限、安全、IDOR
 ```
 
 ### 测试目录结构

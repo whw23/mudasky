@@ -37,7 +37,7 @@ def session() -> AsyncMock:
 async def test_create_sms_code(session):
     """创建短信验证码记录。"""
     sms = SmsCode(
-        phone="+8613800138000",
+        phone="+86-13800138000",
         code="123456",
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
     )
@@ -61,7 +61,7 @@ async def test_get_latest_sms_code_found(session):
     mock_result.scalar_one_or_none.return_value = sms
     session.execute.return_value = mock_result
 
-    result = await get_latest_sms_code(session, "+8613800138000")
+    result = await get_latest_sms_code(session, "+86-13800138000")
 
     assert result == sms
     session.execute.assert_awaited_once()
@@ -73,7 +73,7 @@ async def test_get_latest_sms_code_not_found(session):
     mock_result.scalar_one_or_none.return_value = None
     session.execute.return_value = mock_result
 
-    result = await get_latest_sms_code(session, "+8613800138000")
+    result = await get_latest_sms_code(session, "+86-13800138000")
 
     assert result is None
 
@@ -92,7 +92,7 @@ async def test_verify_sms_code_success(session):
     mock_result.scalar_one_or_none.return_value = sms
     session.execute.return_value = mock_result
 
-    await verify_sms_code(session, "+8613800138000", "123456")
+    await verify_sms_code(session, "+86-13800138000", "123456")
 
     assert sms.is_used is True
     assert sms.attempts == 1
@@ -106,7 +106,7 @@ async def test_verify_sms_code_no_code(session):
     session.execute.return_value = mock_result
 
     with pytest.raises(UnauthorizedException):
-        await verify_sms_code(session, "+8613800138000", "999999")
+        await verify_sms_code(session, "+86-13800138000", "999999")
 
 
 async def test_verify_sms_code_wrong_code(session):
@@ -120,7 +120,7 @@ async def test_verify_sms_code_wrong_code(session):
     session.execute.return_value = mock_result
 
     with pytest.raises(UnauthorizedException):
-        await verify_sms_code(session, "+8613800138000", "999999")
+        await verify_sms_code(session, "+86-13800138000", "999999")
 
     assert sms.attempts == 1
     session.commit.assert_awaited()
@@ -135,7 +135,7 @@ async def test_count_recent_sms(session):
     mock_result.scalar_one.return_value = 3
     session.execute.return_value = mock_result
 
-    result = await count_recent_sms(session, "+8613800138000", minutes=60)
+    result = await count_recent_sms(session, "+86-13800138000", minutes=60)
 
     assert result == 3
     session.execute.assert_awaited_once()
@@ -146,7 +146,7 @@ async def test_count_recent_sms(session):
 
 async def test_delete_expired_sms_codes(session):
     """删除过期或已使用的验证码。"""
-    await delete_expired_sms_codes(session, "+8613800138000")
+    await delete_expired_sms_codes(session, "+86-13800138000")
 
     session.execute.assert_awaited_once()
 

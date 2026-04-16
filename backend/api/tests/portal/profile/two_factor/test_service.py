@@ -27,7 +27,7 @@ def _make_user(**kwargs) -> MagicMock:
 
     user = MagicMock(spec=User)
     user.id = kwargs.get("id", "user-001")
-    user.phone = kwargs.get("phone", "+8613800138000")
+    user.phone = kwargs.get("phone", "+86-13800138000")
     user.totp_secret = kwargs.get("totp_secret", None)
     user.two_factor_enabled = kwargs.get(
         "two_factor_enabled", False
@@ -173,13 +173,13 @@ class TestEnableSms:
         self, mock_repo, mock_auth, service
     ):
         """短信 2FA 启用成功。"""
-        user = _make_user(phone="+8613800138000")
+        user = _make_user(phone="+86-13800138000")
         mock_repo.get_by_id = AsyncMock(return_value=user)
         mock_repo.update = AsyncMock()
         mock_auth.verify_sms_code = AsyncMock()
 
         await service.enable_sms(
-            "user-001", "+8613800138000", "123456"
+            "user-001", "+86-13800138000", "123456"
         )
 
         assert user.two_factor_enabled is True
@@ -198,7 +198,7 @@ class TestEnableSms:
 
         with pytest.raises(ConflictException) as exc_info:
             await service.enable_sms(
-                "user-001", "+8613800138000", "123456"
+                "user-001", "+86-13800138000", "123456"
             )
 
         assert exc_info.value.code == "PHONE_NOT_BOUND"
@@ -209,12 +209,12 @@ class TestEnableSms:
         self, mock_repo, service
     ):
         """手机号不匹配时抛出 ConflictException。"""
-        user = _make_user(phone="+8613800138000")
+        user = _make_user(phone="+86-13800138000")
         mock_repo.get_by_id = AsyncMock(return_value=user)
 
         with pytest.raises(ConflictException) as exc_info:
             await service.enable_sms(
-                "user-001", "+8613900139000", "123456"
+                "user-001", "+86-13900139000", "123456"
             )
 
         assert exc_info.value.code == "PHONE_MISMATCH"
@@ -234,7 +234,7 @@ class TestDisable:
     ):
         """关闭 2FA 成功。"""
         user = _make_user(
-            phone="+8613800138000",
+            phone="+86-13800138000",
             two_factor_enabled=True,
             two_factor_method="totp",
             totp_secret="SECRET",
@@ -244,7 +244,7 @@ class TestDisable:
         mock_auth.verify_sms_code = AsyncMock()
 
         await service.disable(
-            "user-001", "+8613800138000", "123456"
+            "user-001", "+86-13800138000", "123456"
         )
 
         assert user.two_factor_enabled is False
@@ -258,12 +258,12 @@ class TestDisable:
         self, mock_repo, service
     ):
         """手机号不匹配时抛出 ConflictException。"""
-        user = _make_user(phone="+8613800138000")
+        user = _make_user(phone="+86-13800138000")
         mock_repo.get_by_id = AsyncMock(return_value=user)
 
         with pytest.raises(ConflictException) as exc_info:
             await service.disable(
-                "user-001", "+8613900139000", "123456"
+                "user-001", "+86-13900139000", "123456"
             )
 
         assert exc_info.value.code == "PHONE_MISMATCH"

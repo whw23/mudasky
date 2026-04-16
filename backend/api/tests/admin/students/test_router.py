@@ -13,7 +13,7 @@ def _make_student(**kwargs) -> MagicMock:
     """创建模拟学生对象。"""
     s = MagicMock()
     s.id = kwargs.get("id", "student-001")
-    s.phone = kwargs.get("phone", "+8613800138000")
+    s.phone = kwargs.get("phone", "+86-13800138000")
     s.username = kwargs.get("username", "student")
     s.is_active = kwargs.get("is_active", True)
     s.contact_status = kwargs.get("contact_status", None)

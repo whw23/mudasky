@@ -15,7 +15,7 @@ def _make_user(**kwargs) -> MagicMock:
     """创建模拟用户对象。"""
     user = MagicMock(spec=User)
     user.id = kwargs.get("id", "user-001")
-    user.phone = kwargs.get("phone", "+8613800138000")
+    user.phone = kwargs.get("phone", "+86-13800138000")
     user.username = kwargs.get("username", "testuser")
     user.is_active = kwargs.get("is_active", True)
     user.two_factor_enabled = kwargs.get(
@@ -38,7 +38,7 @@ def _make_user_response() -> dict:
     """构建用户响应数据。"""
     return {
         "id": "user-001",
-        "phone": "+8613800138000",
+        "phone": "+86-13800138000",
         "username": "testuser",
         "is_active": True,
         "permissions": [],
@@ -70,7 +70,7 @@ class TestSendSmsCode:
         self.mock_svc.send_code.return_value = "123456"
         resp = await client.post(
             "/auth/sms-code",
-            json={"phone": "+8613800138000"},
+            json={"phone": "+86-13800138000"},
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -115,7 +115,7 @@ class TestRegister:
         resp = await client.post(
             "/auth/register",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
                 "username": "newuser",
                 "encrypted_password": "enc_data",
@@ -147,7 +147,7 @@ class TestRegister:
         resp = await client.post(
             "/auth/register",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
             },
         )
@@ -177,7 +177,7 @@ class TestLogin:
         resp = await client.post(
             "/auth/login",
             json={
-                "phone": "+8613800138000",
+                "phone": "+86-13800138000",
                 "code": "123456",
             },
         )
