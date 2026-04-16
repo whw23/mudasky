@@ -171,7 +171,7 @@ jobs:
           CONTACT_PHONE=189-1268-6656
           CONTACT_EMAIL=haoranxuexing@163.com
           CONTACT_WECHAT=mutu_edu
-          CONTACT_OFFICE_HOURS=苏州工业园区
+          CONTACT_OFFICE_HOURS=中国(江苏)自由贸易试验区苏州片区苏州工业园区苏州大道东398号太平金融大厦5层5112室
           ENVEOF
 
           cat > env/gateway.env << 'ENVEOF'
