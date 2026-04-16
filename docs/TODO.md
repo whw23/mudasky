@@ -9,10 +9,10 @@
 - [x] WSL 网络代理
 - [x] CI 路径过滤补全
 - [ ] 前端 UI 审查
+- [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
 - [ ] 压力测试
 - [ ] Docker 镜像压缩
 - [ ] 代码混淆与知识产权保护
-- [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
 - [ ] GitHub Secrets 管理 env 密钥
 - [ ] GitHub 转公开仓库（转公开前处理敏感信息）
 
