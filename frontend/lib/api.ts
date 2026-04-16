@@ -42,7 +42,7 @@ api.interceptors.response.use(
     const isRefreshRequest = originalRequest.url?.includes("/auth/refresh")
     if (
       error.response?.status === 401 &&
-      (code === "ACCESS_TOKEN_EXPIRED" || code === "ACCESS_TOKEN_MISSING") &&
+      code === "ACCESS_TOKEN_EXPIRED" &&
       !originalRequest._retry &&
       !isRefreshRequest
     ) {
