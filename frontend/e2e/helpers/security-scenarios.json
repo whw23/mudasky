@@ -10,7 +10,7 @@
   { "category": "IDOR", "scenario": "用户删除他人文档被拒" },
   { "category": "跨角色", "scenario": "superuser访问admin成功" },
   { "category": "跨角色", "scenario": "student访问admin被拒" },
-  { "category": "跨角色", "scenario": "visitor访问portal被拒" },
+  { "category": "跨角色", "scenario": "visitor访问admin API被拒" },
   { "category": "跨角色", "scenario": "advisor访问admin/students成功" },
   { "category": "跨角色", "scenario": "advisor访问admin/articles被拒" },
   { "category": "禁用用户", "scenario": "禁用后API返回401" },

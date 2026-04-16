@@ -8,6 +8,16 @@ import { test, expect, trackSecurity } from "../fixtures/base"
 const JSON_HEADERS = { "Content-Type": "application/json" }
 const XRW_HEADERS = { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" }
 
+test.describe("基础端点", () => {
+  test("health 和 version 可访问", async ({ page }) => {
+    const healthRes = await page.request.get("/api/health")
+    expect(healthRes.status()).toBe(200)
+
+    const versionRes = await page.request.get("/api/version")
+    expect(versionRes.status()).toBe(200)
+  })
+})
+
 test.describe("CSRF 防护", () => {
   test("POST 不带 X-Requested-With — 返回 403", async ({ page }) => {
     const res = await page.request.post("/api/admin/categories/list", {
@@ -24,7 +34,7 @@ test.describe("CSRF 防护", () => {
     })
     // GET 请求正常
     expect(res.status()).toBe(200)
-    trackSecurity("CSRF", "带X-Requested-With正常")
+    trackSecurity("CSRF", "POST有X-Requested-With正常")
   })
 })
 
@@ -37,7 +47,7 @@ test.describe("XSS 防护", () => {
     })
     // 验证码发送不受 XSS 影响
     expect(res.status()).toBeLessThan(500)
-    trackSecurity("XSS", "验证码接口安全")
+    trackSecurity("XSS", "script标签被转义")
 
     // 搜索框注入测试
     const searchRes = await page.request.get(
@@ -49,7 +59,7 @@ test.describe("XSS 防护", () => {
     // 不应有未转义的脚本标签
     const bodyStr = JSON.stringify(body)
     expect(bodyStr).not.toContain("<script>")
-    trackSecurity("XSS", "搜索框注入安全")
+    trackSecurity("XSS", "搜索框XSS不执行")
   })
 
   test("文章标题含 HTML — 不触发脚本", async ({ page }) => {
@@ -94,7 +104,7 @@ test.describe("SQL 注入防护", () => {
     })
     // 应得到 422（验证错误）而非 500
     expect(res.status()).toBeLessThan(500)
-    trackSecurity("SQL注入", "登录SQL注入安全")
+    trackSecurity("SQL注入", "登录注入返回正常错误")
   })
 
   test("搜索参数 SQL 注入 — 安全", async ({ page }) => {

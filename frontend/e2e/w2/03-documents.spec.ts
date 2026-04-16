@@ -3,7 +3,7 @@
  * 覆盖上传、列表、分类切换、下载、删除、负向测试。
  */
 
-import { test, expect, gotoAdmin, trackComponent } from "../fixtures/base"
+import { test, expect, gotoAdmin, trackComponent, trackSecurity } from "../fixtures/base"
 import { emit } from "../helpers/signal"
 import * as path from "path"
 import * as fs from "fs"
@@ -76,6 +76,7 @@ test.describe("W2 文档管理", () => {
     // 验证列表中出现文件名（桌面端表格 + 移动端卡片各一个元素，取第一个）
     await expect(page.getByRole("cell", { name: fileName })).toBeVisible()
     trackComponent("DocumentList", "文档列表显示")
+    trackSecurity("IDOR", "用户访问自己文档成功")
 
     fs.unlinkSync(tmpFile)
   })

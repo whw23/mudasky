@@ -41,6 +41,16 @@ async function discoverApiEndpoints(
 
 /* ── 页面路由自动发现 ── */
 
+/** 各面板实际存在的页面（[panel] 路由的有效展开映射）。 */
+const PANEL_PAGES: Record<string, string[]> = {
+  admin: [
+    "dashboard", "users", "roles", "articles", "categories",
+    "cases", "universities", "students", "contacts",
+    "general-settings", "web-settings", "documents",
+  ],
+  portal: ["overview", "profile", "documents"],
+}
+
 /** 扫描 frontend/app/[locale] 目录发现所有页面路由。 */
 function discoverRoutes(): string[] {
   const frontendDir = path.resolve(__dirname, "..")
@@ -54,16 +64,19 @@ function discoverRoutes(): string[] {
   for (const p of pages) {
     let route = p.replace(/^\[locale\]\//, "").replace(/\/page\.tsx$/, "")
     // 移除路由组（如 (public)）
-    route = route.replace(/\([^)]+\)\//g, "")
+    route = route.replace(/\([^)]+\)\/?/g, "")
     if (route === "") {
       routes.push("/")
       continue
     }
-    // 展开 [panel] 为 admin 和 portal
+    // 展开 [panel] — 仅生成面板实际拥有的页面
     if (route.startsWith("[panel]/")) {
       const sub = route.replace("[panel]/", "")
-      routes.push(`/admin/${sub}`)
-      routes.push(`/portal/${sub}`)
+      for (const [panel, validPages] of Object.entries(PANEL_PAGES)) {
+        if (validPages.includes(sub)) {
+          routes.push(`/${panel}/${sub}`)
+        }
+      }
     } else {
       routes.push(`/${route}`)
     }

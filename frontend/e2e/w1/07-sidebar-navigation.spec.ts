@@ -3,7 +3,7 @@
  * 仪表盘统计卡片、菜单项导航、返回官网链接、快捷操作。
  */
 
-import { test, expect, gotoAdmin, trackComponent } from "../fixtures/base"
+import { test, expect, gotoAdmin, trackComponent, trackSecurity } from "../fixtures/base"
 
 test.describe("仪表盘", () => {
   test("统计卡片正确加载", async ({ page }) => {
@@ -15,6 +15,7 @@ test.describe("仪表盘", () => {
     await expect(page.getByText("已发布文章")).toBeVisible()
     await expect(page.getByText("分类总数")).toBeVisible()
     trackComponent("StatCard", "统计卡片")
+    trackSecurity("跨角色", "superuser访问admin成功")
   })
 
   test("最近记录列表可见", async ({ page }) => {

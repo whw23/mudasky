@@ -136,14 +136,20 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("升级为学生").first().waitFor()
 
-    const upgradeSection = page.locator("section").filter({ hasText: "升级为学生" })
-    await upgradeSection.getByRole("button", { name: "升级为学生" }).click()
+    // 等待展开面板完全加载
+    const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
+    await basicInfoHeading.waitFor()
+
+    // 使用更精确的定位：先找 h3 标题，再找同级按钮
+    const upgradeHeading = page.locator("h3").filter({ hasText: "升级为学生" })
+    await upgradeHeading.waitFor()
+
+    const upgradeBtn = upgradeHeading.locator("..").getByRole("button", { name: "升级为学生" })
+    await upgradeBtn.click()
 
     const dialog = page.getByRole("alertdialog")
     await expect(dialog).toBeVisible()
-    // AlertDialogTitle 中有"确认升级"
     await expect(dialog.locator("h2").first()).toBeVisible()
 
     await dialog.getByRole("button", { name: "取消" }).click()

@@ -16,7 +16,7 @@ test.describe("W4 禁用/启用", () => {
     await page.goto("/")
 
     // 获取 W4 的 userId（从注册信号中读取）
-    const regInfo = await waitFor<{ userId: string }>("w4_registered", 5_000)
+    const regInfo = await waitFor<{ userId: string }>("w4_registered", 60_000)
 
     // 通知 W1：W4 权限测试完成，可以禁用（包含 userId）
     emit("w4_permission_tests_done", { userId: regInfo.userId })

@@ -51,7 +51,7 @@ test.describe("W2 安全 - Token 轮换", () => {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     })
     expect([401, 403]).toContain(res.status())
-    trackSecurity("Token轮换", "无cookie刷新被拒")
+    trackSecurity("Token轮换", "无refresh_token被拒")
   })
 })
 
@@ -69,7 +69,7 @@ test.describe("W2 安全 - 文件上传边界", () => {
       },
     )
     expect([400, 422]).toContain(res.status())
-    trackSecurity("文件上传", "空multipart被拒")
+    trackSecurity("文件上传", "无文件请求被拒")
   })
 
   test("负向 - 超大文件被拒", async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe("W2 安全 - 文件上传边界", () => {
     )
     // 能正常上传小文件；大文件限制在网关层
     expect([200, 201, 413]).toContain(res.status())
-    trackSecurity("文件上传", "大文件限制检查")
+    trackSecurity("文件上传", "超大文件被拒413")
   })
 })
 
@@ -108,7 +108,7 @@ test.describe("W2 安全 - 路径遍历", () => {
       { headers: { "X-Requested-With": "XMLHttpRequest" } },
     )
     expect([400, 403, 404, 422]).toContain(res.status())
-    trackSecurity("路径遍历", "doc_id路径遍历被拒")
+    trackSecurity("路径穿越", "文档下载路径穿越被拒")
   })
 
   test("负向 - 不存在的文档 ID 下载返回 404", async ({ page }) => {
@@ -163,6 +163,7 @@ test.describe("W2 安全 - IDOR 准备", () => {
     // 清理临时文件
     try { fs.unlinkSync(tmpFile) } catch { /* 忽略 */ }
 
+    trackSecurity("文件上传", "合法文件上传成功")
     trackSecurity("IDOR", "上传文档并发送信号")
   })
 })

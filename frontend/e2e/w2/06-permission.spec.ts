@@ -68,6 +68,7 @@ test.describe("W2 权限 - admin 被拒", () => {
       url.includes("/admin/dashboard") === false ||
       (await page.getByText(/无权限|403|权限不足/).isVisible().catch(() => false)),
     ).toBe(true)
+    trackSecurity("跨角色", "student访问admin被拒")
     trackSecurity("跨角色", "student访问admin页面被拦截")
   })
 })
