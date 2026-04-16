@@ -1,17 +1,19 @@
 /**
  * Playwright 全局初始化。
- * 登录管理员 → 保存 storageState → 种子测试数据 → 预热入口页。
+ * 用 e2e_test_superuser 登录 → 保存 W1 storageState → 清理信号 → 预热。
  */
 
 import { chromium, type FullConfig } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"
+import { cleanup as cleanupSignals } from "./helpers/signal"
 
-const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
+const AUTH_DIR = path.join(__dirname, ".auth")
+const W1_AUTH = path.join(AUTH_DIR, "w1.json")
 const BASE = process.env.BASE_URL || "http://localhost"
-const ADMIN_USER = process.env.E2E_ADMIN_USER || "mudasky"
-const ADMIN_PASS = process.env.E2E_ADMIN_PASS || "mudasky@12321."
-const INTERNAL_SECRET = process.env.INTERNAL_SECRET || ""
+const ADMIN_USER = "e2e_test_superuser"
+const ADMIN_PASS = "e2e_test_superuser@12321."
+
 const WARMUP_PAGES = [
   "/",
   "/admin/dashboard",
@@ -30,49 +32,12 @@ const WARMUP_PAGES = [
   "/portal/documents",
 ]
 
-/** 测试用户（不以 E2E 开头，避免被 teardown 删除） */
-const TEST_USERS = [
-  { phone: "+8613900000088", username: "test-visitor", targetRole: "visitor" },
-  { phone: "+8613900000077", username: "test-student", targetRole: "student" },
-]
-
-/** 从 storageState 提取 access_token */
-function getToken(): string {
-  const state = JSON.parse(fs.readFileSync(AUTH_FILE, "utf-8"))
-  return state.cookies?.find((c: { name: string }) => c.name === "access_token")?.value ?? ""
-}
-
-/** 拼接 cookie 字符串（access_token + internal_secret） */
-function buildCookie(...extra: string[]): string {
-  const parts = [`access_token=${getToken()}`]
-  if (INTERNAL_SECRET) parts.push(`internal_secret=${INTERNAL_SECRET}`)
-  parts.push(...extra.filter(Boolean))
-  return parts.join("; ")
-}
-
-/** 管理员 POST */
-async function apiPost(apiPath: string, body: unknown) {
-  return fetch(`${BASE}${apiPath}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", Cookie: buildCookie() },
-    body: JSON.stringify(body),
-  })
-}
-
-/** 管理员 GET */
-async function apiGet(apiPath: string) {
-  return fetch(`${BASE}${apiPath}`, {
-    headers: { "X-Requested-With": "XMLHttpRequest", Cookie: buildCookie() },
-  })
-}
-
 async function globalSetup(_config: FullConfig) {
-  const dir = path.dirname(AUTH_FILE)
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  if (!fs.existsSync(AUTH_DIR)) fs.mkdirSync(AUTH_DIR, { recursive: true })
 
   /* 如果已有有效的 auth 文件（1 小时内），跳过 */
-  if (fs.existsSync(AUTH_FILE)) {
-    const stat = fs.statSync(AUTH_FILE)
+  if (fs.existsSync(W1_AUTH)) {
+    const stat = fs.statSync(W1_AUTH)
     if (Date.now() - stat.mtimeMs < 3600_000) return
   }
 
@@ -116,7 +81,7 @@ async function globalSetup(_config: FullConfig) {
     if (res) {
       if (res.status() !== 200) {
         const body = await res.json().catch(() => ({}))
-        await page.screenshot({ path: path.join(dir, "login-failed.png") })
+        await page.screenshot({ path: path.join(AUTH_DIR, "login-failed.png") })
         throw new Error(`登录 API 返回 ${res.status()}: ${JSON.stringify(body)}`)
       }
       break
@@ -126,103 +91,19 @@ async function globalSetup(_config: FullConfig) {
   try {
     await dialog.waitFor({ state: "hidden", timeout: 10_000 })
   } catch {
-    await page.screenshot({ path: path.join(dir, "login-failed.png") })
+    await page.screenshot({ path: path.join(AUTH_DIR, "login-failed.png") })
     throw new Error("登录失败 — 截图已保存到 e2e/.auth/login-failed.png")
   }
 
-  await context.storageState({ path: AUTH_FILE })
+  await context.storageState({ path: W1_AUTH })
   await browser.close()
 
-  /* ── 种子测试数据 ── */
-  const log: string[] = []
-
-  // 1. 获取角色列表
-  const rolesRes = await apiGet("/api/admin/roles/meta/list")
-  const roles = rolesRes.ok ? (await rolesRes.json() as { id: string; name: string }[]) : []
-  const roleMap = Object.fromEntries(roles.map((r) => [r.name, r.id]))
-
-  // 2. 注册测试用户并分配角色
-  for (const { phone, username, targetRole } of TEST_USERS) {
-    // 注册（不带管理员 cookie）
-    try {
-      const smsCookie = INTERNAL_SECRET ? `internal_secret=${INTERNAL_SECRET}` : ""
-      const smsRes = await fetch(`${BASE}/api/auth/sms-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-          ...(smsCookie && { Cookie: smsCookie }),
-        },
-        body: JSON.stringify({ phone }),
-      })
-      if (smsRes.ok) {
-        const { code } = await smsRes.json() as { code: string }
-        const regRes = await fetch(`${BASE}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-          body: JSON.stringify({ phone, code, username }),
-        })
-        log.push(`register ${username}: ${regRes.status}`)
-      }
-    } catch { /* 已注册 */ }
-
-    // 查找用户并分配目标角色
-    try {
-      const usersRes = await apiGet(`/api/admin/users/list?keyword=${encodeURIComponent(phone.slice(-4))}`)
-      if (usersRes.ok) {
-        const data = await usersRes.json() as { items: { id: string; phone: string; role_name: string }[] }
-        const user = data.items?.find((u) => u.phone === phone)
-        if (user && user.role_name !== targetRole && roleMap[targetRole]) {
-          const r = await apiPost("/api/admin/users/list/detail/assign-role", {
-            user_id: user.id, role_id: roleMap[targetRole],
-          })
-          log.push(`assign ${username}→${targetRole}: ${r.status}`)
-        } else if (user) {
-          log.push(`${username} already ${user.role_name}`)
-        }
-      }
-    } catch { log.push(`assign ${username}: error`) }
-  }
-
-  // 3. 创建文章（每个分类一篇）
-  try {
-    const catRes = await apiGet("/api/admin/categories/list")
-    if (catRes.ok) {
-      const cats = await catRes.json() as { id: string; name: string; slug: string }[]
-      for (const cat of Array.isArray(cats) ? cats : []) {
-        const r = await apiPost("/api/admin/articles/list/create", {
-          title: `E2E文章-${cat.name}`, slug: `e2e-${cat.slug}-${Date.now()}`,
-          category_id: cat.id, content_type: "markdown", content: "E2E测试", status: "published",
-        })
-        log.push(`article ${cat.slug}: ${r.status}`)
-      }
-    }
-  } catch { log.push("articles: error") }
-
-  // 4. 创建案例
-  try {
-    const r = await apiPost("/api/admin/cases/list/create", {
-      student_name: "E2E案例学生", university: "E2E大学", program: "E2E专业",
-      year: 2026, testimonial: "E2E感言",
-    })
-    log.push(`case: ${r.status}`)
-  } catch { log.push("case: error") }
-
-  // 5. 创建院校
-  try {
-    const r = await apiPost("/api/admin/universities/list/create", {
-      name: `E2E测试大学${Date.now()}`, name_en: "E2E Test Uni",
-      country: "德国", city: "柏林", programs: ["计算机", "机械"], description: "E2E测试",
-    })
-    log.push(`university: ${r.status}`)
-  } catch { log.push("university: error") }
-
-  // eslint-disable-next-line no-console
-  console.log("[global-setup] seed:", log.join(", "))
+  /* ── 清理信号 ── */
+  await cleanupSignals()
 
   /* ── 预热入口页 ── */
   const browser2 = await chromium.launch()
-  const ctx2 = await browser2.newContext({ locale: "zh-CN", storageState: AUTH_FILE })
+  const ctx2 = await browser2.newContext({ locale: "zh-CN", storageState: W1_AUTH })
   const page2 = await ctx2.newPage()
   for (const p of WARMUP_PAGES) {
     await page2.goto(`${BASE}${p}`, { waitUntil: "load", timeout: 60_000 })
