@@ -218,7 +218,28 @@ INTERNAL_SECRET=<your-secret>
 
 1. `env/` 加入 `.gitignore`
 2. `git rm --cached env/`（从跟踪中移除，保留本地文件）
-3. 转公开仓库前用 `git filter-repo` 清除 env/ 的 git 历史
+3. 用 `git filter-repo` 从整个 git 历史中彻底删除敏感数据：
+
+```bash
+# 安装 git-filter-repo
+pip install git-filter-repo
+
+# 删除 env/ 目录的所有历史
+git filter-repo --path env/ --invert-paths
+
+# 删除 seed_user.py 中硬编码密码的历史版本
+# （改为环境变量后，旧版本仍在历史中）
+git filter-repo --path backend/scripts/init/seed_user.py --invert-paths
+
+# 删除 seed_config.py 中硬编码联系方式的历史版本
+git filter-repo --path backend/scripts/init/seed_config.py --invert-paths
+```
+
+注意：
+- 重写历史后所有 commit hash 改变，需要 `git push --force` 所有分支
+- 其他人的本地仓库需要重新 clone
+- 执行前备份仓库
+- seed_user.py 和 seed_config.py 删历史后需要重新提交新版本（从环境变量读取的版本）
 
 ### 5. .dockerignore 补全
 
@@ -262,7 +283,6 @@ api/tests/
 - Docker 镜像加密（registry 级别）— 过度保护
 - 硬件指纹绑定 — 增加客户部署复杂度
 - 代码签名 — 目前不需要
-- git 历史清理 — 在"GitHub 转公开仓库"TODO 中做
 
 ## 文件清单
 
@@ -278,4 +298,7 @@ api/tests/
 | 修改 | `.github/workflows/build.yml`（Secrets 注入 + scp env） |
 | 修改 | `frontend/next.config.ts`（确认 source map 关闭） |
 | 修改 | `gateway/nginx.conf`（lua_file 路径改 .luac） |
+| 修改 | `backend/scripts/init/seed_user.py`（从环境变量读取用户名/密码/手机号） |
+| 修改 | `backend/scripts/init/seed_config.py`（联系方式从环境变量读取） |
 | 删除 | `env/*.env` 从 git 跟踪（保留本地文件） |
+| 清理 | `git filter-repo` 删除 env/、seed_user.py、seed_config.py 的历史 |
