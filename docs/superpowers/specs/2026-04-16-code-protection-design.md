@@ -1,4 +1,4 @@
-# 代码混淆与知识产权保护 + 镜像压缩 + GitHub Secrets 设计
+# 代码混淆与知识产权保护 + 镜像压缩 + GitHub Secrets + 阿里云短信 设计
 
 ## 背景
 
@@ -300,7 +300,122 @@ EOF
 
 清理后由 CI/CD 重新部署：新镜像（混淆后）+ 新 env 文件（从 Secrets 生成）+ 新数据库（重新初始化种子数据）。
 
-### 8. 验证清单
+### 8. 阿里云短信对接
+
+当前 `backend/shared/app/sms/__init__.py` 是存根实现。改为对接阿里云短信 SDK。
+
+#### 8.1 依赖
+
+```
+alibabacloud-dysmsapi20170525
+alibabacloud-tea-openapi
+```
+
+添加到 `backend/shared/pyproject.toml` 的 dependencies。
+
+#### 8.2 环境变量
+
+| 变量 | 说明 |
+|------|------|
+| `SMS_ACCESS_KEY_ID` | 阿里云 AccessKey ID |
+| `SMS_ACCESS_KEY_SECRET` | 阿里云 AccessKey Secret |
+| `SMS_SIGN_NAME` | 短信签名（在阿里云控制台申请） |
+| `SMS_TEMPLATE_CODE` | 短信模板 ID（验证码模板） |
+| `SMS_REGION` | 区域，默认 `cn-hangzhou` |
+
+全部通过环境变量注入，GitHub Secrets 管理。
+
+#### 8.3 实现
+
+```python
+"""短信发送模块。
+
+生产环境对接阿里云短信，DEBUG 模式跳过发送。
+"""
+
+import json
+import logging
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+_client = None
+
+def _get_client():
+    """懒加载阿里云短信客户端。"""
+    global _client
+    if _client is None:
+        from alibabacloud_dysmsapi20170525.client import Client
+        from alibabacloud_tea_openapi.models import Config
+
+        config = Config(
+            access_key_id=settings.SMS_ACCESS_KEY_ID,
+            access_key_secret=settings.SMS_ACCESS_KEY_SECRET,
+            region_id=settings.SMS_REGION or "cn-hangzhou",
+        )
+        _client = Client(config)
+    return _client
+
+async def send_sms_code(phone: str, code: str) -> bool:
+    """发送短信验证码。
+
+    DEBUG 模式下只打日志不发送。
+    手机号需要去掉国家码前缀（阿里云只接受不含 +86 的号码）。
+    """
+    if settings.DEBUG:
+        logger.info("发送短信验证码（DEBUG 模式）phone=%s code=%s", phone, code)
+        return True
+
+    # 去掉 +86 前缀
+    clean_phone = phone.lstrip("+")
+    if clean_phone.startswith("86"):
+        clean_phone = clean_phone[2:]
+
+    try:
+        from alibabacloud_dysmsapi20170525.models import SendSmsRequest
+
+        request = SendSmsRequest(
+            phone_numbers=clean_phone,
+            sign_name=settings.SMS_SIGN_NAME,
+            template_code=settings.SMS_TEMPLATE_CODE,
+            template_param=json.dumps({"code": code}),
+        )
+        response = _get_client().send_sms(request)
+
+        if response.body.code == "OK":
+            logger.info("短信发送成功: phone=%s biz_id=%s", phone, response.body.biz_id)
+            return True
+
+        logger.error("短信发送失败: phone=%s code=%s msg=%s", phone, response.body.code, response.body.message)
+        return False
+    except Exception as e:
+        logger.error("短信发送异常: phone=%s error=%s", phone, str(e))
+        return False
+```
+
+#### 8.4 配置补充
+
+在 `backend/shared/app/core/config.py` 的 Settings 中添加：
+
+```python
+SMS_ACCESS_KEY_ID: str = ""
+SMS_ACCESS_KEY_SECRET: str = ""
+SMS_SIGN_NAME: str = ""
+SMS_TEMPLATE_CODE: str = ""
+SMS_REGION: str = "cn-hangzhou"
+```
+
+#### 8.5 GitHub Secrets 补充
+
+在 4.1 的 Secrets 表中已包含 `SMS_ACCESS_KEY_ID` 和 `SMS_ACCESS_KEY_SECRET`。额外添加：
+
+| Secret Name | 说明 |
+|-------------|------|
+| `SMS_SIGN_NAME` | 短信签名 |
+| `SMS_TEMPLATE_CODE` | 验证码模板 ID |
+
+### 9. 验证清单
 
 部署后验证：
 
