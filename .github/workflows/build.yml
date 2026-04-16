@@ -121,11 +121,21 @@ jobs:
 
     steps:
       - name: 清理 ghcr.io 旧版本
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          PACKAGE: ${{ matrix.package }}
+        run: |
+          # 获取所有版本（按创建时间降序），跳过最新 1 个，删除其余
+          gh api \
+            "users/${OWNER}/packages/container/${PACKAGE}/versions" \
+            --paginate --jq '.[].id' \
+          | tail -n +2 \
+          | while read -r vid; do
+              gh api --method DELETE \
+                "users/${OWNER}/packages/container/${PACKAGE}/versions/${vid}" \
+                2>/dev/null || true
+            done
 
   deploy:
     needs: [detect-changes, build-and-push]
@@ -198,25 +208,33 @@ jobs:
           # 去除 heredoc 产生的前导空格
           sed -i 's/^[[:space:]]*//' env/*.env
 
+      - name: 配置 SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+        env:
+          SSH_AUTH_SOCK: ""
+
       - name: 同步部署配置到服务器
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          port: ${{ secrets.SERVER_PORT }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/init.sql,env/"
-          target: "~/mudasky"
-          overwrite: true
+        env:
+          SSH_DEST: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+          SSH_OPTS: -P ${{ secrets.SERVER_PORT }} -i ~/.ssh/deploy_key
+        run: |
+          # 确保服务器目录结构存在
+          ssh -p ${{ secrets.SERVER_PORT }} -i ~/.ssh/deploy_key ${SSH_DEST} \
+            "mkdir -p ~/mudasky/db ~/mudasky/env"
+
+          scp ${SSH_OPTS} docker-compose.yml ${SSH_DEST}:~/mudasky/
+          scp ${SSH_OPTS} db/init.sql ${SSH_DEST}:~/mudasky/db/
+          scp ${SSH_OPTS} env/*.env ${SSH_DEST}:~/mudasky/env/
 
       - name: 部署到服务器
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          port: ${{ secrets.SERVER_PORT }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
+        run: |
+          ssh -p ${{ secrets.SERVER_PORT }} -i ~/.ssh/deploy_key \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} /bin/bash << EOF
+            set -e
             cd ~/mudasky
 
             # 登录 ghcr.io
@@ -228,14 +246,14 @@ jobs:
             # 持久化环境变量，重启后不丢失
             DB_VER="${{ steps.version.outputs.tag }}"
             grep -q '^DB_VERSION=' .env 2>/dev/null \
-              && sed -i "s/^DB_VERSION=.*/DB_VERSION=${DB_VER}/" .env \
-              || echo "DB_VERSION=${DB_VER}" >> .env
+              && sed -i "s/^DB_VERSION=.*/DB_VERSION=\${DB_VER}/" .env \
+              || echo "DB_VERSION=\${DB_VER}" >> .env
 
             DB_PORT="${{ secrets.DB_EXTERNAL_PORT }}"
-            if [ -n "$DB_PORT" ]; then
+            if [ -n "\${DB_PORT}" ]; then
               grep -q '^DB_EXTERNAL_PORT=' .env 2>/dev/null \
-                && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=${DB_PORT}/" .env \
-                || echo "DB_EXTERNAL_PORT=${DB_PORT}" >> .env
+                && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=\${DB_PORT}/" .env \
+                || echo "DB_EXTERNAL_PORT=\${DB_PORT}" >> .env
             fi
 
             # 滚动更新
@@ -248,3 +266,4 @@ jobs:
             sleep 10
             curl -sf http://localhost/api/health || exit 1
             echo "部署成功"
+          EOF
