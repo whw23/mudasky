@@ -152,10 +152,12 @@ function wrapApiRequest(page: Page) {
 }
 
 /** 检查 storageState 文件是否存在。W2/W3/W4 的 02+ 测试依赖 01-register 创建的文件。 */
-function checkStorageState(testInfo: { project: { name: string } }) {
+function checkStorageState(testInfo: { project: { name: string }; file: string }) {
   const project = testInfo.project.name
+  // register project 和 W1/shared 不检查
+  if (project.endsWith("-register") || project.startsWith("w1") || project === "shared") return
   const workerMatch = project.match(/^w([234])/)
-  if (!workerMatch) return // W1 和 shared 不检查
+  if (!workerMatch) return
 
   const authFile = path.join(__dirname, "..", ".auth", `w${workerMatch[1]}.json`)
   if (!fs.existsSync(authFile)) {
