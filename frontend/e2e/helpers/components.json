@@ -1,0 +1,23 @@
+[
+  { "component": "LoginModal", "elements": ["登录按钮", "tab切换", "用户名输入", "密码输入", "登录提交", "关闭按钮"] },
+  { "component": "RegisterModal", "elements": ["手机号输入", "验证码输入", "获取验证码", "注册提交"] },
+  { "component": "UserExpandPanel", "elements": ["状态切换", "角色下拉", "保存角色", "配额输入", "保存配额", "密码重置", "强制登出", "删除用户"] },
+  { "component": "StudentExpandPanel", "elements": ["激活checkbox", "备注输入", "保存编辑", "顾问分配", "降级按钮", "确认降级"] },
+  { "component": "ContactExpandPanel", "elements": ["状态下拉", "保存状态", "备注输入", "添加备注", "升级学生", "确认升级"] },
+  { "component": "ConfigEditDialog", "elements": ["文本输入", "保存", "取消"] },
+  { "component": "ArticleEditor", "elements": ["标题输入", "内容编辑", "分类选择", "状态切换", "保存"] },
+  { "component": "RoleDialog", "elements": ["角色名输入", "权限树勾选", "保存"] },
+  { "component": "CategoryDialog", "elements": ["分类名输入", "slug输入", "保存"] },
+  { "component": "CaseDialog", "elements": ["学生名输入", "大学输入", "保存"] },
+  { "component": "UniversityDialog", "elements": ["院校名输入", "国家选择", "保存"] },
+  { "component": "DocumentUpload", "elements": ["上传按钮", "文件选择"] },
+  { "component": "DocumentList", "elements": ["分类tab", "列表项"] },
+  { "component": "ProfileInfo", "elements": ["修改用户名", "修改密码", "修改手机号"] },
+  { "component": "TwoFactorSettings", "elements": ["启用SMS", "禁用2FA"] },
+  { "component": "SessionManagement", "elements": ["设备列表", "踢下线按钮"] },
+  { "component": "UniversitySearch", "elements": ["搜索框", "国家下拉", "重置按钮"] },
+  { "component": "LocaleSwitcher", "elements": ["语言切换下拉"] },
+  { "component": "ConsultButton", "elements": ["立即咨询按钮"] },
+  { "component": "AdminSidebar", "elements": ["所有菜单链接", "返回官网"] },
+  { "component": "UserSidebar", "elements": ["所有菜单链接", "返回官网"] }
+]
