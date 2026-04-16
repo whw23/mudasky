@@ -38,14 +38,17 @@ export default defineConfig({
     {
       name: "w2-student",
       testMatch: "w2/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w2.json") },
     },
     {
       name: "w3-advisor",
       testMatch: "w3/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w3.json") },
     },
     {
       name: "w4-visitor",
       testMatch: "w4/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w4.json") },
     },
     {
       name: "shared",
