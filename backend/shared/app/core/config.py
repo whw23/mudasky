@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     SMS_ACCESS_KEY_SECRET: str = ""
     SMS_SIGN_NAME: str = ""
     SMS_TEMPLATE_CODE: str = ""
+    SMS_REGION: str = "cn-hangzhou"
 
     # 环境
     DEBUG: bool = False
