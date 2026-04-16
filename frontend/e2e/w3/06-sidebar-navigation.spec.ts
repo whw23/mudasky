@@ -59,7 +59,7 @@ test.describe("W3 侧边栏导航", () => {
     await gotoAdmin(page, "/admin/dashboard")
     trackComponent("AdminSidebar", "返回官网")
 
-    const backLink = page.locator("aside").getByText("返回官网")
+    const backLink = page.locator("aside").getByText("返回官网").first()
     await expect(backLink).toBeVisible()
 
     await backLink.click()

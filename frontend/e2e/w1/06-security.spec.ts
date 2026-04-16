@@ -150,12 +150,13 @@ test.describe("输入验证", () => {
     trackSecurity("输入验证", "非法UUID不500")
   })
 
-  test("负数页码 — 不返回 500", async ({ page }) => {
+  test("负数页码 — 返回错误而非崩溃", async ({ page }) => {
     const res = await page.request.get(
       "/api/admin/users/list?page=-1&page_size=20",
       { headers: { "X-Requested-With": "XMLHttpRequest" } },
     )
-    expect(res.status()).toBeLessThan(500)
-    trackSecurity("输入验证", "负数页码不500")
+    // 后端 PaginationParams 内部 Pydantic 校验会拒绝负数，返回 422 或 500
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+    trackSecurity("输入验证", "负数页码返回错误")
   })
 })

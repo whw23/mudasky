@@ -1,7 +1,7 @@
 /**
  * W2 两步验证测试。
  * 覆盖启用流程（方式选择 → 确认/取消）、负向测试。
- * ProfileInfo 组件集成了 2FA：启用 → 选方式 → 确认。
+ * ProfileInfo 组件集成了 2FA：点击"启用" → 选方式 → 确认。
  */
 
 import { test, expect, gotoAdmin, trackComponent } from "../fixtures/base"
@@ -38,27 +38,30 @@ test.describe("W2 两步验证", () => {
     // 未启用状态应显示"启用"按钮
     await expect(page.getByText("未启用两步验证")).toBeVisible()
 
-    // 点击启用进入方式选择
+    // 点击启用进入方式选择（ProfileInfo 中的 ghost button）
     await page.getByRole("button", { name: "启用" }).click()
 
-    // 应显示方式选择按钮
+    // 应显示方式选择按钮：验证器应用 / 短信验证
     const smsBtn = page.getByRole("button", { name: "短信验证" })
     await expect(smsBtn).toBeVisible()
     await smsBtn.click()
 
-    // 获取验证码
+    // SMS 2FA 表单出现 — 获取验证码并填入
+    // 使用 SmsCodeButton 发送验证码（或通过 helper 直接获取）
     const code = await getSmsCode(page, W2_PHONE)
-    await page.getByPlaceholder("请输入验证码").fill(code)
+    // 定位 SMS 2FA 表单中的验证码输入框（避免与密码修改等区域冲突）
+    const smsForm = page.locator("form").filter({ hasText: "确认启用" })
+    await smsForm.getByPlaceholder("请输入验证码").fill(code)
 
     // 确认启用
-    await page.getByRole("button", { name: "确认启用" }).click()
+    await smsForm.getByRole("button", { name: "确认启用" }).click()
     await expect(page.getByText("两步验证已启用")).toBeVisible()
 
     trackComponent("TwoFactorSettings", "启用SMS两步验证")
   })
 
   test("验证 2FA 已启用状态", async ({ page }) => {
-    // 刷新后检查状态（可能含"（短信验证）"后缀）
+    // 刷新后检查状态（可能含方式后缀）
     const enabledText = page.getByText("已启用两步验证")
     await expect(enabledText).toBeVisible()
     trackComponent("TwoFactorSettings", "已启用状态显示")
@@ -107,7 +110,7 @@ test.describe("W2 两步验证", () => {
     // 方式选择界面出现
     await expect(page.getByRole("button", { name: "短信验证" })).toBeVisible()
 
-    // 取消
+    // 取消（ProfileInfo 的取消按钮在 2fa editing 区域）
     await page.getByRole("button", { name: "取消" }).click()
 
     // 应回到未启用状态

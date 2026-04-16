@@ -76,7 +76,7 @@ test.describe("侧边栏导航", () => {
   test("返回官网链接可见并可点击", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
 
-    const backLink = page.locator("aside").getByText("返回官网")
+    const backLink = page.locator("aside").getByText("返回官网").first()
     await expect(backLink).toBeVisible()
     trackComponent("AdminSidebar", "返回官网链接")
 

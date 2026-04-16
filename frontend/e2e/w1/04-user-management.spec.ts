@@ -10,7 +10,7 @@ import { getSmsCode } from "../helpers/sms"
 const TS = Date.now()
 const XRW = { "X-Requested-With": "XMLHttpRequest" }
 const JSON_HEADERS = { "Content-Type": "application/json", ...XRW }
-const TEMP_PHONE = `1390000${String(TS).slice(-4)}`
+const TEMP_PHONE = `+861390000${String(TS).slice(-4)}`
 const TEMP_USERNAME = `E2E-temp-${TS}`
 
 test.describe("用户管理", () => {
