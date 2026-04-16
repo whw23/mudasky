@@ -167,11 +167,11 @@ jobs:
           SEED_USER_3_PHONE=${{ secrets.SEED_USER_3_PHONE }}
           SEED_USER_E2E_USERNAME=${{ secrets.SEED_USER_E2E_USERNAME }}
           SEED_USER_E2E_PASSWORD=${{ secrets.SEED_USER_E2E_PASSWORD }}
-          CONTACT_ADDRESS=苏州独墅湖大学城林泉街377号公共学院5号楼7楼
-          CONTACT_PHONE=189-1268-6656
-          CONTACT_EMAIL=haoranxuexing@163.com
-          CONTACT_WECHAT=mutu_edu
-          CONTACT_REGISTERED_ADDRESS=中国(江苏)自由贸易试验区苏州片区苏州工业园区苏州大道东398号太平金融大厦5层5112室
+          CONTACT_ADDRESS=${{ vars.CONTACT_ADDRESS }}
+          CONTACT_PHONE=${{ vars.CONTACT_PHONE }}
+          CONTACT_EMAIL=${{ vars.CONTACT_EMAIL }}
+          CONTACT_WECHAT=${{ vars.CONTACT_WECHAT }}
+          CONTACT_REGISTERED_ADDRESS=${{ vars.CONTACT_REGISTERED_ADDRESS }}
           ENVEOF
 
           cat > env/gateway.env << 'ENVEOF'
