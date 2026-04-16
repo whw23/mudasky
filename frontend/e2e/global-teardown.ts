@@ -182,7 +182,7 @@ async function printCoverageReport(cookies: string): Promise<void> {
     ? JSON.parse(fs.readFileSync(securityFile, "utf-8"))
     : []
   const allSecurityKeys = securityDefs.map(
-    (s) => `${s.category}: ${s.scenario}`,
+    (s) => `${s.category}::${s.scenario}`,
   )
 
   /* ── 1. API 覆盖率 ── */

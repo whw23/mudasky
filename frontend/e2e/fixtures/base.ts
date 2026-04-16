@@ -18,33 +18,31 @@ const apiCalls = new Set<string>()
 const visitedRoutes = new Set<string>()
 const componentInteractions = new Set<string>()
 const securityScenarios = new Set<string>()
-let exitRegistered = false
-
-/** 注册进程退出钩子，将覆盖率数据写入磁盘。 */
-function ensureExitHook() {
-  if (exitRegistered) return
-  exitRegistered = true
+/** 将覆盖率数据写入磁盘（每个 test 结束后调用）。 */
+function flushCoverage() {
+  if (
+    apiCalls.size === 0 &&
+    visitedRoutes.size === 0 &&
+    componentInteractions.size === 0 &&
+    securityScenarios.size === 0
+  ) return
 
   const workerId = process.env.TEST_WORKER_INDEX || "0"
+  fs.mkdirSync(COVERAGE_DIR, { recursive: true })
 
-  process.on("exit", () => {
-    if (apiCalls.size === 0 && visitedRoutes.size === 0 && componentInteractions.size === 0 && securityScenarios.size === 0) return
-    fs.mkdirSync(COVERAGE_DIR, { recursive: true })
-
-    const write = (name: string, data: Set<string>) => {
-      if (data.size > 0) {
-        fs.writeFileSync(
-          path.join(COVERAGE_DIR, `${name}-${workerId}.json`),
-          JSON.stringify([...data].sort(), null, 2),
-        )
-      }
+  const write = (name: string, data: Set<string>) => {
+    if (data.size > 0) {
+      fs.writeFileSync(
+        path.join(COVERAGE_DIR, `${name}-${workerId}.json`),
+        JSON.stringify([...data].sort(), null, 2),
+      )
     }
+  }
 
-    write("api", apiCalls)
-    write("routes", visitedRoutes)
-    write("components", componentInteractions)
-    write("security", securityScenarios)
-  })
+  write("api", apiCalls)
+  write("routes", visitedRoutes)
+  write("components", componentInteractions)
+  write("security", securityScenarios)
 }
 
 /** 将 API 路径中的 UUID 替换为 {id}。 */
@@ -54,19 +52,16 @@ function normalizeApiPath(urlPath: string): string {
 
 /** 记录组件交互。 */
 export function trackComponent(component: string, element: string): void {
-  ensureExitHook()
   componentInteractions.add(`${component}::${element}`)
 }
 
 /** 记录安全场景。 */
 export function trackSecurity(category: string, scenario: string): void {
-  ensureExitHook()
   securityScenarios.add(`${category}::${scenario}`)
 }
 
 /** 给 page 绑定覆盖率监听器。 */
 function attachCoverageListeners(page: Page) {
-  ensureExitHook()
 
   page.on("response", (response) => {
     try {
@@ -212,6 +207,7 @@ export const test = pwTest.extend<{
     })
 
     await use(page)
+    flushCoverage()
   },
   adminPage: async ({ page }, use) => {
     await use(page)
