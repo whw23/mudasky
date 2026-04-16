@@ -270,13 +270,56 @@ api/tests/
 
 **总计**：640MB → ~445MB（压缩 30%）。Frontend 压缩最明显（standalone 模式去掉 node_modules）。
 
-### 7. 验证清单
+### 7. 服务器清理
+
+在部署新的混淆镜像之前，彻底清理服务器上的旧数据：
+
+```bash
+ssh mudasky << 'EOF'
+cd ~/mudasky
+
+# 停止并删除所有容器和数据卷
+docker compose down -v
+
+# 删除所有旧镜像
+docker image prune -af
+
+# 删除旧的 env 文件（将由 CI 重新生成）
+rm -f env/*.env
+
+# 删除旧的代码仓库（如有直接 clone 的）
+rm -rf ~/mudasky/.git
+
+# 清理 Docker 构建缓存
+docker builder prune -af
+
+# 清理日志
+docker system prune -af --volumes
+EOF
+```
+
+清理后由 CI/CD 重新部署：新镜像（混淆后）+ 新 env 文件（从 Secrets 生成）+ 新数据库（重新初始化种子数据）。
+
+### 8. 验证清单
 
 部署后验证：
+
+**镜像内容验证：**
 - `docker exec mudasky-frontend-1 ls /app/` — 无 .ts/.tsx 文件
 - `docker exec mudasky-api-1 find /app -name "*.py"` — 无 .py 文件
 - `docker exec mudasky-gateway-1 ls /usr/local/openresty/nginx/lua/` — 只有 .luac 文件
 - `docker exec mudasky-api-1 cat /app/api/auth/router.py` — 文件不存在
+
+**密钥验证：**
+- `env/` 目录不在 git 仓库中
+- `git log --all -- env/` — 无历史记录
+- `git log --all -- backend/scripts/init/seed_user.py` — 旧版本（含硬编码密码）不在历史中
+- 服务器上 `cat ~/mudasky/env/backend.env` — 密钥由 CI 生成，和 Secrets 一致
+
+**服务器清理验证：**
+- 无旧镜像残留（`docker images` 只有最新版本）
+- 无旧数据卷（`docker volume ls` 只有当前使用的）
+- 无旧日志文件
 
 ### 8. 不在范围内
 
@@ -302,3 +345,4 @@ api/tests/
 | 修改 | `backend/scripts/init/seed_config.py`（联系方式从环境变量读取） |
 | 删除 | `env/*.env` 从 git 跟踪（保留本地文件） |
 | 清理 | `git filter-repo` 删除 env/、seed_user.py、seed_config.py 的历史 |
+| 清理 | 服务器上现存的所有网站相关内容（旧镜像、旧 env 文件、数据库、日志等） |
