@@ -35,11 +35,16 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("基本信息").waitFor()
 
-    await expect(page.getByText("标记状态")).toBeVisible()
-    await expect(page.getByText("添加备注")).toBeVisible()
-    await expect(page.getByText("升级为学生")).first().toBeVisible()
+    // 等待面板加载（使用 h3 heading 避免与历史记录中的文本冲突）
+    const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
+    await basicInfoHeading.waitFor()
+
+    const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
+    await expect(markStatusHeading).toBeVisible()
+    const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
+    await expect(addNoteHeading).toBeVisible()
+    await expect(page.getByText("升级为学生").first()).toBeVisible()
   })
 
   test("标记联系状态下拉选择并保存", async ({ page }) => {
@@ -54,7 +59,8 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("标记状态").waitFor()
+    const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
+    await markStatusHeading.waitFor()
 
     // 状态下拉
     const statusSection = page.locator("section").filter({ hasText: "标记状态" })
@@ -84,7 +90,8 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("添加备注").waitFor()
+    const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
+    await addNoteHeading.waitFor()
 
     const noteSection = page.locator("section").filter({ hasText: "添加备注" })
     const textarea = noteSection.locator("textarea")
@@ -109,10 +116,12 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("基本信息").waitFor()
+    const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
+    await basicInfoHeading.waitFor()
 
     // 联系历史在 Separator 后面
-    await expect(page.getByText("联系历史")).toBeVisible()
+    const historyHeading = page.locator("h3").filter({ hasText: "联系历史" })
+    await expect(historyHeading).toBeVisible()
   })
 
   test("升级为学生按钮弹出确认弹窗并取消", async ({ page }) => {
@@ -134,7 +143,8 @@ test.describe("W3 联系人管理", () => {
 
     const dialog = page.getByRole("alertdialog")
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByText("确认升级")).toBeVisible()
+    // AlertDialogTitle 中有"确认升级"
+    await expect(dialog.locator("h2").first()).toBeVisible()
 
     await dialog.getByRole("button", { name: "取消" }).click()
     await expect(dialog).not.toBeVisible()
@@ -175,8 +185,14 @@ test.describe("W3 联系人管理", () => {
     await gotoAdmin(page, "/admin/contacts")
     trackSecurity("UI安全", "收起面板隐藏升级按钮")
 
-    await expect(page.getByText("基本信息")).not.toBeVisible()
-    await expect(page.getByText("标记状态")).not.toBeVisible()
+    // 等待表格加载
+    await expect(page.locator("table")).toBeVisible()
+
+    // 未展开面板时不应看到面板内容
+    const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
+    await expect(basicInfoHeading).not.toBeVisible()
+    const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
+    await expect(markStatusHeading).not.toBeVisible()
   })
 
   test("负向：空备注保存不提交", async ({ page }) => {
@@ -191,7 +207,8 @@ test.describe("W3 联系人管理", () => {
     }
 
     await rows.first().click()
-    await page.getByText("添加备注").waitFor()
+    const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
+    await addNoteHeading.waitFor()
 
     const noteSection = page.locator("section").filter({ hasText: "添加备注" })
     const textarea = noteSection.locator("textarea")

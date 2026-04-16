@@ -10,8 +10,8 @@ test.describe("W4 搜索筛选", () => {
     await page.goto("/universities")
     await page.locator("main").waitFor()
 
-    // 搜索输入框
-    const searchInput = page.locator("main input[type='text']").first()
+    // 搜索输入框（shadcn Input 渲染为 input 元素）
+    const searchInput = page.getByPlaceholder("搜索院校名称、城市...")
     await expect(searchInput).toBeVisible()
 
     await searchInput.fill("Test")
@@ -45,7 +45,7 @@ test.describe("W4 搜索筛选", () => {
     await page.locator("main").waitFor()
 
     // 先输入搜索词触发筛选
-    const searchInput = page.locator("main input[type='text']").first()
+    const searchInput = page.getByPlaceholder("搜索院校名称、城市...")
     await searchInput.fill("SomeUniversity")
 
     // 等待防抖后重置按钮出现
@@ -62,21 +62,21 @@ test.describe("W4 搜索筛选", () => {
 
   test("语言切换器切换语言", async ({ page }) => {
     await page.goto("/")
-    await page.locator("header").waitFor()
+    await page.locator("[role='banner']").waitFor()
 
-    // 语言切换下拉
-    const localeSelect = page.locator("header select")
-    const visible = await localeSelect.isVisible()
+    // 语言切换下拉（在 banner 区域内）
+    const localeSelect = page.locator("[role='banner'] select")
+    const visible = await localeSelect.isVisible().catch(() => false)
 
     if (visible) {
       // 切换到英文
       await localeSelect.selectOption("en")
-      await page.waitForURL(/\/en\//)
+      await page.waitForURL(/\/en/)
 
       // 切换回中文
-      const localeSelect2 = page.locator("header select")
+      const localeSelect2 = page.locator("[role='banner'] select")
       await localeSelect2.selectOption("zh")
-      await page.waitForURL(/\/zh\/|^\/[^a-z]/)
+      await page.waitForURL(/\/zh|^\/$/)
 
       trackComponent("LocaleSwitcher", "语言切换下拉")
     }

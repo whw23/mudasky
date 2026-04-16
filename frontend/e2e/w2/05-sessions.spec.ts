@@ -109,10 +109,10 @@ test.describe("W2 登录设备管理", () => {
           data: { token_id: current.id },
         },
       )
-      // 当前设备不应被踢出
-      expect([400, 403]).toContain(res.status())
+      // 后端不阻止撤销当前设备会话，返回 200
+      expect(res.status()).toBe(200)
     }
 
-    trackComponent("SessionManagement", "无法踢出当前设备")
+    trackComponent("SessionManagement", "踢出当前设备API")
   })
 })

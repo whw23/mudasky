@@ -73,8 +73,8 @@ test.describe("W2 文档管理", () => {
     // 等待对话框关闭后列表刷新
     await expect(page.getByRole("dialog")).not.toBeVisible()
 
-    // 验证列表中出现文件名（表格在桌面端才显示，需要等待列表加载完成）
-    await expect(page.getByText(fileName).first()).toBeVisible()
+    // 验证列表中出现文件名（桌面端表格 + 移动端卡片各一个元素，取第一个）
+    await expect(page.getByRole("cell", { name: fileName })).toBeVisible()
     trackComponent("DocumentList", "文档列表显示")
 
     fs.unlinkSync(tmpFile)
@@ -124,12 +124,13 @@ test.describe("W2 文档管理", () => {
     await expect(page.getByRole("dialog")).not.toBeVisible()
     fs.unlinkSync(tmpFile)
 
-    // 找到该文件的删除按钮（文件名在 td 中，通过 ancestor::tr 定位到整行）
-    await expect(page.getByText(fileName).first()).toBeVisible()
+    // 找到该文件的删除按钮（通过 cell 定位所在行）
+    const cell = page.getByRole("cell", { name: fileName })
+    await expect(cell).toBeVisible()
 
     // 点击删除并处理 confirm 弹窗
     page.on("dialog", (dialog) => dialog.accept())
-    const row = page.getByText(fileName).first().locator("xpath=ancestor::tr")
+    const row = cell.locator("xpath=ancestor::tr")
     await row.getByRole("button", { name: /删除/ }).click()
 
     // 等待成功提示

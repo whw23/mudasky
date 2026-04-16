@@ -9,11 +9,16 @@ import { emit, waitFor } from "../helpers/signal"
 const XHR = { "X-Requested-With": "XMLHttpRequest" }
 
 test.describe("W4 禁用/启用", () => {
+  test.describe.configure({ mode: "serial" })
+
   test("禁用后 API 返回 401 USER_DISABLED", async ({ page }) => {
     await page.goto("/")
 
-    // 通知 W1：W4 权限测试完成，可以禁用
-    emit("w4_permission_tests_done")
+    // 获取 W4 的 userId（从注册信号中读取）
+    const regInfo = await waitFor<{ userId: string }>("w4_registered", 5_000)
+
+    // 通知 W1：W4 权限测试完成，可以禁用（包含 userId）
+    emit("w4_permission_tests_done", { userId: regInfo.userId })
 
     // 等待 W1 禁用 W4
     await waitFor("w4_disabled", 120_000)
@@ -32,11 +37,14 @@ test.describe("W4 禁用/启用", () => {
       // 可能返回 USER_DISABLED 或 TOKEN_INVALID（取决于实现）
       expect(["USER_DISABLED", "TOKEN_INVALID", "REFRESH_TOKEN_INVALID"]).toContain(body.code)
     }
+
+    // 通知 W1：W4 已验证禁用状态
+    emit("w4_verified_disabled")
     trackSecurity("禁用用户", "禁用后API返回401")
   })
 
   test("禁用后页面访问失败", async ({ page }) => {
-    // 确保已被禁用（依赖上一个测试的信号，但 beforeAll 已等待）
+    // 确保已被禁用（依赖上一个测试的信号）
     await waitFor("w4_disabled", 5_000).catch(() => {})
 
     await page.goto("/")
@@ -62,11 +70,14 @@ test.describe("W4 禁用/启用", () => {
     // 如果 refresh_token 已失效，状态码可能是 401
     if (refreshRes.status() === 200) {
       // 验证可以正常访问公开 API
-      const res = await page.request.get("/api/public/config/site-info", {
+      const res = await page.request.get("/api/public/config/site_info", {
         headers: XHR,
       })
       expect(res.status()).toBe(200)
     }
+
+    // 通知 W1：W4 已验证启用状态
+    emit("w4_verified_enabled")
     trackSecurity("禁用用户", "启用后恢复访问")
   })
 

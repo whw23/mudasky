@@ -88,7 +88,7 @@ test.describe("W4 JWT 安全", () => {
   test("正向：有效 token 访问公开 API 正常", async ({ page }) => {
     // W4 的 storageState 中已有有效 token
     await page.goto("/")
-    const res = await page.request.get("/api/public/config/site-info", {
+    const res = await page.request.get("/api/public/config/site_info", {
       headers: XHR,
     })
     expect(res.status()).toBe(200)

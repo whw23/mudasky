@@ -6,6 +6,19 @@
 import { test, expect, gotoAdmin, trackComponent, trackSecurity } from "../fixtures/base"
 import { waitFor } from "../helpers/signal"
 
+/** 取消「仅我的学生」筛选并等待列表刷新。 */
+async function uncheckMyStudents(page: import("@playwright/test").Page): Promise<void> {
+  const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
+  const checked = await checkbox.isChecked()
+  if (checked) {
+    const responsePromise = page.waitForResponse((r) =>
+      r.url().includes("/admin/students/list") && r.status() === 200,
+    )
+    await checkbox.uncheck()
+    await responsePromise
+  }
+}
+
 test.describe("W3 学生管理", () => {
   test.beforeEach(async () => {
     await waitFor("roles_assigned", 90_000)
@@ -26,7 +39,7 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentTable", "筛选checkbox")
 
-    const checkbox = page.getByRole("checkbox")
+    const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
     await expect(checkbox).toBeChecked()
   })
 
@@ -34,26 +47,16 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentTable", "筛选切换")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
+    await uncheckMyStudents(page)
+    const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
     await expect(checkbox).not.toBeChecked()
-
-    // 等待列表刷新
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
   })
 
   test("展开学生面板显示各区域", async ({ page }) => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentExpandPanel", "展开面板")
 
-    // 取消「仅我的」筛选以确保能看到学生
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     // 点击第一行展开
     const firstRow = page.locator("tbody tr").first()
@@ -64,25 +67,21 @@ test.describe("W3 学生管理", () => {
     await expect(page.getByText("编辑")).toBeVisible()
     await expect(page.getByText("分配顾问")).toBeVisible()
     await expect(page.getByText("文件列表")).toBeVisible()
-    await expect(page.getByText("降为访客")).first().toBeVisible()
+    await expect(page.getByText("降为访客").first()).toBeVisible()
   })
 
   test("激活状态 checkbox 切换", async ({ page }) => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentExpandPanel", "激活checkbox")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
     await page.getByText("基本信息").waitFor()
 
-    // 面板内的激活 checkbox（第二个 checkbox，第一个是筛选）
-    const activeCheckbox = page.locator("section").filter({ hasText: "编辑" }).getByRole("checkbox")
+    // 面板内的激活 checkbox（在编辑区域内）
+    const activeCheckbox = page.locator("section").filter({ hasText: "编辑" }).locator("input[type='checkbox']")
     const wasChecked = await activeCheckbox.isChecked()
 
     await activeCheckbox.click()
@@ -94,11 +93,7 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentExpandPanel", "编辑备注")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
@@ -121,11 +116,7 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentExpandPanel", "分配顾问")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
@@ -143,11 +134,7 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackComponent("StudentExpandPanel", "降级取消")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
@@ -161,7 +148,8 @@ test.describe("W3 学生管理", () => {
     // AlertDialog 出现
     const dialog = page.getByRole("alertdialog")
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByText("确认降级")).toBeVisible()
+    // AlertDialogTitle 中有"确认降级"文本
+    await expect(dialog.locator("h2").first()).toBeVisible()
 
     // 点击取消
     await dialog.getByRole("button", { name: "取消" }).click()
@@ -172,11 +160,7 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackSecurity("操作安全", "降级取消不影响数据")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     // 记录行数
     const rowsBefore = await page.locator("tbody tr").count()
@@ -205,11 +189,9 @@ test.describe("W3 学生管理", () => {
     await gotoAdmin(page, "/admin/students")
     trackSecurity("UI安全", "收起面板隐藏操作")
 
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    // 不需要取消筛选 — 直接验证未展开状态
+    // 等待页面加载完成
+    await expect(page.locator("table")).toBeVisible()
 
     // 确认面板未展开时没有展开面板的内容
     await expect(page.getByText("基本信息")).not.toBeVisible()

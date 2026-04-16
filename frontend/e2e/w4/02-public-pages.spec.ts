@@ -102,7 +102,7 @@ test.describe("W4 公开页面", () => {
 
   test("负向：公开 API 无需认证即可访问", async ({ page }) => {
     await page.goto("/")
-    const res = await page.request.get("/api/public/config/site-info", {
+    const res = await page.request.get("/api/public/config/site_info", {
       headers: XHR,
     })
     expect(res.status()).toBe(200)

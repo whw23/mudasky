@@ -6,19 +6,26 @@
 import { test, expect, gotoAdmin, trackComponent } from "../fixtures/base"
 import { waitFor } from "../helpers/signal"
 
+/** 取消「仅我的学生」筛选并等待列表刷新。 */
+async function uncheckMyStudents(page: import("@playwright/test").Page): Promise<void> {
+  const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
+  const checked = await checkbox.isChecked()
+  if (checked) {
+    const responsePromise = page.waitForResponse((r) =>
+      r.url().includes("/admin/students/list") && r.status() === 200,
+    )
+    await checkbox.uncheck()
+    await responsePromise
+  }
+}
+
 test.describe("W3 学生文档查看", () => {
   test("等待文档上传后查看学生文档列表", async ({ page }) => {
-    await waitFor("doc_uploaded", 120_000)
+    await waitFor("w2_doc_uploaded", 120_000)
     trackComponent("StudentExpandPanel", "文档列表")
 
     await gotoAdmin(page, "/admin/students")
-
-    // 取消「仅我的」筛选
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     // 展开第一个学生
     const firstRow = page.locator("tbody tr").first()
@@ -27,16 +34,11 @@ test.describe("W3 学生文档查看", () => {
   })
 
   test("文档列表区域可见", async ({ page }) => {
-    await waitFor("doc_uploaded", 120_000)
+    await waitFor("w2_doc_uploaded", 120_000)
     trackComponent("StudentExpandPanel", "文档区域可见")
 
     await gotoAdmin(page, "/admin/students")
-
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
@@ -53,16 +55,11 @@ test.describe("W3 学生文档查看", () => {
   })
 
   test("文档列表包含文件名列", async ({ page }) => {
-    await waitFor("doc_uploaded", 120_000)
+    await waitFor("w2_doc_uploaded", 120_000)
     trackComponent("StudentExpandPanel", "文档表头")
 
     await gotoAdmin(page, "/admin/students")
-
-    const checkbox = page.getByRole("checkbox")
-    await checkbox.uncheck()
-    await page.waitForResponse((r) =>
-      r.url().includes("/admin/students/list") && r.status() === 200,
-    )
+    await uncheckMyStudents(page)
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
@@ -79,7 +76,7 @@ test.describe("W3 学生文档查看", () => {
   })
 
   test("负向：未展开时不显示文档", async ({ page }) => {
-    await waitFor("doc_uploaded", 120_000)
+    await waitFor("w2_doc_uploaded", 120_000)
     trackComponent("StudentExpandPanel", "未展开无文档")
 
     await gotoAdmin(page, "/admin/students")
