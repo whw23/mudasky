@@ -154,9 +154,9 @@ jobs:
           SMS_ACCESS_KEY_SECRET=${{ secrets.SMS_ACCESS_KEY_SECRET }}
           SMS_SIGN_NAME=${{ secrets.SMS_SIGN_NAME }}
           SMS_TEMPLATE_CODE=${{ secrets.SMS_TEMPLATE_CODE }}
-          SMS_REGION=cn-hangzhou
-          MAX_UPLOAD_SIZE_MB=10
-          DEFAULT_STORAGE_QUOTA_MB=100
+          SMS_REGION=${{ secrets.SMS_REGION }}
+          MAX_UPLOAD_SIZE_MB=${{ secrets.MAX_UPLOAD_SIZE_MB }}
+          DEFAULT_STORAGE_QUOTA_MB=${{ secrets.DEFAULT_STORAGE_QUOTA_MB }}
           SEED_USER_1_USERNAME=${{ secrets.SEED_USER_1_USERNAME }}
           SEED_USER_1_PASSWORD=${{ secrets.SEED_USER_1_PASSWORD }}
           SEED_USER_2_USERNAME=${{ secrets.SEED_USER_2_USERNAME }}
@@ -174,8 +174,8 @@ jobs:
 
           cat > env/gateway.env << 'ENVEOF'
           JWT_SECRET=${{ secrets.JWT_SECRET }}
-          ACCESS_TOKEN_EXPIRE_MINUTES=15
-          REFRESH_TOKEN_EXPIRE_DAYS=30
+          ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          REFRESH_TOKEN_EXPIRE_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
           INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
           ENVEOF
 
