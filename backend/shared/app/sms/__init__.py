@@ -40,10 +40,12 @@ async def send_sms_code(phone: str, code: str) -> bool:
     Returns:
         发送是否成功
     """
-    # 去掉 +86 前缀
-    clean_phone = phone.lstrip("+")
-    if clean_phone.startswith("86"):
-        clean_phone = clean_phone[2:]
+    # 阿里云国内短信只支持中国号码（+86）
+    if not phone.startswith("+86"):
+        logger.warning("非中国号码，跳过短信发送: phone=%s", phone)
+        return False
+    # +86-xxx 格式，取 - 后面的本地号码
+    clean_phone = phone.split("-", 1)[1]
 
     if settings.DEBUG:
         logger.info(
@@ -55,6 +57,7 @@ async def send_sms_code(phone: str, code: str) -> bool:
 
     try:
         from alibabacloud_dysmsapi20170525.models import SendSmsRequest
+        from alibabacloud_tea_util.models import RuntimeOptions
 
         client = _get_client()
         request = SendSmsRequest(
@@ -63,7 +66,8 @@ async def send_sms_code(phone: str, code: str) -> bool:
             template_code=settings.SMS_TEMPLATE_CODE,
             template_param=json.dumps({"code": code}),
         )
-        response = await client.send_sms_async(request)
+        runtime = RuntimeOptions()
+        response = await client.send_sms_with_options_async(request, runtime)
         body = response.body
 
         if body.code == "OK":

@@ -8,7 +8,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-PHONE_PATTERN = r"^\+\d{6,15}$"
+PHONE_PATTERN = r"^\+\d{1,4}-\d{6,15}$"
 
 
 class UserUpdate(BaseModel):

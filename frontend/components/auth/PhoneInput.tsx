@@ -25,14 +25,17 @@ interface PhoneInputProps {
   disabled?: boolean
 }
 
-/** 从完整号码中解析国家码和本地号码 */
+/** 从完整号码中解析国家码和本地号码（兼容 +86-xxx 和 +86xxx 格式） */
 function parsePhone(full: string, codes: CountryCode[]): { countryCode: string; local: string } {
   for (const c of codes) {
+    if (full.startsWith(c.code + '-')) {
+      return { countryCode: c.code, local: full.slice(c.code.length + 1) }
+    }
     if (full.startsWith(c.code)) {
       return { countryCode: c.code, local: full.slice(c.code.length) }
     }
   }
-  return { countryCode: codes[0]?.code ?? '+86', local: full.replace(/^\+?\d{1,4}/, '') }
+  return { countryCode: codes[0]?.code ?? '+86', local: full.replace(/^\+?\d{1,4}-?/, '') }
 }
 
 /** 获取国家码对应的号码位数要求 */
@@ -65,13 +68,13 @@ export function PhoneInput({
   /** 国家码变更 */
   function handleCodeChange(newCode: string): void {
     setCountryCode(newCode)
-    onChange(newCode + localNumber)
+    onChange(newCode + '-' + localNumber)
   }
 
   /** 号码变更（只允许数字） */
   function handleNumberChange(num: string): void {
     const cleaned = num.replace(/\D/g, '')
-    onChange(countryCode + cleaned)
+    onChange(countryCode + '-' + cleaned)
   }
 
   const currentCountry = countryCodes.find((c) => c.code === countryCode)

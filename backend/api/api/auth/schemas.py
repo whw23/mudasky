@@ -7,8 +7,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-PHONE_PATTERN = r"^\+\d{6,15}$"
-"""国际手机号格式：+ 开头，6-15 位数字。"""
+PHONE_PATTERN = r"^\+\d{1,4}-\d{6,15}$"
+"""国际手机号格式：+国家码-号码（如 +86-13800138000）。"""
 
 
 class UserResponse(BaseModel):
@@ -34,7 +34,7 @@ def _validate_phone(v: str) -> str:
     import re
 
     if not re.match(PHONE_PATTERN, v):
-        raise ValueError("手机号格式不正确，需包含国家码（如 +8613800138000）")
+        raise ValueError("手机号格式不正确，需包含国家码（如 +86-13800138000）")
     return v
 
 
