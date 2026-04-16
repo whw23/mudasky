@@ -57,7 +57,7 @@ class TestAdminUsers:
     ):
         """创建测试用户 -> 禁用 -> 验证 -> 恢复 -> 清理。"""
         import random
-        phone = f"+86--139{random.randint(10000000, 99999999)}"
+        phone = f"+86-139{random.randint(10000000, 99999999)}"
 
         # 1. 注册测试用户
         sms_resp = await e2e_client.post(
@@ -149,7 +149,7 @@ class TestAdminUserActions:
         """创建测试用户 -> 重置密码 -> 用新密码登录 -> 清理。"""
         import random
 
-        phone = f"+86--139{random.randint(10000000, 99999999)}"
+        phone = f"+86-139{random.randint(10000000, 99999999)}"
 
         # 1. 注册测试用户
         sms_resp = await e2e_client.post(
@@ -213,7 +213,7 @@ class TestAdminUserActions:
         """创建测试用户 -> 分配角色 -> 验证 -> 清理。"""
         import random
 
-        phone = f"+86--139{random.randint(10000000, 99999999)}"
+        phone = f"+86-139{random.randint(10000000, 99999999)}"
 
         # 1. 获取 visitor 角色 ID
         roles_resp = await superuser_client.get(

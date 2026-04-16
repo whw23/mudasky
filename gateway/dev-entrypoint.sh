@@ -8,6 +8,11 @@ fi
 
 WATCH_DIRS="/usr/local/openresty/nginx/lua /etc/nginx/conf.d /usr/local/openresty/nginx/conf"
 
+# 开发环境：为 .lua 文件创建 .luac 软链接（nginx 配置引用 .luac）
+for f in /usr/local/openresty/nginx/lua/*.lua; do
+  [ -f "$f" ] && ln -sf "$f" "${f%.lua}.luac"
+done
+
 watch_and_reload() {
   # 使用 inotifywait 监听文件变化（WSL2 原生文件系统支持 inotify）
   inotifywait -m -r -e modify,create,delete --include '\.(lua|conf)$' $WATCH_DIRS 2>/dev/null |

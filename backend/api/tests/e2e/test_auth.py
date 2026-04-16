@@ -62,7 +62,7 @@ class TestRegister:
     async def test_register_and_login(self, e2e_client, superuser_client):
         """注册新用户 -> 登录 -> 验证 -> 清理。"""
         import random
-        phone = f"+86--139{random.randint(10000000, 99999999)}"
+        phone = f"+86-139{random.randint(10000000, 99999999)}"
 
         # 1. 发送验证码
         sms_resp = await e2e_client.post(
