@@ -71,7 +71,7 @@ services:
     env_file: env/db.env
     command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=mudasky -c app.build_version=${DB_VERSION:-dev} -c timezone=Asia/Shanghai
     ports:
-      - "47293:5432"
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
