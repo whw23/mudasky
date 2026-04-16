@@ -108,6 +108,34 @@ export async function clickAndWaitDialog(page: Page, buttonName: string) {
   await dialog.waitFor()
 }
 
+/** 包装 page.request 的 get/post 方法，记录 API 调用。 */
+function wrapApiRequest(page: Page) {
+  const origGet = page.request.get.bind(page.request)
+  const origPost = page.request.post.bind(page.request)
+
+  page.request.get = async (url: string, options?: Parameters<typeof origGet>[1]) => {
+    const res = await origGet(url, options)
+    try {
+      const parsed = new URL(url, "http://localhost")
+      if (parsed.pathname.startsWith("/api/")) {
+        apiCalls.add(`GET ${normalizeApiPath(parsed.pathname)}`)
+      }
+    } catch { /* 忽略 */ }
+    return res
+  }
+
+  page.request.post = async (url: string, options?: Parameters<typeof origPost>[1]) => {
+    const res = await origPost(url, options)
+    try {
+      const parsed = new URL(url, "http://localhost")
+      if (parsed.pathname.startsWith("/api/")) {
+        apiCalls.add(`POST ${normalizeApiPath(parsed.pathname)}`)
+      }
+    } catch { /* 忽略 */ }
+    return res
+  }
+}
+
 /* ── test fixture ── */
 
 export const test = pwTest.extend<{
@@ -116,6 +144,7 @@ export const test = pwTest.extend<{
   // 自动为每个测试的 page 绑定覆盖率监听器
   page: async ({ page }, use) => {
     attachCoverageListeners(page)
+    wrapApiRequest(page)
     await use(page)
   },
   adminPage: async ({ page }, use) => {

@@ -85,21 +85,12 @@ async function globalTeardown(_config: FullConfig) {
   const coverageDir = path.join(__dirname, ".coverage")
   if (fs.existsSync(coverageDir)) {
     try {
-      // 手动解析 TS 文件中的数组（避免 Node 无法 import .ts）
-      const parseArrayFromTs = (filePath: string): string[] => {
-        const content = fs.readFileSync(filePath, "utf-8")
-        const match = content.match(/\[[\s\S]*\]/)
-        if (!match) return []
-        // 提取引号内的字符串
-        const items: string[] = []
-        for (const m of match[0].matchAll(/"([^"]+)"/g)) {
-          items.push(m[1])
-        }
-        return items
-      }
-
-      const API_ENDPOINTS = parseArrayFromTs(path.join(__dirname, "helpers", "api-endpoints.ts"))
-      const PAGE_ROUTES = parseArrayFromTs(path.join(__dirname, "helpers", "page-routes.ts"))
+      const API_ENDPOINTS: string[] = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "helpers", "api-endpoints.json"), "utf-8"),
+      )
+      const PAGE_ROUTES: string[] = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "helpers", "page-routes.json"), "utf-8"),
+      )
 
       /** 路由匹配：去掉 locale 前缀，尝试动态段替换 */
       const matchRoute = (url: string): string | null => {

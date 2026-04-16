@@ -44,13 +44,28 @@
 
 ### 覆盖率统计
 
-| 层级 | 工具 | 命令 |
-|------|------|------|
-| 后端 | `pytest-cov`（行级） | `uv run --project backend/api python -m pytest --cov=api --cov-report=term-missing` |
-| 前端单元 | `@vitest/coverage-v8`（V8 引擎级） | `pnpm --prefix frontend test --coverage` |
-| E2E API 端点 | 自定义 fixture 拦截 | 跑完自动输出未覆盖端点 |
-| E2E 页面路由 | 自定义 fixture 拦截 | 跑完自动输出未访问路由 |
-| E2E JS 代码 | `page.coverage` + istanbul | `E2E_COVERAGE=1` 时启用，生成 HTML 报告 |
+所有覆盖率指标目标 **100%**。
+
+| 维度 | 工具 | 清单文件 | 命令 |
+|------|------|----------|------|
+| 后端代码 | `pytest-cov`（行级） | — | `uv run --project backend/api python -m pytest --cov=api --cov-report=term-missing` |
+| 前端代码 | `@vitest/coverage-v8` | — | `pnpm --prefix frontend test --coverage` |
+| API 端点 | fixture 拦截 | `e2e/helpers/api-endpoints.json` | E2E 跑完自动输出 |
+| 页面路由 | fixture 拦截 | `e2e/helpers/page-routes.json` | E2E 跑完自动输出 |
+| 交互组件 | fixture 拦截 | `e2e/helpers/components.json` | E2E 跑完自动输出 |
+| 安全场景 | fixture 拦截 | `e2e/helpers/security-scenarios.json` | E2E 跑完自动输出 |
+| JS 代码 | `page.coverage` + istanbul | — | `E2E_COVERAGE=1` 时启用 |
+
+覆盖率清单文件使用 JSON 格式，`global-teardown` 直接 `JSON.parse` 读取，与测试运行时收集的数据对比输出未覆盖项。
+
+#### 覆盖率六维度
+
+1. **API 端点**：后端每个 router 端点必须被 E2E 触发
+2. **页面路由**：前端每个 `page.tsx` 路由必须被访问
+3. **交互组件**：每个可交互元素（按钮、输入框、下拉框、checkbox、tab、弹窗、展开面板）必须被操作
+4. **安全场景**：JWT 篡改/过期/缺失、IDOR 越权、跨角色访问、禁用用户、文件上传安全、Token 轮换
+5. **正反例**：每个测试目标至少 2 正例 + 2 反例
+6. **通过率**：0 failed, 0 skipped, 0 flaky（首次就通过，不依赖 retry）
 
 ### 后端单元测试
 
