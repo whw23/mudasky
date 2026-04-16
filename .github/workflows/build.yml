@@ -146,50 +146,47 @@ jobs:
           DEBUG=false
           DB_HOST=db
           DB_PORT=5432
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_USER=${{ secrets.DB_USER }}
+          DB_NAME=${{ vars.DB_NAME }}
+          DB_USER=${{ vars.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
           SMS_ACCESS_KEY_ID=${{ secrets.SMS_ACCESS_KEY_ID }}
           SMS_ACCESS_KEY_SECRET=${{ secrets.SMS_ACCESS_KEY_SECRET }}
-          SMS_SIGN_NAME=${{ secrets.SMS_SIGN_NAME }}
-          SMS_TEMPLATE_CODE=${{ secrets.SMS_TEMPLATE_CODE }}
-          SMS_REGION=${{ secrets.SMS_REGION }}
-          MAX_UPLOAD_SIZE_MB=${{ secrets.MAX_UPLOAD_SIZE_MB }}
-          DEFAULT_STORAGE_QUOTA_MB=${{ secrets.DEFAULT_STORAGE_QUOTA_MB }}
-          SEED_USER_1_USERNAME=${{ secrets.SEED_USER_1_USERNAME }}
+          SMS_SIGN_NAME=${{ vars.SMS_SIGN_NAME }}
+          SMS_TEMPLATE_CODE=${{ vars.SMS_TEMPLATE_CODE }}
+          SMS_REGION=${{ vars.SMS_REGION }}
+          MAX_UPLOAD_SIZE_MB=${{ vars.MAX_UPLOAD_SIZE_MB }}
+          DEFAULT_STORAGE_QUOTA_MB=${{ vars.DEFAULT_STORAGE_QUOTA_MB }}
+          SEED_USER_1_USERNAME=${{ vars.SEED_USER_1_USERNAME }}
           SEED_USER_1_PASSWORD=${{ secrets.SEED_USER_1_PASSWORD }}
-          SEED_USER_2_USERNAME=${{ secrets.SEED_USER_2_USERNAME }}
+          SEED_USER_2_USERNAME=${{ vars.SEED_USER_2_USERNAME }}
           SEED_USER_2_PASSWORD=${{ secrets.SEED_USER_2_PASSWORD }}
-          SEED_USER_2_PHONE=${{ secrets.SEED_USER_2_PHONE }}
-          SEED_USER_3_USERNAME=${{ secrets.SEED_USER_3_USERNAME }}
+          SEED_USER_2_PHONE=${{ vars.SEED_USER_2_PHONE }}
+          SEED_USER_3_USERNAME=${{ vars.SEED_USER_3_USERNAME }}
           SEED_USER_3_PASSWORD=${{ secrets.SEED_USER_3_PASSWORD }}
-          SEED_USER_3_PHONE=${{ secrets.SEED_USER_3_PHONE }}
-          SEED_USER_E2E_USERNAME=${{ secrets.SEED_USER_E2E_USERNAME }}
+          SEED_USER_3_PHONE=${{ vars.SEED_USER_3_PHONE }}
+          SEED_USER_E2E_USERNAME=${{ vars.SEED_USER_E2E_USERNAME }}
           SEED_USER_E2E_PASSWORD=${{ secrets.SEED_USER_E2E_PASSWORD }}
-          CONTACT_ADDRESS=${{ secrets.CONTACT_ADDRESS }}
-          CONTACT_PHONE=${{ secrets.CONTACT_PHONE }}
-          CONTACT_EMAIL=${{ secrets.CONTACT_EMAIL }}
           ENVEOF
 
           cat > env/gateway.env << 'ENVEOF'
           JWT_SECRET=${{ secrets.JWT_SECRET }}
-          ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
-          REFRESH_TOKEN_EXPIRE_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
+          ACCESS_TOKEN_EXPIRE_MINUTES=${{ vars.ACCESS_TOKEN_EXPIRE_MINUTES }}
+          REFRESH_TOKEN_EXPIRE_DAYS=${{ vars.REFRESH_TOKEN_EXPIRE_DAYS }}
           INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
           ENVEOF
 
           cat > env/db.env << 'ENVEOF'
-          POSTGRES_DB=${{ secrets.DB_NAME }}
-          POSTGRES_USER=${{ secrets.DB_USER }}
+          POSTGRES_DB=${{ vars.DB_NAME }}
+          POSTGRES_USER=${{ vars.DB_USER }}
           POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
 
           cat > env/worker.env << 'ENVEOF'
           DB_HOST=db
           DB_PORT=5432
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_USER=${{ secrets.DB_USER }}
+          DB_NAME=${{ vars.DB_NAME }}
+          DB_USER=${{ vars.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
 
@@ -229,7 +226,7 @@ jobs:
               && sed -i "s/^DB_VERSION=.*/DB_VERSION=${DB_VER}/" .env \
               || echo "DB_VERSION=${DB_VER}" >> .env
 
-            DB_PORT="${{ secrets.DB_EXTERNAL_PORT }}"
+            DB_PORT="${{ vars.DB_EXTERNAL_PORT }}"
             if [ -n "$DB_PORT" ]; then
               grep -q '^DB_EXTERNAL_PORT=' .env 2>/dev/null \
                 && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=${DB_PORT}/" .env \
