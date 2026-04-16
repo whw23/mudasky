@@ -139,6 +139,63 @@ jobs:
         id: version
         run: echo "tag=$(TZ=Asia/Shanghai date +%Y%m%d)-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
+      - name: 生成环境变量文件
+        run: |
+          mkdir -p env
+          cat > env/backend.env << 'ENVEOF'
+          DEBUG=false
+          DB_HOST=db
+          DB_PORT=5432
+          DB_NAME=mudasky
+          DB_USER=mudasky
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
+          SMS_ACCESS_KEY_ID=${{ secrets.SMS_ACCESS_KEY_ID }}
+          SMS_ACCESS_KEY_SECRET=${{ secrets.SMS_ACCESS_KEY_SECRET }}
+          SMS_SIGN_NAME=${{ secrets.SMS_SIGN_NAME }}
+          SMS_TEMPLATE_CODE=${{ secrets.SMS_TEMPLATE_CODE }}
+          SMS_REGION=cn-hangzhou
+          MAX_UPLOAD_SIZE_MB=10
+          DEFAULT_STORAGE_QUOTA_MB=100
+          SEED_USER_1_USERNAME=${{ secrets.SEED_USER_1_USERNAME }}
+          SEED_USER_1_PASSWORD=${{ secrets.SEED_USER_1_PASSWORD }}
+          SEED_USER_2_USERNAME=${{ secrets.SEED_USER_2_USERNAME }}
+          SEED_USER_2_PASSWORD=${{ secrets.SEED_USER_2_PASSWORD }}
+          SEED_USER_2_PHONE=${{ secrets.SEED_USER_2_PHONE }}
+          SEED_USER_3_USERNAME=${{ secrets.SEED_USER_3_USERNAME }}
+          SEED_USER_3_PASSWORD=${{ secrets.SEED_USER_3_PASSWORD }}
+          SEED_USER_3_PHONE=${{ secrets.SEED_USER_3_PHONE }}
+          SEED_USER_E2E_USERNAME=${{ secrets.SEED_USER_E2E_USERNAME }}
+          SEED_USER_E2E_PASSWORD=${{ secrets.SEED_USER_E2E_PASSWORD }}
+          CONTACT_ADDRESS=${{ secrets.CONTACT_ADDRESS }}
+          CONTACT_PHONE=${{ secrets.CONTACT_PHONE }}
+          CONTACT_EMAIL=${{ secrets.CONTACT_EMAIL }}
+          ENVEOF
+
+          cat > env/gateway.env << 'ENVEOF'
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          ACCESS_TOKEN_EXPIRE_MINUTES=15
+          REFRESH_TOKEN_EXPIRE_DAYS=30
+          INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
+          ENVEOF
+
+          cat > env/db.env << 'ENVEOF'
+          POSTGRES_DB=mudasky
+          POSTGRES_USER=mudasky
+          POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
+          ENVEOF
+
+          cat > env/worker.env << 'ENVEOF'
+          DB_HOST=db
+          DB_PORT=5432
+          DB_NAME=mudasky
+          DB_USER=mudasky
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          ENVEOF
+
+          # 去除 heredoc 产生的前导空格
+          sed -i 's/^[[:space:]]*//' env/*.env
+
       - name: 同步部署配置到服务器
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -146,7 +203,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/init.sql"
+          source: "docker-compose.yml,db/init.sql,env/"
           target: "~/mudasky"
           overwrite: true
 
