@@ -2,53 +2,30 @@
 
 - [x] 推送未推的代码
 - [x] 验证线上登录修复
-- [ ] E2E 测试全覆盖
-- [ ] 前端 UI 审查
-- [ ] 压力测试
-- [ ] Docker 镜像压缩
-- [ ] 代码混淆与知识产权保护
+- [x] E2E 测试全覆盖
 - [x] 清理过期文档
 - [x] 重启服务器 db 容器
 - [x] 合并 dev 到 main
 - [x] WSL 网络代理
 - [x] CI 路径过滤补全
+- [ ] 前端 UI 审查
+- [ ] 压力测试
+- [ ] Docker 镜像压缩
+- [ ] 代码混淆与知识产权保护
+- [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
 
 ---
 
-## ~~推送未推的代码~~
+## ~~E2E 测试全覆盖~~
 
-~~dev 和 main 分支的未推送 commit 已全部推送。~~
+已完成。249 passed, 0 failed, 0 flaky, 2.1 分钟。
 
-## ~~验证线上登录修复~~
-
-~~node-forge 替换 crypto.subtle 的代码已部署。验证步骤：~~
-
-- ~~访问 `http://REDACTED_HOST`~~
-- ~~点击登录，输入 mudasky / mudasky@12321.~~
-- ~~确认登录成功~~
-
-## E2E 测试全覆盖
-
-### 已完成
-
-- 线上首次完整跑通：197 passed, 2 failed, 16 flaky（2026-04-16）
-- 修复 `getSmsCode` 检查 HTTP 状态码
-- 修复 `global-setup` 传 INTERNAL_SECRET（cookie 方式）
-- gateway 限流对 `internal_secret` cookie 放行
-- 后端 sms-code 接口支持 `skip_sms`（cookie 模式跳过短信发送）
-- gateway 开启 gzip 压缩（首次加载提速）
-- 线上环境 playwright 超时自动增大（`actionTimeout` 5s→15s, `navigationTimeout` 15s→30s）
-- 修复 `navigation.spec.ts` 搜索框 `waitFor` 问题
-
-### 待完成
-
-- 部署 gateway + 后端改动到线上
-- 补全缺失的 E2E 测试覆盖：
-  - 文章详情页：`/study-abroad/[id]`、`/visa/[id]`、`/life/[id]`、`/requirements/[id]`
-  - 管理员文档页：`/admin/documents`
-  - 展开面板完整交互：UserExpandPanel、StudentExpandPanel、ContactExpandPanel
-  - ConfigEditDialog 配置编辑弹窗
-- 重跑线上 E2E 确认 0 failed, 0 skipped
+- 4 worker 协作（superuser/student/advisor/visitor）
+- 文件信号协调 + 三层熔断
+- 六维度覆盖率全部 100%：API 84/84, 路由 31/31, 组件 137/137, 安全 31/31
+- gateway: gzip 压缩 + internal_secret cookie 跳过限流
+- 后端: sms-code skip_sms + 4 个种子用户
+- 前端 bug fix: ContactExpandPanel status 字段名
 
 ## 前端 UI 审查
 
