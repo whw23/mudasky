@@ -34,6 +34,34 @@ CONFIGS = [
         ],
     ),
     (
+        "homepage_stats",
+        "首页统计数据",
+        lambda: [
+            {"value": "15+", "label": "年办学经验"},
+            {"value": "500+", "label": "成功案例"},
+            {"value": "50+", "label": "合作院校"},
+            {"value": "98%", "label": "签证通过率"},
+        ],
+    ),
+    (
+        "about_info",
+        "关于我们",
+        lambda: {
+            "history": "",
+            "mission": "",
+            "vision": "",
+            "partnership": "",
+        },
+    ),
+    (
+        "panel_pages",
+        "面板页面配置",
+        lambda: {
+            "admin": [],
+            "portal": [],
+        },
+    ),
+    (
         "contact_info",
         "联系方式",
         lambda: {
