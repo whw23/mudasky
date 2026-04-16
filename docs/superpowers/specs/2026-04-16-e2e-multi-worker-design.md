@@ -398,7 +398,23 @@ projects: [
 
 ### 维度 1: API 端点覆盖率
 
-清单文件：`e2e/helpers/api-endpoints.json`（85 个端点）
+**自动发现**：`global-teardown` 运行时从后端 OpenAPI schema（`GET /api/docs`→`/api/openapi.json`）自动获取全量端点，无需手动维护 JSON 清单。新增接口自动出现在覆盖率报告的"未覆盖"列表中。
+
+```typescript
+// global-teardown.ts 中自动获取端点
+const openapiRes = await page.request.get("/api/openapi.json")
+const spec = await openapiRes.json()
+const allEndpoints: string[] = []
+for (const [path, methods] of Object.entries(spec.paths)) {
+  for (const method of Object.keys(methods)) {
+    if (["get", "post", "put", "delete", "patch"].includes(method)) {
+      allEndpoints.push(`${method.toUpperCase()} ${path}`)
+    }
+  }
+}
+```
+
+删除 `e2e/helpers/api-endpoints.json`，改为运行时自动发现。
 
 4 个 worker 的 API 调用合并后对比。各 worker 的端点分工：
 
@@ -422,7 +438,20 @@ projects: [
 
 ### 维度 2: 页面路由覆盖率
 
-清单文件：`e2e/helpers/page-routes.json`（33 个路由）
+**自动发现**：`global-teardown` 运行时扫描 `frontend/app/[locale]/` 目录，查找所有 `page.tsx` 文件，自动生成路由表。新增页面自动出现在覆盖率报告的"未覆盖"列表中。
+
+```typescript
+// global-teardown.ts 中自动扫描路由
+import { globSync } from "fs"
+const pageFiles = globSync("app/[locale]/**/page.tsx", { cwd: frontendDir })
+const routes = pageFiles.map(f => {
+  // app/[locale]/(public)/about/page.tsx → /about
+  // app/[locale]/[panel]/dashboard/page.tsx → /admin/dashboard, /portal/dashboard
+  return extractRoute(f)
+}).flat()
+```
+
+删除 `e2e/helpers/page-routes.json`，改为运行时自动发现。
 
 | 页面组 | 路由数 | 负责 worker |
 |--------|--------|-------------|
@@ -569,10 +598,8 @@ frontend/e2e/
 │   ├── signal.ts                    # Worker 间信号通信
 │   ├── sms.ts                       # SMS 验证码
 │   ├── seed.ts                      # 数据创建
-│   ├── api-endpoints.json           # API 端点清单
-│   ├── page-routes.json             # 页面路由清单
-│   ├── components.json              # 交互组件清单
-│   └── security-scenarios.json      # 安全场景清单
+│   ├── components.json              # 交互组件清单（手动维护）
+│   └── security-scenarios.json      # 安全场景清单（手动维护）
 ├── fixtures/
 │   └── base.ts                      # 覆盖率收集 + trackComponent/trackSecurity
 ├── global-setup.ts                  # e2e_test_superuser 登录 + 预热 + 清理信号
@@ -606,6 +633,8 @@ frontend/e2e/
 | 新建 | `frontend/e2e/helpers/signal.ts` |
 | 新建 | `frontend/e2e/helpers/components.json` |
 | 新建 | `frontend/e2e/helpers/security-scenarios.json` |
+| 删除 | `frontend/e2e/helpers/api-endpoints.json`（改为 OpenAPI 自动发现） |
+| 删除 | `frontend/e2e/helpers/page-routes.json`（改为目录扫描自动发现） |
 | 新建 | `frontend/e2e/w1/*.spec.ts`（8 个） |
 | 新建 | `frontend/e2e/w2/*.spec.ts`（8 个） |
 | 新建 | `frontend/e2e/w3/*.spec.ts`（6 个） |
