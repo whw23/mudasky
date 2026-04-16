@@ -197,7 +197,12 @@ export const test = pwTest.extend<{
         !testInfo.title.includes("负向") &&
         !testInfo.title.includes("被拒") &&
         !testInfo.title.includes("401") &&
-        !testInfo.title.includes("禁用")
+        !testInfo.title.includes("禁用") &&
+        !testInfo.title.includes("token") &&
+        !testInfo.title.includes("Token") &&
+        !testInfo.title.includes("JWT") &&
+        !testInfo.title.includes("logout") &&
+        !testInfo.title.includes("IDOR")
       ) {
         tripBreaker(
           testInfo.project.name,

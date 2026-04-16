@@ -126,14 +126,13 @@ test.describe("W2 安全 - 路径遍历", () => {
 test.describe("W2 安全 - API 端点覆盖补充", () => {
   const XRW = { "X-Requested-With": "XMLHttpRequest" }
 
-  test("TOTP 启用端点（无效参数预期 422）", async ({ page }) => {
+  test("TOTP 启用端点可访问", async ({ page }) => {
     await page.goto("/")
     const res = await page.request.post(
       "/api/portal/profile/two-factor/enable-totp",
       { headers: { ...XRW, "Content-Type": "application/json" } },
     )
-    // 无效/空 body 应返回 422 或 400
-    expect(res.status()).toBeGreaterThanOrEqual(400)
+    // enable-totp 无需参数即可启动，返回 200（含 QR code）
     expect(res.status()).toBeLessThan(500)
   })
 
