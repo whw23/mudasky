@@ -151,20 +151,32 @@ function wrapApiRequest(page: Page) {
   }
 }
 
-/** 检查 storageState 文件是否存在。W2/W3/W4 的 02+ 测试依赖 01-register 创建的文件。 */
-function checkStorageState(testInfo: { project: { name: string }; file: string }) {
-  const project = testInfo.project.name
-  // register project 和 W1/shared 不检查
-  if (project.endsWith("-register") || project.startsWith("w1") || project === "shared") return
-  const workerMatch = project.match(/^w([234])/)
-  if (!workerMatch) return
+/* ── 熔断机制 ── */
 
-  const authFile = path.join(__dirname, "..", ".auth", `w${workerMatch[1]}.json`)
-  if (!fs.existsSync(authFile)) {
-    throw new Error(
-      `[熔断] ${project} 的 storageState 文件不存在: ${authFile}\n` +
-      `01-register 可能失败了，后续测试无法继续。`,
-    )
+const BREAKER_DIR = path.join(__dirname, "..", ".circuit-breaker")
+
+/**
+ * 触发熔断 — 当前 project 后续所有测试立即终止。
+ * 典型场景：auth 失败（非预期 401）、关键依赖不可用。
+ */
+export function tripBreaker(project: string, reason: string): void {
+  fs.mkdirSync(BREAKER_DIR, { recursive: true })
+  fs.writeFileSync(path.join(BREAKER_DIR, `${project}.txt`), reason)
+}
+
+/** 检查当前 project 是否已熔断。 */
+function checkBreaker(project: string): void {
+  const file = path.join(BREAKER_DIR, `${project}.txt`)
+  if (fs.existsSync(file)) {
+    const reason = fs.readFileSync(file, "utf-8")
+    throw new Error(`[熔断] ${project} 已终止: ${reason}`)
+  }
+}
+
+/** 清理所有熔断信号（global-setup / global-teardown 调用）。 */
+export function cleanupBreakers(): void {
+  if (fs.existsSync(BREAKER_DIR)) {
+    fs.rmSync(BREAKER_DIR, { recursive: true, force: true })
   }
 }
 
@@ -173,11 +185,31 @@ function checkStorageState(testInfo: { project: { name: string }; file: string }
 export const test = pwTest.extend<{
   adminPage: Page
 }>({
-  // 自动为每个测试的 page 绑定覆盖率监听器 + storageState 熔断检查
+  // 每个测试开始前：检查熔断 → 绑定覆盖率监听 → 监控 auth 失败
   page: async ({ page }, use, testInfo) => {
-    checkStorageState(testInfo)
+    checkBreaker(testInfo.project.name)
     attachCoverageListeners(page)
     wrapApiRequest(page)
+
+    // 监控非预期 401 — 自动触发熔断
+    page.on("response", (res) => {
+      if (
+        res.status() === 401 &&
+        res.url().includes("/api/") &&
+        !res.url().includes("/api/auth/") && // auth 端点的 401 是正常的
+        !testInfo.title.includes("反例") &&
+        !testInfo.title.includes("负向") &&
+        !testInfo.title.includes("被拒") &&
+        !testInfo.title.includes("401") &&
+        !testInfo.title.includes("禁用")
+      ) {
+        tripBreaker(
+          testInfo.project.name,
+          `非预期 401: ${res.url()} (in: ${testInfo.title})`,
+        )
+      }
+    })
+
     await use(page)
   },
   adminPage: async ({ page }, use) => {

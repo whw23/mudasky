@@ -9,6 +9,7 @@ import { chromium, type FullConfig, type Page } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"
 import { cleanup as cleanupSignals } from "./helpers/signal"
+import { cleanupBreakers } from "./fixtures/base"
 
 const AUTH_FILE = path.join(__dirname, ".auth", "w1.json")
 const BASE = process.env.BASE_URL || "http://localhost"
@@ -354,8 +355,9 @@ async function globalTeardown(_config: FullConfig) {
     fs.rmSync(COVERAGE_DIR, { recursive: true, force: true })
   }
 
-  /* 3. 信号文件清理 */
+  /* 3. 信号文件 + 熔断状态清理 */
   cleanupSignals()
+  cleanupBreakers()
 }
 
 export default globalTeardown

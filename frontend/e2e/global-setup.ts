@@ -7,6 +7,7 @@ import { chromium, type FullConfig } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"
 import { cleanup as cleanupSignals } from "./helpers/signal"
+import { cleanupBreakers } from "./fixtures/base"
 
 const AUTH_DIR = path.join(__dirname, ".auth")
 const W1_AUTH = path.join(AUTH_DIR, "w1.json")
@@ -98,8 +99,9 @@ async function globalSetup(_config: FullConfig) {
   await context.storageState({ path: W1_AUTH })
   await browser.close()
 
-  /* ── 清理信号 ── */
-  await cleanupSignals()
+  /* ── 清理信号和熔断状态 ── */
+  cleanupSignals()
+  cleanupBreakers()
 
   /* ── 预热入口页 ── */
   const browser2 = await chromium.launch()
