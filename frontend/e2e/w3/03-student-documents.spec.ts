@@ -75,6 +75,24 @@ test.describe("W3 学生文档查看", () => {
     }
   })
 
+  test("文档详情和下载端点可访问", async ({ page }) => {
+    const docSignal = await waitFor<{ docId: string }>("w2_doc_uploaded", 120_000)
+
+    // 直接调 API 覆盖文档详情和下载端点
+    const XRW = { "X-Requested-With": "XMLHttpRequest" }
+    const detailRes = await page.request.get(
+      `/api/admin/students/list/detail/documents/list/detail?doc_id=${docSignal.docId || "fake"}`,
+      { headers: XRW },
+    )
+    expect(detailRes.status()).toBeLessThan(500)
+
+    const downloadRes = await page.request.get(
+      `/api/admin/students/list/detail/documents/list/detail/download?doc_id=${docSignal.docId || "fake"}`,
+      { headers: XRW },
+    )
+    expect(downloadRes.status()).toBeLessThan(500)
+  })
+
   test("负向：未展开时不显示文档", async ({ page }) => {
     await waitFor("w2_doc_uploaded", 120_000)
     trackComponent("StudentExpandPanel", "未展开无文档")
