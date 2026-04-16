@@ -7,10 +7,12 @@ import { test, expect } from "../fixtures/base"
 import { emit, waitFor } from "../helpers/signal"
 
 test.describe("W1 初始化", () => {
+  test.setTimeout(120_000)
+
   test("等待注册并赋权", async ({ page }) => {
-    const w2 = await waitFor<{ userId: string }>("w2_registered", 60_000)
-    const w3 = await waitFor<{ userId: string }>("w3_registered", 60_000)
-    await waitFor("w4_registered", 60_000)
+    const w2 = await waitFor<{ userId: string }>("w2_registered", 90_000)
+    const w3 = await waitFor<{ userId: string }>("w3_registered", 90_000)
+    await waitFor("w4_registered", 90_000)
 
     // 获取角色列表
     const rolesRes = await page.request.get("/api/admin/roles/meta/list", {

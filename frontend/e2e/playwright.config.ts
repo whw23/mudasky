@@ -1,6 +1,6 @@
 /**
  * Playwright E2E 测试配置。
- * 4 个 project 对应 4 个 worker 角色。
+ * 4 个 project 对应 4 个 worker 角色，通过信号协调执行顺序。
  */
 
 import { defineConfig } from "@playwright/test"
@@ -15,7 +15,7 @@ export default defineConfig({
   timeout: isRemote ? 60_000 : 30_000,
   retries: 0,
   workers: 4,
-  fullyParallel: true,
+  fullyParallel: false,
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   expect: {
@@ -38,17 +38,14 @@ export default defineConfig({
     {
       name: "w2-student",
       testMatch: "w2/**/*.spec.ts",
-      use: { storageState: path.join(AUTH_DIR, "w2.json") },
     },
     {
       name: "w3-advisor",
       testMatch: "w3/**/*.spec.ts",
-      use: { storageState: path.join(AUTH_DIR, "w3.json") },
     },
     {
       name: "w4-visitor",
       testMatch: "w4/**/*.spec.ts",
-      use: { storageState: path.join(AUTH_DIR, "w4.json") },
     },
     {
       name: "shared",

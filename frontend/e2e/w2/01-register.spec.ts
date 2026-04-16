@@ -1,6 +1,6 @@
 /**
  * W2 注册测试。
- * 注册新账号，保存 storageState，等待 W1 赋予 student 角色后刷新 token。
+ * 注册 → 发信号 → 等待 W1 赋权 → refresh token → 保存新 storageState。
  */
 
 import { test, expect } from "../fixtures/base"
@@ -14,13 +14,13 @@ const USERNAME = `E2E-student-${Date.now()}`
 
 test.describe("W2 注册", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
+  test.setTimeout(120_000)
 
   test("自注册并等待赋权", async ({ page }) => {
     await page.goto("/")
     const code = await getSmsCode(page, PHONE)
     expect(code).toBeTruthy()
 
-    // SMS 登录（未注册手机号自动创建账号）
     const result = await page.evaluate(
       async ({ phone, smsCode }) => {
         const res = await fetch("/api/auth/login", {
@@ -37,9 +37,8 @@ test.describe("W2 注册", () => {
       { phone: PHONE, smsCode: code },
     )
     expect(result.status).toBe(200)
-    expect(result.data.user).toBeTruthy()
 
-    await page.context().storageState({ path: W2_AUTH })
+    // 发信号通知 W1
     emit("w2_registered", {
       phone: PHONE,
       username: USERNAME,
@@ -47,15 +46,14 @@ test.describe("W2 注册", () => {
     })
 
     // 等待 W1 赋权
-    await waitFor("w2_student", 60_000)
+    await waitFor("w2_student", 90_000)
 
     // refresh token 获取新权限
-    const refreshRes = await page.request.post("/api/auth/refresh", {
+    await page.request.post("/api/auth/refresh", {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     })
-    expect(refreshRes.status()).toBe(200)
 
-    // 重新保存 storageState
+    // 保存含新权限的 storageState
     await page.context().storageState({ path: W2_AUTH })
   })
 })

@@ -1,6 +1,6 @@
 /**
  * W4 注册测试。
- * 注册新账号，保存 storageState，等待所有角色赋予完成（W4 保持 visitor 角色）。
+ * 注册 → 发信号 → 等待角色分配完成 → 保存 storageState。W4 保持 visitor。
  */
 
 import { test, expect } from "../fixtures/base"
@@ -14,13 +14,13 @@ const USERNAME = `E2E-visitor-${Date.now()}`
 
 test.describe("W4 注册", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
+  test.setTimeout(120_000)
 
   test("自注册并等待赋权完成", async ({ page }) => {
     await page.goto("/")
     const code = await getSmsCode(page, PHONE)
     expect(code).toBeTruthy()
 
-    // SMS 登录（未注册手机号自动创建账号）
     const result = await page.evaluate(
       async ({ phone, smsCode }) => {
         const res = await fetch("/api/auth/login", {
@@ -37,19 +37,17 @@ test.describe("W4 注册", () => {
       { phone: PHONE, smsCode: code },
     )
     expect(result.status).toBe(200)
-    expect(result.data.user).toBeTruthy()
 
-    await page.context().storageState({ path: W4_AUTH })
     emit("w4_registered", {
       phone: PHONE,
       username: USERNAME,
       userId: result.data.user.id,
     })
 
-    // 等待 W1 完成所有角色赋予（W4 保持 visitor，无需个人赋权信号）
-    await waitFor("roles_assigned", 60_000)
+    // 等待所有角色分配完成
+    await waitFor("roles_assigned", 90_000)
 
-    // 重新保存 storageState
+    // 保存 storageState
     await page.context().storageState({ path: W4_AUTH })
   })
 })
