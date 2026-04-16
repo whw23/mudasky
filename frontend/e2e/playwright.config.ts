@@ -1,6 +1,7 @@
 /**
  * Playwright E2E 测试配置。
- * 4 个 project 对应 4 个 worker 角色，通过信号协调执行顺序。
+ * 三阶段执行：register → setup → main tests。
+ * 通过 project dependencies 保证执行顺序。
  */
 
 import { defineConfig } from "@playwright/test"
@@ -30,29 +31,57 @@ export default defineConfig({
     navigationTimeout: isRemote ? 30_000 : 20_000,
   },
   projects: [
+    /* ── 阶段 1：注册（W2/W3/W4 并行，无 auth） ── */
+    {
+      name: "w2-register",
+      testMatch: "w2/01-register.spec.ts",
+    },
+    {
+      name: "w3-register",
+      testMatch: "w3/01-register.spec.ts",
+    },
+    {
+      name: "w4-register",
+      testMatch: "w4/01-register.spec.ts",
+    },
+
+    /* ── 阶段 2：赋权 + 种子数据（W1，依赖注册完成） ── */
+    {
+      name: "w1-setup",
+      testMatch: "w1/01-setup.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w1.json") },
+      dependencies: ["w2-register", "w3-register", "w4-register"],
+    },
+
+    /* ── 阶段 3：主测试（依赖 setup 完成） ── */
     {
       name: "w1-superuser",
-      testMatch: "w1/**/*.spec.ts",
+      testMatch: "w1/0[2-9]-*.spec.ts",
       use: { storageState: path.join(AUTH_DIR, "w1.json") },
+      dependencies: ["w1-setup"],
     },
     {
       name: "w2-student",
-      testMatch: "w2/**/*.spec.ts",
+      testMatch: "w2/0[2-9]-*.spec.ts",
       use: { storageState: path.join(AUTH_DIR, "w2.json") },
+      dependencies: ["w1-setup"],
     },
     {
       name: "w3-advisor",
-      testMatch: "w3/**/*.spec.ts",
+      testMatch: "w3/0[2-9]-*.spec.ts",
       use: { storageState: path.join(AUTH_DIR, "w3.json") },
+      dependencies: ["w1-setup"],
     },
     {
       name: "w4-visitor",
-      testMatch: "w4/**/*.spec.ts",
+      testMatch: "w4/0[2-9]-*.spec.ts",
       use: { storageState: path.join(AUTH_DIR, "w4.json") },
+      dependencies: ["w1-setup"],
     },
     {
       name: "shared",
       testMatch: "shared/**/*.spec.ts",
+      dependencies: ["w1-setup"],
     },
   ],
 })

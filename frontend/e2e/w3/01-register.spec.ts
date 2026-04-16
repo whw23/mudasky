@@ -1,10 +1,10 @@
 /**
- * W3 注册测试。
- * 注册 → 发信号 → 等待 W1 赋权 → refresh token → 保存新 storageState。
+ * W3 注册。
+ * 注册新账号并保存 storageState。
  */
 
 import { test, expect } from "../fixtures/base"
-import { emit, waitFor } from "../helpers/signal"
+import { emit } from "../helpers/signal"
 import { getSmsCode } from "../helpers/sms"
 import * as path from "path"
 
@@ -14,9 +14,8 @@ const USERNAME = `E2E-advisor-${Date.now()}`
 
 test.describe("W3 注册", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
-  test.setTimeout(120_000)
 
-  test("自注册并等待赋权", async ({ page }) => {
+  test("自注册", async ({ page }) => {
     await page.goto("/")
     const code = await getSmsCode(page, PHONE)
     expect(code).toBeTruthy()
@@ -38,21 +37,11 @@ test.describe("W3 注册", () => {
     )
     expect(result.status).toBe(200)
 
+    await page.context().storageState({ path: W3_AUTH })
     emit("w3_registered", {
       phone: PHONE,
       username: USERNAME,
       userId: result.data.user.id,
     })
-
-    // 等待 W1 赋权
-    await waitFor("w3_advisor", 90_000)
-
-    // refresh token 获取新权限
-    await page.request.post("/api/auth/refresh", {
-      headers: { "X-Requested-With": "XMLHttpRequest" },
-    })
-
-    // 保存含新权限的 storageState
-    await page.context().storageState({ path: W3_AUTH })
   })
 })

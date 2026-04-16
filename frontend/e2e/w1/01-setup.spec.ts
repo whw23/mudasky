@@ -4,15 +4,35 @@
  */
 
 import { test, expect } from "../fixtures/base"
+import { chromium } from "@playwright/test"
 import { emit, waitFor } from "../helpers/signal"
+import * as path from "path"
+
+const W2_AUTH = path.join(__dirname, "..", ".auth", "w2.json")
+const W3_AUTH = path.join(__dirname, "..", ".auth", "w3.json")
+const BASE = process.env.BASE_URL || "http://localhost"
+
+/** 帮指定 worker 刷新 token（赋权后 JWT 需要更新）。 */
+async function refreshWorkerToken(authFile: string) {
+  const browser = await chromium.launch()
+  const ctx = await browser.newContext({ storageState: authFile })
+  const page = await ctx.newPage()
+  await page.goto(BASE)
+  await page.request.post("/api/auth/refresh", {
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+  })
+  await ctx.storageState({ path: authFile })
+  await browser.close()
+}
 
 test.describe("W1 初始化", () => {
   test.setTimeout(120_000)
 
   test("等待注册并赋权", async ({ page }) => {
-    const w2 = await waitFor<{ userId: string }>("w2_registered", 90_000)
-    const w3 = await waitFor<{ userId: string }>("w3_registered", 90_000)
-    await waitFor("w4_registered", 90_000)
+    // dependencies 保证注册已完成，信号文件已存在
+    const w2 = await waitFor<{ userId: string }>("w2_registered", 5_000)
+    const w3 = await waitFor<{ userId: string }>("w3_registered", 5_000)
+    await waitFor("w4_registered", 5_000)
 
     // 获取角色列表
     const rolesRes = await page.request.get("/api/admin/roles/meta/list", {
@@ -52,6 +72,10 @@ test.describe("W1 初始化", () => {
     )
     expect(assignW3.status()).toBe(200)
     emit("w3_advisor")
+
+    // 帮 W2/W3 刷新 token（获取新权限的 JWT）
+    await refreshWorkerToken(W2_AUTH)
+    await refreshWorkerToken(W3_AUTH)
 
     emit("roles_assigned")
   })
