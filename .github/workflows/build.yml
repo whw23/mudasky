@@ -146,8 +146,8 @@ jobs:
           DEBUG=false
           DB_HOST=db
           DB_PORT=5432
-          DB_NAME=${{ vars.DB_NAME }}
-          DB_USER=${{ vars.DB_USER }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           INTERNAL_SECRET=${{ secrets.INTERNAL_SECRET }}
           SMS_ACCESS_KEY_ID=${{ secrets.SMS_ACCESS_KEY_ID }}
@@ -182,16 +182,16 @@ jobs:
           ENVEOF
 
           cat > env/db.env << 'ENVEOF'
-          POSTGRES_DB=${{ vars.DB_NAME }}
-          POSTGRES_USER=${{ vars.DB_USER }}
+          POSTGRES_DB=${{ secrets.DB_NAME }}
+          POSTGRES_USER=${{ secrets.DB_USER }}
           POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
 
           cat > env/worker.env << 'ENVEOF'
           DB_HOST=db
           DB_PORT=5432
-          DB_NAME=${{ vars.DB_NAME }}
-          DB_USER=${{ vars.DB_USER }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
 
@@ -231,7 +231,7 @@ jobs:
               && sed -i "s/^DB_VERSION=.*/DB_VERSION=${DB_VER}/" .env \
               || echo "DB_VERSION=${DB_VER}" >> .env
 
-            DB_PORT="${{ vars.DB_EXTERNAL_PORT }}"
+            DB_PORT="${{ secrets.DB_EXTERNAL_PORT }}"
             if [ -n "$DB_PORT" ]; then
               grep -q '^DB_EXTERNAL_PORT=' .env 2>/dev/null \
                 && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=${DB_PORT}/" .env \
