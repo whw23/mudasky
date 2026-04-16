@@ -1,7 +1,7 @@
 /**
  * E2E 测试共享 fixtures。
  * 登录通过 globalSetup + storageState 处理。
- * 覆盖率收集（API 端点 + 页面路由）自动启用。
+ * 覆盖率收集（API 端点 + 页面路由 + 组件交互 + 安全场景）自动启用。
  */
 
 import { test as pwTest, expect, type Page } from "@playwright/test"
@@ -16,6 +16,8 @@ const LOCALE_PREFIX_RE = /^\/[a-z]{2}(?=\/)/
 
 const apiCalls = new Set<string>()
 const visitedRoutes = new Set<string>()
+const componentInteractions = new Set<string>()
+const securityScenarios = new Set<string>()
 let exitRegistered = false
 
 /** 注册进程退出钩子，将覆盖率数据写入磁盘。 */
@@ -26,27 +28,40 @@ function ensureExitHook() {
   const workerId = process.env.TEST_WORKER_INDEX || "0"
 
   process.on("exit", () => {
-    if (apiCalls.size === 0 && visitedRoutes.size === 0) return
+    if (apiCalls.size === 0 && visitedRoutes.size === 0 && componentInteractions.size === 0 && securityScenarios.size === 0) return
     fs.mkdirSync(COVERAGE_DIR, { recursive: true })
 
-    if (apiCalls.size > 0) {
-      fs.writeFileSync(
-        path.join(COVERAGE_DIR, `api-${workerId}.json`),
-        JSON.stringify([...apiCalls].sort(), null, 2),
-      )
+    const write = (name: string, data: Set<string>) => {
+      if (data.size > 0) {
+        fs.writeFileSync(
+          path.join(COVERAGE_DIR, `${name}-${workerId}.json`),
+          JSON.stringify([...data].sort(), null, 2),
+        )
+      }
     }
-    if (visitedRoutes.size > 0) {
-      fs.writeFileSync(
-        path.join(COVERAGE_DIR, `routes-${workerId}.json`),
-        JSON.stringify([...visitedRoutes].sort(), null, 2),
-      )
-    }
+
+    write("api", apiCalls)
+    write("routes", visitedRoutes)
+    write("components", componentInteractions)
+    write("security", securityScenarios)
   })
 }
 
 /** 将 API 路径中的 UUID 替换为 {id}。 */
 function normalizeApiPath(urlPath: string): string {
   return urlPath.replace(UUID_RE, "/{id}")
+}
+
+/** 记录组件交互。 */
+export function trackComponent(component: string, element: string): void {
+  ensureExitHook()
+  componentInteractions.add(`${component}::${element}`)
+}
+
+/** 记录安全场景。 */
+export function trackSecurity(category: string, scenario: string): void {
+  ensureExitHook()
+  securityScenarios.add(`${category}::${scenario}`)
 }
 
 /** 给 page 绑定覆盖率监听器。 */
