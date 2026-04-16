@@ -5,6 +5,8 @@
 - [ ] E2E 测试全覆盖
 - [ ] 前端 UI 审查
 - [ ] 压力测试
+- [ ] Docker 镜像压缩
+- [ ] 代码混淆与知识产权保护
 - [x] 清理过期文档
 - [x] 重启服务器 db 容器
 - [x] 合并 dev 到 main
@@ -183,3 +185,29 @@ E2E 和安全测试完成后，进行性能/压力测试：
 - 文件上传并发
 - SSR 页面渲染在高并发下的表现
 - 长时间运行稳定性（内存泄漏检测）
+
+## Docker 镜像压缩
+
+- 多阶段构建优化（builder → runner 分离）
+- 清理构建缓存和不必要的依赖
+- 使用 Alpine 基础镜像
+- 镜像层合并减少层数
+- 评估 distroless 基础镜像
+
+## 代码混淆与知识产权保护
+
+面向客户交付的 Docker 镜像，所有层的代码都需要保护：
+
+| 层 | 语言 | 保护方案 |
+|----|------|----------|
+| Frontend | JS/TS | Next.js 生产构建混淆 + 不含 source map |
+| Backend | Python | pyc 编译 + pyarmor/cython 混淆 + 删除 .py 源文件 |
+| Gateway | Lua | luac 编译 + 混淆 + 删除 .lua 源文件 |
+| Database | SQL | init.sql 最小化，敏感逻辑移到后端 |
+
+其他措施：
+
+- Docker 镜像不含 .git、docs、tests 等开发文件
+- 环境变量注入敏感配置（密钥、连接串），不硬编码
+- 评估 Docker 镜像加密方案（registry 级别）
+- 客户拿到的镜像只有运行时产物，无源码

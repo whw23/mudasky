@@ -259,21 +259,26 @@ W4: 底部 ICP 备案
 W4: 院校搜索筛选（国家/搜索框/重置）
 ```
 
-## Admin 页面全覆盖（W1 负责）
+## Admin 页面覆盖（W1 + W3 分担）
 
 ```text
+# W1 负责（CRUD + 设置 + 用户管理）
 W1: /admin/dashboard → 仪表盘
-W1: /admin/users → 用户管理（列表/搜索/展开面板）
-W1: /admin/roles → 角色管理（CRUD/权限树）
+W1: /admin/users → 用户管理（列表/搜索/展开面板/状态切换/密码重置/强制登出/删除）
+W1: /admin/roles → 角色管理（CRUD/权限树/排序）
 W1: /admin/articles → 文章管理（CRUD/状态筛选）
 W1: /admin/categories → 分类管理（CRUD）
 W1: /admin/cases → 案例管理（CRUD）
 W1: /admin/universities → 院校管理（CRUD）
-W1: /admin/students → 学生管理（列表/展开面板）
-W1: /admin/contacts → 联系人管理（列表/展开面板/状态标记/备注）
 W1: /admin/general-settings → 通用设置（编辑）
 W1: /admin/web-settings → 网站设置（预览/ConfigEditDialog 编辑）
 W1: /admin/documents → 管理员文档查看
+
+# W3 负责（学生/联系人展开面板交互）
+W3: /admin/students → 学生管理（列表/展开面板/激活checkbox/备注/顾问分配/降级）
+W3: /admin/contacts → 联系人管理（列表/展开面板/状态标记/备注/升级学生/联系历史）
+W3: /admin/dashboard → 仪表盘（advisor 视角）
+W3: admin 侧边栏导航（advisor 可见的菜单项）
 ```
 
 ## Portal 页面全覆盖（W2 负责）
@@ -349,7 +354,7 @@ projects: [
 | 页面组 | 路由数 | 负责 worker |
 |--------|--------|-------------|
 | 公开页面（18） | /、/about、/articles、/news 等 | W4 |
-| admin 页面（12） | /admin/dashboard 等 | W1 |
+| admin 页面（12） | W1: dashboard/users/roles/articles/categories/cases/universities/settings(×2)/documents; W3: students/contacts/dashboard | W1+W3 |
 | portal 页面（3） | /portal/overview 等 | W2 |
 
 ### 维度 3: 交互组件覆盖率
@@ -363,8 +368,8 @@ projects: [
   { "component": "LoginModal", "elements": ["登录按钮", "tab切换", "用户名输入", "密码输入", "登录提交", "关闭按钮"], "worker": "W2" },
   { "component": "RegisterModal", "elements": ["手机号输入", "验证码输入", "获取验证码", "注册提交"], "worker": "W2" },
   { "component": "UserExpandPanel", "elements": ["状态切换", "角色下拉", "保存角色", "配额输入", "保存配额", "密码重置", "强制登出", "删除用户"], "worker": "W1" },
-  { "component": "StudentExpandPanel", "elements": ["激活checkbox", "备注输入", "保存编辑", "顾问分配", "降级按钮", "确认降级"], "worker": "W1" },
-  { "component": "ContactExpandPanel", "elements": ["状态下拉", "保存状态", "备注输入", "添加备注", "升级学生", "确认升级"], "worker": "W1" },
+  { "component": "StudentExpandPanel", "elements": ["激活checkbox", "备注输入", "保存编辑", "顾问分配", "降级按钮", "确认降级"], "worker": "W3" },
+  { "component": "ContactExpandPanel", "elements": ["状态下拉", "保存状态", "备注输入", "添加备注", "升级学生", "确认升级"], "worker": "W3" },
   { "component": "ConfigEditDialog", "elements": ["文本输入", "保存", "取消"], "worker": "W1" },
   { "component": "ArticleEditor", "elements": ["标题输入", "内容编辑", "分类选择", "状态切换", "保存"], "worker": "W1" },
   { "component": "RoleDialog", "elements": ["角色名输入", "权限树勾选", "保存"], "worker": "W1" },
@@ -451,16 +456,15 @@ projects: [
 
 ```text
 frontend/e2e/
-├── w1/                              # superuser 测试
+├── w1/                              # superuser 测试（~45 tests）
 │   ├── 01-setup.spec.ts             # 等待注册 → 赋权 → 创建数据
 │   ├── 02-admin-crud.spec.ts        # 文章/案例/院校/分类 CRUD
 │   ├── 03-role-management.spec.ts   # 角色 CRUD/权限树/排序
-│   ├── 04-user-management.spec.ts   # 用户搜索/展开面板/状态切换
-│   ├── 05-student-contacts.spec.ts  # 学生/联系人管理
-│   ├── 06-settings.spec.ts          # 通用设置/网站设置/ConfigEditDialog
-│   ├── 07-security.spec.ts          # CSRF/XSS/SQL注入/输入验证
-│   ├── 08-sidebar-navigation.spec.ts # 侧边栏/页面导航
-│   └── 09-disable-delete.spec.ts    # 禁用/启用/删除用户（最后执行）
+│   ├── 04-user-management.spec.ts   # 用户搜索/展开面板/状态切换/配额/密码/强制登出
+│   ├── 05-settings.spec.ts          # 通用设置/网站设置/ConfigEditDialog
+│   ├── 06-security.spec.ts          # CSRF/XSS/SQL注入/输入验证
+│   ├── 07-sidebar-navigation.spec.ts # 侧边栏/页面导航/仪表盘
+│   └── 08-disable-delete.spec.ts    # 禁用/启用/删除用户（最后执行）
 ├── w2/                              # student 测试
 │   ├── 01-register.spec.ts          # 自注册 → 等待赋权
 │   ├── 02-portal-profile.spec.ts    # 个人资料/修改用户名/密码/手机号
@@ -470,11 +474,13 @@ frontend/e2e/
 │   ├── 06-permission.spec.ts        # 权限正例（portal）/反例（admin）
 │   ├── 07-security.spec.ts          # Token轮换/文件上传安全/路径穿越/IDOR
 │   └── 08-portal-navigation.spec.ts # portal 侧边栏/导航
-├── w3/                              # advisor 测试
+├── w3/                              # advisor 测试（~30 tests）
 │   ├── 01-register.spec.ts          # 自注册 → 等待赋权
-│   ├── 02-student-view.spec.ts      # 查看学生信息/文档
-│   ├── 03-contacts.spec.ts          # 联系人管理
-│   └── 04-permission.spec.ts        # 权限正例（students/contacts）/反例（articles/users）
+│   ├── 02-student-management.spec.ts # 学生列表/展开面板（checkbox/备注/顾问分配/降级）
+│   ├── 03-student-documents.spec.ts # 查看学生文档列表
+│   ├── 04-contacts.spec.ts          # 联系人列表/展开面板（状态/备注/升级/历史）
+│   ├── 05-permission.spec.ts        # 权限正例（students/contacts）/反例（articles/users）
+│   └── 06-sidebar-navigation.spec.ts # advisor 侧边栏/仪表盘
 ├── w4/                              # visitor 测试
 │   ├── 01-register.spec.ts          # 自注册 → 等待角色分配完成
 │   ├── 02-public-pages.spec.ts      # 公开页面全覆盖（18 个路由）
@@ -527,9 +533,9 @@ frontend/e2e/
 | 新建 | `frontend/e2e/helpers/signal.ts` |
 | 新建 | `frontend/e2e/helpers/components.json` |
 | 新建 | `frontend/e2e/helpers/security-scenarios.json` |
-| 新建 | `frontend/e2e/w1/*.spec.ts`（9 个） |
+| 新建 | `frontend/e2e/w1/*.spec.ts`（8 个） |
 | 新建 | `frontend/e2e/w2/*.spec.ts`（8 个） |
-| 新建 | `frontend/e2e/w3/*.spec.ts`（4 个） |
+| 新建 | `frontend/e2e/w3/*.spec.ts`（6 个） |
 | 新建 | `frontend/e2e/w4/*.spec.ts`（8 个） |
 | 新建 | `frontend/e2e/shared/*.spec.ts`（1 个） |
 | 重写 | `frontend/e2e/global-setup.ts` |
