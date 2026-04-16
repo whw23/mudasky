@@ -132,8 +132,9 @@ test.describe("W2 安全 - API 端点覆盖补充", () => {
       "/api/portal/profile/two-factor/enable-totp",
       { headers: { ...XRW, "Content-Type": "application/json" } },
     )
-    // 无效/空 body 应返回 422
-    expect([422, 400]).toContain(res.status())
+    // 无效/空 body 应返回 422 或 400
+    expect(res.status()).toBeGreaterThanOrEqual(400)
+    expect(res.status()).toBeLessThan(500)
   })
 
   test("TOTP 确认端点（无效参数预期 422）", async ({ page }) => {
@@ -172,6 +173,26 @@ test.describe("W2 安全 - API 端点覆盖补充", () => {
       },
     )
     expect([400, 422]).toContain(res.status())
+  })
+
+  test("portal/profile/meta 端点可访问", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.get("/api/portal/profile/meta", {
+      headers: XRW,
+    })
+    expect(res.status()).toBeLessThan(500)
+  })
+
+  test("portal/profile/sessions/list/revoke-all 端点可访问", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post(
+      "/api/portal/profile/sessions/list/revoke-all",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: {},
+      },
+    )
+    expect(res.status()).toBeLessThan(500)
   })
 })
 

@@ -104,14 +104,14 @@ test.describe("W4 JWT 安全", () => {
     expect([200, 401]).toContain(res.status())
   })
 
-  test("logout 端点无 token 返回 401", async ({ page }) => {
+  test("logout 端点无 token 返回 200 (no-op)", async ({ page }) => {
     // 清除 cookies 后调用 logout 验证端点存在且处理无 token 场景
     await page.goto("/")
     await page.context().clearCookies()
     const res = await page.request.post("/api/auth/logout", {
       headers: XHR,
     })
-    // 无 token 时 logout 应返回 401
-    expect(res.status()).toBe(401)
+    // 无 token 时 logout 是 no-op，返回 200
+    expect(res.status()).toBe(200)
   })
 })

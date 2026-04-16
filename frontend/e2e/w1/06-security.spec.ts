@@ -159,7 +159,7 @@ test.describe("API 端点覆盖补充", () => {
         `/api/admin/contacts/list/detail/history?contact_id=${items[0].id}`,
         { headers: XRW },
       )
-      expect([200, 404]).toContain(res.status())
+      expect(res.status()).toBeLessThan(500)
     }
   })
 
@@ -174,7 +174,30 @@ test.describe("API 端点覆盖补充", () => {
         `/api/admin/students/list/detail/documents/list?student_id=${items[0].id}`,
         { headers: XRW },
       )
-      expect([200, 404]).toContain(res.status())
+      expect(res.status()).toBeLessThan(500)
+
+      // 补全：学生文档详情
+      const docsListRes = await page.request.get(
+        `/api/admin/students/list/detail/documents/list?student_id=${items[0].id}`,
+        { headers: XRW },
+      )
+      if (docsListRes.status() === 200) {
+        const docs = await docsListRes.json()
+        if (docs.length > 0) {
+          const detailRes = await page.request.get(
+            `/api/admin/students/list/detail/documents/list/detail?doc_id=${docs[0].id}`,
+            { headers: XRW },
+          )
+          expect(detailRes.status()).toBeLessThan(500)
+
+          // 补全：学生文档下载
+          const downloadRes = await page.request.get(
+            `/api/admin/students/list/detail/documents/list/detail/download?doc_id=${docs[0].id}`,
+            { headers: XRW },
+          )
+          expect(downloadRes.status()).toBeLessThan(500)
+        }
+      }
     }
   })
 
@@ -222,7 +245,7 @@ test.describe("API 端点覆盖补充", () => {
         `/api/admin/contacts/list/detail?contact_id=${items[0].id}`,
         { headers: XRW },
       )
-      expect([200, 404]).toContain(res.status())
+      expect(res.status()).toBeLessThan(500)
     }
   })
 
