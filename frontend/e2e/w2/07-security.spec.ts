@@ -123,6 +123,58 @@ test.describe("W2 安全 - 路径遍历", () => {
   })
 })
 
+test.describe("W2 安全 - API 端点覆盖补充", () => {
+  const XRW = { "X-Requested-With": "XMLHttpRequest" }
+
+  test("TOTP 启用端点（无效参数预期 422）", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post(
+      "/api/portal/profile/two-factor/enable-totp",
+      { headers: { ...XRW, "Content-Type": "application/json" } },
+    )
+    // 无效/空 body 应返回 422
+    expect([422, 400]).toContain(res.status())
+  })
+
+  test("TOTP 确认端点（无效参数预期 422）", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post(
+      "/api/portal/profile/two-factor/confirm-totp",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: { code: "000000" },
+      },
+    )
+    // 无 TOTP secret 或无效 code
+    expect([400, 422]).toContain(res.status())
+  })
+
+  test("删除账号端点（无验证码预期 422）", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post(
+      "/api/portal/profile/delete-account",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: {},
+      },
+    )
+    // 缺少验证码应返回 422
+    expect([400, 422]).toContain(res.status())
+  })
+
+  test("修改手机号端点（无效参数预期 422）", async ({ page }) => {
+    await page.goto("/")
+    const res = await page.request.post(
+      "/api/portal/profile/phone",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: {},
+      },
+    )
+    expect([400, 422]).toContain(res.status())
+  })
+})
+
 test.describe("W2 安全 - IDOR 准备", () => {
   test("上传文档并发送 IDOR 信号", async ({ page }) => {
     await page.goto("/")

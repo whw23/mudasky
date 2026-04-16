@@ -123,6 +123,125 @@ test.describe("SQL 注入防护", () => {
   })
 })
 
+test.describe("API 端点覆盖补充", () => {
+  const XRW = { "X-Requested-With": "XMLHttpRequest" }
+
+  test("admin/roles/meta 前置数据可访问", async ({ page }) => {
+    const res = await page.request.get("/api/admin/roles/meta", {
+      headers: XRW,
+    })
+    expect(res.status()).toBe(200)
+  })
+
+  test("admin/roles/meta/list/detail 角色详情可访问", async ({ page }) => {
+    // 先获取角色列表拿到 ID
+    const listRes = await page.request.get("/api/admin/roles/meta/list", {
+      headers: XRW,
+    })
+    const roles = await listRes.json()
+    if (roles.length > 0) {
+      const res = await page.request.get(
+        `/api/admin/roles/meta/list/detail?role_id=${roles[0].id}`,
+        { headers: XRW },
+      )
+      expect(res.status()).toBe(200)
+    }
+  })
+
+  test("admin/contacts/list/detail/history 联系历史可访问", async ({ page }) => {
+    const listRes = await page.request.get("/api/admin/contacts/list", {
+      headers: XRW,
+    })
+    const data = await listRes.json()
+    const items = data.items ?? data ?? []
+    if (items.length > 0) {
+      const res = await page.request.get(
+        `/api/admin/contacts/list/detail/history?contact_id=${items[0].id}`,
+        { headers: XRW },
+      )
+      expect([200, 404]).toContain(res.status())
+    }
+  })
+
+  test("admin/students/list/detail/documents 学生文档可访问", async ({ page }) => {
+    const listRes = await page.request.get("/api/admin/students/list", {
+      headers: XRW,
+    })
+    const data = await listRes.json()
+    const items = data.items ?? data ?? []
+    if (items.length > 0) {
+      const res = await page.request.get(
+        `/api/admin/students/list/detail/documents/list?student_id=${items[0].id}`,
+        { headers: XRW },
+      )
+      expect([200, 404]).toContain(res.status())
+    }
+  })
+
+  test("admin/contacts/list/detail/upgrade 无效 ID 返回错误", async ({ page }) => {
+    const res = await page.request.post(
+      "/api/admin/contacts/list/detail/upgrade",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: { contact_id: "00000000-0000-0000-0000-000000000000" },
+      },
+    )
+    expect([400, 404, 422]).toContain(res.status())
+  })
+
+  test("admin/students/list/detail/downgrade 无效 ID 返回错误", async ({ page }) => {
+    const res = await page.request.post(
+      "/api/admin/students/list/detail/downgrade",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: { student_id: "00000000-0000-0000-0000-000000000000" },
+      },
+    )
+    expect([400, 404, 422]).toContain(res.status())
+  })
+
+  test("admin/students/list/detail/assign-advisor 无效 ID 返回错误", async ({ page }) => {
+    const res = await page.request.post(
+      "/api/admin/students/list/detail/assign-advisor",
+      {
+        headers: { ...XRW, "Content-Type": "application/json" },
+        data: { student_id: "00000000-0000-0000-0000-000000000000", advisor_id: "" },
+      },
+    )
+    expect([400, 404, 422]).toContain(res.status())
+  })
+
+  test("admin/contacts/list/detail 联系人详情可访问", async ({ page }) => {
+    const listRes = await page.request.get("/api/admin/contacts/list", {
+      headers: XRW,
+    })
+    const data = await listRes.json()
+    const items = data.items ?? data ?? []
+    if (items.length > 0) {
+      const res = await page.request.get(
+        `/api/admin/contacts/list/detail?contact_id=${items[0].id}`,
+        { headers: XRW },
+      )
+      expect([200, 404]).toContain(res.status())
+    }
+  })
+
+  test("admin/students/list/detail 学生详情可访问", async ({ page }) => {
+    const listRes = await page.request.get("/api/admin/students/list", {
+      headers: XRW,
+    })
+    const data = await listRes.json()
+    const items = data.items ?? data ?? []
+    if (items.length > 0) {
+      const res = await page.request.get(
+        `/api/admin/students/list/detail?student_id=${items[0].id}`,
+        { headers: XRW },
+      )
+      expect([200, 404]).toContain(res.status())
+    }
+  })
+})
+
 test.describe("输入验证", () => {
   test("空 body — 返回 422", async ({ page }) => {
     const res = await page.request.post("/api/admin/categories/list/create", {

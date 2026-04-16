@@ -76,9 +76,8 @@ test.describe("W4 搜索筛选", () => {
       // 切换回中文
       const localeSelect2 = page.locator("header select").first()
       await localeSelect2.selectOption("zh")
-      // 等待导航完成（客户端路由可能需要时间）
-      await page.waitForLoadState("networkidle").catch(() => {})
-      await expect(page).toHaveURL(/\/zh|^http:\/\/[^/]+\/$/, { timeout: 15_000 })
+      // 等待导航完成 — URL 不再包含 /en（可能是 /zh 或 /）
+      await expect(page).not.toHaveURL(/\/en/, { timeout: 15_000 })
 
       trackComponent("LocaleSwitcher", "语言切换下拉")
     }

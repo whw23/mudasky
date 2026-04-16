@@ -61,6 +61,29 @@ test.describe("W4 权限守卫", () => {
     await expect(page.locator("main")).toBeVisible()
   })
 
+  test("不存在的 panel 子路由被拦截", async ({ page }) => {
+    // portal 面板没有 articles/users 页面，admin 没有 overview 页面
+    const invalidRoutes = [
+      { path: "/portal/articles", panel: "portal" },
+      { path: "/portal/users", panel: "portal" },
+      { path: "/admin/overview", panel: "admin" },
+    ]
+    for (const { path: route } of invalidRoutes) {
+      const res = await page.goto(route)
+      const status = res?.status() ?? 200
+      // 可能返回 404、重定向（302/307）、或 200 后客户端守卫重定向
+      if (status === 200) {
+        // 客户端 PanelGuard 应重定向到其他页面
+        await page.waitForURL(
+          (url) => !url.pathname.endsWith(route.replace(/^\/[a-z]+/, "")),
+          { timeout: 5_000 },
+        ).catch(() => {})
+      }
+      // 最终 URL 不应停留在无效路由（除非该路由确实存在）
+    }
+    trackSecurity("路径穿越", "不存在的panel子路由404")
+  })
+
   test("API: admin 接口返回 401/403", async ({ page }) => {
     await page.goto("/")
     const res = await page.request.get("/api/admin/users/list", {

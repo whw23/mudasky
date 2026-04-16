@@ -71,6 +71,40 @@ test.describe("W4 公开详情页", () => {
     }
   })
 
+  test("SSR 详情 API 端点覆盖", async ({ page }) => {
+    // SSR 详情页在服务端调用这些 API，浏览器监听器无法捕获
+    await page.goto("/")
+    const articleRes = await page.request.get(
+      `/api/public/content/article/${articleId}`,
+      { headers: XHR },
+    )
+    expect([200, 304]).toContain(articleRes.status())
+
+    const caseRes = await page.request.get(
+      `/api/public/cases/detail/${caseId}`,
+      { headers: XHR },
+    )
+    expect([200, 304]).toContain(caseRes.status())
+
+    const uniRes = await page.request.get(
+      `/api/public/universities/detail/${universityId}`,
+      { headers: XHR },
+    )
+    expect([200, 304]).toContain(uniRes.status())
+  })
+
+  test("留学生活详情页加载", async ({ page }) => {
+    await page.goto(`/life/${articleId}`)
+    await page.locator("main").waitFor()
+    await expect(page.locator("main")).toBeVisible()
+  })
+
+  test("申请条件详情页加载", async ({ page }) => {
+    await page.goto(`/requirements/${articleId}`)
+    await page.locator("main").waitFor()
+    await expect(page.locator("main")).toBeVisible()
+  })
+
   test("出国留学详情页加载", async ({ page }) => {
     await page.goto(`/study-abroad/${articleId}`)
     await page.locator("main").waitFor()

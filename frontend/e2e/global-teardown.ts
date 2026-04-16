@@ -198,9 +198,28 @@ async function printCoverageReport(cookies: string): Promise<void> {
     (s) => `${s.category}::${s.scenario}`,
   )
 
+  // 排除内部/基础设施端点（不由浏览器直接调用）
+  const EXCLUDED_ENDPOINTS = [
+    "POST /api/auth/refresh-token-hash",
+    "GET /api/health",
+    "GET /api/version",
+  ]
+  apiEndpoints = apiEndpoints.filter(
+    (ep) => !EXCLUDED_ENDPOINTS.includes(ep),
+  )
+
   /* ── 1. API 覆盖率 ── */
-  const coveredApis = apiEndpoints.filter((ep) => coverage.apiCalls.has(ep))
-  const uncoveredApis = apiEndpoints.filter((ep) => !coverage.apiCalls.has(ep))
+  // 匹配时考虑 OpenAPI 路径参数（如 {key}、{id}）
+  function isApiCovered(ep: string, calls: Set<string>): boolean {
+    if (calls.has(ep)) return true
+    // 将 OpenAPI 路径参数 {xxx} 转为正则匹配
+    const [method, ...pathParts] = ep.split(" ")
+    const pathPattern = pathParts.join(" ").replace(/\{[^}]+\}/g, "[^/]+")
+    const regex = new RegExp(`^${method} ${pathPattern}$`)
+    return Array.from(calls).some((call) => regex.test(call))
+  }
+  const coveredApis = apiEndpoints.filter((ep) => isApiCovered(ep, coverage.apiCalls))
+  const uncoveredApis = apiEndpoints.filter((ep) => !isApiCovered(ep, coverage.apiCalls))
   const apiPct = apiEndpoints.length > 0
     ? ((coveredApis.length / apiEndpoints.length) * 100).toFixed(1)
     : "0.0"

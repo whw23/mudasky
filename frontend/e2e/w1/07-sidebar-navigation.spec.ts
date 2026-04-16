@@ -121,6 +121,12 @@ test.describe("侧边栏导航", () => {
     trackComponent("AdminSidebar", "院校管理导航")
   })
 
+  test("文档管理页面可访问", async ({ page }) => {
+    await gotoAdmin(page, "/admin/documents")
+    await page.locator("main").waitFor()
+    await expect(page.locator("main")).toBeVisible()
+  })
+
   test("当前菜单高亮状态", async ({ page }) => {
     await gotoAdmin(page, "/admin/users")
     // 用户管理链接应有激活样式（bg-primary/20 class）

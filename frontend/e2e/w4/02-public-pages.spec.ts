@@ -94,6 +94,25 @@ test.describe("W4 公开页面", () => {
     await expect(page.locator("main")).toBeVisible()
   })
 
+  test("公开 API 端点覆盖（SSR 发起，手动补录）", async ({ page }) => {
+    await page.goto("/")
+    // SSR 页面在服务端调用这些 API，浏览器监听器无法捕获，手动触发覆盖
+    const endpoints = [
+      "/api/public/cases/list",
+      "/api/public/universities/list",
+      "/api/public/universities/countries",
+      "/api/public/universities/provinces",
+      "/api/public/universities/cities",
+      "/api/public/content/articles",
+      "/api/public/content/categories",
+      "/api/public/config/panel-config",
+    ]
+    for (const ep of endpoints) {
+      const res = await page.request.get(ep, { headers: XHR })
+      expect([200, 304]).toContain(res.status())
+    }
+  })
+
   test("负向：不存在的公开路由返回 404 页面", async ({ page }) => {
     const res = await page.goto("/this-page-does-not-exist-12345")
     // Next.js 404 页面仍然返回 HTTP 404

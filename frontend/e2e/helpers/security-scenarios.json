@@ -28,5 +28,6 @@
   { "category": "输入验证", "scenario": "空body返回422" },
   { "category": "输入验证", "scenario": "无效JSON返回422" },
   { "category": "输入验证", "scenario": "超长字符串不500" },
-  { "category": "路径穿越", "scenario": "文档下载路径穿越被拒" }
+  { "category": "路径穿越", "scenario": "文档下载路径穿越被拒" },
+  { "category": "路径穿越", "scenario": "不存在的panel子路由404" }
 ]

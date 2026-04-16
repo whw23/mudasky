@@ -18,8 +18,14 @@ async function refreshWorkerToken(authFile: string) {
   const ctx = await browser.newContext({ storageState: authFile })
   const page = await ctx.newPage()
   await page.goto(BASE)
-  await page.request.post("/api/auth/refresh", {
-    headers: { "X-Requested-With": "XMLHttpRequest" },
+  // 必须用 page.evaluate(fetch) 而非 page.request.post，
+  // 后者不会让浏览器处理 Set-Cookie，导致 storageState 保存旧 cookie。
+  await page.evaluate(async () => {
+    await fetch("/api/auth/refresh", {
+      method: "POST",
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      credentials: "include",
+    })
   })
   await ctx.storageState({ path: authFile })
   await browser.close()
