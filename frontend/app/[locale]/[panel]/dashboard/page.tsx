@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
             <PenLine className="mr-2 size-4" />
             {t("writeArticle")}
           </Button>
-          <Button variant="outline" render={<Link href="/admin/settings" />}>
+          <Button variant="outline" render={<Link href="/admin/web-settings" />}>
             <Settings className="mr-2 size-4" />
             {t("systemSettings")}
           </Button>
