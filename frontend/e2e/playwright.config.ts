@@ -1,21 +1,21 @@
 /**
  * Playwright E2E 测试配置。
- * 通过 http://localhost 走 gateway 完整链路。
- * globalSetup 负责登录并保存 storageState。
+ * 4 个 project 对应 4 个 worker 角色。
  */
 
 import { defineConfig } from "@playwright/test"
 import * as path from "path"
 
-const AUTH_FILE = path.join(__dirname, ".auth", "admin.json")
 const isRemote = !!process.env.BASE_URL
+const AUTH_DIR = path.join(__dirname, ".auth")
 
 export default defineConfig({
   testDir: ".",
   testMatch: "**/*.spec.ts",
   timeout: isRemote ? 60_000 : 30_000,
-  retries: 1,
-  workers: 2,
+  retries: 0,
+  workers: 4,
+  fullyParallel: true,
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   expect: {
@@ -24,7 +24,6 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_URL || "http://localhost",
     locale: "zh-CN",
-    storageState: AUTH_FILE,
     screenshot: "only-on-failure",
     trace: "on-first-retry",
     actionTimeout: isRemote ? 15_000 : 10_000,
@@ -32,8 +31,28 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
-      use: { browserName: "chromium" },
+      name: "w1-superuser",
+      testMatch: "w1/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w1.json") },
+    },
+    {
+      name: "w2-student",
+      testMatch: "w2/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w2.json") },
+    },
+    {
+      name: "w3-advisor",
+      testMatch: "w3/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w3.json") },
+    },
+    {
+      name: "w4-visitor",
+      testMatch: "w4/**/*.spec.ts",
+      use: { storageState: path.join(AUTH_DIR, "w4.json") },
+    },
+    {
+      name: "shared",
+      testMatch: "shared/**/*.spec.ts",
     },
   ],
 })
