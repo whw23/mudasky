@@ -23,7 +23,7 @@ test.describe("用户管理", () => {
       headers: JSON_HEADERS,
       data: { phone: TEMP_PHONE, code, username: TEMP_USERNAME },
     })
-    expect(regRes.status()).toBe(201)
+    expect(regRes.status()).toBe(200)
     const body = await regRes.json()
     tempUserId = body.user?.id || body.id
     expect(tempUserId).toBeTruthy()

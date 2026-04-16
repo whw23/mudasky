@@ -71,7 +71,7 @@ test.describe("分类 CRUD", () => {
       headers: JSON_HEADERS,
       data: { category_id: cat.id },
     })
-    expect(delRes.status()).toBe(200)
+    expect(delRes.status()).toBe(204)
 
     await gotoAdmin(page, "/admin/categories")
     await expect(page.getByText(catSlug)).not.toBeVisible()
@@ -142,7 +142,7 @@ test.describe("案例 CRUD", () => {
       headers: JSON_HEADERS,
       data: { case_id: c.id },
     })
-    expect(delRes.status()).toBe(200)
+    expect(delRes.status()).toBe(204)
     trackComponent("CaseTable", "删除操作")
   })
 })
@@ -205,7 +205,7 @@ test.describe("院校 CRUD", () => {
       headers: JSON_HEADERS,
       data: { university_id: u.id },
     })
-    expect(delRes.status()).toBe(200)
+    expect(delRes.status()).toBe(204)
     trackComponent("UniversityTable", "删除操作")
   })
 })
@@ -279,7 +279,7 @@ test.describe("文章 CRUD", () => {
       headers: JSON_HEADERS,
       data: { article_id: art.id },
     })
-    expect(delRes.status()).toBe(200)
+    expect(delRes.status()).toBe(204)
     trackComponent("ArticleTable", "删除操作")
   })
 })

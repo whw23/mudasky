@@ -13,7 +13,8 @@ export async function getSmsCode(page: Page, phone: string): Promise<string> {
 
   // 通过 cookie 传递 internal_secret
   if (internalSecret) {
-    const baseURL = page.context().pages()[0]?.url() || "http://localhost";
+    const rawURL = page.context().pages()[0]?.url() || "";
+    const baseURL = rawURL.startsWith("http") ? rawURL : (process.env.BASE_URL || "http://localhost");
     const domain = new URL(baseURL).hostname;
     await page.context().addCookies([
       { name: "internal_secret", value: internalSecret, domain, path: "/" },

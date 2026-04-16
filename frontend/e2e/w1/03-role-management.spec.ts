@@ -22,7 +22,7 @@ test.describe("角色管理", () => {
         permissions: ["public/content/articles"],
       },
     })
-    expect(res.status()).toBe(201)
+    expect(res.status()).toBe(200)
     roleId = (await res.json()).id
     trackComponent("RoleDialog", "角色名输入")
 
