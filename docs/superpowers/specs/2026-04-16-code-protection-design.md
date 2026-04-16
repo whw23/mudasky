@@ -137,18 +137,44 @@ COPY --from=builder /build/lua/*.luac /usr/local/openresty/nginx/lua/
 
 #### 4.1 迁移步骤
 
-1. 将 `env/` 目录下的密钥添加为 GitHub Secrets：
+1. 将密钥和敏感初始化数据添加为 GitHub Secrets：
+
+**环境变量密钥：**
 
 | Secret Name | 来源 |
 |-------------|------|
 | `DB_PASSWORD` | `env/db.env` |
 | `JWT_SECRET` | `env/gateway.env` |
 | `INTERNAL_SECRET` | `env/backend.env` |
-| `SMS_ACCESS_KEY_ID` | `env/backend.env`（如有） |
-| `SMS_ACCESS_KEY_SECRET` | `env/backend.env`（如有） |
+| `SMS_ACCESS_KEY_ID` | 阿里云短信（对接后） |
+| `SMS_ACCESS_KEY_SECRET` | 阿里云短信（对接后） |
 
-2. CI 中从 Secrets 生成 .env 文件并 scp 到服务器
-3. 本地开发用 `.env.example` 模板，实际值在 `.env`（已在 .gitignore 中）
+**种子用户（用户名 + 密码 + 手机号）：**
+
+| Secret Name | 说明 |
+|-------------|------|
+| `SEED_USER_1_USERNAME` | 主管理员用户名 |
+| `SEED_USER_1_PASSWORD` | 主管理员密码 |
+| `SEED_USER_2_USERNAME` | 管理员 2 用户名 |
+| `SEED_USER_2_PASSWORD` | 管理员 2 密码 |
+| `SEED_USER_2_PHONE` | 管理员 2 手机号 |
+| `SEED_USER_3_USERNAME` | 管理员 3 用户名 |
+| `SEED_USER_3_PASSWORD` | 管理员 3 密码 |
+| `SEED_USER_3_PHONE` | 管理员 3 手机号 |
+| `SEED_USER_E2E_USERNAME` | E2E 测试用户名 |
+| `SEED_USER_E2E_PASSWORD` | E2E 测试密码 |
+
+**联系方式（客户可自定义）：**
+
+| Secret Name | 说明 |
+|-------------|------|
+| `CONTACT_ADDRESS` | 公司地址 |
+| `CONTACT_PHONE` | 公司电话 |
+| `CONTACT_EMAIL` | 公司邮箱 |
+
+2. CI 中从 Secrets 生成 .env 文件（含种子用户配置）并 scp 到服务器
+3. `seed_user.py` 改为从环境变量读取用户名/密码/手机号，不再硬编码
+4. 本地开发用 `.env.example` 模板，实际值在 `.env`（已在 .gitignore 中）
 
 #### 4.2 CI 改动
 
