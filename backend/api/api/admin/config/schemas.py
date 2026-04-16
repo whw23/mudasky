@@ -59,7 +59,7 @@ class ContactInfoValue(BaseModel):
     phone: str = Field(..., description="电话")
     email: str = Field(..., description="邮箱")
     wechat: str = Field("", description="微信号")
-    office_hours: str = Field("", description="办公时间")
+    registered_address: str = Field("", description="注册地")
 
 
 class SiteInfoValue(BaseModel):

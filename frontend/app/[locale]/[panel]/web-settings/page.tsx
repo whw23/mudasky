@@ -65,7 +65,7 @@ const DEFAULT_RAW: RawConfig = {
     logo_url: '', favicon_url: '', wechat_qr_url: '', company_name: '', icp_filing: '',
   },
   contactInfo: {
-    address: '', phone: '', email: '', wechat: '', office_hours: '',
+    address: '', phone: '', email: '', wechat: '', registered_address: '',
   },
   homepageStats: [],
   aboutInfo: {
@@ -186,7 +186,7 @@ export default function WebSettingsPage() {
             { key: 'phone', label: '电话', type: 'text' as const, localized: false },
             { key: 'email', label: '邮箱', type: 'text' as const, localized: false },
             { key: 'wechat', label: '微信号', type: 'text' as const, localized: false },
-            { key: 'office_hours', label: '办公时间', type: 'text' as const, localized: true },
+            { key: 'registered_address', label: '办公时间', type: 'text' as const, localized: true },
           ],
           configKey: 'contact_info',
           data: rawConfig.contactInfo,

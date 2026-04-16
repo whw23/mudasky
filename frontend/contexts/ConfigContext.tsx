@@ -41,7 +41,7 @@ const DEFAULT_CONTACT_INFO: ContactInfo = {
   phone: '',
   email: '',
   wechat: '',
-  office_hours: '',
+  registered_address: '',
 }
 
 /** 默认品牌信息（兜底） */
@@ -186,7 +186,7 @@ interface LocalizedConfigType {
     phone: string
     email: string
     wechat: string
-    office_hours: string
+    registered_address: string
   }
   homepageStats: { value: string; label: string }[]
   aboutInfo: {
@@ -214,7 +214,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
     contactInfo: {
       ...config.contactInfo,
       address: getLocalizedValue(config.contactInfo.address, locale),
-      office_hours: getLocalizedValue(config.contactInfo.office_hours, locale),
+      registered_address: getLocalizedValue(config.contactInfo.registered_address, locale),
     },
     homepageStats: config.homepageStats.map((s) => ({
       ...s,

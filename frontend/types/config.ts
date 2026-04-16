@@ -19,7 +19,7 @@ export interface ContactInfo {
   phone: string
   email: string
   wechat: string
-  office_hours: LocalizedField
+  registered_address: LocalizedField
 }
 
 /** 品牌信息配置 */

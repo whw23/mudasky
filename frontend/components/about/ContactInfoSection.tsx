@@ -36,7 +36,7 @@ export function ContactInfoSection() {
     {
       icon: Clock,
       label: t("hoursLabel"),
-      value: contactInfo.office_hours || t("hours"),
+      value: contactInfo.registered_address || t("hours"),
     },
   ]
 
