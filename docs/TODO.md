@@ -13,6 +13,8 @@
 - [ ] Docker 镜像压缩
 - [ ] 代码混淆与知识产权保护
 - [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
+- [ ] GitHub Secrets 管理 env 密钥
+- [ ] GitHub 转公开仓库（转公开前处理敏感信息）
 
 ---
 
@@ -188,3 +190,21 @@ E2E 和安全测试完成后，进行性能/压力测试：
 - 环境变量注入敏感配置（密钥、连接串），不硬编码
 - 评估 Docker 镜像加密方案（registry 级别）
 - 客户拿到的镜像只有运行时产物，无源码
+
+## GitHub Secrets 管理 env 密钥
+
+将 `env/` 目录下的密钥（`backend.env`、`gateway.env`）迁移到 GitHub Secrets 管理：
+
+- CI/CD 中从 Secrets 注入环境变量，不再依赖本地 env 文件
+- 本地开发用 `.env.example` 模板 + 实际值不入库
+- 服务器部署时 Secrets 通过 SSH 写入 `.env` 文件
+
+## GitHub 转公开仓库
+
+转公开前需处理的敏感信息：
+
+- 清理 git 历史中的密钥（`env/` 目录、INTERNAL_SECRET 等）
+- 确认 `.gitignore` 排除所有敏感文件
+- 检查代码中是否有硬编码的 IP、密码、密钥
+- 添加 LICENSE 文件
+- 审查 CLAUDE.md 和 rules 中是否有不宜公开的内容
