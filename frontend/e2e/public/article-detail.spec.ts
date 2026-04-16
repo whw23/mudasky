@@ -5,7 +5,7 @@
  */
 
 import { test, expect } from "../fixtures/base"
-import { createArticle } from "../helpers/seed"
+import { getExistingArticleId } from "../helpers/seed"
 
 const categories = [
   { path: "/study-abroad", slug: "study-abroad", name: "留学项目" },
@@ -17,24 +17,14 @@ const categories = [
 for (const { path, slug, name } of categories) {
   test.describe(`${name}详情页 (${path})`, () => {
     test("详情页加载并展示文章内容", async ({ page }) => {
-      await page.goto("/")
-      const articleId = await createArticle(page, slug)
+      // 使用 global-setup 中已创建并已被 ISR 缓存的文章
+      const articleId = await getExistingArticleId(page, slug)
       expect(articleId).toBeTruthy()
 
-      // 服务端组件可能因 ISR 缓存未命中，重试一次
-      let retries = 2
-      while (retries > 0) {
-        const res = await page.goto(`${path}/${articleId}`)
-        await page.locator("main").waitFor()
-        if (res?.status() === 200 && await page.locator("article").isVisible().catch(() => false)) {
-          break
-        }
-        retries--
-        if (retries > 0) {
-          await page.waitForTimeout(1000)
-        }
-      }
+      const res = await page.goto(`${path}/${articleId}`)
+      await page.locator("main").waitFor()
 
+      expect(res?.status()).toBe(200)
       // 文章标题应存在
       await expect(page.locator("h1")).toBeVisible()
       // 文章正文区域应存在
@@ -42,8 +32,7 @@ for (const { path, slug, name } of categories) {
     })
 
     test("返回链接指向正确的栏目列表页", async ({ page }) => {
-      await page.goto("/")
-      const articleId = await createArticle(page, slug)
+      const articleId = await getExistingArticleId(page, slug)
       expect(articleId).toBeTruthy()
 
       await page.goto(`${path}/${articleId}`)

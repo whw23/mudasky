@@ -6,8 +6,17 @@
 import { test, expect, gotoAdmin } from "../fixtures/base"
 import { ensureTestUser } from "../helpers/seed"
 
+/** 等待用户列表数据行出现（排除 loading / noData 行） */
+async function waitForUserRows(page: import("@playwright/test").Page) {
+  // 等待至少一行包含实际用户数据（用户名列非空）
+  await page.locator("table tbody tr td:first-child").first().waitFor()
+  // 确认不是"加载中"或"暂无"占位行
+  await expect(page.locator("table tbody tr").first()).not.toContainText(/加载中|暂无/)
+}
+
 /** 展开非 superuser 用户行 */
 async function expandNonSuperuserRow(adminPage: import("@playwright/test").Page) {
+  await waitForUserRows(adminPage)
   const rows = adminPage.locator("table tbody tr")
   const count = await rows.count()
 
@@ -21,6 +30,8 @@ async function expandNonSuperuserRow(adminPage: import("@playwright/test").Page)
       await row.click()
       await adminPage.getByText("基本信息").first().waitFor()
       await detailPromise
+      // 等待面板内容完全渲染（角色下拉、输入框等异步加载）
+      await adminPage.locator("select").first().waitFor({ timeout: 10_000 })
       return true
     }
   }
@@ -31,6 +42,7 @@ test.describe("用户管理操作", () => {
   test.beforeEach(async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
     await expect(adminPage.locator("table")).toBeVisible()
+    await waitForUserRows(adminPage)
     const firstRow = adminPage.locator("table tbody tr").first()
     await expect(firstRow).toBeVisible()
     const detailPromise = adminPage.waitForResponse(
@@ -65,7 +77,7 @@ test.describe("用户管理操作", () => {
   })
 
   test("状态切换按钮可见", async ({ adminPage }) => {
-    await expect(adminPage.getByRole("button", { name: /禁用|启用/ })).toBeVisible()
+    await expect(adminPage.getByRole("button", { name: /禁用账号|启用账号/ })).toBeVisible()
   })
 })
 
@@ -78,7 +90,6 @@ test.describe("用户管理实际操作", () => {
 
   test("角色分配 — 选择角色触发 API", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
-    await adminPage.waitForResponse((r) => r.url().includes("/users/list")).catch(() => {})
     await expect(adminPage.locator("table")).toBeVisible()
 
     const found = await expandNonSuperuserRow(adminPage)
@@ -103,7 +114,8 @@ test.describe("用户管理实际操作", () => {
     if (!targetValue) return
 
     await roleSelect.selectOption(targetValue)
-    const roleSection = adminPage.getByText("分配角色").locator("..")
+    // 角色分配区域的保存按钮 — 在 section 内查找
+    const roleSection = adminPage.locator("section").filter({ hasText: "分配角色" }).first()
     const roleSaveBtn = roleSection.getByRole("button", { name: "保存" })
     const responsePromise = adminPage.waitForResponse(
       (r) => r.url().includes("assign-role") && r.status() === 200,
@@ -119,7 +131,7 @@ test.describe("用户管理实际操作", () => {
       const restoredSelect = adminPage.locator("select").first()
       await expect(restoredSelect).toBeVisible()
       await restoredSelect.selectOption(currentValue)
-      const restoredSection = adminPage.getByText("分配角色").locator("..")
+      const restoredSection = adminPage.locator("section").filter({ hasText: "分配角色" }).first()
       const restoreSaveBtn = restoredSection.getByRole("button", { name: "保存" })
       const restorePromise = adminPage.waitForResponse(
         (r) => r.url().includes("assign-role") && r.status() === 200,
@@ -144,7 +156,8 @@ test.describe("用户管理实际操作", () => {
     await quotaInput.clear()
     await quotaInput.fill(newValue)
 
-    const quotaSection = adminPage.getByText("存储配额").locator("..")
+    // 存储配额区域的保存按钮 — 在 section 内查找
+    const quotaSection = adminPage.locator("section").filter({ hasText: "存储配额" }).first()
     const saveBtn = quotaSection.getByRole("button", { name: "保存" })
     const responsePromise = adminPage.waitForResponse(
       (r) => r.url().includes("/edit") && r.status() === 200,
@@ -160,7 +173,7 @@ test.describe("用户管理实际操作", () => {
     await expect(restoredInput).toBeVisible()
     await restoredInput.clear()
     await restoredInput.fill(originalValue)
-    const restoredSection = adminPage.getByText("存储配额").locator("..")
+    const restoredSection = adminPage.locator("section").filter({ hasText: "存储配额" }).first()
     const restoreSaveBtn = restoredSection.getByRole("button", { name: "保存" })
     const restorePromise = adminPage.waitForResponse(
       (r) => r.url().includes("/edit") && r.status() === 200,
@@ -186,7 +199,8 @@ test.describe("用户管理实际操作", () => {
     await passwordInputs.nth(0).fill("E2ETestPass123!")
     await passwordInputs.nth(1).fill("E2ETestPass123!")
 
-    const resetSection = adminPage.getByText("重置密码").first().locator("..")
+    // 重置密码区域的按钮 — 在 section 内查找
+    const resetSection = adminPage.locator("section").filter({ hasText: "重置密码" }).first()
     const resetBtn = resetSection.getByRole("button", { name: "重置密码" })
     const responsePromise = adminPage.waitForResponse(
       (r) => r.url().includes("reset-password"),
@@ -202,7 +216,6 @@ test.describe("用户管理实际操作", () => {
     const found = await expandNonSuperuserRow(adminPage)
     expect(found).toBeTruthy()
 
-    adminPage.on("dialog", (dialog) => dialog.accept())
     const logoutBtn = adminPage.getByRole("button", { name: "强制登出" })
     await expect(logoutBtn).toBeVisible()
 
@@ -231,6 +244,7 @@ test.describe("用户管理实际操作", () => {
   test("再次点击行收起面板", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/admin/users")
     await expect(adminPage.locator("table")).toBeVisible()
+    await waitForUserRows(adminPage)
 
     const firstRow = adminPage.locator("table tbody tr").first()
     await expect(firstRow).toBeVisible()
@@ -260,6 +274,7 @@ test.describe("用户管理 — 状态切换与删除", () => {
     await searchInput.fill("test-visitor")
     await page.waitForTimeout(500)
 
+    await waitForUserRows(page)
     const row = page.locator("table tbody tr").first()
     await expect(row).toContainText("test-visitor")
 
@@ -269,6 +284,8 @@ test.describe("用户管理 — 状态切换与删除", () => {
     await row.click()
     await page.getByText("基本信息").first().waitFor()
     await detailPromise
+    // 等待面板内容完全渲染
+    await page.locator("select").first().waitFor({ timeout: 10_000 }).catch(() => {})
   }
 
   test("正例：状态切换按钮点击后触发 API 并返回 200", async ({ adminPage }) => {
@@ -342,6 +359,7 @@ test.describe("用户管理 — 状态切换与删除", () => {
     await searchInput.fill("mudasky")
     await adminPage.waitForTimeout(500)
 
+    await waitForUserRows(adminPage)
     const row = adminPage.locator("table tbody tr").first()
     await expect(row).toContainText("mudasky")
 

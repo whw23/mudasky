@@ -29,6 +29,8 @@ test.describe("个人资料端点覆盖", () => {
 
   test("登录设备区域可见", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/portal/profile")
+    // 滚动到底部确保登录设备区域可见
+    await adminPage.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await expect(adminPage.getByText("登录设备")).toBeVisible()
     // 会话列表异步加载，等待"当前"标签出现
     await expect(adminPage.getByText("当前").first()).toBeVisible()

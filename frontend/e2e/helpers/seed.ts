@@ -148,8 +148,17 @@ export async function getExistingUniversityId(page: Page): Promise<string | null
   return res.data?.items?.[0]?.id ?? null
 }
 
-/** 获取已存在的文章 ID（不创建） */
-export async function getExistingArticleId(page: Page): Promise<string | null> {
-  const res = await apiCall(page, "GET", "/api/public/content/articles?page_size=1")
+/** 获取已存在的文章 ID（不创建），可按分类 slug 过滤 */
+export async function getExistingArticleId(page: Page, categorySlug?: string): Promise<string | null> {
+  if (!categorySlug) {
+    const res = await apiCall(page, "GET", "/api/public/content/articles?page_size=1")
+    return res.data?.items?.[0]?.id ?? null
+  }
+  // 先获取分类 ID
+  const catRes = await apiCall(page, "GET", "/api/public/content/categories")
+  if (catRes.status !== 200 || !Array.isArray(catRes.data)) return null
+  const cat = catRes.data.find((c: { slug: string }) => c.slug === categorySlug)
+  if (!cat) return null
+  const res = await apiCall(page, "GET", `/api/public/content/articles?category_id=${cat.id}&page_size=1`)
   return res.data?.items?.[0]?.id ?? null
 }
