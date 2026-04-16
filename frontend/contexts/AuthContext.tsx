@@ -55,11 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setLoading(false))
   }, [fetchUser])
 
-  /** 监听 session 过期事件，清除用户并跳转首页 */
+  /** 监听 session 过期事件，清除用户状态。仅 admin/portal 页面跳转首页。 */
   useEffect(() => {
     const handleExpired = () => {
       setUser(null)
-      if (window.location.pathname !== '/' && !window.location.pathname.match(/^\/[a-z]{2}$/)) {
+      const path = window.location.pathname
+      // 只有在 admin/portal 页面时才重定向（公开页面不需要登录，不跳转）
+      if (path.includes('/admin/') || path.includes('/portal/')) {
         window.location.href = '/'
       }
     }
