@@ -30,7 +30,7 @@ test.describe("W3 学生文档查看", () => {
     // 展开第一个学生
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
-    await page.getByText("文件列表").waitFor()
+    await page.getByText("文件列表").first().waitFor()
   })
 
   test("文档列表区域可见", async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe("W3 学生文档查看", () => {
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
-    await page.getByText("文件列表").waitFor()
+    await page.getByText("文件列表").first().waitFor()
 
     // 文档区域包含表头或暂无文件提示
     const fileSection = page.locator("section").filter({ hasText: "文件列表" })
@@ -63,7 +63,7 @@ test.describe("W3 学生文档查看", () => {
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
-    await page.getByText("文件列表").waitFor()
+    await page.getByText("文件列表").first().waitFor()
 
     const fileSection = page.locator("section").filter({ hasText: "文件列表" })
     const fileTable = fileSection.locator("table")
@@ -82,6 +82,6 @@ test.describe("W3 学生文档查看", () => {
     await gotoAdmin(page, "/admin/students")
 
     // 未展开面板时不应看到文件列表
-    await expect(page.getByText("文件列表")).not.toBeVisible()
+    await expect(page.getByText("文件列表").first()).not.toBeVisible()
   })
 })

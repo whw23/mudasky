@@ -13,14 +13,14 @@ test.describe("W4 IDOR 安全", () => {
 
   test.beforeAll(async () => {
     // 等待 W2 上传文档并发送信号
-    const data = await waitFor<{ documentId: string }>("idor_doc", 120_000)
-    targetDocId = data.documentId
+    const data = await waitFor<{ docId: string }>("idor_doc", 120_000)
+    targetDocId = data.docId
   })
 
   test("访问他人文档详情被拒", async ({ page }) => {
     await page.goto("/")
     const res = await page.request.get(
-      `/api/portal/documents/list/detail?document_id=${targetDocId}`,
+      `/api/portal/documents/list/detail?doc_id=${targetDocId}`,
       { headers: XHR },
     )
     // visitor 无 portal 权限，应返回 401 或 403
@@ -34,7 +34,7 @@ test.describe("W4 IDOR 安全", () => {
       "/api/portal/documents/list/detail/delete",
       {
         headers: { ...XHR, "Content-Type": "application/json" },
-        data: { document_id: targetDocId },
+        data: { doc_id: targetDocId },
       },
     )
     // visitor 无 portal 权限
@@ -55,7 +55,7 @@ test.describe("W4 IDOR 安全", () => {
     await page.goto("/")
     const fakeId = "00000000-0000-0000-0000-000000000000"
     const res = await page.request.get(
-      `/api/portal/documents/list/detail?document_id=${fakeId}`,
+      `/api/portal/documents/list/detail?doc_id=${fakeId}`,
       { headers: XHR },
     )
     expect([401, 403, 404]).toContain(res.status())

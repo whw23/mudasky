@@ -27,8 +27,9 @@ test.describe("仪表盘", () => {
   test("快捷操作链接可见", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
     await expect(page.getByText("快捷操作")).toBeVisible()
-    await expect(page.getByRole("link", { name: "用户管理" })).toBeVisible()
-    await expect(page.getByRole("link", { name: "文章管理" })).toBeVisible()
+    const main = page.locator("main")
+    await expect(main.getByRole("link", { name: "用户管理" })).toBeVisible()
+    await expect(main.getByRole("link", { name: "文章管理" })).toBeVisible()
     trackComponent("Dashboard", "快捷操作")
   })
 })
@@ -37,12 +38,13 @@ test.describe("侧边栏导航", () => {
   test("所有管理菜单项可见", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
 
+    const sidebar = page.locator("aside")
     const menuItems = [
       "用户管理", "角色管理", "文章管理", "分类管理",
       "院校管理", "案例管理", "通用配置", "网页设置",
     ]
     for (const item of menuItems) {
-      await expect(page.getByRole("link", { name: item })).toBeVisible()
+      await expect(sidebar.getByRole("link", { name: item })).toBeVisible()
     }
     trackComponent("AdminSidebar", "所有菜单链接")
   })
@@ -50,20 +52,22 @@ test.describe("侧边栏导航", () => {
   test("点击菜单导航到正确页面", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
 
+    const sidebar = page.locator("aside")
+
     // 点击用户管理
-    await page.getByRole("link", { name: "用户管理" }).click()
+    await sidebar.getByRole("link", { name: "用户管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/users/)
     trackComponent("AdminSidebar", "用户管理导航")
 
     // 点击文章管理
-    await page.getByRole("link", { name: "文章管理" }).click()
+    await sidebar.getByRole("link", { name: "文章管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/articles/)
     trackComponent("AdminSidebar", "文章管理导航")
 
     // 点击角色管理
-    await page.getByRole("link", { name: "角色管理" }).click()
+    await sidebar.getByRole("link", { name: "角色管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/roles/)
     trackComponent("AdminSidebar", "角色管理导航")
@@ -72,7 +76,7 @@ test.describe("侧边栏导航", () => {
   test("返回官网链接可见并可点击", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
 
-    const backLink = page.getByRole("link", { name: "返回官网" })
+    const backLink = page.locator("aside").getByText("返回官网")
     await expect(backLink).toBeVisible()
     trackComponent("AdminSidebar", "返回官网链接")
 
@@ -84,7 +88,7 @@ test.describe("侧边栏导航", () => {
 
   test("点击分类管理 — 分类列表加载", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
-    await page.getByRole("link", { name: "分类管理" }).click()
+    await page.locator("aside").getByRole("link", { name: "分类管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/categories/)
     // 有"创建分类"按钮
@@ -94,7 +98,7 @@ test.describe("侧边栏导航", () => {
 
   test("点击案例管理 — 案例列表加载", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
-    await page.getByRole("link", { name: "案例管理" }).click()
+    await page.locator("aside").getByRole("link", { name: "案例管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/cases/)
     await expect(page.getByRole("button", { name: "添加案例" })).toBeVisible()
@@ -103,7 +107,7 @@ test.describe("侧边栏导航", () => {
 
   test("点击院校管理 — 院校列表加载", async ({ page }) => {
     await gotoAdmin(page, "/admin/dashboard")
-    await page.getByRole("link", { name: "院校管理" }).click()
+    await page.locator("aside").getByRole("link", { name: "院校管理" }).click()
     await page.locator("main").waitFor()
     await expect(page).toHaveURL(/\/admin\/universities/)
     await expect(page.getByRole("button", { name: "添加院校" })).toBeVisible()
@@ -113,7 +117,7 @@ test.describe("侧边栏导航", () => {
   test("当前菜单高亮状态", async ({ page }) => {
     await gotoAdmin(page, "/admin/users")
     // 用户管理链接应有激活样式（bg-primary/20 class）
-    const userLink = page.getByRole("link", { name: "用户管理" })
+    const userLink = page.locator("aside").getByRole("link", { name: "用户管理" })
     await expect(userLink).toHaveClass(/bg-primary/)
     trackComponent("AdminSidebar", "菜单高亮")
   })

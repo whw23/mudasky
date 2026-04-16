@@ -197,6 +197,7 @@ export const test = pwTest.extend<{
         res.status() === 401 &&
         res.url().includes("/api/") &&
         !res.url().includes("/api/auth/") && // auth 端点的 401 是正常的
+        testInfo.project.name !== "shared" && // shared 项目无 auth，401 是预期的
         !testInfo.title.includes("反例") &&
         !testInfo.title.includes("负向") &&
         !testInfo.title.includes("被拒") &&

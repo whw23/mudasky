@@ -62,10 +62,10 @@ test.describe("W4 搜索筛选", () => {
 
   test("语言切换器切换语言", async ({ page }) => {
     await page.goto("/")
-    await page.locator("[role='banner']").waitFor()
+    await page.locator("header").waitFor()
 
-    // 语言切换下拉（在 banner 区域内）
-    const localeSelect = page.locator("[role='banner'] select")
+    // 语言切换下拉（在 header 区域内）
+    const localeSelect = page.locator("header select").first()
     const visible = await localeSelect.isVisible().catch(() => false)
 
     if (visible) {
@@ -74,7 +74,7 @@ test.describe("W4 搜索筛选", () => {
       await page.waitForURL(/\/en/)
 
       // 切换回中文
-      const localeSelect2 = page.locator("[role='banner'] select")
+      const localeSelect2 = page.locator("header select").first()
       await localeSelect2.selectOption("zh")
       await page.waitForURL(/\/zh|^\/$/)
 

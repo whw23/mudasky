@@ -51,7 +51,7 @@ test.describe("通用配置", () => {
 
   test("UI — 通用配置页面可加载", async ({ page }) => {
     await gotoAdmin(page, "/admin/general-settings")
-    await expect(page.getByText("通用配置")).toBeVisible()
+    await expect(page.locator("main").getByText("通用配置").first()).toBeVisible()
     await expect(page.getByText("手机号国家码")).toBeVisible()
     trackComponent("GeneralSettingsPage", "页面渲染")
   })
@@ -101,7 +101,7 @@ test.describe("网页设置", () => {
 
   test("UI — 网页设置页面可加载", async ({ page }) => {
     await gotoAdmin(page, "/admin/web-settings")
-    await expect(page.getByText("网页设置")).toBeVisible()
+    await expect(page.locator("main").getByText("网页设置").first()).toBeVisible()
     trackComponent("WebSettingsPage", "页面渲染")
   })
 

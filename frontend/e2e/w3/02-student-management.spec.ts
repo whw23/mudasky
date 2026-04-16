@@ -62,11 +62,12 @@ test.describe("W3 学生管理", () => {
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
 
-    // 等待面板加载
-    await page.getByText("基本信息").waitFor()
-    await expect(page.getByText("编辑")).toBeVisible()
-    await expect(page.getByText("分配顾问")).toBeVisible()
-    await expect(page.getByText("文件列表")).toBeVisible()
+    // 等待面板加载（使用 h3 heading 避免与其他文本冲突）
+    const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
+    await basicInfoHeading.waitFor()
+    await expect(page.locator("h3").filter({ hasText: "编辑" })).toBeVisible()
+    await expect(page.getByText("分配顾问").first()).toBeVisible()
+    await expect(page.getByText("文件列表").first()).toBeVisible()
     await expect(page.getByText("降为访客").first()).toBeVisible()
   })
 
@@ -78,7 +79,7 @@ test.describe("W3 学生管理", () => {
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
-    await page.getByText("基本信息").waitFor()
+    await page.locator("h3").filter({ hasText: "基本信息" }).waitFor()
 
     // 面板内的激活 checkbox（在编辑区域内）
     const activeCheckbox = page.locator("section").filter({ hasText: "编辑" }).locator("input[type='checkbox']")
@@ -97,7 +98,7 @@ test.describe("W3 学生管理", () => {
 
     const firstRow = page.locator("tbody tr").first()
     await firstRow.click()
-    await page.getByText("基本信息").waitFor()
+    await page.locator("h3").filter({ hasText: "基本信息" }).waitFor()
 
     // 填写备注
     const noteArea = page.locator("section").filter({ hasText: "编辑" }).locator("textarea")
@@ -194,7 +195,7 @@ test.describe("W3 学生管理", () => {
     await expect(page.locator("table")).toBeVisible()
 
     // 确认面板未展开时没有展开面板的内容
-    await expect(page.getByText("基本信息")).not.toBeVisible()
-    await expect(page.getByText("分配顾问")).not.toBeVisible()
+    await expect(page.locator("h3").filter({ hasText: "基本信息" })).not.toBeVisible()
+    await expect(page.getByText("分配顾问").first()).not.toBeVisible()
   })
 })
