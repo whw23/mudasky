@@ -20,7 +20,7 @@ test.describe("JWT — 有效 token 访问受保护接口", () => {
 
   test("有效 access_token 访问 portal API 返回 200", async ({ page }) => {
     await page.goto("/")
-    const response = await page.request.get("/api/portal/profile/info", {
+    const response = await page.request.get("/api/portal/profile/meta", {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     })
     expect(response.status()).toBe(200)
@@ -42,7 +42,7 @@ test.describe("JWT — 无 cookie 访问受保护接口", () => {
 
   test("无 cookie 访问 portal API 返回 401 ACCESS_TOKEN_MISSING", async ({ page }) => {
     await page.goto("/")
-    const response = await page.request.get("/api/portal/profile/info", {
+    const response = await page.request.get("/api/portal/profile/meta", {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     })
     expect(response.status()).toBe(401)

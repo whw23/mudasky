@@ -101,12 +101,15 @@ test.describe("学生管理操作", () => {
 
     const row = adminPage.locator("table tbody tr").first()
     await expect(row).toBeVisible()
+    const detailPromise = adminPage.waitForResponse(
+      (r) => r.url().includes("/students/") && r.url().includes("/detail"),
+    ).catch(() => {})
     await row.click()
     await adminPage.getByText("基本信息").first().waitFor()
+    await detailPromise
 
-    await expect(
-      adminPage.getByText("文件列表").or(adminPage.getByText("暂无文件")),
-    ).toBeVisible()
+    // 文件列表标题始终可见，内容为文件列表或暂无文件提示
+    await expect(adminPage.getByText("文件列表").first()).toBeVisible()
   })
 })
 
@@ -160,13 +163,15 @@ test.describe("学生管理 — 展开面板补全", () => {
 
     await expect(adminPage.getByText("分配顾问").first()).toBeVisible()
 
-    const advisorInput = adminPage.getByPlaceholder(/顾问/)
-    const advisorSelect = adminPage.locator("select").nth(0)
-    const hasInput = await advisorInput.isVisible().catch(() => false)
-    const hasSelect = await advisorSelect.isVisible().catch(() => false)
-
-    // 至少有一种顾问分配控件可见
-    expect(hasInput || hasSelect).toBeTruthy()
+    // 展开面板的顾问 Input 和表头的筛选 Input 共享 placeholder，使用 .nth(1) 取展开面板中的
+    const advisorInputs = adminPage.getByPlaceholder(/顾问/)
+    const inputCount = await advisorInputs.count()
+    // 至少有一个顾问相关输入框可见（表头筛选 + 展开面板）
+    expect(inputCount).toBeGreaterThanOrEqual(1)
+    // 验证"分配顾问"区域标题和确认按钮可见
+    const advisorSection = adminPage.getByText("分配顾问").first().locator("..")
+    const confirmBtn = advisorSection.getByRole("button", { name: "确认" })
+    await expect(confirmBtn).toBeVisible()
   })
 
   test("正例：降为访客按钮点击弹出 AlertDialog，取消可关闭", async ({ adminPage }) => {

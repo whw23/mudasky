@@ -30,7 +30,8 @@ test.describe("个人资料端点覆盖", () => {
   test("登录设备区域可见", async ({ adminPage }) => {
     await gotoAdmin(adminPage, "/portal/profile")
     await expect(adminPage.getByText("登录设备")).toBeVisible()
-    await expect(adminPage.getByText("当前")).toBeVisible()
+    // 会话列表异步加载，等待"当前"标签出现
+    await expect(adminPage.getByText("当前").first()).toBeVisible()
   })
 
   test("所属角色区域可见", async ({ adminPage }) => {

@@ -18,23 +18,23 @@ test.describe("文档管理页面", () => {
   })
 
   test("分类 Tab 可见且可切换", async ({ adminPage }) => {
-    /* 默认 "全部" tab 应激活 */
+    /* 默认 "全部" tab 应激活（base-ui 使用 data-active 属性，aria-selected） */
     const allTab = adminPage.getByRole("tab", { name: "全部" })
     await expect(allTab).toBeVisible()
-    await expect(allTab).toHaveAttribute("data-state", "active")
+    await expect(allTab).toHaveAttribute("aria-selected", "true")
 
     /* 切换到 "成绩单" tab */
     const transcriptTab = adminPage.getByRole("tab", { name: "成绩单" })
     await expect(transcriptTab).toBeVisible()
     await transcriptTab.click()
-    await expect(transcriptTab).toHaveAttribute("data-state", "active")
-    await expect(allTab).toHaveAttribute("data-state", "inactive")
+    await expect(transcriptTab).toHaveAttribute("aria-selected", "true")
+    await expect(allTab).toHaveAttribute("aria-selected", "false")
 
     /* 切换到 "其他" tab */
     const otherTab = adminPage.getByRole("tab", { name: "其他" })
     await expect(otherTab).toBeVisible()
     await otherTab.click()
-    await expect(otherTab).toHaveAttribute("data-state", "active")
+    await expect(otherTab).toHaveAttribute("aria-selected", "true")
   })
 
   test("上传文档按钮可见", async ({ adminPage }) => {

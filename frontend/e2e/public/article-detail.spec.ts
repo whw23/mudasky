@@ -21,8 +21,19 @@ for (const { path, slug, name } of categories) {
       const articleId = await createArticle(page, slug)
       expect(articleId).toBeTruthy()
 
-      await page.goto(`${path}/${articleId}`)
-      await page.locator("main").waitFor()
+      // 服务端组件可能因 ISR 缓存未命中，重试一次
+      let retries = 2
+      while (retries > 0) {
+        const res = await page.goto(`${path}/${articleId}`)
+        await page.locator("main").waitFor()
+        if (res?.status() === 200 && await page.locator("article").isVisible().catch(() => false)) {
+          break
+        }
+        retries--
+        if (retries > 0) {
+          await page.waitForTimeout(1000)
+        }
+      }
 
       // 文章标题应存在
       await expect(page.locator("h1")).toBeVisible()

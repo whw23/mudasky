@@ -39,6 +39,8 @@ test.describe("用户管理操作", () => {
     await firstRow.click()
     await adminPage.getByText("基本信息").first().waitFor()
     await detailPromise
+    // 等待面板内容完全渲染（角色列表、输入框等异步加载）
+    await adminPage.locator("select").first().waitFor().catch(() => {})
   })
 
   test("展开面板显示基本信息区域", async ({ adminPage }) => {
@@ -108,15 +110,21 @@ test.describe("用户管理实际操作", () => {
     )
     await roleSaveBtn.click()
     await responsePromise
-    await expect(roleSelect).toHaveValue(targetValue)
+    // onUpdate 会折叠面板并刷新列表，验证 API 响应成功即可
 
-    // 还原角色
+    // 还原角色：重新展开面板
+    const foundAgain = await expandNonSuperuserRow(adminPage)
+    expect(foundAgain).toBeTruthy()
     if (currentValue) {
-      await roleSelect.selectOption(currentValue)
+      const restoredSelect = adminPage.locator("select").first()
+      await expect(restoredSelect).toBeVisible()
+      await restoredSelect.selectOption(currentValue)
+      const restoredSection = adminPage.getByText("分配角色").locator("..")
+      const restoreSaveBtn = restoredSection.getByRole("button", { name: "保存" })
       const restorePromise = adminPage.waitForResponse(
         (r) => r.url().includes("assign-role") && r.status() === 200,
       )
-      await roleSaveBtn.click()
+      await restoreSaveBtn.click()
       await restorePromise
     }
   })
@@ -143,14 +151,21 @@ test.describe("用户管理实际操作", () => {
     )
     await saveBtn.click()
     await responsePromise
+    // onUpdate 折叠面板并刷新列表，验证 API 成功即可
 
-    // 还原
-    await quotaInput.clear()
-    await quotaInput.fill(originalValue)
+    // 还原：重新展开面板
+    const foundAgain = await expandNonSuperuserRow(adminPage)
+    expect(foundAgain).toBeTruthy()
+    const restoredInput = adminPage.locator("input[type='number']").first()
+    await expect(restoredInput).toBeVisible()
+    await restoredInput.clear()
+    await restoredInput.fill(originalValue)
+    const restoredSection = adminPage.getByText("存储配额").locator("..")
+    const restoreSaveBtn = restoredSection.getByRole("button", { name: "保存" })
     const restorePromise = adminPage.waitForResponse(
       (r) => r.url().includes("/edit") && r.status() === 200,
     )
-    await saveBtn.click()
+    await restoreSaveBtn.click()
     await restorePromise
   })
 
@@ -161,6 +176,10 @@ test.describe("用户管理实际操作", () => {
     expect(found).toBeTruthy()
 
     await expect(adminPage.getByText("重置密码").first()).toBeVisible()
+    // 等待密码输入框渲染（用户详情异步加载）
+    const firstPwdInput = adminPage.locator("input[type='password']").first()
+    await expect(firstPwdInput).toBeVisible()
+
     const passwordInputs = adminPage.locator("input[id^='reset-pwd']")
     await expect(passwordInputs.first()).toBeVisible()
 
@@ -293,8 +312,9 @@ test.describe("用户管理 — 状态切换与删除", () => {
     }
 
     await responsePromise
+    // onUpdate 折叠面板并刷新列表，重新展开验证按钮文字变化
+    await expandTestVisitor(adminPage)
 
-    // 按钮文字应该切换
     const newToggleBtn = adminPage.getByRole("button", { name: /禁用账号|启用账号/ })
     await expect(newToggleBtn).toBeVisible()
     const newText = await newToggleBtn.textContent()

@@ -44,7 +44,8 @@ test.describe("个人资料页", () => {
 
   test("登录设备区域可见", async ({ adminPage }) => {
     await expect(adminPage.getByText("登录设备")).toBeVisible()
-    await expect(adminPage.getByText("当前")).toBeVisible()
+    // 会话列表异步加载，等待"当前"标签出现
+    await expect(adminPage.getByText("当前").first()).toBeVisible()
   })
 })
 
