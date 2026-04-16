@@ -69,14 +69,15 @@ test.describe("W4 搜索筛选", () => {
     const visible = await localeSelect.isVisible().catch(() => false)
 
     if (visible) {
-      // 切换到英文
+      // 切换到英文（client-side transition，等待 URL 或内容变化）
       await localeSelect.selectOption("en")
-      await page.waitForURL(/\/en/)
+      await expect(page).toHaveURL(/\/en/)
 
-      // 切换回中文
+      // 切换回中文（默认语言无前缀，URL 为 /）
       const localeSelect2 = page.locator("header select").first()
       await localeSelect2.selectOption("zh")
-      await page.waitForURL(/\/zh|^\/$/)
+      // as-needed 模式下 zh 无 locale 前缀，等待 URL 不包含 /en
+      await expect(page).not.toHaveURL(/\/en/)
 
       trackComponent("LocaleSwitcher", "语言切换下拉")
     }

@@ -6,6 +6,7 @@
 
 import { test, expect, gotoAdmin, trackComponent } from "../fixtures/base"
 import { getSmsCode } from "../helpers/sms"
+import forge from "node-forge"
 
 const TS = Date.now()
 const XRW = { "X-Requested-With": "XMLHttpRequest" }
@@ -114,13 +115,27 @@ test.describe("用户管理", () => {
   })
 
   test("密码重置 — 临时账号", async ({ page }) => {
+    // 1. 获取服务端公钥和 nonce
+    const pkRes = await page.request.get("/api/auth/public-key", { headers: XRW })
+    expect(pkRes.status()).toBe(200)
+    const { public_key, nonce } = await pkRes.json()
+
+    // 2. 用 node-forge RSA-OAEP 加密密码
+    const publicKey = forge.pki.publicKeyFromPem(public_key)
+    const payload = JSON.stringify({
+      password: "E2EtestPwd123!",
+      nonce,
+      timestamp: Math.floor(Date.now() / 1000),
+    })
+    const encrypted = publicKey.encrypt(payload, "RSA-OAEP", {
+      md: forge.md.sha256.create(),
+    })
+    const encrypted_password = forge.util.encode64(encrypted)
+
+    // 3. 发送重置请求
     const resetRes = await page.request.post("/api/admin/users/list/detail/reset-password", {
       headers: JSON_HEADERS,
-      data: {
-        user_id: tempUserId,
-        encrypted_password: "dGVzdHBhc3N3b3JkMTIz",
-        nonce: "dGVzdG5vbmNl",
-      },
+      data: { user_id: tempUserId, encrypted_password, nonce },
     })
     expect(resetRes.status()).toBe(200)
     trackComponent("UserExpandPanel", "密码重置")

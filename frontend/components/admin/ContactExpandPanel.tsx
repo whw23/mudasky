@@ -117,7 +117,7 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
     runAction(
       () => api.post("/admin/contacts/list/detail/mark", {
         user_id: userId,
-        contact_status: selectedStatus,
+        status: selectedStatus,
       }),
       t("statusUpdated"),
     )

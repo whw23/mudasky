@@ -15,7 +15,8 @@ test.describe("W3 侧边栏导航", () => {
     await gotoAdmin(page, "/admin/dashboard")
     trackComponent("AdminSidebar", "菜单可见性")
 
-    const sidebar = page.locator("aside nav")
+    // 桌面端侧边栏（避免匹配移动端隐藏的 aside）
+    const sidebar = page.locator("aside").first().locator("nav")
 
     // advisor 应能看到的菜单
     await expect(sidebar.getByText("学生管理")).toBeVisible()
@@ -27,7 +28,7 @@ test.describe("W3 侧边栏导航", () => {
     await gotoAdmin(page, "/admin/dashboard")
     trackComponent("AdminSidebar", "学生管理导航")
 
-    const sidebar = page.locator("aside nav")
+    const sidebar = page.locator("aside").first().locator("nav")
     await sidebar.getByText("学生管理").click()
     await page.waitForURL(/\/admin\/students/)
 
@@ -39,7 +40,7 @@ test.describe("W3 侧边栏导航", () => {
     await gotoAdmin(page, "/admin/dashboard")
     trackComponent("AdminSidebar", "联系人管理导航")
 
-    const sidebar = page.locator("aside nav")
+    const sidebar = page.locator("aside").first().locator("nav")
     await sidebar.getByText("联系人管理").click()
     await page.waitForURL(/\/admin\/contacts/)
 
@@ -70,7 +71,7 @@ test.describe("W3 侧边栏导航", () => {
     await gotoAdmin(page, "/admin/dashboard")
     trackSecurity("菜单权限", "advisor无权限菜单隐藏")
 
-    const sidebar = page.locator("aside nav")
+    const sidebar = page.locator("aside").first().locator("nav")
 
     // advisor 不应看到的菜单
     await expect(sidebar.getByText("用户管理")).not.toBeVisible()

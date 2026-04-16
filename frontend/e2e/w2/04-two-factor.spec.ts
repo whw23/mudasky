@@ -55,7 +55,7 @@ test.describe("W2 两步验证", () => {
 
     // 确认启用
     await smsForm.getByRole("button", { name: "确认启用" }).click()
-    await expect(page.getByText("两步验证已启用")).toBeVisible()
+    await expect(page.getByText("两步验证已启用").first()).toBeVisible()
 
     trackComponent("TwoFactorSettings", "启用SMS两步验证")
   })
