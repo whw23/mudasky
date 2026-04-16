@@ -30,7 +30,7 @@
 | 2. 后端接口测试 | `localhost:8000` 直连 API | `uv run --project backend/api python -m pytest backend/api/tests/ -v -m api` |
 | 3. 后端网关测试 | `localhost:80` 走 gateway | `uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v` |
 | 4. 前端 E2E（本地） | `localhost` 生产容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
-| 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://REDACTED_HOST INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+| 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
 
 - 本地前端 E2E 使用生产构建的容器（速度快、行为一致）
 - 线上 E2E 在部署后执行，验证生产环境实际行为
@@ -106,7 +106,7 @@
 - fixture 文件：`frontend/e2e/fixtures/base.ts`（基础）、`frontend/e2e/fixtures/coverage.ts`（覆盖率收集）
 - 默认 2 worker 并发执行
 - 运行命令（本地）：`pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
-- 运行命令（线上）：`BASE_URL=http://REDACTED_HOST INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
+- 运行命令（线上）：`BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
 - 线上环境超时自动增大（`actionTimeout` 5s→15s，`navigationTimeout` 15s→30s）
 - `INTERNAL_SECRET` 通过 cookie 传递，跳过网关限流和短信发送
 

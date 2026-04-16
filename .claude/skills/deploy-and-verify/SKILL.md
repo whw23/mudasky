@@ -74,7 +74,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && gh run lis
 ### 5. 检查版本
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://REDACTED_HOST/api/version'
+wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/version'
 ```
 
 返回四个容器的版本号（格式 `YYYYMMDD-<7位hash>`）。对比 main 分支的 commit hash，确认各容器是否更新。版本不一致是正常的 — CI 按路径过滤，只构建有改动的服务。
@@ -82,7 +82,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://REDACTED_HOST/api/version
 ### 6. 健康检查
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://REDACTED_HOST/api/health'
+wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/health'
 ```
 
 预期返回 `{"status":"ok","version":"..."}`。
