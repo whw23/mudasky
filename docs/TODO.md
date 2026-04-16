@@ -11,9 +11,10 @@
 - [x] 前端 UI 审查
 - [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
 - [ ] 压力测试
+- [ ] 对接阿里云短信服务
 - [ ] Docker 镜像压缩
 - [ ] 代码混淆与知识产权保护
-- [ ] GitHub Secrets 管理 env 密钥
+- [ ] GitHub Secrets 管理 env 密钥（含 SMS AccessKey）
 - [ ] GitHub 转公开仓库（转公开前处理敏感信息）
 
 ---
@@ -76,3 +77,12 @@ E2E 和安全测试完成后，进行性能/压力测试：
 - 检查代码中是否有硬编码的 IP、密码、密钥
 - 添加 LICENSE 文件
 - 审查 CLAUDE.md 和 rules 中是否有不宜公开的内容
+
+## 对接阿里云短信服务
+
+当前 `backend/shared/app/sms/__init__.py` 是存根实现（只打日志不发真短信）。需要：
+
+- 对接阿里云短信 SDK（`alibabacloud-dysmsapi`）
+- 配置签名、模板 ID
+- AccessKey 通过环境变量注入（后续由 GitHub Secrets 管理）
+- 保留 DEBUG 模式跳过发送的逻辑
