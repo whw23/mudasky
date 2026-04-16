@@ -8,7 +8,7 @@
 - [x] 合并 dev 到 main
 - [x] WSL 网络代理
 - [x] CI 路径过滤补全
-- [ ] 前端 UI 审查
+- [x] 前端 UI 审查
 - [ ] 部署 dev 到 main（含 gzip/内部密钥/种子用户/E2E 框架）
 - [ ] 压力测试
 - [ ] Docker 镜像压缩
@@ -18,15 +18,9 @@
 
 ---
 
-## 前端 UI 审查
+## ~~前端 UI 审查~~
 
-前端新增了 3 个页面还没有人工审查：
-
-- 案例详情页 `/cases/[id]`
-- 院校详情页 `/universities/[id]`
-- 文章栏目分流（study-abroad/visa/life/requirements 各有 `[id]` 页面）
-
-需要在浏览器中实际查看这些页面的 UI 效果。
+~~已完成。审查中发现并修复了 bug：未登录用户直接 URL 访问公开页面被重定向首页（auth 拦截器对 ACCESS_TOKEN_MISSING 触发了不必要的 refresh + 重定向）。~~
 
 ## 压力测试
 
