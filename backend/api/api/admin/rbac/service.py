@@ -106,9 +106,9 @@ class RbacService:
             raise NotFoundException(message="角色不存在", code="ROLE_NOT_FOUND")
 
         if data.name is not None:
-            if role.name == "superuser":
+            if role.name in PROTECTED_ROLE_NAMES:
                 raise ForbiddenException(
-                    message="超级管理员角色不允许修改名称", code="PROTECTED_ROLE_NO_RENAME"
+                    message="受保护角色不允许修改名称", code="PROTECTED_ROLE_NO_RENAME"
                 )
             existing = await repository.get_role_by_name(
                 self.session, data.name
@@ -124,6 +124,10 @@ class RbacService:
 
         permissions_changed = False
         if data.permissions is not None:
+            if role.name == "superuser":
+                raise ForbiddenException(
+                    message="超级管理员角色不允许修改权限", code="PROTECTED_ROLE_NO_EDIT_PERMS"
+                )
             if set(role.permissions or []) != set(data.permissions):
                 permissions_changed = True
             role.permissions = data.permissions
