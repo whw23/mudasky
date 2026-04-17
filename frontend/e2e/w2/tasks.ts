@@ -258,7 +258,7 @@ export const tasks: Task[] = [
     id: "w2_documents_view",
     worker: "w2",
     name: "查看文档页面",
-    requires: ["w2_register"],
+    requires: ["w2_reload_auth"],
     fn: viewDocuments,
     fnArgs: {},
     coverage: {
