@@ -163,6 +163,10 @@
 - **禁止使用 `waitForTimeout` 作为主要等待手段**，优先使用条件等待
 - **禁止直接调 API**，所有操作通过 UI
 - 无效路由（如 `/portal/articles`）作为 404 反向测试
+- **手机号使用 `constants.ts` 中的固定号码**，禁止 `Date.now()` 生成随机号（跨 worker 需要匹配）
+- **角色变更后必须 SMS 重新登录**（`reload-auth.ts`），不能用 `refreshToken`（后端会删 refresh_token）
+- **首页交互前加 `waitForLoadState("networkidle")`**，防止 Next.js 水合导致元素 detach
+- **写新 fn 前先用 Playwright MCP 查看真实 DOM**（`browser_navigate` + `browser_snapshot`），不猜选择器
 
 #### 测试结果
 
