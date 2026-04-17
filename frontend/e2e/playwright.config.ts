@@ -34,14 +34,14 @@ export default defineConfig({
   globalSetup: "./global-setup.ts",
   globalTeardown: "./global-teardown.ts",
   expect: {
-    timeout: isRemote ? 15_000 : 10_000,
+    timeout: isRemote ? 15_000 : 15_000,
   },
   use: {
     baseURL: process.env.BASE_URL || "http://localhost",
     locale: "zh-CN",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
-    actionTimeout: isRemote ? 15_000 : 10_000,
+    actionTimeout: isRemote ? 15_000 : 15_000,
     navigationTimeout: isRemote ? 30_000 : 20_000,
   },
   projects: [

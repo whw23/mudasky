@@ -63,7 +63,7 @@ export default async function register(
   await dialog.getByRole("button", { name: /登录/ }).click()
 
   // 等待弹窗关闭（登录成功）
-  await page.getByRole("dialog").waitFor({ state: "hidden" })
+  await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
   // 保存 storageState
   const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)

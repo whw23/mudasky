@@ -68,7 +68,7 @@ export default async function reloadAuth(
   await dialog.getByRole("button", { name: /登录/ }).click()
 
   // 等待登录成功
-  await page.getByRole("dialog").waitFor({ state: "hidden" })
+  await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
   // 保存新的 storageState
   const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)

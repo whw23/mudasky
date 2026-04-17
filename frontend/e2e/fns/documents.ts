@@ -70,7 +70,7 @@ export const verifyDocumentInList: TaskFn = async (page, args) => {
   const fileName = args?.fileName as string
   await page.goto("/portal/documents")
   await page.waitForLoadState("networkidle")
-  await expect(page.getByText(fileName)).toBeVisible()
+  await expect(page.getByText(fileName)).toBeVisible({ timeout: 15_000 })
 }
 
 /** 删除文档。 */

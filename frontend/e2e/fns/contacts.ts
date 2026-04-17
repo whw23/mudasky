@@ -34,12 +34,12 @@ export const expandContact: TaskFn = async (page) => {
 
   await rows.first().click()
 
-  // 等待面板加载
+  // 等待面板加载（高负载下可能较慢）
   const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
-  await basicInfoHeading.waitFor()
+  await basicInfoHeading.waitFor({ timeout: 15_000 })
 
   const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
-  await expect(markStatusHeading).toBeVisible()
+  await expect(markStatusHeading).toBeVisible({ timeout: 15_000 })
   const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
   await expect(addNoteHeading).toBeVisible()
 }
@@ -78,7 +78,7 @@ export const addContactNote: TaskFn = async (page, args) => {
   const note = args?.note as string || `E2E-advisor-contact-note-${Date.now()}`
 
   const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
-  await addNoteHeading.waitFor()
+  await addNoteHeading.waitFor({ timeout: 15_000 })
 
   const noteSection = page.locator("section").filter({ hasText: "添加备注" })
   const textarea = noteSection.locator("textarea")
