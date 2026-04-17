@@ -1,6 +1,7 @@
 /**
- * 重新认证。
- * 角色变更后 refresh_token 被删除，需要重新 SMS 登录获取新 JWT。
+ * 重新认证（角色变更后）。
+ * 通过 UI 退出 → UI 重新 SMS 登录 → 获取新角色的 JWT。
+ * 不使用 clearCookies 等 hack 操作。
  */
 
 import type { Page } from "@playwright/test"
@@ -17,10 +18,7 @@ export default async function reloadAuth(
     throw new Error("reloadAuth fn 需要 worker 和 phone 参数")
   }
 
-  // 清除旧 cookies（旧 JWT 无效）
-  await page.context().clearCookies()
-
-  // 设置 internal_secret cookie
+  // 确保 internal_secret cookie 已设置
   const internalSecret = process.env.INTERNAL_SECRET || ""
   if (internalSecret) {
     const baseURL = process.env.BASE_URL || "http://localhost"
@@ -30,12 +28,20 @@ export default async function reloadAuth(
     ])
   }
 
-  // 重新 SMS 登录
+  // 1. 导航到首页
   await page.goto("/")
   await page.waitForLoadState("networkidle")
 
-  // 打开登录弹窗
-  await page.getByRole("button", { name: /登录|注册/ }).click()
+  // 2. 通过 UI 退出（点击"退出"按钮）
+  const logoutBtn = page.getByRole("button", { name: "退出" })
+  await logoutBtn.waitFor({ state: "visible", timeout: 15_000 })
+  await logoutBtn.click()
+
+  // 等待退出完成（登录按钮出现）
+  await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible", timeout: 15_000 })
+
+  // 3. 通过 UI 重新 SMS 登录
+  await page.getByRole("button", { name: /登录/ }).click()
   await page.getByRole("dialog").waitFor({ state: "visible" })
 
   // 确保在 SMS tab
@@ -45,7 +51,7 @@ export default async function reloadAuth(
   const localNumber = phone.replace(/^\+\d{1,4}-/, "")
   await page.getByPlaceholder("请输入手机号").fill(localNumber)
 
-  // 等待发送按钮启用，然后发送
+  // 发送验证码
   const sendBtn = page.getByRole("button", { name: "发送验证码" })
   await sendBtn.waitFor({ state: "visible" })
 
@@ -60,17 +66,15 @@ export default async function reloadAuth(
   const code = data.code as string
   if (!code) throw new Error("未从 sms-code API 获取到验证码")
 
-  // 填写验证码
+  // 填写验证码并提交
   await page.getByPlaceholder("请输入验证码").fill(code)
-
-  // 提交
   const dialog = page.getByRole("dialog")
   await dialog.getByRole("button", { name: /登录/ }).click()
 
-  // 等待登录成功
+  // 等待登录成功（弹窗关闭）
   await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
-  // 保存新的 storageState
+  // 4. 保存新的 storageState
   const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
   await page.context().storageState({ path: authFile })
 }

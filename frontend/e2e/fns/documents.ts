@@ -58,13 +58,6 @@ export const uploadDocument: TaskFn = async (page, args) => {
   const uploadBtn = dialog.getByRole("button", { name: "上传文档" })
   await expect(uploadBtn).toBeEnabled({ timeout: 5_000 })
 
-  // 诊断：检查当前 cookies
-  const cookies = await page.context().cookies()
-  const authCookies = cookies.filter(c => c.name === "access_token" || c.name === "refresh_token")
-  if (authCookies.length === 0) {
-    throw new Error(`上传前无 auth cookies! 所有 cookies: ${cookies.map(c => c.name).join(", ")}`)
-  }
-
   // 监听上传 API 响应
   const uploadResponse = page.waitForResponse(
     (r) => r.url().includes("/api/portal/documents") && r.request().method() === "POST",
