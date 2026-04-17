@@ -160,9 +160,16 @@ class RbacService:
             raise ForbiddenException(
                 message="受保护角色不允许删除", code="PROTECTED_ROLE_NO_DELETE"
             )
-        # 删除角色前，踢下线该角色下的所有用户
+        # 删除角色前，将该角色下的用户迁移到 visitor 并踢下线
+        visitor_role = await repository.get_role_by_name(
+            self.session, "visitor"
+        )
         users = await user_repo.list_by_role_id(self.session, role.id)
         for user in users:
+            await user_repo.set_role_id(
+                self.session, user.id,
+                visitor_role.id if visitor_role else None,
+            )
             await auth_repo.revoke_user_refresh_tokens(
                 self.session, user.id
             )
