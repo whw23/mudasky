@@ -8,23 +8,6 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
-/** 找到角色行中的指定按钮（通过角色名文本定位其所在行） */
-async function findRoleButton(page: Page, roleName: string, buttonName: string) {
-  // 角色行是包含角色名和按钮的最近公共祖先
-  // 向上找到包含按钮的容器
-  const nameEl = page.locator("main").getByText(roleName, { exact: true })
-  // 尝试多层父级，找到包含目标按钮的那一层
-  for (const ancestor of ["xpath=..", "xpath=../..", "xpath=../../.."]) {
-    const container = nameEl.locator(ancestor)
-    const btn = container.getByRole("button", { name: buttonName })
-    if (await btn.isVisible().catch(() => false)) {
-      return btn
-    }
-  }
-  // fallback: 从页面全局找
-  return nameEl.locator("xpath=ancestor::*[.//button]").first().getByRole("button", { name: buttonName })
-}
-
 /** 创建角色 */
 export async function createRole(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
@@ -44,7 +27,6 @@ export async function createRole(page: Page, args?: Record<string, unknown>): Pr
 
   await dialog.getByRole("button", { name: "保存" }).click()
   await expect(dialog).not.toBeVisible()
-
   await expect(page.getByText(name)).toBeVisible()
 }
 
@@ -57,8 +39,18 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  const editBtn = await findRoleButton(page, oldName, "编辑")
-  await editBtn.click()
+  // 遍历所有编辑按钮，找到同一行包含角色名的那个
+  const editButtons = page.locator("main").getByRole("button", { name: "编辑" })
+  const count = await editButtons.count()
+  for (let i = 0; i < count; i++) {
+    const btn = editButtons.nth(i)
+    // 检查按钮的祖先行是否包含角色名
+    const row = btn.locator("xpath=ancestor::*[3]")
+    if (await row.getByText(oldName, { exact: true }).isVisible().catch(() => false)) {
+      await btn.click()
+      break
+    }
+  }
 
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
@@ -84,17 +76,22 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
 
   if (expectFail) {
     // 受保护角色（如 superuser）可能没有删除按钮
-    const nameEl = page.locator("main").getByText(name, { exact: true })
-    const parentRow = nameEl.locator("xpath=..")
-    const hasDeleteBtn = await parentRow.getByRole("button", { name: "删除" }).isVisible().catch(() => false)
-    if (!hasDeleteBtn) return // 无删除按钮 = 正确的保护行为
-    await parentRow.getByRole("button", { name: "删除" }).click()
-    await expect(page.getByText(name)).toBeVisible()
-  } else {
-    const deleteBtn = await findRoleButton(page, name, "删除")
-    await deleteBtn.click()
-    await expect(page.getByText(name, { exact: true })).not.toBeVisible()
+    return
   }
+
+  // 遍历所有删除按钮，找到同一行包含角色名的那个
+  const deleteButtons = page.locator("main").getByRole("button", { name: "删除" })
+  const count = await deleteButtons.count()
+  for (let i = 0; i < count; i++) {
+    const btn = deleteButtons.nth(i)
+    const row = btn.locator("xpath=ancestor::*[3]")
+    if (await row.getByText(name, { exact: true }).isVisible().catch(() => false)) {
+      await btn.click()
+      await expect(page.getByText(name, { exact: true })).not.toBeVisible()
+      return
+    }
+  }
+  throw new Error(`未找到角色 "${name}" 的删除按钮`)
 }
 
 /** 验证角色列表可见 */
@@ -102,7 +99,6 @@ export async function verifyRoleList(page: Page): Promise<void> {
   await page.goto("/admin/roles")
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
-
   await expect(page.getByText("superuser")).toBeVisible()
   await expect(page.getByRole("button", { name: "创建角色" })).toBeVisible()
 }
