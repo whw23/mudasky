@@ -41,7 +41,19 @@ export default async function assignRole(
   const combobox = roleSection.getByRole("combobox")
 
   // 等待角色列表 API 返回（combobox options 包含目标角色）
-  await combobox.locator(`option:text-is("${roleName}")`).waitFor({ timeout: 10_000 })
+  await page.waitForFunction(
+    (label: string) => {
+      const selects = document.querySelectorAll("select")
+      for (const sel of selects) {
+        for (const opt of sel.options) {
+          if (opt.text === label) return true
+        }
+      }
+      return false
+    },
+    roleName,
+    { timeout: 10_000 },
+  )
 
   // 确认当前选中的不是目标角色
   const currentText = await combobox.locator("option:checked").textContent()

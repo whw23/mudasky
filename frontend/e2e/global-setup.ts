@@ -19,16 +19,14 @@ export default async function globalSetup(): Promise<void> {
   // 2. 清理 E2E 测试用户（通过 psql 直接删除，最可靠）
   try {
     const { execSync } = require("child_process")
-    // 清理测试用户
-    execSync(
-      `docker compose exec -T db psql -U mudasky -c "DELETE FROM \\"user\\" WHERE phone LIKE '+86-139%' AND username IS NULL OR username LIKE 'E2E%';"`,
-      { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
-    )
+    const cwd = path.join(__dirname, "../..")
+    const psql = (sql: string) =>
+      execSync(`docker compose exec -T db psql -U mudasky -c "${sql}"`, { cwd, stdio: "pipe", timeout: 10_000 })
+
+    // 清理非种子用户（只保留有用户名且非 E2E 开头的种子用户）
+    psql("DELETE FROM \\\"user\\\" WHERE username IS NULL OR username = '' OR username LIKE 'E2E%';")
     // 清理测试角色
-    execSync(
-      `docker compose exec -T db psql -U mudasky -c "DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';"`,
-      { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
-    )
+    psql("DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';")
   } catch { /* 清理失败不阻塞测试 */ }
 
   // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
