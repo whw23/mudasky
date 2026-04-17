@@ -1,0 +1,679 @@
+/**
+ * W1 任务声明：superuser (管理员)
+ *
+ * 职责：
+ * - 使用账号密码登录（环境变量中的种子用户）
+ * - 为其他 worker 分配角色并刷新 token
+ * - 创建 CRUD 种子数据（分类、文章、案例、院校）
+ * - 角色管理（创建/编辑/删除自定义角色）
+ * - 用户管理（搜索、禁用/启用、配额、密码重置、强制登出、删除）
+ * - 设置管理（通用配置、网页设置）
+ * - 安全测试（CSRF、XSS、SQL 注入、输入验证）
+ * - 侧边栏导航和仪表盘验证
+ * - 协调 W7 临时账号的禁用/启用测试
+ */
+
+import type { Task } from "../framework/types"
+import setCookie from "../fns/set-cookie"
+import login from "../fns/login"
+import logout from "../fns/logout"
+import assignRole from "../fns/assign-role"
+import refreshToken from "../fns/refresh-token"
+import {
+  createCategory,
+  editCategory,
+  deleteCategory,
+  createArticle,
+  editArticle,
+  deleteArticle,
+  createCase,
+  editCase,
+  deleteCase,
+  createUniversity,
+  editUniversity,
+  deleteUniversity,
+} from "../fns/admin-crud"
+import {
+  createRole,
+  editRole,
+  deleteRole,
+  verifyRoleList,
+} from "../fns/role-management"
+import {
+  searchUser,
+  toggleUserStatus,
+  editUserQuota,
+  resetPassword,
+  forceLogout,
+  deleteUser,
+} from "../fns/user-management"
+import {
+  verifyGeneralSettings,
+  editGeneralSettings,
+  verifyWebSettings,
+  editWebSettings,
+} from "../fns/settings"
+import {
+  testCsrf,
+  testXss,
+  testSqlInjection,
+  testInputValidation,
+} from "../fns/security"
+import {
+  verifyAdminSidebar,
+  testAdminNavigation,
+  verifyDashboard,
+  verifyMenuHighlight,
+} from "../fns/sidebar-nav"
+
+const TS = Date.now().toString().slice(-6)
+
+export const tasks: Task[] = [
+  /* ── 初始化 ── */
+  {
+    id: "w1_set_cookie",
+    worker: "w1",
+    name: "设置 internal_secret cookie",
+    requires: [],
+    fn: setCookie,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: [],
+      components: [],
+      security: [],
+    },
+  },
+  {
+    id: "w1_login",
+    worker: "w1",
+    name: "超级管理员登录",
+    requires: ["w1_set_cookie"],
+    fn: login,
+    fnArgs: {
+      username: process.env.SEED_USER_E2E_USERNAME || "admin",
+      password: process.env.SEED_USER_E2E_PASSWORD || "Admin123!",
+      worker: "w1",
+    },
+    coverage: {
+      routes: ["/"],
+      api: ["/api/auth/login"],
+      components: ["LoginDialog", "LoginForm"],
+      security: ["account-password-login"],
+    },
+  },
+
+  /* ── 角色分配（为其他 worker 赋权） ── */
+  {
+    id: "w1_assign_role_w2",
+    worker: "w1",
+    name: "为 W2 分配 student 角色",
+    requires: ["w1_login"],
+    fn: assignRole,
+    fnArgs: {
+      phone: `+86-1390000${Date.now().toString().slice(-4)}`, // W2 的手机号占位符
+      roleName: "student",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list", "/admin/users/list/detail", "/admin/users/list/detail/role"],
+      components: ["UserList", "UserDetailPanel"],
+      security: ["role-assignment"],
+    },
+  },
+  {
+    id: "w1_refresh_token_w2",
+    worker: "w1",
+    name: "刷新 W2 token",
+    requires: ["w1_assign_role_w2"],
+    fn: refreshToken,
+    fnArgs: { worker: "w2" },
+    coverage: {
+      routes: [],
+      api: ["/api/auth/refresh"],
+      components: [],
+      security: ["token-refresh"],
+    },
+  },
+  {
+    id: "w1_assign_role_w3",
+    worker: "w1",
+    name: "为 W3 分配 advisor 角色",
+    requires: ["w1_login"],
+    fn: assignRole,
+    fnArgs: {
+      phone: `+86-1390001${Date.now().toString().slice(-4)}`,
+      roleName: "advisor",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list", "/admin/users/list/detail", "/admin/users/list/detail/role"],
+      components: ["UserList", "UserDetailPanel"],
+      security: ["role-assignment"],
+    },
+  },
+  {
+    id: "w1_refresh_token_w3",
+    worker: "w1",
+    name: "刷新 W3 token",
+    requires: ["w1_assign_role_w3"],
+    fn: refreshToken,
+    fnArgs: { worker: "w3" },
+    coverage: {
+      routes: [],
+      api: ["/api/auth/refresh"],
+      components: [],
+      security: ["token-refresh"],
+    },
+  },
+
+  /* ── CRUD 业务操作 ── */
+  {
+    id: "w1_crud_category_create",
+    worker: "w1",
+    name: "创建分类",
+    requires: ["w1_login"],
+    fn: createCategory,
+    fnArgs: {
+      name: `E2E分类-${TS}`,
+      slug: `e2e-cat-${TS}`,
+      description: "E2E测试分类",
+      sortOrder: 10,
+    },
+    coverage: {
+      routes: ["/admin/categories"],
+      api: ["/admin/categories/list", "/admin/categories/list/create"],
+      components: ["CategoryList", "CategoryDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_category_edit",
+    worker: "w1",
+    name: "编辑分类",
+    requires: ["w1_crud_category_create"],
+    fn: editCategory,
+    fnArgs: {
+      oldName: `E2E分类-${TS}`,
+      newName: `E2E分类-${TS}-edited`,
+    },
+    coverage: {
+      routes: ["/admin/categories"],
+      api: ["/admin/categories/list/detail/edit"],
+      components: ["CategoryDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_category_delete",
+    worker: "w1",
+    name: "删除分类",
+    requires: ["w1_crud_category_edit"],
+    fn: deleteCategory,
+    fnArgs: {
+      name: `E2E分类-${TS}-edited`,
+    },
+    coverage: {
+      routes: ["/admin/categories"],
+      api: ["/admin/categories/list/detail/delete"],
+      components: ["CategoryList"],
+      security: [],
+    },
+  },
+
+  {
+    id: "w1_crud_article_create",
+    worker: "w1",
+    name: "创建文章",
+    requires: ["w1_login"],
+    fn: createArticle,
+    fnArgs: {
+      title: `E2E文章-${TS}`,
+      slug: `e2e-article-${TS}`,
+      content: "E2E测试文章内容",
+    },
+    coverage: {
+      routes: ["/admin/articles"],
+      api: ["/admin/articles/list", "/admin/articles/list/create"],
+      components: ["ArticleList", "ArticleDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_article_edit",
+    worker: "w1",
+    name: "编辑文章",
+    requires: ["w1_crud_article_create"],
+    fn: editArticle,
+    fnArgs: {
+      oldTitle: `E2E文章-${TS}`,
+      newTitle: `E2E文章-${TS}-edited`,
+    },
+    coverage: {
+      routes: ["/admin/articles"],
+      api: ["/admin/articles/list/detail/edit"],
+      components: ["ArticleDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_article_delete",
+    worker: "w1",
+    name: "删除文章",
+    requires: ["w1_crud_article_edit"],
+    fn: deleteArticle,
+    fnArgs: {
+      title: `E2E文章-${TS}-edited`,
+    },
+    coverage: {
+      routes: ["/admin/articles"],
+      api: ["/admin/articles/list/detail/delete"],
+      components: ["ArticleList"],
+      security: [],
+    },
+  },
+
+  {
+    id: "w1_crud_case_create",
+    worker: "w1",
+    name: "创建案例",
+    requires: ["w1_login"],
+    fn: createCase,
+    fnArgs: {
+      studentName: `E2E学生-${TS}`,
+      university: "E2E大学",
+      program: "E2E专业",
+      year: 2026,
+    },
+    coverage: {
+      routes: ["/admin/cases"],
+      api: ["/admin/cases/list", "/admin/cases/list/create"],
+      components: ["CaseList", "CaseDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_case_edit",
+    worker: "w1",
+    name: "编辑案例",
+    requires: ["w1_crud_case_create"],
+    fn: editCase,
+    fnArgs: {
+      studentName: `E2E学生-${TS}`,
+      newUniversity: "E2E大学-edited",
+    },
+    coverage: {
+      routes: ["/admin/cases"],
+      api: ["/admin/cases/list/detail/edit"],
+      components: ["CaseDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_case_delete",
+    worker: "w1",
+    name: "删除案例",
+    requires: ["w1_crud_case_edit"],
+    fn: deleteCase,
+    fnArgs: {
+      studentName: `E2E学生-${TS}`,
+    },
+    coverage: {
+      routes: ["/admin/cases"],
+      api: ["/admin/cases/list/detail/delete"],
+      components: ["CaseList"],
+      security: [],
+    },
+  },
+
+  {
+    id: "w1_crud_university_create",
+    worker: "w1",
+    name: "创建院校",
+    requires: ["w1_login"],
+    fn: createUniversity,
+    fnArgs: {
+      name: `E2E院校-${TS}`,
+      nameEn: `E2E-University-${TS}`,
+      country: "E2E国家",
+      city: "E2E城市",
+    },
+    coverage: {
+      routes: ["/admin/universities"],
+      api: ["/admin/universities/list", "/admin/universities/list/create"],
+      components: ["UniversityList", "UniversityDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_university_edit",
+    worker: "w1",
+    name: "编辑院校",
+    requires: ["w1_crud_university_create"],
+    fn: editUniversity,
+    fnArgs: {
+      name: `E2E院校-${TS}`,
+      newCity: "E2E城市-edited",
+    },
+    coverage: {
+      routes: ["/admin/universities"],
+      api: ["/admin/universities/list/detail/edit"],
+      components: ["UniversityDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_crud_university_delete",
+    worker: "w1",
+    name: "删除院校",
+    requires: ["w1_crud_university_edit"],
+    fn: deleteUniversity,
+    fnArgs: {
+      name: `E2E院校-${TS}`,
+    },
+    coverage: {
+      routes: ["/admin/universities"],
+      api: ["/admin/universities/list/detail/delete"],
+      components: ["UniversityList"],
+      security: [],
+    },
+  },
+
+  /* ── 角色管理 ── */
+  {
+    id: "w1_role_list",
+    worker: "w1",
+    name: "验证角色列表",
+    requires: ["w1_login"],
+    fn: verifyRoleList,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/list"],
+      components: ["RoleList"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_role_create",
+    worker: "w1",
+    name: "创建自定义角色",
+    requires: ["w1_role_list"],
+    fn: createRole,
+    fnArgs: {
+      name: `E2E-role-${TS}`,
+      description: "E2E测试角色",
+      permissions: ["public/*"],
+    },
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/list/create"],
+      components: ["RoleDialog", "PermissionTree"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_role_edit",
+    worker: "w1",
+    name: "编辑角色",
+    requires: ["w1_role_create"],
+    fn: editRole,
+    fnArgs: {
+      oldName: `E2E-role-${TS}`,
+      newName: `E2E-role-${TS}-edited`,
+      newDescription: "E2E测试角色-edited",
+    },
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/list/detail/edit"],
+      components: ["RoleDialog"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_role_delete",
+    worker: "w1",
+    name: "删除自定义角色",
+    requires: ["w1_role_edit"],
+    fn: deleteRole,
+    fnArgs: {
+      name: `E2E-role-${TS}-edited`,
+      expectFail: false,
+    },
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/list/detail/delete"],
+      components: ["RoleList"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_role_delete_protected",
+    worker: "w1",
+    name: "删除受保护角色（应失败）",
+    requires: ["w1_role_list"],
+    fn: deleteRole,
+    fnArgs: {
+      name: "superuser",
+      expectFail: true,
+    },
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/list/detail/delete"],
+      components: ["RoleList"],
+      security: ["protected-role-delete"],
+    },
+  },
+
+  /* ── 用户管理 ── */
+  {
+    id: "w1_user_search",
+    worker: "w1",
+    name: "搜索用户",
+    requires: ["w1_login"],
+    fn: searchUser,
+    fnArgs: {
+      keyword: "admin",
+      expectFound: true,
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list"],
+      components: ["UserList", "SearchInput"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_user_quota",
+    worker: "w1",
+    name: "编辑用户配额",
+    requires: ["w1_user_search"],
+    fn: editUserQuota,
+    fnArgs: {
+      username: "admin",
+      quota: 200,
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list/detail/quota"],
+      components: ["UserDetailPanel"],
+      security: [],
+    },
+  },
+
+  /* ── 设置管理 ── */
+  {
+    id: "w1_general_settings",
+    worker: "w1",
+    name: "验证通用配置",
+    requires: ["w1_login"],
+    fn: verifyGeneralSettings,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/general-settings"],
+      api: ["/admin/general-settings/list"],
+      components: ["GeneralSettings"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_web_settings",
+    worker: "w1",
+    name: "验证网页设置",
+    requires: ["w1_login"],
+    fn: verifyWebSettings,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/list"],
+      components: ["WebSettings"],
+      security: [],
+    },
+  },
+
+  /* ── 安全测试 ── */
+  {
+    id: "w1_security_csrf",
+    worker: "w1",
+    name: "CSRF 防护测试",
+    requires: ["w1_login"],
+    fn: testCsrf,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/admin/categories/list"],
+      components: [],
+      security: ["csrf-protection"],
+    },
+  },
+  {
+    id: "w1_security_xss",
+    worker: "w1",
+    name: "XSS 防护测试",
+    requires: ["w1_login"],
+    fn: testXss,
+    fnArgs: {
+      payload: '<script>alert("xss")</script>',
+    },
+    coverage: {
+      routes: [],
+      api: ["/admin/users/list"],
+      components: [],
+      security: ["xss-protection"],
+    },
+  },
+  {
+    id: "w1_security_sql_injection",
+    worker: "w1",
+    name: "SQL 注入防护测试",
+    requires: ["w1_login"],
+    fn: testSqlInjection,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/api/auth/sms-code", "/admin/users/list"],
+      components: [],
+      security: ["sql-injection-protection"],
+    },
+  },
+  {
+    id: "w1_security_input_validation",
+    worker: "w1",
+    name: "输入验证测试",
+    requires: ["w1_login"],
+    fn: testInputValidation,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/admin/categories/list/create", "/admin/users/list/detail"],
+      components: [],
+      security: ["input-validation"],
+    },
+  },
+
+  /* ── 侧边栏和导航 ── */
+  {
+    id: "w1_sidebar_verify",
+    worker: "w1",
+    name: "验证管理员侧边栏",
+    requires: ["w1_login"],
+    fn: verifyAdminSidebar,
+    fnArgs: {
+      role: "superuser",
+    },
+    coverage: {
+      routes: ["/admin/dashboard"],
+      api: [],
+      components: ["AdminSidebar"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_navigation_test",
+    worker: "w1",
+    name: "测试管理员导航",
+    requires: ["w1_sidebar_verify"],
+    fn: testAdminNavigation,
+    fnArgs: {},
+    coverage: {
+      routes: [
+        "/admin/users",
+        "/admin/articles",
+        "/admin/roles",
+        "/admin/categories",
+        "/admin/cases",
+        "/admin/universities",
+      ],
+      api: [],
+      components: ["AdminSidebar"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_dashboard_verify",
+    worker: "w1",
+    name: "验证仪表盘",
+    requires: ["w1_login"],
+    fn: verifyDashboard,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/dashboard"],
+      api: ["/admin/dashboard/stats"],
+      components: ["Dashboard", "StatCard"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_menu_highlight",
+    worker: "w1",
+    name: "验证菜单高亮",
+    requires: ["w1_sidebar_verify"],
+    fn: verifyMenuHighlight,
+    fnArgs: {
+      menuName: "用户管理",
+      path: "/admin/users",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: [],
+      components: ["AdminSidebar"],
+      security: [],
+    },
+  },
+
+  /* ── 登出 ── */
+  {
+    id: "w1_logout",
+    worker: "w1",
+    name: "超级管理员登出",
+    requires: ["w1_login"],
+    fn: logout,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/api/auth/logout"],
+      components: ["Header"],
+      security: ["logout"],
+    },
+  },
+]
