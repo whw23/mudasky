@@ -46,22 +46,21 @@ export default async function assignRole(
     return // 已是目标角色，跳过
   }
 
-  // 用 selectOption 设置值（触发原生 change 事件）
-  await combobox.selectOption({ label: roleName })
+  // 点击 select 聚焦，用键盘选择目标角色
+  await combobox.click()
 
-  // 等待 React 处理 change 事件并更新状态
-  await combobox.evaluate((el: HTMLSelectElement, label: string) => {
-    // 如果 React 没响应 selectOption，用 dispatchEvent 重试
-    const option = Array.from(el.options).find(o => o.text === label)
-    if (option && el.value !== option.value) {
-      el.value = option.value
-      el.dispatchEvent(new Event("input", { bubbles: true }))
-      el.dispatchEvent(new Event("change", { bubbles: true }))
-    }
-  }, roleName)
+  // 获取所有 option 的文本找到目标索引
+  const options = await combobox.locator("option").allTextContents()
+  const targetIndex = options.findIndex(o => o === roleName)
+  if (targetIndex === -1) {
+    throw new Error(`未找到角色选项: "${roleName}", 可选: ${JSON.stringify(options)}`)
+  }
 
-  // 等一帧让 React 更新
-  await page.waitForTimeout(100)
+  // 先按 Home 到第一个，再按 Down 到目标
+  await combobox.press("Home")
+  for (let i = 0; i < targetIndex; i++) {
+    await combobox.press("ArrowDown")
+  }
 
   // 监听角色分配 API 请求和响应
   const saveResponse = page.waitForResponse(
