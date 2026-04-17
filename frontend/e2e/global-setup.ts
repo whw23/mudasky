@@ -12,7 +12,50 @@ export default async function globalSetup(): Promise<void> {
   cleanupSignals()
   ensureSignalDir()
 
-  // 2. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
+  // 2. 清理可能残留的 W7 禁用用户（确保注册不会遇到"用户已被禁用"）
+  try {
+    const { PHONES } = require("./constants")
+    const baseURL = process.env.BASE_URL || "http://localhost"
+    const internalSecret = process.env.INTERNAL_SECRET || ""
+    if (internalSecret) {
+      const { chromium } = require("@playwright/test")
+      const browser = await chromium.launch()
+      const context = await browser.newContext()
+      await context.addCookies([
+        { name: "internal_secret", value: internalSecret, url: new URL(baseURL).origin },
+      ])
+      const page = await context.newPage()
+      // 登录 superuser
+      const loginUser = process.env.SEED_USER_E2E_USERNAME
+      const loginPass = process.env.SEED_USER_E2E_PASSWORD
+      if (loginUser && loginPass) {
+        await page.request.post(`${baseURL}/api/auth/login`, {
+          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+          data: { username: loginUser, encrypted_password: loginPass },
+        }).catch(() => {})
+        // 删除所有 E2E 固定手机号用户（确保干净环境）
+        for (const phone of Object.values(PHONES)) {
+          const res = await page.request.get(
+            `${baseURL}/api/admin/users/list?keyword=${encodeURIComponent(phone as string)}`,
+            { headers: { "X-Requested-With": "XMLHttpRequest" } },
+          ).catch(() => null)
+          if (res?.ok()) {
+            const data = await res.json().catch(() => ({}))
+            const items = Array.isArray(data) ? data : (data.items ?? [])
+            for (const user of items) {
+              await page.request.post(`${baseURL}/api/admin/users/list/detail/delete`, {
+                headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+                data: { user_id: user.id },
+              }).catch(() => {})
+            }
+          }
+        }
+      }
+      await browser.close()
+    }
+  } catch { /* 清理失败不阻塞测试 */ }
+
+  // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
   if (process.env.LAST_NOT_PASS === "1") {
     const lastRunPath = path.join(__dirname, ".last-run.json")
     if (fs.existsSync(lastRunPath)) {
@@ -30,10 +73,16 @@ export default async function globalSetup(): Promise<void> {
         } catch { /* skip */ }
       }
 
-      // 收集未通过的任务
+      // 收集未通过的任务 + 运行时状态任务（set_cookie/register 等不能缓存）
       const notPass = new Set<string>()
       for (const [taskId, status] of Object.entries(lastRun)) {
         if (status !== "pass") notPass.add(taskId)
+      }
+      // 标记所有 set_cookie 和 register 任务为 not-pass（它们设置运行时状态，不能缓存）
+      for (const [taskId] of Object.entries(lastRun)) {
+        if (taskId.includes("set_cookie") || taskId.includes("register") || taskId.includes("reload_auth")) {
+          notPass.add(taskId)
+        }
       }
 
       // 递归收集依赖链
