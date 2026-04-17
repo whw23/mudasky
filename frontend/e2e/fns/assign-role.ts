@@ -38,17 +38,35 @@ export default async function assignRole(
 
   // 选择角色（combobox）
   const roleSection = page.getByRole("heading", { name: "分配角色" }).locator("..")
-  await roleSection.getByRole("combobox").selectOption({ label: roleName })
+  const combobox = roleSection.getByRole("combobox")
 
-  // 监听 API 响应，确保保存成功
+  // 确认当前选中的不是目标角色（避免无变化的保存）
+  const currentText = await combobox.locator("option:checked").textContent()
+  if (currentText?.trim() === roleName) {
+    return // 已是目标角色，跳过
+  }
+
+  await combobox.selectOption({ label: roleName })
+
+  // 验证选择已变更
+  const selectedText = await combobox.locator("option:checked").textContent()
+  if (selectedText?.trim() !== roleName) {
+    throw new Error(`角色选择失败: 期望 "${roleName}", 实际 "${selectedText}"`)
+  }
+
+  // 监听角色分配 API 响应
   const saveResponse = page.waitForResponse(
-    (r) => r.url().includes("/admin/users/list/detail") && r.request().method() === "POST" && r.status() === 200,
+    (r) => r.url().includes("/admin/users/list/detail/role") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
 
-  // 点击分配角色区域的保存按钮
+  // 点击保存
   await roleSection.getByRole("button", { name: "保存" }).click()
 
-  // 等待 API 返回 200
-  await saveResponse
+  // 等待 API 返回并验证
+  const res = await saveResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`角色分配 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
 }
