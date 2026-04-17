@@ -15,10 +15,14 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 export const viewStudentDocuments: TaskFn = async (page, args) => {
   const studentIndex = args?.studentIndex as number ?? 0
 
+  // 确保在学生管理页面
+  await page.goto("/admin/students")
+  await page.waitForLoadState("networkidle")
+
   // 展开指定学生
   const row = page.locator("tbody tr").nth(studentIndex)
   await row.click()
-  await page.getByText("文件列表").first().waitFor()
+  await page.getByText("文件列表").first().waitFor({ timeout: 15_000 })
 
   // 文档区域包含表头或暂无文件提示
   const fileSection = page.locator("section").filter({ hasText: "文件列表" })

@@ -51,8 +51,16 @@ export const expandContact: TaskFn = async (page) => {
 export const markContactStatus: TaskFn = async (page, args) => {
   const status = args?.status as string || "contacted"
 
+  // 确保在联系人页面且面板已展开
+  await page.goto("/admin/contacts")
+  await page.waitForLoadState("networkidle")
+  const rows = page.locator("tbody tr")
+  if (await rows.count() > 0) {
+    await rows.first().click()
+  }
+
   const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
-  await markStatusHeading.waitFor()
+  await markStatusHeading.waitFor({ timeout: 15_000 })
 
   // 状态下拉
   const statusSection = page.locator("section").filter({ hasText: "标记状态" })
@@ -76,6 +84,14 @@ export const markContactStatus: TaskFn = async (page, args) => {
  */
 export const addContactNote: TaskFn = async (page, args) => {
   const note = args?.note as string || `E2E-advisor-contact-note-${Date.now()}`
+
+  // 确保在联系人页面且面板已展开
+  await page.goto("/admin/contacts")
+  await page.waitForLoadState("networkidle")
+  const rows = page.locator("tbody tr")
+  if (await rows.count() > 0) {
+    await rows.first().click()
+  }
 
   const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
   await addNoteHeading.waitFor({ timeout: 15_000 })

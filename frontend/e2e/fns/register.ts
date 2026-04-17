@@ -17,6 +17,16 @@ export default async function register(
     throw new Error("register fn 需要 phone 和 worker 参数")
   }
 
+  // 确保 internal_secret cookie 已设置（LAST_NOT_PASS 模式下 set_cookie 可能被跳过）
+  const internalSecret = process.env.INTERNAL_SECRET || ""
+  if (internalSecret) {
+    const baseURL = process.env.BASE_URL || "http://localhost"
+    const url = new URL(baseURL)
+    await page.context().addCookies([
+      { name: "internal_secret", value: internalSecret, url: url.origin },
+    ])
+  }
+
   // 导航到首页（等待水合完成）
   await page.goto("/")
   await page.waitForLoadState("networkidle")
