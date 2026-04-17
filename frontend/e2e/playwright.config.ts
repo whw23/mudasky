@@ -12,7 +12,7 @@ import * as path from "path"
 const envPath = path.resolve(__dirname, "../../env/backend.env")
 if (fs.existsSync(envPath)) {
   for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
-    const match = line.match(/^([A-Z_]+)=(.+)$/)
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/)
     if (match && !process.env[match[1]]) {
       process.env[match[1]] = match[2]
     }

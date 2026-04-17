@@ -4,10 +4,13 @@ WORKDIR /src
 COPY lua/ ./lua/
 
 # LuaJIT 编译 .lua → .luac
-RUN for f in lua/*.lua; do \
-      luajit -b "$f" "${f%.lua}.luac"; \
+RUN LUAJIT=$(find /usr/local/openresty/luajit/bin -name "luajit*" -type f | head -1) && \
+    mkdir -p out && \
+    for f in lua/*.lua; do \
+      name=$(basename "$f" .lua) && \
+      "$LUAJIT" -b "$f" "out/${name}.luac"; \
     done && \
-    rm -f lua/*.lua
+    rm -rf lua && mv out lua
 
 # ── runner ──
 FROM openresty/openresty:alpine AS runner
