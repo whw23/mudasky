@@ -95,9 +95,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("category", category)
-      await api.post("/portal/documents/list/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+      await api.post("/portal/documents/list/upload", formData)
       toast.success(t("uploadSuccess"))
       resetForm()
       setOpen(false)
