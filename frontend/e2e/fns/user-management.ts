@@ -11,6 +11,7 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 /** 导航到用户管理并搜索用户，展开详情面板 */
 async function gotoUserAndExpand(page: Page, keyword: string): Promise<void> {
   await page.goto("/admin/users")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "用户管理" }).waitFor()
 
   // 从 phone 中提取本地号码用于搜索

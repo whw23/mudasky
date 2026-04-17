@@ -41,8 +41,9 @@ export async function editWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "网页设置" }).waitFor()
 
-  // 点击"编辑标语"打开编辑面板
-  await page.getByText("编辑标语").click()
+  // 点击编辑标语区域（accessibility name 为"编辑标语"的 generic 元素）
+  const editTagline = page.locator("[class*='cursor-pointer']").filter({ hasText: "专注国际教育" }).first()
+  await editTagline.click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")

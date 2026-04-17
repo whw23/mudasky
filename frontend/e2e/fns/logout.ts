@@ -8,6 +8,7 @@ import type { Page } from "@playwright/test"
 export default async function logout(page: Page): Promise<void> {
   // 导航到首页（admin 页面没有退出按钮）
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
 
   // 点击退出按钮
   await page.getByRole("button", { name: "退出" }).click()

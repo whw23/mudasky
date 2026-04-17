@@ -252,7 +252,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   await expect(dialog).not.toBeVisible()
 
   // 验证修改成功
-  await expect(page.getByRole("cell", { name: newUniversity })).toBeVisible()
+  await expect(page.getByRole("cell", { name: newUniversity }).first()).toBeVisible()
 }
 
 /** 删除案例 */

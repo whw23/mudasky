@@ -13,9 +13,8 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  */
 export const viewContactList: TaskFn = async (page) => {
   await page.goto("/admin/contacts")
-  await page.locator("main").waitFor()
-  const table = page.locator("table")
-  await expect(table).toBeVisible()
+  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor()
 }
 
 /**

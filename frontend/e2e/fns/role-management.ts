@@ -75,8 +75,8 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
   await page.goto("/admin/roles")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 找到角色行
-  const roleRow = page.locator("main >> text=" + name).locator("..")
+  // 找到角色行（包含角色名的容器中的删除按钮）
+  const roleRow = page.locator("main").locator(`text=${name}`).locator("xpath=ancestor::*[.//button]").first()
   const deleteButton = roleRow.getByRole("button", { name: "删除" })
 
   if (expectFail) {
