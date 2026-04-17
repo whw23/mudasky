@@ -197,11 +197,26 @@ W7 的临时账号在 global-teardown 统一清理。
 
 ### 熔断机制
 
-按前置条件链传播：
-- 任务失败 → 写信号文件（status: fail）
-- 依赖该任务的后续任务检查到前置失败 → 自己也标记 fail → 写信号文件
-- 级联传播直到所有依赖链上的任务都标记 fail
-- 熔断的任务不重试，直接算 failed
+按前置条件链传播，区分直接失败和熔断失败：
+
+- 任务执行失败 → 写信号文件（status: "fail"）
+- 依赖该任务的后续任务检查到前置失败 → 写信号文件（status: "breaker", cause: "前置任务 xxx 失败"）
+- 级联传播直到所有依赖链上的任务都标记 breaker
+- breaker 和 fail 都算失败，不重试
+
+报告中区分显示：
+
+```
+[Test Results] 230 pass / 1 fail / 3 breaker / 0 timeout (total: 234)
+
+Failed:
+  ✗ w2_profile — expect(username).toBe("E2E-student")
+
+Breaker (caused by w2_profile):
+  ⊘ w2_edit_username — 前置任务 w2_profile 失败
+  ⊘ w2_change_phone — 前置任务 w2_profile 失败
+  ⊘ w2_two_factor — 前置任务 w2_profile 失败
+```
 
 ### UI 操作原则
 
