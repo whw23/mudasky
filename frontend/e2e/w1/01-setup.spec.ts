@@ -11,6 +11,7 @@ import * as path from "path"
 const W2_AUTH = path.join(__dirname, "..", ".auth", "w2.json")
 const W3_AUTH = path.join(__dirname, "..", ".auth", "w3.json")
 const BASE = process.env.BASE_URL || "http://localhost"
+const TS = Date.now()
 
 /** 帮指定 worker 刷新 token（赋权后 JWT 需要更新）。 */
 async function refreshWorkerToken(authFile: string) {
@@ -95,7 +96,7 @@ test.describe("W1 初始化", () => {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
         },
-        data: { name: "E2E-分类", slug: `e2e-cat-${Date.now()}` },
+        data: { name: `E2E-分类-${TS}`, slug: `e2e-cat-${TS}` },
       },
     )
     expect(catRes.status()).toBe(201)
@@ -111,8 +112,8 @@ test.describe("W1 初始化", () => {
           "X-Requested-With": "XMLHttpRequest",
         },
         data: {
-          title: `E2E-文章-${Date.now()}`,
-          slug: `e2e-art-${Date.now()}`,
+          title: `E2E-文章-${TS}`,
+          slug: `e2e-art-${TS}`,
           category_id: cat.id,
           content_type: "markdown",
           content: "E2E 内容",
@@ -130,7 +131,7 @@ test.describe("W1 初始化", () => {
         "X-Requested-With": "XMLHttpRequest",
       },
       data: {
-        student_name: `E2E-案例-${Date.now()}`,
+        student_name: `E2E-案例-${TS}`,
         university: "E2E大学",
         program: "E2E专业",
         year: 2026,
@@ -149,7 +150,7 @@ test.describe("W1 初始化", () => {
           "X-Requested-With": "XMLHttpRequest",
         },
         data: {
-          name: `E2E-大学-${Date.now()}`,
+          name: `E2E-大学-${TS}`,
           name_en: "E2E Uni",
           country: "德国",
           city: "柏林",
