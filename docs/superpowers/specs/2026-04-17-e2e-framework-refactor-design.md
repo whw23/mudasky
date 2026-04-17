@@ -228,6 +228,14 @@ Breaker (caused by w2_profile):
 - 上传文档 → 通过上传组件
 - 登出 → 点击登出按钮
 
+### 短信验证码免发送
+
+通过 `INTERNAL_SECRET` cookie 跳过真实短信发送，后端直接返回验证码：
+
+- 所有 worker 在注册/登录前，先通过 `page.context().addCookies()` 设置 `internal_secret` cookie
+- `INTERNAL_SECRET` 从 env 文件加载（本地用 `env/backend.env`，线上用 `env/production.env`，通过 `TEST_ENV` 环境变量切换）
+- 注册流程：设置 cookie → 在 UI 输入手机号 → 调用发送验证码 → 从 API 响应获取验证码 → 填入验证码 → 提交
+
 ### `--last-not-pass` 机制
 
 通过环境变量触发：`LAST_NOT_PASS=1`
