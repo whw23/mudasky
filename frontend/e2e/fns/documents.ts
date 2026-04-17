@@ -54,8 +54,9 @@ export const uploadDocument: TaskFn = async (page, args) => {
 
   // 分类默认是"其他"，不需要改
 
-  // 等待上传按钮启用并点击
+  // 等待上传按钮启用（文件选择成功后才启用）
   const uploadBtn = dialog.getByRole("button", { name: "上传文档" })
+  await expect(uploadBtn).toBeEnabled({ timeout: 5_000 })
   await uploadBtn.click()
 
   // 等待对话框关闭（上传成功）
