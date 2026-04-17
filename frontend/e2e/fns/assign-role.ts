@@ -54,7 +54,7 @@ export default async function assignRole(
     throw new Error(`角色选择失败: 期望 "${roleName}", 实际 "${selectedText}"`)
   }
 
-  // 监听角色分配 API 响应
+  // 监听角色分配 API 请求和响应
   const saveResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/users/list/detail/assign-role") && r.request().method() === "POST",
     { timeout: 15_000 },
@@ -65,8 +65,16 @@ export default async function assignRole(
 
   // 等待 API 返回并验证
   const res = await saveResponse
+  const reqBody = res.request().postData() || ""
+  const resBody = await res.text().catch(() => "")
+
   if (!res.ok()) {
-    const body = await res.text().catch(() => "")
-    throw new Error(`角色分配 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+    throw new Error(`角色分配 API 返回 ${res.status()}: req=${reqBody}, res=${resBody.substring(0, 200)}`)
+  }
+
+  // 验证响应中的角色名是否正确
+  const resData = JSON.parse(resBody)
+  if (resData.role_name && resData.role_name !== roleName) {
+    throw new Error(`角色分配未生效: 期望 "${roleName}", 响应中角色为 "${resData.role_name}", 请求体=${reqBody}`)
   }
 }
