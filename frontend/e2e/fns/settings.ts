@@ -38,13 +38,21 @@ export async function editWebSettings(page: Page): Promise<void> {
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
 
-  // 点击 Hero 区域的编辑图标（cursor:pointer 的可点击容器）
-  const heroArea = page.locator("main").locator("[cursor=pointer], [class*='cursor-pointer']").first()
-  if (await heroArea.isVisible().catch(() => false)) {
-    await heroArea.click()
+  // 点击 Hero 编辑区域（aria-label 为"编辑 Hero"的可点击容器）
+  const heroEdit = page.locator("[aria-label*='Hero'], [aria-label*='编辑 Hero']").first()
+  if (await heroEdit.isVisible().catch(() => false)) {
+    await heroEdit.click()
   } else {
-    // fallback: 点击 h1 的父级可点击区域
-    await page.locator("main h1").first().locator("..").click()
+    // fallback: 点击包含 h1 标题的可点击区域
+    const h1 = page.locator("main h1").first()
+    await h1.waitFor()
+    // 向上找到可点击的父级
+    for (let i = 1; i <= 3; i++) {
+      const parent = h1.locator(`xpath=${"..".concat("/..".repeat(i - 1))}`)
+      await parent.click()
+      // 检查 dialog 是否打开
+      if (await page.getByRole("dialog").isVisible().catch(() => false)) break
+    }
   }
 
   // 等待弹窗打开

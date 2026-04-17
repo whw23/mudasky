@@ -39,18 +39,21 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 遍历所有编辑按钮，找到同一行包含角色名的那个
-  const editButtons = page.locator("main").getByRole("button", { name: "编辑" })
-  const count = await editButtons.count()
-  for (let i = 0; i < count; i++) {
-    const btn = editButtons.nth(i)
-    // 检查按钮的祖先行是否包含角色名
-    const row = btn.locator("xpath=ancestor::*[3]")
-    if (await row.getByText(oldName, { exact: true }).isVisible().catch(() => false)) {
-      await btn.click()
+  // 找到角色名文本，然后定位同行的编辑按钮
+  const nameEl = page.locator("main").getByText(oldName, { exact: true })
+  await nameEl.waitFor()
+  // 角色名和按钮在同一个 flex 行容器中，向上逐级找到包含编辑按钮的容器
+  let clicked = false
+  for (let level = 1; level <= 5; level++) {
+    const ancestor = nameEl.locator(`xpath=${"..".concat("/..".repeat(level - 1))}`)
+    const btn = ancestor.getByRole("button", { name: "编辑" })
+    if (await btn.first().isVisible().catch(() => false)) {
+      await btn.first().click()
+      clicked = true
       break
     }
   }
+  if (!clicked) throw new Error(`未找到角色 "${oldName}" 的编辑按钮`)
 
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
@@ -79,14 +82,14 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
     return
   }
 
-  // 遍历所有删除按钮，找到同一行包含角色名的那个
-  const deleteButtons = page.locator("main").getByRole("button", { name: "删除" })
-  const count = await deleteButtons.count()
-  for (let i = 0; i < count; i++) {
-    const btn = deleteButtons.nth(i)
-    const row = btn.locator("xpath=ancestor::*[3]")
-    if (await row.getByText(name, { exact: true }).isVisible().catch(() => false)) {
-      await btn.click()
+  // 找到角色名文本，然后向上逐级找到包含删除按钮的容器
+  const nameEl = page.locator("main").getByText(name, { exact: true })
+  await nameEl.waitFor()
+  for (let level = 1; level <= 5; level++) {
+    const ancestor = nameEl.locator(`xpath=${"..".concat("/..".repeat(level - 1))}`)
+    const btn = ancestor.getByRole("button", { name: "删除" })
+    if (await btn.first().isVisible().catch(() => false)) {
+      await btn.first().click()
       await expect(page.getByText(name, { exact: true })).not.toBeVisible()
       return
     }
