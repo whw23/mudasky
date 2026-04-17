@@ -12,47 +12,13 @@ export default async function globalSetup(): Promise<void> {
   cleanupSignals()
   ensureSignalDir()
 
-  // 2. 清理可能残留的 W7 禁用用户（确保注册不会遇到"用户已被禁用"）
+  // 2. 清理 E2E 测试用户（通过 psql 直接删除，最可靠）
   try {
-    const { PHONES } = require("./constants")
-    const baseURL = process.env.BASE_URL || "http://localhost"
-    const internalSecret = process.env.INTERNAL_SECRET || ""
-    if (internalSecret) {
-      const { chromium } = require("@playwright/test")
-      const browser = await chromium.launch()
-      const context = await browser.newContext()
-      await context.addCookies([
-        { name: "internal_secret", value: internalSecret, url: new URL(baseURL).origin },
-      ])
-      const page = await context.newPage()
-      // 登录 superuser
-      const loginUser = process.env.SEED_USER_E2E_USERNAME
-      const loginPass = process.env.SEED_USER_E2E_PASSWORD
-      if (loginUser && loginPass) {
-        await page.request.post(`${baseURL}/api/auth/login`, {
-          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-          data: { username: loginUser, encrypted_password: loginPass },
-        }).catch(() => {})
-        // 删除所有 E2E 固定手机号用户（确保干净环境）
-        for (const phone of Object.values(PHONES)) {
-          const res = await page.request.get(
-            `${baseURL}/api/admin/users/list?keyword=${encodeURIComponent(phone as string)}`,
-            { headers: { "X-Requested-With": "XMLHttpRequest" } },
-          ).catch(() => null)
-          if (res?.ok()) {
-            const data = await res.json().catch(() => ({}))
-            const items = Array.isArray(data) ? data : (data.items ?? [])
-            for (const user of items) {
-              await page.request.post(`${baseURL}/api/admin/users/list/detail/delete`, {
-                headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-                data: { user_id: user.id },
-              }).catch(() => {})
-            }
-          }
-        }
-      }
-      await browser.close()
-    }
+    const { execSync } = require("child_process")
+    execSync(
+      `docker compose exec -T db psql -U mudasky -c "DELETE FROM \\"user\\" WHERE phone LIKE '+86-13900%';"`,
+      { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
+    )
   } catch { /* 清理失败不阻塞测试 */ }
 
   // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
