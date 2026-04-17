@@ -39,21 +39,11 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 找到角色名文本，然后定位同行的编辑按钮
+  // 角色名的直接父级就是角色行，包含编辑按钮
   const nameEl = page.locator("main").getByText(oldName, { exact: true })
   await nameEl.waitFor()
-  // 角色名和按钮在同一个 flex 行容器中，向上逐级找到包含编辑按钮的容器
-  let clicked = false
-  for (let level = 1; level <= 5; level++) {
-    const ancestor = nameEl.locator(`xpath=${"..".concat("/..".repeat(level - 1))}`)
-    const btn = ancestor.getByRole("button", { name: "编辑" })
-    if (await btn.first().isVisible().catch(() => false)) {
-      await btn.first().click()
-      clicked = true
-      break
-    }
-  }
-  if (!clicked) throw new Error(`未找到角色 "${oldName}" 的编辑按钮`)
+  const row = nameEl.locator("xpath=..")
+  await row.getByRole("button", { name: "编辑" }).click()
 
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
@@ -82,19 +72,12 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
     return
   }
 
-  // 找到角色名文本，然后向上逐级找到包含删除按钮的容器
+  // 角色名的直接父级就是角色行，包含删除按钮
   const nameEl = page.locator("main").getByText(name, { exact: true })
   await nameEl.waitFor()
-  for (let level = 1; level <= 5; level++) {
-    const ancestor = nameEl.locator(`xpath=${"..".concat("/..".repeat(level - 1))}`)
-    const btn = ancestor.getByRole("button", { name: "删除" })
-    if (await btn.first().isVisible().catch(() => false)) {
-      await btn.first().click()
-      await expect(page.getByText(name, { exact: true })).not.toBeVisible()
-      return
-    }
-  }
-  throw new Error(`未找到角色 "${name}" 的删除按钮`)
+  const row = nameEl.locator("xpath=..")
+  await row.getByRole("button", { name: "删除" }).click()
+  await expect(page.getByText(name, { exact: true })).not.toBeVisible()
 }
 
 /** 验证角色列表可见 */
