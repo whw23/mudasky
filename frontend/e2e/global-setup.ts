@@ -19,8 +19,14 @@ export default async function globalSetup(): Promise<void> {
   // 2. 清理 E2E 测试用户（通过 psql 直接删除，最可靠）
   try {
     const { execSync } = require("child_process")
+    // 清理测试用户
     execSync(
       `docker compose exec -T db psql -U mudasky -c "DELETE FROM \\"user\\" WHERE phone LIKE '+86-139%' AND username IS NULL OR username LIKE 'E2E%';"`,
+      { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
+    )
+    // 清理测试角色
+    execSync(
+      `docker compose exec -T db psql -U mudasky -c "DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';"`,
       { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
     )
   } catch { /* 清理失败不阻塞测试 */ }
