@@ -225,12 +225,21 @@ W7 的临时账号在 global-teardown 统一清理。
 | 组件交互 | 手动：任务 coverage 声明 |
 | 安全场景 | 手动：任务 coverage 声明 |
 
+#### 路由扫描与无效路由
+
+`[panel]` 动态路由展开时会产生无效组合（如 `/portal/articles`、`/admin/overview`）。处理方式：
+
+- 覆盖率计算时维护一个无效路由排除列表
+- 无效路由作为 404 反向测试用例（验证访问后正确返回 404 或重定向）
+- 排除列表在 coverage.ts 中维护
+
 #### 计算方式
 
 覆盖率从任务定义的 `coverage` 声明汇总。global-teardown 遍历所有任务：
 - 收集所有声明的 routes/api/components/security
 - 和实际运行中收集的数据对比
 - 只有 pass 的任务才计入覆盖率
+- 无效路由从总数中排除，但其 404 反向测试计入安全覆盖率
 
 #### 报告格式
 
