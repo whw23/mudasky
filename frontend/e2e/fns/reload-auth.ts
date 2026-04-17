@@ -74,11 +74,20 @@ export default async function reloadAuth(
   // 等待登录成功（弹窗关闭）
   await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
-  // 4. 验证新 JWT 包含正确权限（诊断）
+  // 4. 验证新 JWT 包含正确权限
   const cookies = await page.context().cookies()
-  const hasAccessToken = cookies.some(c => c.name === "access_token")
-  if (!hasAccessToken) {
+  const accessCookie = cookies.find(c => c.name === "access_token")
+  if (!accessCookie) {
     throw new Error("重新登录后无 access_token cookie")
+  }
+  // 解码 JWT payload（Base64）查看权限
+  const parts = accessCookie.value.split(".")
+  if (parts.length === 3) {
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString())
+    const perms = payload.permissions || []
+    if (perms.length <= 1 && perms[0] === "portal/profile/*") {
+      throw new Error(`重新登录后 JWT 权限未更新! permissions=${JSON.stringify(perms)}, worker=${worker}`)
+    }
   }
 
   // 5. 保存新的 storageState
