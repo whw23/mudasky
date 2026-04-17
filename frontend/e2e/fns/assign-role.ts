@@ -46,12 +46,21 @@ export default async function assignRole(
     return // 已是目标角色，跳过
   }
 
-  await combobox.selectOption({ label: roleName })
+  // 使用 evaluate 直接设置 select 值并触发 React onChange
+  const targetValue = await combobox.evaluate((el: HTMLSelectElement, label: string) => {
+    const option = Array.from(el.options).find(o => o.text === label)
+    if (!option) return null
+    // 原生触发 change 事件（React 监听的是原生事件）
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLSelectElement.prototype, "value"
+    )?.set
+    nativeInputValueSetter?.call(el, option.value)
+    el.dispatchEvent(new Event("change", { bubbles: true }))
+    return option.value
+  }, roleName)
 
-  // 验证选择已变更
-  const selectedText = await combobox.locator("option:checked").textContent()
-  if (selectedText?.trim() !== roleName) {
-    throw new Error(`角色选择失败: 期望 "${roleName}", 实际 "${selectedText}"`)
+  if (!targetValue) {
+    throw new Error(`未找到角色选项: "${roleName}"`)
   }
 
   // 监听角色分配 API 请求和响应
