@@ -40,9 +40,15 @@ export default async function assignRole(
   const roleSection = page.getByRole("heading", { name: "分配角色" }).locator("..")
   await roleSection.getByRole("combobox").selectOption({ label: roleName })
 
+  // 监听 API 响应，确保保存成功
+  const saveResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/users/list/detail") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+
   // 点击分配角色区域的保存按钮
   await roleSection.getByRole("button", { name: "保存" }).click()
 
-  // 等待成功提示（toast）
-  await page.getByText(/成功/).waitFor({ state: "visible" })
+  // 等待 API 返回 200
+  await saveResponse
 }
