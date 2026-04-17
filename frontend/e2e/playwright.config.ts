@@ -47,26 +47,30 @@ export default defineConfig({
     navigationTimeout: isRemote ? 30_000 : 20_000,
   },
   projects: [
-    /* ── 阶段 1：注册（W2/W3/W4 并行，无 auth） ── */
+    /* ── 阶段 1：注册（W2/W3/W4 并行，无 auth，始终运行） ── */
     {
       name: "w2-register",
       testMatch: "w2/01-register.spec.ts",
+      retries: 1,
     },
     {
       name: "w3-register",
       testMatch: "w3/01-register.spec.ts",
+      retries: 1,
     },
     {
       name: "w4-register",
       testMatch: "w4/01-register.spec.ts",
+      retries: 1,
     },
 
-    /* ── 阶段 2：赋权 + 种子数据（W1，依赖注册完成） ── */
+    /* ── 阶段 2：赋权 + 种子数据（W1，依赖注册完成，始终运行） ── */
     {
       name: "w1-setup",
       testMatch: "w1/01-setup.spec.ts",
       use: { storageState: path.join(AUTH_DIR, "w1.json") },
       dependencies: ["w2-register", "w3-register", "w4-register"],
+      retries: 1,
     },
 
     /* ── 阶段 3：主测试（依赖 setup 完成） ── */
