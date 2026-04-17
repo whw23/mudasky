@@ -56,7 +56,7 @@ export default async function assignRole(
 
   // 监听角色分配 API 响应
   const saveResponse = page.waitForResponse(
-    (r) => r.url().includes("/admin/users/list/detail/role") && r.request().method() === "POST",
+    (r) => r.url().includes("/admin/users/list/detail/assign-role") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
 
