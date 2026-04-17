@@ -73,7 +73,13 @@ export default async function register(
   await dialog.getByRole("button", { name: /登录/ }).click()
 
   // 等待弹窗关闭（登录成功）
-  await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
+  try {
+    await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
+  } catch {
+    // 如果弹窗没关闭，检查是否有错误提示
+    const dialogText = await page.getByRole("dialog").textContent().catch(() => "")
+    throw new Error(`注册/登录失败，弹窗未关闭。弹窗内容: ${dialogText?.substring(0, 200)}`)
+  }
 
   // 保存 storageState
   const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)

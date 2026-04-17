@@ -70,7 +70,13 @@ export const verifyDocumentInList: TaskFn = async (page, args) => {
   const fileName = args?.fileName as string
   await page.goto("/portal/documents")
   await page.waitForLoadState("networkidle")
-  await expect(page.getByText(fileName)).toBeVisible({ timeout: 15_000 })
+  try {
+    await expect(page.getByText(fileName)).toBeVisible({ timeout: 15_000 })
+  } catch {
+    // 调试：输出当前列表内容
+    const listText = await page.locator("main").textContent().catch(() => "")
+    throw new Error(`文件 "${fileName}" 未在列表中找到。页面内容: ${listText?.substring(0, 300)}`)
+  }
 }
 
 /** 删除文档。 */
