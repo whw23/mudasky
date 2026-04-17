@@ -12,13 +12,15 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  * 查看联系人列表。
  */
 export const viewContactList: TaskFn = async (page) => {
-  // 先导航到首页确认登录状态
-  await page.goto("/")
+  const response = await page.goto("/admin/contacts")
   await page.waitForLoadState("networkidle")
 
-  // 再导航到联系人管理
-  await page.goto("/admin/contacts")
-  await page.waitForLoadState("networkidle")
+  // 如果被重定向（无权限），报告实际 URL
+  const url = page.url()
+  if (!url.includes("/admin/contacts")) {
+    throw new Error(`被重定向到 ${url}，可能无 admin/contacts 权限`)
+  }
+
   await page.getByRole("heading", { name: "联系人管理" }).waitFor({ timeout: 20_000 })
 }
 

@@ -57,10 +57,23 @@ export const uploadDocument: TaskFn = async (page, args) => {
   // 等待上传按钮启用（文件选择成功后才启用）
   const uploadBtn = dialog.getByRole("button", { name: "上传文档" })
   await expect(uploadBtn).toBeEnabled({ timeout: 5_000 })
+
+  // 监听上传 API 响应
+  const uploadResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/documents") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
   await uploadBtn.click()
 
-  // 等待对话框关闭（上传成功）
-  await expect(dialog).not.toBeVisible({ timeout: 15_000 })
+  // 等待 API 响应
+  const res = await uploadResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`上传 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
+
+  // 等待对话框关闭
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
   // 清理临时文件
   fs.unlinkSync(tmpFile)
