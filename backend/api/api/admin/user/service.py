@@ -139,6 +139,11 @@ class AdminService:
             self.session, user_id, role_id
         )
 
+        # 角色变更后踢下线，用户需重新登录获取新权限的 JWT
+        await auth_repo.revoke_user_refresh_tokens(
+            self.session, user_id
+        )
+
         user = await user_repo.get_by_id(
             self.session, user_id
         )
