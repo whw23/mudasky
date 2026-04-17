@@ -48,6 +48,14 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
+  // 修改角色名（如果 args 包含 newName）
+  const newName = String(args?.newName ?? "")
+  if (newName) {
+    const nameInput = dialog.getByPlaceholder("请输入角色名称")
+    await nameInput.clear()
+    await nameInput.fill(newName)
+  }
+
   if (newDescription) {
     const descInput = dialog.getByPlaceholder("请输入角色描述")
     await descInput.clear()
