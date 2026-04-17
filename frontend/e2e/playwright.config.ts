@@ -43,6 +43,15 @@ export default defineConfig({
     trace: "on-first-retry",
     actionTimeout: isRemote ? 15_000 : 15_000,
     navigationTimeout: isRemote ? 30_000 : 20_000,
+    launchOptions: {
+      args: [
+        "--disable-gpu",              // 禁用 GPU 渲染，减少内存
+        "--disable-dev-shm-usage",    // 不用 /dev/shm，避免 WSL 共享内存不足
+        "--no-sandbox",               // 容器/WSL 环境兼容
+        "--disable-extensions",       // 禁用扩展
+        "--disable-background-timer-throttling", // 后台 tab 不节流
+      ],
+    },
   },
   projects: [
     { name: "w1-superuser", testMatch: "runner.spec.ts" },
