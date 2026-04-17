@@ -15,6 +15,9 @@
 /coverage
 /e2e/.coverage/
 /e2e/.circuit-breaker/
+/e2e/.auth/
+/e2e/.last-run.json
+/test-results/
 
 # next.js
 /.next/

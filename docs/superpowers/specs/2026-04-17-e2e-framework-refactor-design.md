@@ -232,21 +232,16 @@ Breaker (caused by w2_profile):
 
 通过 `INTERNAL_SECRET` cookie 跳过真实短信发送，后端直接返回验证码。
 
-设置 cookie 作为每个 worker 的独立前置任务：
+cookie 设置是注册/登录 fn 的内部逻辑，不是独立任务。每个涉及短信验证码的 fn（register、login）在执行前自动设置 `internal_secret` cookie：
 
 ```typescript
-// 每个 worker 的第一个任务
-{ id: "w1_set_cookie", worker: "w1", name: "设置 internal_secret cookie",
-  requires: [], fn: setInternalSecretCookie, ... },
-
-{ id: "w1_login", worker: "w1", name: "superuser 登录",
-  requires: ["w1_set_cookie"], fn: login, ... },
-
-{ id: "w2_set_cookie", worker: "w2", name: "设置 internal_secret cookie",
-  requires: [], fn: setInternalSecretCookie, ... },
-
-{ id: "w2_register", worker: "w2", name: "自注册",
-  requires: ["w2_set_cookie"], fn: register, ... },
+// fns/register.ts 内部
+async function register(page: Page, args: { phone: string }) {
+  // 1. 设置 cookie（fn 内部逻辑）
+  await setInternalSecretCookie(page)
+  // 2. UI 操作：输入手机号、获取验证码、填写、提交
+  ...
+}
 ```
 
 `INTERNAL_SECRET` 从 env 文件加载（本地用 `env/backend.env`，线上用 `env/production.env`，通过 `TEST_ENV` 环境变量切换）。
@@ -383,3 +378,4 @@ projects: [
 | 删除 | `e2e/fixtures/base.ts`（逻辑移入 framework/） |
 | 删除 | `e2e/helpers/signal.ts`（替换为 framework/signal.ts） |
 | 更新 | `.claude/rules/testing.md`（更新 E2E 规范） |
+| 更新 | `frontend/.gitignore`（添加 .auth/、.last-run.json、test-results/） |
