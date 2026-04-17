@@ -92,7 +92,7 @@ export const tasks: Task[] = [
     name: "重新加载认证状态",
     requires: ["w2_register", "w1_assign_role_w2", "w1_refresh_token_w2"],
     fn: reloadAuth,
-    fnArgs: { worker: "w2" },
+    fnArgs: { worker: "w2", phone: PHONES.w2 },
     coverage: { routes: [], api: [], components: [], security: [] },
   },
 
