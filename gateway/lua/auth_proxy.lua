@@ -10,9 +10,18 @@ local str = require("resty.string")
 local config = require("init")
 local rate_limit = require("rate_limit")
 
--- IP 限流检查
+-- IP 限流检查（携带有效 internal_secret cookie 的请求跳过限流）
 local client_ip = ngx.var.remote_addr
-if rate_limit.is_limited(client_ip, ngx.req.get_method(), ngx.var.uri) then
+local skip = false
+local cookie_header = ngx.var.http_cookie or ""
+for k, v in cookie_header:gmatch("([%w_]+)=([^;]+)") do
+  if k == "internal_secret" then
+    local configured = config.get_internal_secret()
+    if configured ~= "" and v == configured then skip = true end
+    break
+  end
+end
+if not skip and rate_limit.is_limited(client_ip, ngx.req.get_method(), ngx.var.uri) then
   ngx.status = 429
   ngx.header["Content-Type"] = "application/json"
   ngx.say('{"code":"TOO_MANY_REQUESTS","message":"请求过于频繁，请稍后再试"}')
