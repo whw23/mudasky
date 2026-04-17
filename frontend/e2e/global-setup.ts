@@ -20,7 +20,7 @@ export default async function globalSetup(): Promise<void> {
   try {
     const { execSync } = require("child_process")
     execSync(
-      `docker compose exec -T db psql -U mudasky -c "DELETE FROM \\"user\\" WHERE phone LIKE '+86-13900%';"`,
+      `docker compose exec -T db psql -U mudasky -c "DELETE FROM \\"user\\" WHERE phone LIKE '+86-139%' AND username IS NULL OR username LIKE 'E2E%';"`,
       { cwd: path.join(__dirname, "../.."), stdio: "pipe", timeout: 10_000 },
     )
   } catch { /* 清理失败不阻塞测试 */ }
