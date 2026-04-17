@@ -32,6 +32,25 @@
 
 W1-W6 各自注册/登录后保持 auth state 不变。W7 反复注册临时账号、测试、登出、注册下一个。
 
+### 正向 + 反向测试
+
+每个 worker 同时做正向和反向测试：
+
+- **正向**：自己有权限的功能正常使用（CRUD、页面访问、表单提交）
+- **反向**：自己没权限的功能被正确拒绝（访问 admin 页面重定向、API 返回 401/403）
+
+示例：
+
+| Worker | 正向 | 反向 |
+|--------|------|------|
+| W1 superuser | 所有管理功能 | 无（超级管理员有全部权限） |
+| W2 student | portal 资料/文档/会话 | admin 页面被拒、其他用户数据不可访问 |
+| W3 advisor | admin 学生/联系人 | admin 角色/用户/设置页面被拒 |
+| W4 visitor | 公开页面、portal 资料 | admin 页面被拒、portal 文档被拒 |
+| W5 content_admin | admin 文章/分类/案例/院校/设置 | admin 用户/角色页面被拒 |
+| W6 support | admin 联系人/仪表盘 | admin 文章/用户/角色/设置页面被拒 |
+| W7 临时账号 | 注册/登录功能 | 禁用后被拒、篡改 token 被拒、IDOR 被拒 |
+
 ### 任务定义
 
 ```typescript
