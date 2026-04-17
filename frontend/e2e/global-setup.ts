@@ -8,6 +8,10 @@ import * as path from "path"
 import { cleanupSignals, ensureSignalDir, writeSignal } from "./framework/signal"
 
 export default async function globalSetup(): Promise<void> {
+  // 0. 生成共享 TS（所有 worker 通过文件读取同一个值）
+  const tsFile = path.join(__dirname, ".e2e-ts")
+  fs.writeFileSync(tsFile, Date.now().toString().slice(-6))
+
   // 1. 清理信号文件
   cleanupSignals()
   ensureSignalDir()

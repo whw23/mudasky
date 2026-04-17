@@ -1,11 +1,25 @@
 /**
  * E2E 测试共享常量。
- * 每次运行生成唯一手机号，避免残留用户冲突。
- * 同一次运行内所有 worker 共享同一组号码（通过 TS 后缀保证一致）。
+ * TS 通过文件共享，确保所有 worker 进程使用同一个值。
  */
 
-/** 时间戳后缀，用于 E2E 创建的数据名称和手机号 */
-export const TS = Date.now().toString().slice(-6)
+import * as fs from "fs"
+import * as path from "path"
+
+/** 从文件读取共享 TS（global-setup 写入） */
+function getSharedTS(): string {
+  const tsFile = path.join(__dirname, ".e2e-ts")
+  if (fs.existsSync(tsFile)) {
+    return fs.readFileSync(tsFile, "utf-8").trim()
+  }
+  // fallback：生成并写入
+  const ts = Date.now().toString().slice(-6)
+  fs.writeFileSync(tsFile, ts)
+  return ts
+}
+
+/** 时间戳后缀（所有 worker 共享同一个值） */
+export const TS = getSharedTS()
 
 /** 各 worker 的注册手机号（每次运行不同，避免冲突） */
 export const PHONES = {
