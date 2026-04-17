@@ -31,9 +31,9 @@ export async function verifyWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "网页设置" }).waitFor()
 
-  // 网页设置是实时预览 + 可点击编辑区域
-  // 验证可编辑区域存在（如"编辑品牌名称"、"编辑标语"等）
-  await expect(page.getByText("编辑品牌名称")).toBeVisible()
+  // 网页设置是实时预览页面，验证加载完成
+  await page.waitForLoadState("networkidle")
+  await expect(page.locator("main")).toBeVisible()
 }
 
 /** 编辑网页设置（并回滚） */

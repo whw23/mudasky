@@ -8,10 +8,17 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
-/** 等待水合完成后打开登录弹窗 */
+/** 等待水合完成后打开登录弹窗（如已登录先退出） */
 async function openLoginDialog(page: Page): Promise<void> {
   await page.goto("/")
   await page.waitForLoadState("networkidle")
+
+  // 如果已登录，先退出
+  const logoutBtn = page.getByRole("button", { name: "退出" })
+  if (await logoutBtn.isVisible().catch(() => false)) {
+    await logoutBtn.click()
+    await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible" })
+  }
 
   await page.getByRole("button", { name: /登录/ }).click()
   await page.getByRole("dialog").waitFor({ state: "visible" })

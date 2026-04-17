@@ -373,6 +373,7 @@ export const tasks: Task[] = [
     name: "测试侧边栏导航",
     requires: ["w5_verify_sidebar"],
     fn: testAdminNavigation,
+    fnArgs: { role: "content_admin" },
     coverage: {
       routes: [
         "/admin/articles",
