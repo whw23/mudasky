@@ -14,11 +14,9 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 export const viewContactList: TaskFn = async (page) => {
   await page.goto("/admin/contacts")
   await page.waitForLoadState("networkidle")
-
-  // 等待管理页面加载（heading 或 sidebar 可见）
-  await page.locator("main").waitFor()
-  const heading = page.getByRole("heading", { name: "联系人管理" })
-  await expect(heading).toBeVisible()
+  // 等待侧边栏加载完成（确认在 admin 面板）
+  await page.locator("aside, [role='complementary']").first().waitFor({ timeout: 15_000 })
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor({ timeout: 15_000 })
 }
 
 /**

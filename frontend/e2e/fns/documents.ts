@@ -41,12 +41,10 @@ export const uploadDocument: TaskFn = async (page, args) => {
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 设置文件（可能是隐藏的 input[type=file]）
-  const fileChooserPromise = page.waitForEvent("filechooser")
-  // 点击文件选择区域
-  await dialog.getByText("点击选择文件").click()
-  const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles(tmpFile)
+  // 设置文件
+  const fileInput = dialog.locator('input[type="file"]')
+  // 即使 input 隐藏，setInputFiles 也能工作
+  await fileInput.setInputFiles(tmpFile)
 
   // 分类默认是"其他"，不需要改
 

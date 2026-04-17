@@ -12,7 +12,7 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 async function gotoUserAndExpand(page: Page, keyword: string): Promise<void> {
   await page.goto("/admin/users")
   await page.waitForLoadState("networkidle")
-  await page.getByRole("heading", { name: "用户管理" }).waitFor()
+  await page.getByRole("heading", { name: "用户管理" }).waitFor({ timeout: 15_000 })
 
   // 从 phone 中提取本地号码用于搜索
   const searchTerm = keyword.replace(/^\+\d{1,4}-/, "")

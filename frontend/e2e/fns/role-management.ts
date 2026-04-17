@@ -1,6 +1,6 @@
 /**
  * 角色管理业务操作函数。
- * 通过 UI 进行角色的创建、编辑、删除、权限分配。
+ * 通过 UI 进行角色的创建、编辑、删除。
  */
 
 import type { Page } from "@playwright/test"
@@ -8,32 +8,35 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
+/** 找到角色行中的指定按钮（通过角色名文本定位其所在行） */
+async function findRoleButton(page: Page, roleName: string, buttonName: string) {
+  // 精确匹配角色名文本，然后找到同一行的按钮
+  // 角色名在 generic 元素中，按钮在同级 generic 中
+  const nameEl = page.locator("main").getByText(roleName, { exact: true })
+  // 向上找到包含按钮的行容器（父级的父级）
+  return nameEl.locator("xpath=..").getByRole("button", { name: buttonName })
+}
+
 /** 创建角色 */
 export async function createRole(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
   const description = String(args?.description ?? "")
 
   await page.goto("/admin/roles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 点击创建角色按钮
   await page.getByRole("button", { name: "创建角色" }).click()
 
-  // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 填写表单
   await dialog.getByPlaceholder("请输入角色名称").fill(name)
   await dialog.getByPlaceholder("请输入角色描述").fill(description)
 
-  // 保存
   await dialog.getByRole("button", { name: "保存" }).click()
-
-  // 等待弹窗关闭
   await expect(dialog).not.toBeVisible()
 
-  // 验证创建成功
   await expect(page.getByText(name)).toBeVisible()
 }
 
@@ -43,27 +46,22 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   const newDescription = String(args?.newDescription ?? "")
 
   await page.goto("/admin/roles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 找到包含角色名和编辑按钮的行容器
-  const roleRow = page.locator("div").filter({ hasText: oldName }).filter({ has: page.getByRole("button", { name: "编辑" }) }).first()
-  await roleRow.getByRole("button", { name: "编辑" }).click()
+  const editBtn = await findRoleButton(page, oldName, "编辑")
+  await editBtn.click()
 
-  // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 修改描述
   if (newDescription) {
     const descInput = dialog.getByPlaceholder("请输入角色描述")
     await descInput.clear()
     await descInput.fill(newDescription)
   }
 
-  // 保存
   await dialog.getByRole("button", { name: "保存" }).click()
-
-  // 等待弹窗关闭
   await expect(dialog).not.toBeVisible()
 }
 
@@ -73,37 +71,30 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
   const expectFail = Boolean(args?.expectFail ?? false)
 
   await page.goto("/admin/roles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
-
-  // 找到包含角色名和删除按钮的行容器
-  const roleContainer = page.locator("div").filter({ hasText: name }).filter({ has: page.getByRole("button", { name: "删除" }) }).first()
-  const deleteButton = roleContainer.getByRole("button", { name: "删除" })
 
   if (expectFail) {
     // 受保护角色（如 superuser）可能没有删除按钮
-    const hasButton = await deleteButton.isVisible().catch(() => false)
-    if (!hasButton) {
-      // 没有删除按钮 = 正确的保护行为
-      return
-    }
-    // 有按钮但删除应失败
-    await deleteButton.click()
+    const nameEl = page.locator("main").getByText(name, { exact: true })
+    const parentRow = nameEl.locator("xpath=..")
+    const hasDeleteBtn = await parentRow.getByRole("button", { name: "删除" }).isVisible().catch(() => false)
+    if (!hasDeleteBtn) return // 无删除按钮 = 正确的保护行为
+    await parentRow.getByRole("button", { name: "删除" }).click()
     await expect(page.getByText(name)).toBeVisible()
   } else {
-    await deleteButton.click()
-    // 删除成功，从列表消失
-    await expect(page.getByText(name)).not.toBeVisible()
+    const deleteBtn = await findRoleButton(page, name, "删除")
+    await deleteBtn.click()
+    await expect(page.getByText(name, { exact: true })).not.toBeVisible()
   }
 }
 
 /** 验证角色列表可见 */
 export async function verifyRoleList(page: Page): Promise<void> {
   await page.goto("/admin/roles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 验证至少有内置角色
   await expect(page.getByText("superuser")).toBeVisible()
-
-  // 验证创建按钮可见
   await expect(page.getByRole("button", { name: "创建角色" })).toBeVisible()
 }

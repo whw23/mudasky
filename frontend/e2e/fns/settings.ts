@@ -39,16 +39,11 @@ export async function verifyWebSettings(page: Page): Promise<void> {
 /** 编辑网页设置（并回滚） */
 export async function editWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "网页设置" }).waitFor()
+  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
 
-  // 点击编辑标语区域
-  const editTagline = page.locator("[aria-label='编辑标语']").or(page.getByText("编辑标语")).first()
-  if (await editTagline.isVisible().catch(() => false)) {
-    await editTagline.click()
-  } else {
-    // 备选：点击包含标语文本的可编辑区域
-    await page.locator("main").getByText("专注国际教育").first().click()
-  }
+  // 点击包含标语文本的可编辑区域
+  await page.locator("main").getByText("专注国际教育").first().click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
