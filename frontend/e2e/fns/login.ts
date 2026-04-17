@@ -18,8 +18,9 @@ export default async function login(
     throw new Error("login fn 需要 username, password, worker 参数")
   }
 
-  // 导航到首页
+  // 导航到首页（等待水合完成）
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
 
   // 点击登录按钮打开弹窗
   await page.getByRole("button", { name: /登录|注册/ }).click()
@@ -31,10 +32,10 @@ export default async function login(
   await page.getByRole("tab", { name: /账号|密码/ }).click()
 
   // 填写用户名
-  await page.locator('input#login-account').fill(username)
+  await page.getByPlaceholder("用户名或手机号").fill(username)
 
   // 填写密码
-  await page.locator('input#login-account-pwd').fill(password)
+  await page.getByPlaceholder("请输入密码").fill(password)
 
   // 点击登录按钮
   await page.getByRole("button", { name: /^登录$/ }).click()

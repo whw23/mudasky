@@ -14,8 +14,9 @@ import { verifyGeneralSettings, editGeneralSettings } from "../fns/settings"
 import { verifyWebSettings, editWebSettings } from "../fns/settings"
 import { verifyAdminSidebar, testAdminNavigation, verifyDashboard } from "../fns/sidebar-nav"
 import { viewProfile, editUsername } from "../fns/profile"
+import reloadAuth from "../fns/reload-auth"
 
-const TS = Date.now().toString().slice(-6)
+import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
   // ── 注册 ──
@@ -25,7 +26,7 @@ export const tasks: Task[] = [
     name: "content_admin 注册",
     requires: [],
     fn: register,
-    fnArgs: { phone: `+86-139000${TS}05`, worker: "w5" },
+    fnArgs: { phone: PHONES.w5, worker: "w5" },
     coverage: {
       routes: ["/"],
       api: ["/api/auth/sms-code", "/api/auth/login"],
@@ -39,15 +40,23 @@ export const tasks: Task[] = [
     },
   },
 
-  // ── 等待 W1 赋权和刷新 token ──
-  // （W1 会创建 w1_assign_w5 和 w1_refresh_w5 任务）
+  // ── 重新加载认证（W1 赋权后 JWT 更新） ──
+  {
+    id: "w5_reload_auth",
+    worker: "w5",
+    name: "重新加载认证状态",
+    requires: ["w5_reload_auth"],
+    fn: reloadAuth,
+    fnArgs: { worker: "w5" },
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
 
   // ── 正向：分类管理 ──
   {
     id: "w5_create_category",
     worker: "w5",
     name: "创建分类",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: createCategory,
     fnArgs: {
       name: `E2E-分类-${TS}`,
@@ -98,7 +107,7 @@ export const tasks: Task[] = [
     id: "w5_create_article",
     worker: "w5",
     name: "创建文章",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: createArticle,
     fnArgs: {
       title: `E2E-文章-${TS}`,
@@ -149,7 +158,7 @@ export const tasks: Task[] = [
     id: "w5_create_case",
     worker: "w5",
     name: "创建案例",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: createCase,
     fnArgs: {
       studentName: `E2E-学生-${TS}`,
@@ -200,7 +209,7 @@ export const tasks: Task[] = [
     id: "w5_create_university",
     worker: "w5",
     name: "创建院校",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: createUniversity,
     fnArgs: {
       name: `E2E-院校-${TS}`,
@@ -251,7 +260,7 @@ export const tasks: Task[] = [
     id: "w5_verify_general_settings",
     worker: "w5",
     name: "查看通用配置",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyGeneralSettings,
     coverage: {
       routes: ["/admin/general-settings"],
@@ -281,7 +290,7 @@ export const tasks: Task[] = [
     id: "w5_verify_web_settings",
     worker: "w5",
     name: "查看网页设置",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyWebSettings,
     coverage: {
       routes: ["/admin/web-settings"],
@@ -311,7 +320,7 @@ export const tasks: Task[] = [
     id: "w5_view_profile",
     worker: "w5",
     name: "查看个人资料",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: viewProfile,
     coverage: {
       routes: ["/portal/profile"],
@@ -337,7 +346,7 @@ export const tasks: Task[] = [
     id: "w5_verify_sidebar",
     worker: "w5",
     name: "验证侧边栏菜单",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyAdminSidebar,
     fnArgs: { role: "content_admin" },
     coverage: {
@@ -384,7 +393,7 @@ export const tasks: Task[] = [
     id: "w5_denied_users",
     worker: "w5",
     name: "无权限访问用户管理",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/users"],
@@ -397,7 +406,7 @@ export const tasks: Task[] = [
     id: "w5_denied_roles",
     worker: "w5",
     name: "无权限访问角色管理",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/roles"],
@@ -410,7 +419,7 @@ export const tasks: Task[] = [
     id: "w5_denied_students",
     worker: "w5",
     name: "无权限访问学生管理",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/students"],
@@ -423,7 +432,7 @@ export const tasks: Task[] = [
     id: "w5_denied_contacts",
     worker: "w5",
     name: "无权限访问联系人管理",
-    requires: ["w5_register", "w1_assign_w5", "w1_refresh_w5"],
+    requires: ["w5_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/contacts"],

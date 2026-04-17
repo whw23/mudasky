@@ -23,6 +23,8 @@ export const verifyPublicPage: TaskFn = async (page, args) => {
  * 验证导航栏所有链接可见。
  */
 export const verifyNavbar: TaskFn = async (page) => {
+  await page.goto("/")
+  await page.waitForLoadState("networkidle")
   await page.locator("nav").waitFor()
   const navLinks = page.locator("nav a")
   const count = await navLinks.count()
@@ -33,6 +35,8 @@ export const verifyNavbar: TaskFn = async (page) => {
  * 验证 Footer ICP 备案和联系信息。
  */
 export const verifyFooter: TaskFn = async (page) => {
+  await page.goto("/")
+  await page.waitForLoadState("networkidle")
   await page.locator("footer").waitFor()
 
   // ICP 备案链接

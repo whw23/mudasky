@@ -17,8 +17,9 @@ export default async function register(
     throw new Error("register fn 需要 phone 和 worker 参数")
   }
 
-  // 导航到首页
+  // 导航到首页（等待水合完成）
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
 
   // 点击登录按钮打开弹窗
   await page.getByRole("button", { name: /登录|注册/ }).click()
@@ -33,15 +34,20 @@ export default async function register(
   const localNumber = phone.replace(/^\+\d{1,4}-/, "")
 
   // 填写手机号（只输入本地部分，国家码通过下拉选择器默认是 +86）
-  await page.locator('input[type="tel"]').fill(localNumber)
+  await page.getByPlaceholder("请输入手机号").fill(localNumber)
 
-  // 点击发送验证码按钮
-  await page.getByRole("button", { name: /发送|验证码/ }).click()
+  // 等待发送验证码按钮启用
+  const sendBtn = page.getByRole("button", { name: "发送验证码" })
+  await sendBtn.waitFor({ state: "visible" })
 
-  // 等待 API 返回验证码（通过 INTERNAL_SECRET，响应中会包含验证码）
-  const response = await page.waitForResponse(
+  // 先设置响应监听，再点击按钮（防止竞态）
+  const responsePromise = page.waitForResponse(
     (r) => r.url().includes("/api/auth/sms-code") && r.status() === 200,
+    { timeout: 15_000 },
   )
+  await sendBtn.click()
+
+  const response = await responsePromise
   const data = await response.json()
   const code = data.code as string
 
@@ -50,10 +56,11 @@ export default async function register(
   }
 
   // 填写验证码
-  await page.locator('input[maxlength="6"]').fill(code)
+  await page.getByPlaceholder("请输入验证码").fill(code)
 
-  // 点击登录/注册按钮
-  await page.getByRole("button", { name: /登录|注册/ }).last().click()
+  // 点击弹窗内的登录/注册提交按钮
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("button", { name: /登录/ }).click()
 
   // 等待弹窗关闭（登录成功）
   await page.getByRole("dialog").waitFor({ state: "hidden" })

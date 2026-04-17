@@ -11,7 +11,7 @@ import { testMissingToken, testInvalidToken, testTamperedJwt } from "../fns/jwt-
 import { testAccessOtherDoc, testDeleteOtherDoc } from "../fns/idor"
 import { testLoginDialog, testLoginSuccess, testWrongPassword, testLogoutFlow } from "../fns/auth-flow"
 
-const TS = Date.now().toString().slice(-6)
+import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
   // ── 禁用/启用测试组 ──
@@ -21,7 +21,7 @@ export const tasks: Task[] = [
     name: "注册临时账号(禁用测试)",
     requires: [],
     fn: register,
-    fnArgs: { phone: `+86-139000${TS}71`, worker: "w7" },
+    fnArgs: { phone: PHONES.w7_disabled, worker: "w7" },
     coverage: {
       routes: ["/"],
       api: ["/api/auth/sms-code", "/api/auth/login"],
@@ -69,7 +69,7 @@ export const tasks: Task[] = [
     name: "注册临时账号(JWT测试)",
     requires: ["w7_logout_disable"],
     fn: register,
-    fnArgs: { phone: `+86-139000${TS}72`, worker: "w7" },
+    fnArgs: { phone: PHONES.w7_jwt, worker: "w7" },
     coverage: {
       security: [["auth", "temp-register-jwt"]],
     },
@@ -181,7 +181,7 @@ export const tasks: Task[] = [
     name: "注册临时账号(IDOR测试)",
     requires: ["w7_auth_wrong_password"],
     fn: register,
-    fnArgs: { phone: `+86-139000${TS}73`, worker: "w7" },
+    fnArgs: { phone: PHONES.w7_idor, worker: "w7" },
     coverage: {
       security: [["auth", "temp-register-idor"]],
     },
@@ -190,12 +190,12 @@ export const tasks: Task[] = [
     id: "w7_idor_access",
     worker: "w7",
     name: "测试访问他人文档被拒",
-    requires: ["w7_reg_idor", "w2_doc_uploaded"],
+    requires: ["w7_reg_idor", "w2_documents_upload"],
     fn: testAccessOtherDoc,
     fnArgs: {
-      // docId 从 w2_doc_uploaded 信号文件的 data 中读取
+      // docId 从 w2_documents_upload 信号文件的 data 中读取
       // runner 会自动把前置任务的 data 传入 fnArgs
-      docId: "{{w2_doc_uploaded.docId}}",
+      docId: "{{w2_documents_upload.docId}}",
     },
     coverage: {
       api: ["/api/portal/documents/list/detail"],
@@ -209,7 +209,7 @@ export const tasks: Task[] = [
     requires: ["w7_idor_access"],
     fn: testDeleteOtherDoc,
     fnArgs: {
-      docId: "{{w2_doc_uploaded.docId}}",
+      docId: "{{w2_documents_upload.docId}}",
     },
     coverage: {
       api: ["/api/portal/documents/list/detail/delete"],

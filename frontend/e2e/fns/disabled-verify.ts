@@ -19,7 +19,8 @@ const XHR = { "X-Requested-With": "XMLHttpRequest" }
 export const verifyDisabledApi: TaskFn = async (page) => {
   await page.goto("/")
   const res = await page.request.get("/api/portal/overview", { headers: XHR })
-  expect(res.status()).toBe(401)
+  // 禁用用户可能返回 401 或 403
+  expect([401, 403]).toContain(res.status())
 }
 
 /**

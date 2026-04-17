@@ -10,7 +10,8 @@ import { viewContactList, expandContact, markContactStatus, addContactNote } fro
 import { verifyAdminSidebar, verifyDashboard } from "../fns/sidebar-nav"
 import { viewProfile, editUsername } from "../fns/profile"
 
-const TS = Date.now().toString().slice(-6)
+import reloadAuth from "../fns/reload-auth"
+import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
   // ── 注册 ──
@@ -20,7 +21,7 @@ export const tasks: Task[] = [
     name: "support 注册",
     requires: [],
     fn: register,
-    fnArgs: { phone: `+86-139000${TS}06`, worker: "w6" },
+    fnArgs: { phone: PHONES.w6, worker: "w6" },
     coverage: {
       routes: ["/"],
       api: ["/api/auth/sms-code", "/api/auth/login"],
@@ -34,15 +35,23 @@ export const tasks: Task[] = [
     },
   },
 
-  // ── 等待 W1 赋权和刷新 token ──
-  // （W1 会创建 w1_assign_w6 和 w1_refresh_w6 任务）
+  // ── 重新加载认证 ──
+  {
+    id: "w6_reload_auth",
+    worker: "w6",
+    name: "重新加载认证状态",
+    requires: ["w6_reload_auth"],
+    fn: reloadAuth,
+    fnArgs: { worker: "w6" },
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
 
   // ── 正向：联系人管理 ──
   {
     id: "w6_view_contacts",
     worker: "w6",
     name: "查看联系人列表",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: viewContactList,
     coverage: {
       routes: ["/admin/contacts"],
@@ -95,7 +104,7 @@ export const tasks: Task[] = [
     id: "w6_verify_dashboard",
     worker: "w6",
     name: "查看仪表盘",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyDashboard,
     coverage: {
       routes: ["/admin/dashboard"],
@@ -113,7 +122,7 @@ export const tasks: Task[] = [
     id: "w6_verify_sidebar",
     worker: "w6",
     name: "验证侧边栏菜单",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyAdminSidebar,
     fnArgs: { role: "support" },
     coverage: {
@@ -126,7 +135,7 @@ export const tasks: Task[] = [
     id: "w6_view_profile",
     worker: "w6",
     name: "查看个人资料",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: viewProfile,
     coverage: {
       routes: ["/portal/profile"],
@@ -152,7 +161,7 @@ export const tasks: Task[] = [
     id: "w6_denied_articles",
     worker: "w6",
     name: "无权限访问文章管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/articles"],
@@ -165,7 +174,7 @@ export const tasks: Task[] = [
     id: "w6_denied_categories",
     worker: "w6",
     name: "无权限访问分类管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/categories"],
@@ -178,7 +187,7 @@ export const tasks: Task[] = [
     id: "w6_denied_cases",
     worker: "w6",
     name: "无权限访问案例管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/cases"],
@@ -191,7 +200,7 @@ export const tasks: Task[] = [
     id: "w6_denied_universities",
     worker: "w6",
     name: "无权限访问院校管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/universities"],
@@ -204,7 +213,7 @@ export const tasks: Task[] = [
     id: "w6_denied_users",
     worker: "w6",
     name: "无权限访问用户管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/users"],
@@ -217,7 +226,7 @@ export const tasks: Task[] = [
     id: "w6_denied_roles",
     worker: "w6",
     name: "无权限访问角色管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/roles"],
@@ -230,7 +239,7 @@ export const tasks: Task[] = [
     id: "w6_denied_students",
     worker: "w6",
     name: "无权限访问学生管理",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/students"],
@@ -243,7 +252,7 @@ export const tasks: Task[] = [
     id: "w6_denied_general_settings",
     worker: "w6",
     name: "无权限访问通用配置",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/general-settings"],
@@ -256,7 +265,7 @@ export const tasks: Task[] = [
     id: "w6_denied_web_settings",
     worker: "w6",
     name: "无权限访问网页设置",
-    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
+    requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
       routes: ["/admin/web-settings"],

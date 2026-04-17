@@ -18,7 +18,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   const sortOrder = Number(args?.sortOrder ?? 0)
 
   await page.goto("/admin/categories")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 点击创建分类按钮
   await page.getByRole("button", { name: "创建分类" }).click()
@@ -28,10 +28,12 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(dialog).toBeVisible()
 
   // 填写表单
-  await dialog.getByLabel("名称").fill(name)
-  await dialog.getByLabel("标识").fill(slug)
-  await dialog.getByLabel("描述").fill(description)
-  await dialog.getByLabel("排序").fill(String(sortOrder))
+  await dialog.getByPlaceholder("请输入分类名称").fill(name)
+  await dialog.getByPlaceholder("请输入分类标识（英文）").fill(slug)
+  await dialog.getByPlaceholder("请输入分类描述").fill(description)
+  if (sortOrder !== 0) {
+    await dialog.getByRole("spinbutton").fill(String(sortOrder))
+  }
 
   // 保存
   await dialog.getByRole("button", { name: "保存" }).click()
@@ -40,7 +42,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(dialog).not.toBeVisible()
 
   // 验证创建成功
-  await expect(page.getByText(name)).toBeVisible()
+  await expect(page.getByRole("cell", { name })).toBeVisible()
 }
 
 /** 编辑分类 */
@@ -49,10 +51,10 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
   const newName = String(args?.newName ?? "")
 
   await page.goto("/admin/categories")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击编辑
-  const row = page.locator("tr", { hasText: oldName })
+  const row = page.getByRole("row", { name: new RegExp(oldName) })
   await row.getByRole("button", { name: "编辑" }).click()
 
   // 等待弹窗打开
@@ -60,7 +62,7 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
   await expect(dialog).toBeVisible()
 
   // 修改名称
-  const nameInput = dialog.getByLabel("名称")
+  const nameInput = dialog.getByPlaceholder("请输入分类名称")
   await nameInput.clear()
   await nameInput.fill(newName)
 
@@ -71,7 +73,7 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
   await expect(dialog).not.toBeVisible()
 
   // 验证修改成功
-  await expect(page.getByText(newName)).toBeVisible()
+  await expect(page.getByRole("cell", { name: newName })).toBeVisible()
 }
 
 /** 删除分类 */
@@ -79,10 +81,10 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   const name = String(args?.name ?? "")
 
   await page.goto("/admin/categories")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击删除
-  const row = page.locator("tr", { hasText: name })
+  const row = page.getByRole("row", { name: new RegExp(name) })
 
   // 监听 confirm 弹窗
   page.once("dialog", dialog => dialog.accept())
@@ -90,46 +92,47 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   await row.getByRole("button", { name: "删除" }).click()
 
   // 验证删除成功（从列表消失）
-  await expect(page.getByText(name)).not.toBeVisible()
+  await expect(page.getByRole("cell", { name })).not.toBeVisible()
 }
 
 /* ── 文章 CRUD ── */
 
-/** 创建文章 */
+/** 创建文章（整页表单，非弹窗） */
 export async function createArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
   const title = String(args?.title ?? "")
   const slug = String(args?.slug ?? "")
   const content = String(args?.content ?? "")
 
   await page.goto("/admin/articles")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
-  // 点击创建文章按钮
-  await page.getByRole("button", { name: "创建文章" }).click()
+  // 点击写文章按钮
+  await page.getByRole("button", { name: "写文章" }).click()
 
-  // 等待弹窗打开
-  const dialog = page.getByRole("dialog")
-  await expect(dialog).toBeVisible()
+  // 等待编辑页面加载
+  await page.getByRole("heading", { name: "写文章" }).waitFor()
 
-  // 填写表单
-  await dialog.getByLabel("标题").fill(title)
-  await dialog.getByLabel("标识").fill(slug)
+  // 填写标题
+  await page.getByPlaceholder("请输入文章标题").fill(title)
 
-  // 选择第一个分类（假设已有分类）
-  const categorySelect = dialog.locator("select").first()
-  await categorySelect.selectOption({ index: 1 }) // index 0 是占位符
+  // 填写 URL 标识
+  if (slug) {
+    await page.getByPlaceholder("自动生成或手动输入").fill(slug)
+  }
 
-  // 填写内容
-  await dialog.getByLabel("内容").fill(content)
+  // 分类默认选第一个，不需要改
 
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
+  // 填写正文内容
+  await page.getByPlaceholder("请输入内容...").fill(content)
 
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
+  // 点击发布
+  await page.getByRole("button", { name: "发布" }).click()
+
+  // 等待跳转回列表页
+  await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 验证创建成功
-  await expect(page.getByText(title)).toBeVisible()
+  await expect(page.getByRole("cell", { name: title })).toBeVisible()
 }
 
 /** 编辑文章 */
@@ -138,29 +141,28 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   const newTitle = String(args?.newTitle ?? "")
 
   await page.goto("/admin/articles")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击编辑
-  const row = page.locator("tr", { hasText: oldTitle })
+  const row = page.getByRole("row", { name: new RegExp(oldTitle) })
   await row.getByRole("button", { name: "编辑" }).click()
 
-  // 等待弹窗打开
-  const dialog = page.getByRole("dialog")
-  await expect(dialog).toBeVisible()
+  // 等待编辑页面加载
+  await page.getByPlaceholder("请输入文章标题").waitFor()
 
   // 修改标题
-  const titleInput = dialog.getByLabel("标题")
+  const titleInput = page.getByPlaceholder("请输入文章标题")
   await titleInput.clear()
   await titleInput.fill(newTitle)
 
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
+  // 点击发布（保存修改）
+  await page.getByRole("button", { name: "发布" }).click()
 
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
+  // 等待跳转回列表页
+  await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 验证修改成功
-  await expect(page.getByText(newTitle)).toBeVisible()
+  await expect(page.getByRole("cell", { name: newTitle })).toBeVisible()
 }
 
 /** 删除文章 */
@@ -168,10 +170,10 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   const title = String(args?.title ?? "")
 
   await page.goto("/admin/articles")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击删除
-  const row = page.locator("tr", { hasText: title })
+  const row = page.getByRole("row", { name: new RegExp(title) })
 
   // 监听 confirm 弹窗
   page.once("dialog", dialog => dialog.accept())
@@ -179,7 +181,7 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await row.getByRole("button", { name: "删除" }).click()
 
   // 验证删除成功
-  await expect(page.getByText(title)).not.toBeVisible()
+  await expect(page.getByRole("cell", { name: title })).not.toBeVisible()
 }
 
 /* ── 案例 CRUD ── */
@@ -192,7 +194,7 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   const year = Number(args?.year ?? 2026)
 
   await page.goto("/admin/cases")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 点击添加案例按钮
   await page.getByRole("button", { name: "添加案例" }).click()
@@ -202,10 +204,15 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   await expect(dialog).toBeVisible()
 
   // 填写表单
-  await dialog.getByLabel("学生姓名").fill(studentName)
-  await dialog.getByLabel("大学").fill(university)
-  await dialog.getByLabel("专业").fill(program)
-  await dialog.getByLabel("年份").fill(String(year))
+  await dialog.getByPlaceholder("请输入学生姓名").fill(studentName)
+  await dialog.getByPlaceholder("请输入录取大学").fill(university)
+  await dialog.getByPlaceholder("请输入录取专业").fill(program)
+
+  // 入学年份（spinbutton，默认 2026）
+  if (year !== 2026) {
+    const yearInput = dialog.getByRole("spinbutton").first()
+    await yearInput.fill(String(year))
+  }
 
   // 保存
   await dialog.getByRole("button", { name: "保存" }).click()
@@ -214,7 +221,7 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   await expect(dialog).not.toBeVisible()
 
   // 验证创建成功
-  await expect(page.getByText(studentName)).toBeVisible()
+  await expect(page.getByRole("cell", { name: studentName })).toBeVisible()
 }
 
 /** 编辑案例 */
@@ -223,18 +230,18 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   const newUniversity = String(args?.newUniversity ?? "")
 
   await page.goto("/admin/cases")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击编辑
-  const row = page.locator("tr", { hasText: studentName })
+  const row = page.getByRole("row", { name: new RegExp(studentName) })
   await row.getByRole("button", { name: "编辑" }).click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 修改大学名
-  const universityInput = dialog.getByLabel("大学")
+  // 修改录取大学
+  const universityInput = dialog.getByPlaceholder("请输入录取大学")
   await universityInput.clear()
   await universityInput.fill(newUniversity)
 
@@ -245,7 +252,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   await expect(dialog).not.toBeVisible()
 
   // 验证修改成功
-  await expect(page.getByText(newUniversity)).toBeVisible()
+  await expect(page.getByRole("cell", { name: newUniversity })).toBeVisible()
 }
 
 /** 删除案例 */
@@ -253,10 +260,10 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
   const studentName = String(args?.studentName ?? "")
 
   await page.goto("/admin/cases")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击删除
-  const row = page.locator("tr", { hasText: studentName })
+  const row = page.getByRole("row", { name: new RegExp(studentName) })
 
   // 监听 confirm 弹窗
   page.once("dialog", dialog => dialog.accept())
@@ -264,7 +271,7 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
   await row.getByRole("button", { name: "删除" }).click()
 
   // 验证删除成功
-  await expect(page.getByText(studentName)).not.toBeVisible()
+  await expect(page.getByRole("cell", { name: studentName })).not.toBeVisible()
 }
 
 /* ── 院校 CRUD ── */
@@ -277,7 +284,7 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   const city = String(args?.city ?? "")
 
   await page.goto("/admin/universities")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 点击添加院校按钮
   await page.getByRole("button", { name: "添加院校" }).click()
@@ -287,10 +294,12 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   await expect(dialog).toBeVisible()
 
   // 填写表单
-  await dialog.getByLabel("中文名").fill(name)
-  await dialog.getByLabel("英文名").fill(nameEn)
-  await dialog.getByLabel("国家").fill(country)
-  await dialog.getByLabel("城市").fill(city)
+  await dialog.getByPlaceholder("请输入校名").fill(name)
+  if (nameEn) {
+    await dialog.getByPlaceholder("请输入英文名（可选）").fill(nameEn)
+  }
+  await dialog.getByPlaceholder("请输入国家").fill(country)
+  await dialog.getByPlaceholder("请输入城市").fill(city)
 
   // 保存
   await dialog.getByRole("button", { name: "保存" }).click()
@@ -299,7 +308,7 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   await expect(dialog).not.toBeVisible()
 
   // 验证创建成功
-  await expect(page.getByText(name)).toBeVisible()
+  await expect(page.getByRole("cell", { name })).toBeVisible()
 }
 
 /** 编辑院校 */
@@ -308,10 +317,10 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   const newCity = String(args?.newCity ?? "")
 
   await page.goto("/admin/universities")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击编辑
-  const row = page.locator("tr", { hasText: name })
+  const row = page.getByRole("row", { name: new RegExp(name) })
   await row.getByRole("button", { name: "编辑" }).click()
 
   // 等待弹窗打开
@@ -319,7 +328,7 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   await expect(dialog).toBeVisible()
 
   // 修改城市
-  const cityInput = dialog.getByLabel("城市")
+  const cityInput = dialog.getByPlaceholder("请输入城市")
   await cityInput.clear()
   await cityInput.fill(newCity)
 
@@ -329,8 +338,8 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   // 等待弹窗关闭
   await expect(dialog).not.toBeVisible()
 
-  // 验证修改成功（可能需要展开详情查看）
-  await expect(page.getByText(name)).toBeVisible()
+  // 验证修改成功（名称仍可见）
+  await expect(page.getByRole("cell", { name })).toBeVisible()
 }
 
 /** 删除院校 */
@@ -338,10 +347,10 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
   const name = String(args?.name ?? "")
 
   await page.goto("/admin/universities")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击删除
-  const row = page.locator("tr", { hasText: name })
+  const row = page.getByRole("row", { name: new RegExp(name) })
 
   // 监听 confirm 弹窗
   page.once("dialog", dialog => dialog.accept())
@@ -349,5 +358,5 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
   await row.getByRole("button", { name: "删除" }).click()
 
   // 验证删除成功
-  await expect(page.getByText(name)).not.toBeVisible()
+  await expect(page.getByRole("cell", { name })).not.toBeVisible()
 }

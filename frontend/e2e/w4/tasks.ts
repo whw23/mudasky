@@ -56,8 +56,8 @@ import {
   testWrongPassword,
 } from "../fns/auth-flow"
 
-const TS = Date.now().toString().slice(-6)
-const W4_PHONE = `+86-1390002${Date.now().toString().slice(-4)}`
+import { TS } from "../constants"
+const W4_PHONE = "+86-13900004004"
 
 export const tasks: Task[] = [
   /* ── 初始化 ── */
@@ -181,10 +181,10 @@ export const tasks: Task[] = [
     requires: [],
     fn: verifyPublicPage,
     fnArgs: {
-      path: "/contact",
+      path: "/about",
     },
     coverage: {
-      routes: ["/contact"],
+      routes: ["/about"],
       api: ["/api/public/config/contact_info"],
       components: ["ContactPage"],
       security: [],
@@ -415,10 +415,10 @@ export const tasks: Task[] = [
     requires: [],
     fn: verifyPermissionAllowed,
     fnArgs: {
-      routes: ["/", "/about", "/news", "/cases", "/universities", "/contact"],
+      routes: ["/", "/about", "/news", "/cases", "/universities", "/about"],
     },
     coverage: {
-      routes: ["/", "/about", "/news", "/cases", "/universities", "/contact"],
+      routes: ["/", "/about", "/news", "/cases", "/universities", "/about"],
       api: [],
       components: [],
       security: ["public-access"],

@@ -18,27 +18,30 @@ export default async function assignRole(
 
   // 导航到用户管理页面
   await page.goto("/admin/users")
+  await page.getByRole("heading", { name: "用户管理" }).waitFor()
 
   // 从 phone 中提取本地号码用于搜索（格式 +86-13900001234 → 13900001234）
   const localNumber = phone.replace(/^\+\d{1,4}-/, "")
 
   // 在搜索框输入手机号
-  await page.getByPlaceholder(/搜索/).fill(localNumber)
+  await page.getByPlaceholder("搜索用户名或手机号").fill(localNumber)
 
-  // 等待搜索结果更新（防抖 300ms）
-  await page.waitForTimeout(500)
+  // 等待搜索结果更新（等待表格行包含该号码）
+  const row = page.getByRole("row", { name: new RegExp(localNumber) })
+  await row.first().waitFor()
 
   // 点击表格行展开用户详情面板
-  await page.getByRole("row", { name: new RegExp(localNumber) }).click()
+  await row.first().click()
 
-  // 等待展开面板加载（检查角色下拉框是否出现）
-  await page.locator("select").first().waitFor({ state: "visible" })
+  // 等待展开面板加载（等待"分配角色"标题出现）
+  await page.getByRole("heading", { name: "分配角色" }).waitFor()
 
-  // 选择角色（第一个 select 是角色选择器）
-  await page.locator("select").first().selectOption({ label: roleName })
+  // 选择角色（combobox）
+  const roleSection = page.getByRole("heading", { name: "分配角色" }).locator("..")
+  await roleSection.getByRole("combobox").selectOption({ label: roleName })
 
-  // 点击保存角色按钮
-  await page.getByRole("button", { name: /保存角色/ }).click()
+  // 点击分配角色区域的保存按钮
+  await roleSection.getByRole("button", { name: "保存" }).click()
 
   // 等待成功提示（toast）
   await page.getByText(/成功/).waitFor({ state: "visible" })

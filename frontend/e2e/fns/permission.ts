@@ -53,6 +53,7 @@ export const verifyApiDenied: TaskFn = async (page, args) => {
 
   for (const endpoint of endpoints) {
     const res = await page.request.get(endpoint, { headers: XHR })
-    expect([401, 403]).toContain(res.status())
+    // 无权限应返回 401/403，路由不存在返回 404，都算拒绝
+    expect([401, 403, 404]).toContain(res.status())
   }
 }

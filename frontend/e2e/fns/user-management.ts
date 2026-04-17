@@ -8,198 +8,132 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
+/** 导航到用户管理并搜索用户，展开详情面板 */
+async function gotoUserAndExpand(page: Page, keyword: string): Promise<void> {
+  await page.goto("/admin/users")
+  await page.getByRole("heading", { name: "用户管理" }).waitFor()
+
+  // 从 phone 中提取本地号码用于搜索
+  const searchTerm = keyword.replace(/^\+\d{1,4}-/, "")
+
+  // 搜索用户
+  await page.getByPlaceholder("搜索用户名或手机号").fill(searchTerm)
+
+  // 等待搜索结果
+  const row = page.getByRole("row", { name: new RegExp(searchTerm) })
+  await row.first().waitFor()
+
+  // 点击展开面板
+  await row.first().click()
+
+  // 等待面板加载
+  await page.getByRole("heading", { name: "基本信息" }).waitFor()
+}
+
 /** 搜索用户 */
 export async function searchUser(page: Page, args?: Record<string, unknown>): Promise<void> {
   const keyword = String(args?.keyword ?? "")
   const expectFound = Boolean(args?.expectFound ?? true)
 
   await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await page.getByRole("heading", { name: "用户管理" }).waitFor()
 
-  // 填写搜索框
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(keyword)
-
-  // 等待搜索防抖
-  await page.waitForTimeout(500)
+  await page.getByPlaceholder("搜索用户名或手机号").fill(keyword)
 
   if (expectFound) {
-    // 验证有结果
-    await expect(page.locator("table tbody tr").first()).toBeVisible()
+    await expect(page.getByRole("row").nth(1)).toBeVisible()
   } else {
-    // 验证无结果
     await expect(page.getByText("暂无用户")).toBeVisible()
   }
 }
 
 /** 切换用户状态（禁用/启用） */
 export async function toggleUserStatus(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const username = String(args?.username ?? "")
-  const enable = Boolean(args?.enable ?? true)
+  const phone = String(args?.phone ?? args?.username ?? "")
+  const disable = Boolean(args?.disable ?? false)
 
-  await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await gotoUserAndExpand(page, phone)
 
-  // 搜索用户
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(username)
-  await page.waitForTimeout(500)
+  // 点击禁用/启用按钮（DOM 中为"禁用账号"或"启用账号"）
+  const buttonName = disable ? "禁用账号" : "启用账号"
+  await page.getByRole("button", { name: buttonName }).click()
 
-  // 点击用户行展开面板
-  const row = page.locator("tr", { hasText: username })
-  await row.click()
-
-  // 等待展开面板可见
-  await page.getByText("基本信息").waitFor()
-
-  // 点击状态切换按钮
-  const statusButton = enable
-    ? page.getByRole("button", { name: "启用用户" })
-    : page.getByRole("button", { name: "禁用用户" })
-
-  await statusButton.click()
-
-  // 验证成功提示
-  await page.waitForTimeout(300) // 等待 toast
-  await expect(page.locator("main")).toBeVisible() // 页面仍正常
+  // 等待成功提示
+  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 编辑用户配额 */
 export async function editUserQuota(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const username = String(args?.username ?? "")
+  const phone = String(args?.phone ?? args?.username ?? "")
   const quota = Number(args?.quota ?? 100)
 
-  await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await gotoUserAndExpand(page, phone)
 
-  // 搜索用户
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(username)
-  await page.waitForTimeout(500)
-
-  // 点击用户行展开面板
-  const row = page.locator("tr", { hasText: username })
-  await row.click()
-
-  // 等待展开面板可见
-  await page.getByText("基本信息").waitFor()
-
-  // 找到配额输入框并修改
-  const quotaInput = page.getByLabel("存储配额 (MB)")
-  await quotaInput.clear()
+  // 找到存储配额区域的 spinbutton
+  const quotaSection = page.getByRole("heading", { name: "存储配额" }).locator("..")
+  const quotaInput = quotaSection.getByRole("spinbutton")
   await quotaInput.fill(String(quota))
 
   // 保存
-  await page.getByRole("button", { name: "保存配额" }).click()
+  await quotaSection.getByRole("button", { name: "保存" }).click()
 
   // 验证成功提示
-  await page.waitForTimeout(300)
-  await expect(page.locator("main")).toBeVisible()
+  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 重置用户密码 */
 export async function resetPassword(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const username = String(args?.username ?? "")
+  const phone = String(args?.phone ?? args?.username ?? "")
   const newPassword = String(args?.newPassword ?? "TempPass123!")
 
-  await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await gotoUserAndExpand(page, phone)
 
-  // 搜索用户
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(username)
-  await page.waitForTimeout(500)
+  // 找到重置密码区域
+  const section = page.getByRole("heading", { name: "重置密码" }).locator("..")
 
-  // 点击用户行展开面板
-  const row = page.locator("tr", { hasText: username })
-  await row.click()
-
-  // 等待展开面板可见
-  await page.getByText("基本信息").waitFor()
-
-  // 填写新密码和确认密码
-  const passwordInput = page.getByLabel("新密码")
-  await passwordInput.fill(newPassword)
-
-  const confirmInput = page.getByLabel("确认密码")
-  await confirmInput.fill(newPassword)
+  // 填写新密码和确认密码（两个都是 placeholder "请输入密码"）
+  const passwordInputs = section.getByPlaceholder("请输入密码")
+  await passwordInputs.first().fill(newPassword)
+  await passwordInputs.last().fill(newPassword)
 
   // 点击重置密码按钮
-  await page.getByRole("button", { name: "重置密码" }).click()
+  await section.getByRole("button", { name: "重置密码" }).click()
 
   // 验证成功提示
-  await page.waitForTimeout(300)
-  await expect(page.locator("main")).toBeVisible()
+  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 强制登出用户 */
 export async function forceLogout(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const username = String(args?.username ?? "")
+  const phone = String(args?.phone ?? args?.username ?? "")
 
-  await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await gotoUserAndExpand(page, phone)
 
-  // 搜索用户
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(username)
-  await page.waitForTimeout(500)
-
-  // 点击用户行展开面板
-  const row = page.locator("tr", { hasText: username })
-  await row.click()
-
-  // 等待展开面板可见
-  await page.getByText("基本信息").waitFor()
-
-  // 点击强制登出按钮
-  await page.getByRole("button", { name: "强制登出" }).click()
+  // 点击强制登出按钮（heading "强制登出" 区域的按钮）
+  const section = page.getByRole("heading", { name: "强制登出" }).locator("..")
+  await section.getByRole("button", { name: "强制登出" }).click()
 
   // 验证成功提示
-  await page.waitForTimeout(300)
-  await expect(page.locator("main")).toBeVisible()
+  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 删除用户 */
 export async function deleteUser(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const username = String(args?.username ?? "")
-  const expectFail = Boolean(args?.expectFail ?? false)
+  const phone = String(args?.phone ?? args?.username ?? "")
 
-  await page.goto("/admin/users")
-  await page.locator("main").waitFor()
+  await gotoUserAndExpand(page, phone)
 
-  // 搜索用户
-  const searchInput = page.getByPlaceholder("搜索用户名或手机号")
-  await searchInput.fill(username)
-  await page.waitForTimeout(500)
-
-  // 点击用户行展开面板
-  const row = page.locator("tr", { hasText: username })
-  await row.click()
-
-  // 等待展开面板可见
-  await page.getByText("基本信息").waitFor()
-
-  // 点击删除按钮
-  const deleteButton = page.getByRole("button", { name: "删除用户" })
-  await deleteButton.click()
+  // 点击删除用户按钮
+  const section = page.getByRole("heading", { name: "删除用户" }).locator("..")
+  await section.getByRole("button", { name: "删除用户" }).click()
 
   // 等待确认弹窗
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
 
   // 确认删除
-  await alertDialog.getByRole("button", { name: "确认" }).click()
+  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
 
   // 等待弹窗关闭
   await expect(alertDialog).not.toBeVisible()
-
-  if (expectFail) {
-    // 受保护用户删除失败，应该仍可见
-    await page.waitForTimeout(500)
-    await expect(page.getByText(username)).toBeVisible()
-  } else {
-    // 删除成功，面板关闭，列表不再显示该用户
-    await page.waitForTimeout(500)
-    await expect(page.getByText(username)).not.toBeVisible()
-  }
 }

@@ -66,7 +66,7 @@ import {
   verifyMenuHighlight,
 } from "../fns/sidebar-nav"
 
-const TS = Date.now().toString().slice(-6)
+import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
   /* ── 初始化 ── */
@@ -108,10 +108,10 @@ export const tasks: Task[] = [
     id: "w1_assign_role_w2",
     worker: "w1",
     name: "为 W2 分配 student 角色",
-    requires: ["w1_login"],
+    requires: ["w1_login", "w2_register"],
     fn: assignRole,
     fnArgs: {
-      phone: `+86-1390000${Date.now().toString().slice(-4)}`, // W2 的手机号占位符
+      phone: PHONES.w2,
       roleName: "student",
     },
     coverage: {
@@ -139,10 +139,10 @@ export const tasks: Task[] = [
     id: "w1_assign_role_w3",
     worker: "w1",
     name: "为 W3 分配 advisor 角色",
-    requires: ["w1_login"],
+    requires: ["w1_login", "w3_register"],
     fn: assignRole,
     fnArgs: {
-      phone: `+86-1390001${Date.now().toString().slice(-4)}`,
+      phone: PHONES.w3,
       roleName: "advisor",
     },
     coverage: {
@@ -159,6 +159,72 @@ export const tasks: Task[] = [
     requires: ["w1_assign_role_w3"],
     fn: refreshToken,
     fnArgs: { worker: "w3" },
+    coverage: {
+      routes: [],
+      api: ["/api/auth/refresh"],
+      components: [],
+      security: ["token-refresh"],
+    },
+  },
+
+  /* ── W5 content_admin 角色分配 ── */
+  {
+    id: "w1_assign_w5",
+    worker: "w1",
+    name: "为 W5 分配 content_admin 角色",
+    requires: ["w1_login", "w5_register"],
+    fn: assignRole,
+    fnArgs: {
+      phone: PHONES.w5,
+      roleName: "content_admin",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list", "/admin/users/list/detail/role"],
+      components: ["UserDetailPanel"],
+      security: ["role-assignment"],
+    },
+  },
+  {
+    id: "w1_refresh_w5",
+    worker: "w1",
+    name: "刷新 W5 token",
+    requires: ["w1_assign_w5"],
+    fn: refreshToken,
+    fnArgs: { worker: "w5" },
+    coverage: {
+      routes: [],
+      api: ["/api/auth/refresh"],
+      components: [],
+      security: ["token-refresh"],
+    },
+  },
+
+  /* ── W6 support 角色分配 ── */
+  {
+    id: "w1_assign_w6",
+    worker: "w1",
+    name: "为 W6 分配 support 角色",
+    requires: ["w1_login", "w6_register"],
+    fn: assignRole,
+    fnArgs: {
+      phone: PHONES.w6,
+      roleName: "support",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list", "/admin/users/list/detail/role"],
+      components: ["UserDetailPanel"],
+      security: ["role-assignment"],
+    },
+  },
+  {
+    id: "w1_refresh_w6",
+    worker: "w1",
+    name: "刷新 W6 token",
+    requires: ["w1_assign_w6"],
+    fn: refreshToken,
+    fnArgs: { worker: "w6" },
     coverage: {
       routes: [],
       api: ["/api/auth/refresh"],
@@ -470,10 +536,10 @@ export const tasks: Task[] = [
     id: "w1_user_search",
     worker: "w1",
     name: "搜索用户",
-    requires: ["w1_login"],
+    requires: ["w1_login", "w2_register"],
     fn: searchUser,
     fnArgs: {
-      keyword: "admin",
+      keyword: "13900002002",
       expectFound: true,
     },
     coverage: {
@@ -490,7 +556,7 @@ export const tasks: Task[] = [
     requires: ["w1_user_search"],
     fn: editUserQuota,
     fnArgs: {
-      username: "admin",
+      phone: PHONES.w2,
       quota: 200,
     },
     coverage: {
@@ -658,6 +724,36 @@ export const tasks: Task[] = [
       api: [],
       components: ["AdminSidebar"],
       security: [],
+    },
+  },
+
+  /* ── W7 协调：禁用/启用临时账号 ── */
+  {
+    id: "w1_disable_temp",
+    worker: "w1",
+    name: "禁用 W7 临时账号",
+    requires: ["w1_login", "w7_reg_disable"],
+    fn: toggleUserStatus,
+    fnArgs: { phone: PHONES.w7_disabled, disable: true },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list/detail/edit"],
+      components: ["UserDetailPanel"],
+      security: ["disable-user"],
+    },
+  },
+  {
+    id: "w1_enable_temp",
+    worker: "w1",
+    name: "启用 W7 临时账号",
+    requires: ["w7_verify_disabled"],
+    fn: toggleUserStatus,
+    fnArgs: { phone: PHONES.w7_disabled, disable: false },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list/detail/edit"],
+      components: ["UserDetailPanel"],
+      security: ["enable-user"],
     },
   },
 

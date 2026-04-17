@@ -47,8 +47,9 @@ import {
   verifyApiDenied,
 } from "../fns/permission"
 
-const TS = Date.now().toString().slice(-6)
-const W2_PHONE = `+86-1390000${Date.now().toString().slice(-4)}`
+import reloadAuth from "../fns/reload-auth"
+import { PHONES, TS } from "../constants"
+const W2_PHONE = PHONES.w2
 
 export const tasks: Task[] = [
   /* ── 初始化 ── */
@@ -84,12 +85,23 @@ export const tasks: Task[] = [
     },
   },
 
+  /* ── 重新加载认证（W1 赋权后 JWT 更新） ── */
+  {
+    id: "w2_reload_auth",
+    worker: "w2",
+    name: "重新加载认证状态",
+    requires: ["w2_register", "w1_assign_role_w2", "w1_refresh_token_w2"],
+    fn: reloadAuth,
+    fnArgs: { worker: "w2" },
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
+
   /* ── 个人资料管理 ── */
   {
     id: "w2_profile_view",
     worker: "w2",
     name: "查看个人资料",
-    requires: ["w2_register", "w1_refresh_token_w2"],
+    requires: ["w2_reload_auth"],
     fn: viewProfile,
     fnArgs: {},
     coverage: {

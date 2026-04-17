@@ -38,8 +38,9 @@ import {
   verifyAdminSidebar,
 } from "../fns/sidebar-nav"
 
-const TS = Date.now().toString().slice(-6)
-const W3_PHONE = `+86-1390001${Date.now().toString().slice(-4)}`
+import reloadAuth from "../fns/reload-auth"
+import { PHONES, TS } from "../constants"
+const W3_PHONE = PHONES.w3
 
 export const tasks: Task[] = [
   /* ── 初始化 ── */
@@ -75,12 +76,23 @@ export const tasks: Task[] = [
     },
   },
 
+  /* ── 重新加载认证 ── */
+  {
+    id: "w3_reload_auth",
+    worker: "w3",
+    name: "重新加载认证状态",
+    requires: ["w3_register", "w1_assign_role_w3", "w1_refresh_token_w3"],
+    fn: reloadAuth,
+    fnArgs: { worker: "w3" },
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
+
   /* ── 学生管理 ── */
   {
     id: "w3_students_view",
     worker: "w3",
     name: "查看学生列表",
-    requires: ["w3_register", "w1_refresh_token_w3"],
+    requires: ["w3_reload_auth"],
     fn: viewStudentList,
     fnArgs: {},
     coverage: {
