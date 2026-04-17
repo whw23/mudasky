@@ -230,11 +230,26 @@ Breaker (caused by w2_profile):
 
 ### 短信验证码免发送
 
-通过 `INTERNAL_SECRET` cookie 跳过真实短信发送，后端直接返回验证码：
+通过 `INTERNAL_SECRET` cookie 跳过真实短信发送，后端直接返回验证码。
 
-- 所有 worker 在注册/登录前，先通过 `page.context().addCookies()` 设置 `internal_secret` cookie
-- `INTERNAL_SECRET` 从 env 文件加载（本地用 `env/backend.env`，线上用 `env/production.env`，通过 `TEST_ENV` 环境变量切换）
-- 注册流程：设置 cookie → 在 UI 输入手机号 → 调用发送验证码 → 从 API 响应获取验证码 → 填入验证码 → 提交
+设置 cookie 作为每个 worker 的独立前置任务：
+
+```typescript
+// 每个 worker 的第一个任务
+{ id: "w1_set_cookie", worker: "w1", name: "设置 internal_secret cookie",
+  requires: [], fn: setInternalSecretCookie, ... },
+
+{ id: "w1_login", worker: "w1", name: "superuser 登录",
+  requires: ["w1_set_cookie"], fn: login, ... },
+
+{ id: "w2_set_cookie", worker: "w2", name: "设置 internal_secret cookie",
+  requires: [], fn: setInternalSecretCookie, ... },
+
+{ id: "w2_register", worker: "w2", name: "自注册",
+  requires: ["w2_set_cookie"], fn: register, ... },
+```
+
+`INTERNAL_SECRET` 从 env 文件加载（本地用 `env/backend.env`，线上用 `env/production.env`，通过 `TEST_ENV` 环境变量切换）。
 
 ### `--last-not-pass` 机制
 
