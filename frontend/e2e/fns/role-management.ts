@@ -45,8 +45,8 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   await page.goto("/admin/roles")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 找到角色行（grid 布局，用 locator + hasText 定位），点击编辑
-  const roleRow = page.locator("main >> text=" + oldName).locator("..")
+  // 找到包含角色名和编辑按钮的行容器
+  const roleRow = page.locator("div").filter({ hasText: oldName }).filter({ has: page.getByRole("button", { name: "编辑" }) }).first()
   await roleRow.getByRole("button", { name: "编辑" }).click()
 
   // 等待弹窗打开
@@ -75,9 +75,9 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
   await page.goto("/admin/roles")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
-  // 找到角色行（包含角色名的容器中的删除按钮）
-  const roleRow = page.locator("main").locator(`text=${name}`).locator("xpath=ancestor::*[.//button]").first()
-  const deleteButton = roleRow.getByRole("button", { name: "删除" })
+  // 找到包含角色名和删除按钮的行容器
+  const roleContainer = page.locator("div").filter({ hasText: name }).filter({ has: page.getByRole("button", { name: "删除" }) }).first()
+  const deleteButton = roleContainer.getByRole("button", { name: "删除" })
 
   if (expectFail) {
     // 受保护角色（如 superuser）可能没有删除按钮

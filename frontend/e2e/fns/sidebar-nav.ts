@@ -22,7 +22,7 @@ const ROLE_MENUS: Record<string, string[]> = {
     "管理仪表盘", "学生管理", "联系人管理",
   ],
   support: [
-    "管理仪表盘", "联系人管理",
+    "联系人管理",
   ],
 }
 

@@ -12,9 +12,13 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  * 查看会话列表。
  */
 export const viewSessions: TaskFn = async (page) => {
-  // 滚动到底部确保会话区域可见
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-  await expect(page.getByText("登录设备")).toBeVisible()
+  await page.goto("/portal/profile")
+  await page.waitForLoadState("networkidle")
+
+  // 登录设备区域在 profile 页面底部，滚动到可见
+  const sessionsHeading = page.getByText("登录设备")
+  await sessionsHeading.scrollIntoViewIfNeeded()
+  await expect(sessionsHeading).toBeVisible()
   await expect(page.getByText("当前").first()).toBeVisible()
 }
 

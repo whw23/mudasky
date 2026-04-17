@@ -18,6 +18,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   const sortOrder = Number(args?.sortOrder ?? 0)
 
   await page.goto("/admin/categories")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 点击创建分类按钮
@@ -51,6 +52,7 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
   const newName = String(args?.newName ?? "")
 
   await page.goto("/admin/categories")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击编辑
@@ -81,6 +83,7 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   const name = String(args?.name ?? "")
 
   await page.goto("/admin/categories")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击删除
@@ -104,6 +107,7 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
   const content = String(args?.content ?? "")
 
   await page.goto("/admin/articles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 点击写文章按钮
@@ -141,6 +145,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   const newTitle = String(args?.newTitle ?? "")
 
   await page.goto("/admin/articles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击编辑
@@ -170,6 +175,7 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   const title = String(args?.title ?? "")
 
   await page.goto("/admin/articles")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击删除
@@ -194,6 +200,7 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   const year = Number(args?.year ?? 2026)
 
   await page.goto("/admin/cases")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 点击添加案例按钮
@@ -230,6 +237,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   const newUniversity = String(args?.newUniversity ?? "")
 
   await page.goto("/admin/cases")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击编辑
@@ -260,6 +268,7 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
   const studentName = String(args?.studentName ?? "")
 
   await page.goto("/admin/cases")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击删除
@@ -284,6 +293,7 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   const city = String(args?.city ?? "")
 
   await page.goto("/admin/universities")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 点击添加院校按钮
@@ -317,6 +327,7 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   const newCity = String(args?.newCity ?? "")
 
   await page.goto("/admin/universities")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击编辑
@@ -347,6 +358,7 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
   const name = String(args?.name ?? "")
 
   await page.goto("/admin/universities")
+  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击删除
