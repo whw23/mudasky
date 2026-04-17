@@ -74,7 +74,14 @@ export default async function reloadAuth(
   // 等待登录成功（弹窗关闭）
   await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
-  // 4. 保存新的 storageState
+  // 4. 验证新 JWT 包含正确权限（诊断）
+  const cookies = await page.context().cookies()
+  const hasAccessToken = cookies.some(c => c.name === "access_token")
+  if (!hasAccessToken) {
+    throw new Error("重新登录后无 access_token cookie")
+  }
+
+  // 5. 保存新的 storageState
   const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
   await page.context().storageState({ path: authFile })
 }
