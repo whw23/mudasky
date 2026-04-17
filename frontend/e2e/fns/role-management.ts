@@ -84,6 +84,10 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
   const nameEl = page.locator("main").getByText(name, { exact: true })
   await nameEl.waitFor()
   const row = nameEl.locator("xpath=..")
+
+  // 监听浏览器 confirm 弹窗并接受
+  page.once("dialog", (d) => d.accept())
+
   await row.getByRole("button", { name: "删除" }).click()
   await expect(page.getByText(name, { exact: true })).not.toBeVisible()
 }
