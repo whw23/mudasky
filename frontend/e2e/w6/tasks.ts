@@ -10,16 +10,28 @@ import { viewContactList, expandContact, markContactStatus, addContactNote } fro
 import { verifyAdminSidebar, verifyDashboard } from "../fns/sidebar-nav"
 import { viewProfile, editUsername } from "../fns/profile"
 
+import setCookie from "../fns/set-cookie"
 import reloadAuth from "../fns/reload-auth"
 import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
+  // ── 设置 cookie ──
+  {
+    id: "w6_set_cookie",
+    worker: "w6",
+    name: "设置 internal_secret cookie",
+    requires: [],
+    fn: setCookie,
+    fnArgs: {},
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
+
   // ── 注册 ──
   {
     id: "w6_register",
     worker: "w6",
     name: "support 注册",
-    requires: [],
+    requires: ["w6_set_cookie"],
     fn: register,
     fnArgs: { phone: PHONES.w6, worker: "w6" },
     coverage: {
@@ -40,7 +52,7 @@ export const tasks: Task[] = [
     id: "w6_reload_auth",
     worker: "w6",
     name: "重新加载认证状态",
-    requires: ["w6_reload_auth"],
+    requires: ["w6_register", "w1_assign_w6", "w1_refresh_w6"],
     fn: reloadAuth,
     fnArgs: { worker: "w6" },
     coverage: { routes: [], api: [], components: [], security: [] },
