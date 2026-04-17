@@ -8,23 +8,27 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
-/** 等待水合完成后打开登录弹窗（如已登录先退出） */
+/** 通过 UI 确保未登录状态后打开登录弹窗 */
 async function openLoginDialog(page: Page): Promise<void> {
   await page.goto("/")
   await page.waitForLoadState("networkidle")
 
-  // 等待 header 中任一按钮出现（"登录/注册" 或 "退出"）
-  const loginBtn = page.getByRole("button", { name: /登录/ })
-  const logoutBtn = page.getByRole("button", { name: "退出" })
-  await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 15_000 })
+  // 等待页面水合完成（header 中出现可交互按钮）
+  // 用 waitForFunction 等待 React 水合：按钮有事件监听器
+  await page.waitForFunction(() => {
+    const btns = document.querySelectorAll("header button")
+    return btns.length > 0
+  }, { timeout: 15_000 })
 
-  // 如果已登录，先退出
+  // 检查是否已登录（有"退出"按钮）
+  const logoutBtn = page.getByRole("button", { name: "退出" })
   if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
-    await loginBtn.waitFor({ state: "visible" })
+    // 等待页面刷新到未登录状态
+    await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible", timeout: 15_000 })
   }
 
-  await loginBtn.click()
+  await page.getByRole("button", { name: /登录/ }).click()
   await page.getByRole("dialog").waitFor({ state: "visible" })
 }
 
