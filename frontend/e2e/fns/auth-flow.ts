@@ -13,14 +13,18 @@ async function openLoginDialog(page: Page): Promise<void> {
   await page.goto("/")
   await page.waitForLoadState("networkidle")
 
-  // 如果已登录，先退出
+  // 等待 header 中任一按钮出现（"登录/注册" 或 "退出"）
+  const loginBtn = page.getByRole("button", { name: /登录/ })
   const logoutBtn = page.getByRole("button", { name: "退出" })
-  if (await logoutBtn.isVisible().catch(() => false)) {
+  await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 15_000 })
+
+  // 如果已登录，先退出
+  if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
-    await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible" })
+    await loginBtn.waitFor({ state: "visible" })
   }
 
-  await page.getByRole("button", { name: /登录/ }).click()
+  await loginBtn.click()
   await page.getByRole("dialog").waitFor({ state: "visible" })
 }
 

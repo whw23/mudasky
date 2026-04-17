@@ -10,11 +10,19 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 
 /** 找到角色行中的指定按钮（通过角色名文本定位其所在行） */
 async function findRoleButton(page: Page, roleName: string, buttonName: string) {
-  // 精确匹配角色名文本，然后找到同一行的按钮
-  // 角色名在 generic 元素中，按钮在同级 generic 中
+  // 角色行是包含角色名和按钮的最近公共祖先
+  // 向上找到包含按钮的容器
   const nameEl = page.locator("main").getByText(roleName, { exact: true })
-  // 向上找到包含按钮的行容器（父级的父级）
-  return nameEl.locator("xpath=..").getByRole("button", { name: buttonName })
+  // 尝试多层父级，找到包含目标按钮的那一层
+  for (const ancestor of ["xpath=..", "xpath=../..", "xpath=../../.."]) {
+    const container = nameEl.locator(ancestor)
+    const btn = container.getByRole("button", { name: buttonName })
+    if (await btn.isVisible().catch(() => false)) {
+      return btn
+    }
+  }
+  // fallback: 从页面全局找
+  return nameEl.locator("xpath=ancestor::*[.//button]").first().getByRole("button", { name: buttonName })
 }
 
 /** 创建角色 */

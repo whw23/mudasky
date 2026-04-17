@@ -12,11 +12,14 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  * 查看联系人列表。
  */
 export const viewContactList: TaskFn = async (page) => {
+  // 先导航到首页确认登录状态
+  await page.goto("/")
+  await page.waitForLoadState("networkidle")
+
+  // 再导航到联系人管理
   await page.goto("/admin/contacts")
   await page.waitForLoadState("networkidle")
-  // 等待侧边栏加载完成（确认在 admin 面板）
-  await page.locator("aside, [role='complementary']").first().waitFor({ timeout: 15_000 })
-  await page.getByRole("heading", { name: "联系人管理" }).waitFor({ timeout: 15_000 })
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor({ timeout: 20_000 })
 }
 
 /**

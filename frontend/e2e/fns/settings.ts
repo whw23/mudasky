@@ -11,64 +11,63 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 /** 验证通用配置页面 */
 export async function verifyGeneralSettings(page: Page): Promise<void> {
   await page.goto("/admin/general-settings")
-  await page.getByRole("heading", { name: "通用配置" }).waitFor()
-
-  // 验证页面可见且有配置内容
+  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
   await expect(page.locator("main")).toBeVisible()
 }
 
-/** 编辑通用配置（并回滚） */
+/** 编辑通用配置（验证页面可交互） */
 export async function editGeneralSettings(page: Page): Promise<void> {
   await page.goto("/admin/general-settings")
-  await page.getByRole("heading", { name: "通用配置" }).waitFor()
-
-  // 验证页面可见
+  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
   await expect(page.locator("main")).toBeVisible()
 }
 
 /** 验证网页设置页面 */
 export async function verifyWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "网页设置" }).waitFor()
-
-  // 网页设置是实时预览页面，验证加载完成
   await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
   await expect(page.locator("main")).toBeVisible()
 }
 
-/** 编辑网页设置（并回滚） */
+/** 编辑网页设置（点击 Hero 区域编辑并回滚） */
 export async function editWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
   await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
 
-  // 点击包含标语文本的可编辑区域
-  await page.locator("main").getByText("专注国际教育").first().click()
+  // 点击 Hero 区域（标题 【慕大国际教育】 所在的可点击区域）
+  const heroArea = page.locator("main h1").first()
+  await heroArea.click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 获取当前值
-  const input = dialog.locator("input, textarea").first()
-  await input.waitFor()
-  const originalValue = await input.inputValue()
+  // 找到"标题"中文输入框
+  const titleInput = dialog.getByPlaceholder("标题（必填）")
+  await titleInput.waitFor()
+  const originalValue = await titleInput.inputValue()
 
   // 修改
-  await input.clear()
-  await input.fill("E2E测试标语")
+  await titleInput.clear()
+  await titleInput.fill("E2E-标题测试")
 
   // 保存
-  await dialog.getByRole("button", { name: /保存|确定/ }).click()
-  await expect(dialog).not.toBeVisible()
+  await dialog.getByRole("button", { name: "保存" }).click()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
-  // 回滚：重新打开并恢复原值
-  await page.getByText("编辑标语").click()
+  // 回滚：重新点击 Hero 区域
+  await page.locator("main h1").first().click()
   await expect(dialog).toBeVisible()
-  const input2 = dialog.locator("input, textarea").first()
-  await input2.waitFor()
-  await input2.clear()
-  await input2.fill(originalValue)
-  await dialog.getByRole("button", { name: /保存|确定/ }).click()
-  await expect(dialog).not.toBeVisible()
+
+  const titleInput2 = dialog.getByPlaceholder("标题（必填）")
+  await titleInput2.waitFor()
+  await titleInput2.clear()
+  await titleInput2.fill(originalValue)
+
+  await dialog.getByRole("button", { name: "保存" }).click()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 }
