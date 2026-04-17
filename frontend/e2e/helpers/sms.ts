@@ -18,7 +18,7 @@ export async function getSmsCode(page: Page, phone: string): Promise<string> {
     const baseURL = process.env.BASE_URL || "http://localhost";
     const url = new URL(baseURL);
     await page.context().addCookies([
-      { name: "internal_secret", value: internalSecret, url: url.origin, path: "/" },
+      { name: "internal_secret", value: internalSecret, url: url.origin },
     ]);
   }
 

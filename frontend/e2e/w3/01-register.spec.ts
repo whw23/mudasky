@@ -20,22 +20,15 @@ test.describe("W3 注册", () => {
     const code = await getSmsCode(page, PHONE)
     expect(code).toBeTruthy()
 
-    const result = await page.evaluate(
-      async ({ phone, smsCode }) => {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-          body: JSON.stringify({ phone, code: smsCode }),
-          credentials: "include",
-        })
-        return { status: res.status, data: await res.json() }
+    const res = await page.request.post("/api/auth/login", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
       },
-      { phone: PHONE, smsCode: code },
-    )
-    expect(result.status).toBe(200)
+      data: { phone: PHONE, code },
+    })
+    expect(res.status()).toBe(200)
+    const result = { data: await res.json() }
 
     await page.context().storageState({ path: W3_AUTH })
     emit("w3_registered", {
