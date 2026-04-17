@@ -11,15 +11,27 @@ import { testMissingToken, testInvalidToken, testTamperedJwt } from "../fns/jwt-
 import { testAccessOtherDoc, testDeleteOtherDoc } from "../fns/idor"
 import { testLoginDialog, testLoginSuccess, testWrongPassword, testLogoutFlow } from "../fns/auth-flow"
 
+import setCookie from "../fns/set-cookie"
 import { PHONES, TS } from "../constants"
 
 export const tasks: Task[] = [
+  // ── 设置 cookie ──
+  {
+    id: "w7_set_cookie",
+    worker: "w7",
+    name: "设置 internal_secret cookie",
+    requires: [],
+    fn: setCookie,
+    fnArgs: {},
+    coverage: { routes: [], api: [], components: [], security: [] },
+  },
+
   // ── 禁用/启用测试组 ──
   {
     id: "w7_reg_disable",
     worker: "w7",
     name: "注册临时账号(禁用测试)",
-    requires: [],
+    requires: ["w7_set_cookie"],
     fn: register,
     fnArgs: { phone: PHONES.w7_disabled, worker: "w7" },
     coverage: {
