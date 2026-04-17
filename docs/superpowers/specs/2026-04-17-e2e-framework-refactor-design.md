@@ -146,7 +146,7 @@ Worker 启动 → 加载自己的任务队列 → 循环：
     如果所有任务都完成/熔断 → 退出
     否则 → sleep(2000) → 回到 phase 1
     
-  总超时保护: 10 分钟，超时后所有 pending 任务标记 fail
+  总超时保护: 10 分钟，超时后所有 pending 任务标记 timeout
 ```
 
 ### 备选 Worker（任务偷取）
@@ -244,7 +244,7 @@ W7 的临时账号在 global-teardown 统一清理。
 #### 报告格式
 
 ```
-[Test Results] 230 pass / 2 fail / 3 breaker (total: 235)
+[Test Results] 230 pass / 2 fail / 3 breaker / 0 timeout (total: 235)
 
 [API Coverage]       73/73  (100.0%)
 [Route Coverage]     35/35  (100.0%)
@@ -259,7 +259,7 @@ Uncovered:
 
 | 规则 | 说明 |
 |------|------|
-| 0 failed | 包含熔断的任务（熔断 = failed） |
+| 0 failed | 包含熔断和超时的任务（breaker/timeout = failed） |
 | 0 skipped | 所有任务必须执行或熔断，不能跳过 |
 | 不重试 | 设计上不做 retry，失败直接标记 |
 | 首次通过 | 目标是每个任务一次就过 |
