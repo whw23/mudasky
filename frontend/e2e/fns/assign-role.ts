@@ -40,37 +40,17 @@ export default async function assignRole(
   const roleSection = page.getByRole("heading", { name: "分配角色" }).locator("..")
   const combobox = roleSection.getByRole("combobox")
 
-  // 确认当前选中的不是目标角色（避免无变化的保存）
+  // 等待角色列表 API 返回（combobox options 包含目标角色）
+  await combobox.locator(`option:text-is("${roleName}")`).waitFor({ timeout: 10_000 })
+
+  // 确认当前选中的不是目标角色
   const currentText = await combobox.locator("option:checked").textContent()
   if (currentText?.trim() === roleName) {
     return // 已是目标角色，跳过
   }
 
-  // 选择角色：selectOption + 验证重试
-  for (let attempt = 0; attempt < 3; attempt++) {
-    await combobox.selectOption({ label: roleName })
-
-    // 验证 DOM 确实选中了目标
-    const selected = await combobox.inputValue()
-    const expectedValue = await combobox.evaluate(
-      (el: HTMLSelectElement, label: string) => {
-        const opt = Array.from(el.options).find(o => o.text === label)
-        return opt?.value ?? ""
-      },
-      roleName,
-    )
-    if (selected === expectedValue) break
-
-    // selectOption 没生效，用 dispatchEvent 重试
-    await combobox.evaluate((el: HTMLSelectElement, label: string) => {
-      const opt = Array.from(el.options).find(o => o.text === label)
-      if (opt) {
-        el.value = opt.value
-        el.dispatchEvent(new Event("input", { bubbles: true }))
-        el.dispatchEvent(new Event("change", { bubbles: true }))
-      }
-    }, roleName)
-  }
+  // 选择角色
+  await combobox.selectOption({ label: roleName })
 
   // 监听角色分配 API 请求和响应
   const saveResponse = page.waitForResponse(
