@@ -156,7 +156,32 @@ Worker 启动 → 加载自己的任务队列 → 循环：
 约束：
 - 登录/注册任务 `backupWorkers` 为空，不可被偷
 - 只有权限匹配的 worker 才放入 backupWorkers
-- 通过信号文件加锁，防止两个 backup worker 同时拿同一个任务
+
+#### 任务抢占锁
+
+防止两个 backup worker 同时拿同一个任务。使用 `wx`（`O_CREAT | O_EXCL`）标志原子创建信号文件：
+
+```typescript
+function claimTask(taskId: string, worker: string): boolean {
+  try {
+    fs.writeFileSync(
+      `/tmp/e2e-signals/${taskId}.json`,
+      JSON.stringify({ status: "running", worker }),
+      { flag: "wx" }  // 文件已存在则抛异常，操作系统级原子操作
+    )
+    return true   // 抢到了
+  } catch {
+    return false  // 别人已经抢到了
+  }
+}
+```
+
+流程：
+1. 检查 `{taskId}.json` 是否存在 → 存在说明已完成或被抢，跳过
+2. 用 `wx` 尝试创建 → 成功则执行任务，完成后覆写为 pass/fail
+3. 创建失败 → 别的 worker 抢到了，跳过
+
+崩溃保护：worker 执行中崩溃，信号文件停留在 `status: "running"`，其他 worker 看到已存在就跳过，最终由总超时标记为 timeout。
 
 ### W7 破坏性测试协调
 
