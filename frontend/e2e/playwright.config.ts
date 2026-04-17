@@ -8,16 +8,20 @@ import { defineConfig } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"
 
-/* 自动加载 env/backend.env（SEED_USER_E2E_*、INTERNAL_SECRET） */
-const envPath = path.resolve(__dirname, "../../env/backend.env")
-if (fs.existsSync(envPath)) {
-  for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
+/* 加载 env 文件：TEST_ENV=production 测线上，默认测本地 */
+function loadEnvFile(filePath: string): void {
+  if (!fs.existsSync(filePath)) return
+  for (const line of fs.readFileSync(filePath, "utf-8").split("\n")) {
     const match = line.match(/^([A-Z0-9_]+)=(.*)$/)
     if (match && !process.env[match[1]]) {
       process.env[match[1]] = match[2]
     }
   }
 }
+const envFile = process.env.TEST_ENV === "production"
+  ? "../../env/production.env"
+  : "../../env/backend.env"
+loadEnvFile(path.resolve(__dirname, envFile))
 
 const isRemote = !!process.env.BASE_URL
 const AUTH_DIR = path.join(__dirname, ".auth")

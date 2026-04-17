@@ -255,7 +255,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
             "编辑品牌名称"
           )}
 
-          {/* 右侧：电话按钮 + 汉堡菜单 */}
+          {/* 右侧：电话 + 登录/用户 + 汉堡菜单 */}
           <div className="flex items-center gap-1">
             {hotline && (
               <a
@@ -265,6 +265,28 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               >
                 <Phone className="size-4" />
               </a>
+            )}
+            {user ? (
+              <Link
+                href="/portal/overview"
+                onClick={closeMenu}
+                className="p-2 rounded-full bg-foreground/5 text-foreground/60 transition-colors"
+              >
+                <span className="size-4 flex items-center justify-center text-xs font-medium">
+                  {(user.username || user.phone || "U").charAt(0).toUpperCase()}
+                </span>
+              </Link>
+            ) : (
+              <button
+                onClick={showLoginModal}
+                className="p-2 rounded-full bg-foreground/5 text-foreground/60 hover:text-foreground transition-colors"
+                aria-label={tHeader("loginOrRegister")}
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </button>
             )}
             <button
               className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
@@ -308,9 +330,20 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               </li>
             )}
           </ul>
+          {/* 已登录：登出按钮 */}
+          {user && (
+            <div className="mx-3 mt-2 mb-1">
+              <button
+                onClick={() => { logout(); closeMenu() }}
+                className="w-full rounded-lg bg-foreground/5 px-4 py-2.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
+              >
+                {tHeader("logout")}
+              </button>
+            </div>
+          )}
           {/* 热线电话栏 */}
           {hotline && (
-            <div className="mx-3 mt-2 mb-1 rounded-lg bg-primary/5 px-4 py-2.5 text-sm text-primary flex items-center gap-2">
+            <div className="mx-3 mt-1 mb-1 rounded-lg bg-primary/5 px-4 py-2.5 text-sm text-primary flex items-center gap-2">
               <Phone className="size-4" />
               服务热线：{hotline}
             </div>

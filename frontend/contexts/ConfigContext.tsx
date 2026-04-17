@@ -122,7 +122,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     api.get('/public/config/contact_info')
       .then((res) => {
         if (res.data.value) {
-          setContactInfo(res.data.value)
+          setContactInfo({ ...DEFAULT_CONTACT_INFO, ...res.data.value })
         }
       })
       .catch((err) => console.warn('[ConfigProvider] contact_info 加载失败:', err.message))
@@ -130,7 +130,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     api.get('/public/config/site_info')
       .then((res) => {
         if (res.data.value) {
-          setSiteInfo(res.data.value)
+          setSiteInfo({ ...DEFAULT_SITE_INFO, ...res.data.value })
         }
       })
       .catch((err) => console.warn('[ConfigProvider] site_info 加载失败:', err.message))
@@ -146,12 +146,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     api.get('/public/config/about_info')
       .then((res) => {
         if (res.data.value) {
-          setAboutInfo(res.data.value)
+          setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...res.data.value })
         }
       })
       .catch((err) => console.warn('[ConfigProvider] about_info 加载失败:', err.message))
 
-    api.get('/public/panel-config').then(res => setPanelConfig(res.data.value)).catch(() => {})
+    api.get('/public/panel-config').then(res => setPanelConfig({ ...DEFAULT_PANEL_CONFIG, ...res.data.value })).catch(() => {})
   }, [])
 
   return (

@@ -1,5 +1,6 @@
 services:
   gateway:
+    image: ghcr.io/whw23/mudasky-gateway:dev
     build:
       context: ./gateway
       dockerfile: Dockerfile
@@ -13,6 +14,7 @@ services:
       - ./gateway/dev-entrypoint.sh:/usr/local/openresty/nginx/dev-entrypoint.sh
 
   frontend:
+    image: ghcr.io/whw23/mudasky-frontend:dev
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -25,6 +27,7 @@ services:
       - next_cache:/app/.next
 
   api:
+    image: ghcr.io/whw23/mudasky-api:dev
     build:
       context: ./backend
       dockerfile: api/Dockerfile
@@ -34,6 +37,7 @@ services:
       - ./backend:/app
 
   db:
+    image: ghcr.io/whw23/mudasky-db:dev
     build:
       context: ./db
       dockerfile: Dockerfile

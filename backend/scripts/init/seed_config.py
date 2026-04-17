@@ -18,8 +18,12 @@ CONFIGS = [
         "site_info",
         "网站基本信息",
         lambda: {
-            "name": "浩然学行",
-            "slogan": "专注国际教育，成就留学梦想",
+            "brand_name": "慕大国际教育",
+            "tagline": "专注国际教育 · 专注出国服务",
+            "hotline": "189-1268-6656",
+            "hotline_contact": "苏老师",
+            "company_name": "浩然学行(苏州)文化传播有限公司",
+            "icp_filing": "苏ICP备2022046719号-1",
         },
     ),
     (
