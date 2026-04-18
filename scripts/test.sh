@@ -6,13 +6,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# 测试结果输出目录
+RESULTS_DIR="test-results"
+mkdir -p "$RESULTS_DIR"
+
 # 从 env/backend.env 加载环境变量（跳过注释和含括号的行）
 load_env() {
   if [ -f env/backend.env ]; then
     while IFS='=' read -r key value; do
-      # 跳过注释和空行
       [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-      # 跳过含括号的行（会导致 bash 语法错误）
       [[ "$value" =~ [\(\)] ]] && continue
       export "$key=$value" 2>/dev/null || true
     done < env/backend.env
@@ -31,10 +33,18 @@ header() {
   echo ""
 }
 
+# 运行命令并同时输出到终端和文件
+run_and_log() {
+  local log_file="$1"
+  shift
+  "$@" 2>&1 | tee "$RESULTS_DIR/$log_file"
+}
+
 # 后端单元测试
 run_unit() {
   header "后端单元测试 (pytest)"
-  uv run --project backend/api python -m pytest backend/api/tests/ -v \
+  run_and_log "unit.log" \
+    uv run --project backend/api python -m pytest backend/api/tests/ -v \
     --ignore=backend/api/tests/e2e \
     --cov=api --cov-report=term-missing
 }
@@ -49,17 +59,18 @@ run_gateway() {
     exit 1
   fi
   load_env
-  uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
+  run_and_log "gateway.log" \
+    uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
 }
 
 # 前端单元测试
 run_vitest() {
   header "前端单元测试 (vitest)"
-  pnpm --prefix frontend test
+  run_and_log "vitest.log" \
+    pnpm --prefix frontend test
 }
 
 # 检查本地容器是否为生产构建
-# dev = 开发容器, local = 本地生产容器, YYYYMMDD-hash = 线上生产容器
 check_prod_container() {
   local version
   version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
@@ -82,14 +93,16 @@ check_prod_container() {
 run_e2e() {
   header "前端 E2E (playwright)"
   check_prod_container
-  pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  run_and_log "e2e.log" \
+    pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
 # 前端 E2E (LAST_NOT_PASS)
 run_e2e_lnp() {
   header "前端 E2E (LAST_NOT_PASS)"
   check_prod_container
-  LAST_NOT_PASS=1 pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  LAST_NOT_PASS=1 run_and_log "e2e-lnp.log" \
+    pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
 # 线上 E2E
@@ -100,7 +113,8 @@ run_e2e_prod() {
     echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
     exit 1
   fi
-  TEST_ENV=production pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  TEST_ENV=production run_and_log "e2e-prod.log" \
+    pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
 # 线上 E2E (LAST_NOT_PASS)
@@ -111,7 +125,8 @@ run_e2e_prod_lnp() {
     echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
     exit 1
   fi
-  LAST_NOT_PASS=1 TEST_ENV=production pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  LAST_NOT_PASS=1 TEST_ENV=production run_and_log "e2e-prod-lnp.log" \
+    pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
 # 主逻辑
@@ -130,6 +145,7 @@ case "${1:-}" in
     run_e2e
     echo ""
     echo -e "${GREEN}━━━ 全部本地测试完成 ━━━${NC}"
+    echo "结果保存在 $RESULTS_DIR/"
     ;;
   all:prod)
     run_unit
@@ -137,11 +153,12 @@ case "${1:-}" in
     run_e2e_prod
     echo ""
     echo -e "${GREEN}━━━ 全部线上测试完成 ━━━${NC}"
+    echo "结果保存在 $RESULTS_DIR/"
     ;;
   ""|help|--help|-h)
     echo "统一测试脚本"
     echo ""
-    echo "用法: ./scripts/test.sh [类型]"
+    echo "用法: ./scripts/test.sh <类型>"
     echo ""
     echo "类型:"
     echo "  all          运行全部本地测试（unit+vitest+gateway+e2e）"
@@ -157,9 +174,11 @@ case "${1:-}" in
     echo ""
     echo "环境要求:"
     echo "  unit/vitest  无需容器"
-    echo "  gateway      需要开发容器运行 (./scripts/dev.sh)"
+    echo "  gateway      需要容器运行 (./scripts/dev.sh start)"
     echo "  e2e          需要生产容器运行 (./scripts/dev.sh --prod)"
     echo "  e2e:prod     需要线上已部署 + env/backend.env 配置 PRODUCTION_HOST"
+    echo ""
+    echo "测试结果保存在 test-results/ 目录"
     ;;
   *)
     echo "未知类型: $1"
