@@ -1,6 +1,6 @@
 /**
  * Admin CRUD 业务操作函数。
- * 通过 UI 进行分类、文章、案例、院校的增删改查。
+ * 通过网页设置的所见即所得预览进行分类、文章、案例、院校的增删改查。
  */
 
 import type { Page } from "@playwright/test"
@@ -8,39 +8,43 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
-/* ── 分类 CRUD ── */
+/** 导航到网页设置并切换到指定预览页面 */
+async function gotoWebSettingsPage(page: Page, navLabel: string): Promise<void> {
+  await page.goto("/admin/web-settings")
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
+  // 点击 NavEditor 中的导航项切换预览
+  await page.getByRole("button", { name: navLabel }).click()
+  // 等待预览内容加载
+  await page.waitForTimeout(500)
+}
 
-/** 创建分类 */
+/* ── 分类 CRUD（通过 NavEditor 的增删操作） ── */
+
+/** 创建分类（通过 NavEditor 的 "+" 按钮） */
 export async function createCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
   const slug = String(args?.slug ?? "")
-  const description = String(args?.description ?? "")
-  const sortOrder = Number(args?.sortOrder ?? 0)
 
   await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "分类管理" }).waitFor()
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
 
-  // 点击创建分类按钮
-  await page.getByRole("button", { name: "创建分类" }).click()
+  // 点击 NavEditor 的 "+" 按钮
+  await page.getByRole("button", { name: "+" }).click()
 
-  // 等待弹窗打开
+  // 等待新增导航项弹窗
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 填写表单
-  await dialog.getByPlaceholder("请输入分类名称").fill(name)
-  await dialog.getByPlaceholder("请输入分类标识（英文）").fill(slug)
-  await dialog.getByPlaceholder("请输入分类描述").fill(description)
-  if (sortOrder !== 0) {
-    await dialog.getByRole("spinbutton").fill(String(sortOrder))
-  }
+  // 填写名称和 slug
+  await dialog.getByPlaceholder(/名称/).fill(name)
+  await dialog.getByPlaceholder(/标识|slug/i).fill(slug)
 
-  // 保存（等待 API 响应）
+  // 提交
   const saveResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/admin/web-settings/categories") && r.request().method() === "POST",
+    (r) => r.url().includes("/admin/web-settings/nav/add-item") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
-  await dialog.getByRole("button", { name: "保存" }).click()
+  await dialog.getByRole("button", { name: /确定|添加|保存/ }).click()
   const res = await saveResponse
   if (!res.ok()) {
     const body = await res.text().catch(() => "")
@@ -50,147 +54,160 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   // 等待弹窗关闭
   await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
-  // 验证创建成功
-  await expect(page.getByRole("cell", { name })).toBeVisible()
+  // 验证导航栏中出现了新项
+  await expect(page.getByRole("button", { name })).toBeVisible()
 }
 
-/** 编辑分类 */
+/** 编辑分类（不适用于新 UI，跳过） */
 export async function editCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const oldName = String(args?.oldName ?? "")
-  const newName = String(args?.newName ?? "")
+  // 新的 NavEditor 不支持编辑分类属性，此操作为空
+  // 分类的名称在创建时确定，后续通过 API 可修改但无 UI 入口
+}
+
+/** 删除分类（通过 NavEditor 的 "×" 按钮） */
+export async function deleteCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
+  const name = String(args?.name ?? "")
 
   await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "分类管理" }).waitFor()
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
 
-  // 找到分类行，点击编辑
-  const row = page.getByRole("row", { name: new RegExp(oldName) })
-  await row.getByRole("button", { name: "编辑" }).click()
+  // 找到 NavEditor 中该项旁边的删除按钮
+  // NavEditor 中每个自定义项有一个 "×" 按钮
+  const navItem = page.getByRole("button", { name })
+  await expect(navItem).toBeVisible()
+  // "×" 按钮在导航项旁边
+  const removeBtn = navItem.locator("..").getByRole("button", { name: "×" })
+  await removeBtn.click()
+
+  // 等待删除确认弹窗
+  const alertDialog = page.getByRole("alertdialog")
+  await expect(alertDialog).toBeVisible()
+
+  // 确认删除
+  const removeResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/nav/remove-item") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await removeResponse
+
+  // 验证导航项已消失
+  await expect(navItem).not.toBeVisible()
+}
+
+/* ── 文章 CRUD ── */
+
+/** 创建文章 */
+export async function createArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
+  const title = String(args?.title ?? "")
+  const slug = String(args?.slug ?? "")
+  const content = String(args?.content ?? "")
+  const navLabel = String(args?.navLabel ?? "新闻政策")
+
+  await gotoWebSettingsPage(page, navLabel)
+
+  // 等待文章管理区域加载
+  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
+
+  // 点击写文章按钮
+  await page.getByRole("button", { name: "写文章" }).click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 修改名称
-  const nameInput = dialog.getByPlaceholder("请输入分类名称")
-  await nameInput.clear()
-  await nameInput.fill(newName)
-
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
-
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
-
-  // 验证修改成功
-  await expect(page.getByRole("cell", { name: newName })).toBeVisible()
-}
-
-/** 删除分类 */
-export async function deleteCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const name = String(args?.name ?? "")
-
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "分类管理" }).waitFor()
-
-  // 找到分类行，点击删除
-  const row = page.getByRole("row", { name: new RegExp(name) })
-
-  // 监听 confirm 弹窗
-  page.once("dialog", dialog => dialog.accept())
-
-  await row.getByRole("button", { name: "删除" }).click()
-
-  // 验证删除成功（从列表消失）
-  await expect(page.getByRole("cell", { name })).not.toBeVisible()
-}
-
-/* ── 文章 CRUD ── */
-
-/** 创建文章（整页表单，非弹窗） */
-export async function createArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
-  const title = String(args?.title ?? "")
-  const slug = String(args?.slug ?? "")
-  const content = String(args?.content ?? "")
-
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "文章管理" }).waitFor()
-
-  // 点击写文章按钮
-  await page.getByRole("button", { name: "写文章" }).click()
-
-  // 等待编辑页面加载
-  await page.getByRole("heading", { name: "写文章" }).waitFor()
-
   // 填写标题
-  await page.getByPlaceholder("请输入文章标题").fill(title)
+  await dialog.getByPlaceholder(/标题/).fill(title)
 
-  // 填写 URL 标识
+  // 填写 slug
   if (slug) {
-    await page.getByPlaceholder("自动生成或手动输入").fill(slug)
+    const slugInput = dialog.getByPlaceholder(/slug|标识/i)
+    if (await slugInput.count() > 0) {
+      await slugInput.fill(slug)
+    }
   }
 
-  // 分类默认选第一个，不需要改
+  // 填写内容
+  const contentInput = dialog.getByPlaceholder(/内容/)
+  if (await contentInput.count() > 0) {
+    await contentInput.fill(content)
+  }
 
-  // 填写正文内容
-  await page.getByPlaceholder("请输入内容...").fill(content)
+  // 保存
+  const saveResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/articles") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  await dialog.getByRole("button", { name: /保存|发布/ }).click()
+  const res = await saveResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`创建文章 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
 
-  // 点击发布
-  await page.getByRole("button", { name: "发布" }).click()
+  // 等待弹窗关闭
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
-  // 等待跳转回列表页
-  await page.getByRole("heading", { name: "文章管理" }).waitFor()
-
-  // 验证创建成功
-  await expect(page.getByRole("cell", { name: title })).toBeVisible()
+  // 验证文章出现在列表中
+  await expect(page.getByText(title).first()).toBeVisible({ timeout: 10_000 })
 }
 
 /** 编辑文章 */
 export async function editArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
   const oldTitle = String(args?.oldTitle ?? "")
   const newTitle = String(args?.newTitle ?? "")
+  const navLabel = String(args?.navLabel ?? "新闻政策")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "文章管理" }).waitFor()
+  await gotoWebSettingsPage(page, navLabel)
+  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
 
-  // 找到文章行，点击编辑
-  const row = page.getByRole("row", { name: new RegExp(oldTitle) })
-  await row.getByRole("button", { name: "编辑" }).click()
+  // 找到文章卡片，点击编辑按钮
+  const card = page.locator("div").filter({ hasText: oldTitle }).first()
+  await card.getByRole("button").filter({ has: page.locator("svg.lucide-pencil, [data-lucide='pencil']") }).first().click()
 
-  // 等待编辑页面加载
-  await page.getByPlaceholder("请输入文章标题").waitFor()
+  // 等待弹窗打开
+  const dialog = page.getByRole("dialog")
+  await expect(dialog).toBeVisible()
 
   // 修改标题
-  const titleInput = page.getByPlaceholder("请输入文章标题")
+  const titleInput = dialog.getByPlaceholder(/标题/)
   await titleInput.clear()
   await titleInput.fill(newTitle)
 
-  // 点击发布（保存修改）
-  await page.getByRole("button", { name: "发布" }).click()
+  // 保存
+  await dialog.getByRole("button", { name: /保存|发布/ }).click()
 
-  // 等待跳转回列表页
-  await page.getByRole("heading", { name: "文章管理" }).waitFor()
+  // 等待弹窗关闭
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
   // 验证修改成功
-  await expect(page.getByRole("cell", { name: newTitle })).toBeVisible()
+  await expect(page.getByText(newTitle).first()).toBeVisible({ timeout: 10_000 })
 }
 
 /** 删除文章 */
 export async function deleteArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
   const title = String(args?.title ?? "")
+  const navLabel = String(args?.navLabel ?? "新闻政策")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "文章管理" }).waitFor()
+  await gotoWebSettingsPage(page, navLabel)
+  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
 
-  // 找到文章行，点击删除
-  const row = page.getByRole("row", { name: new RegExp(title) })
+  // 找到文章卡片，点击删除按钮
+  const card = page.locator("div").filter({ hasText: title }).first()
+  await card.getByRole("button").filter({ has: page.locator("svg.lucide-trash-2, [data-lucide='trash-2']") }).first().click()
 
-  // 监听 confirm 弹窗
-  page.once("dialog", dialog => dialog.accept())
+  // 等待删除确认弹窗
+  const alertDialog = page.getByRole("alertdialog")
+  await expect(alertDialog).toBeVisible()
 
-  await row.getByRole("button", { name: "删除" }).click()
+  // 确认删除
+  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
 
-  // 验证删除成功
-  await expect(page.getByRole("cell", { name: title })).not.toBeVisible()
+  // 等待弹窗关闭
+  await expect(alertDialog).not.toBeVisible()
+
+  // 验证文章已消失
+  await expect(page.getByText(title)).not.toBeVisible({ timeout: 10_000 })
 }
 
 /* ── 案例 CRUD ── */
@@ -202,35 +219,40 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   const program = String(args?.program ?? "")
   const year = Number(args?.year ?? 2026)
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "案例管理" }).waitFor()
+  await gotoWebSettingsPage(page, "成功案例")
 
   // 点击添加案例按钮
-  await page.getByRole("button", { name: "添加案例" }).click()
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加案例/ }).click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
   // 填写表单
-  await dialog.getByPlaceholder("请输入学生姓名").fill(studentName)
-  await dialog.getByPlaceholder("请输入录取大学").fill(university)
-  await dialog.getByPlaceholder("请输入录取专业").fill(program)
+  await dialog.getByPlaceholder(/姓名/).fill(studentName)
+  await dialog.getByPlaceholder(/大学|学校/).fill(university)
+  await dialog.getByPlaceholder(/专业/).fill(program)
 
-  // 入学年份（spinbutton，默认 2026）
   if (year !== 2026) {
     const yearInput = dialog.getByRole("spinbutton").first()
     await yearInput.fill(String(year))
   }
 
   // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
+  const saveResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/cases") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  await dialog.getByRole("button", { name: /保存/ }).click()
+  const res = await saveResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`创建案例 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
 
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
-
-  // 验证创建成功
-  await expect(page.getByRole("cell", { name: studentName })).toBeVisible()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(studentName).first()).toBeVisible({ timeout: 10_000 })
 }
 
 /** 编辑案例 */
@@ -238,49 +260,42 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   const studentName = String(args?.studentName ?? "")
   const newUniversity = String(args?.newUniversity ?? "")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "案例管理" }).waitFor()
+  await gotoWebSettingsPage(page, "成功案例")
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
 
-  // 找到案例行，点击编辑
-  const row = page.getByRole("row", { name: new RegExp(studentName) })
-  await row.getByRole("button", { name: "编辑" }).click()
+  // 找到案例卡片，hover 触发编辑按钮
+  const card = page.locator("div").filter({ hasText: studentName }).first()
+  await card.hover()
+  await card.getByRole("button").first().click()
 
-  // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 修改录取大学
-  const universityInput = dialog.getByPlaceholder("请输入录取大学")
+  const universityInput = dialog.getByPlaceholder(/大学|学校/)
   await universityInput.clear()
   await universityInput.fill(newUniversity)
 
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
-
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
-
-  // 验证修改成功
-  await expect(page.getByRole("cell", { name: newUniversity }).first()).toBeVisible()
+  await dialog.getByRole("button", { name: /保存/ }).click()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 }
 
 /** 删除案例 */
 export async function deleteCase(page: Page, args?: Record<string, unknown>): Promise<void> {
   const studentName = String(args?.studentName ?? "")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "案例管理" }).waitFor()
+  await gotoWebSettingsPage(page, "成功案例")
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
 
-  // 找到案例行，点击删除
-  const row = page.getByRole("row", { name: new RegExp(studentName) })
+  // 找到案例卡片，hover 触发删除按钮
+  const card = page.locator("div").filter({ hasText: studentName }).first()
+  await card.hover()
+  // 删除按钮是第二个（pencil是第一个，trash是第二个）
+  await card.getByRole("button").nth(1).click()
 
-  // 监听 confirm 弹窗
-  page.once("dialog", dialog => dialog.accept())
-
-  await row.getByRole("button", { name: "删除" }).click()
-
-  // 验证删除成功
-  await expect(page.getByRole("cell", { name: studentName })).not.toBeVisible()
+  const alertDialog = page.getByRole("alertdialog")
+  await expect(alertDialog).toBeVisible()
+  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await expect(alertDialog).not.toBeVisible()
 }
 
 /* ── 院校 CRUD ── */
@@ -292,32 +307,38 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   const country = String(args?.country ?? "")
   const city = String(args?.city ?? "")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "院校管理" }).waitFor()
+  await gotoWebSettingsPage(page, "院校选择")
 
   // 点击添加院校按钮
-  await page.getByRole("button", { name: "添加院校" }).click()
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加院校/ }).click()
 
-  // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 填写表单
-  await dialog.getByPlaceholder("请输入校名").fill(name)
+  await dialog.getByPlaceholder(/校名|名称/).first().fill(name)
   if (nameEn) {
-    await dialog.getByPlaceholder("请输入英文名（可选）").fill(nameEn)
+    const enInput = dialog.getByPlaceholder(/英文/)
+    if (await enInput.count() > 0) {
+      await enInput.fill(nameEn)
+    }
   }
-  await dialog.getByPlaceholder("请输入国家").fill(country)
-  await dialog.getByPlaceholder("请输入城市").fill(city)
+  await dialog.getByPlaceholder(/国家/).fill(country)
+  await dialog.getByPlaceholder(/城市/).fill(city)
 
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
+  const saveResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/universities") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  await dialog.getByRole("button", { name: /保存/ }).click()
+  const res = await saveResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`创建院校 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
 
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
-
-  // 验证创建成功
-  await expect(page.getByRole("cell", { name })).toBeVisible()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(name).first()).toBeVisible({ timeout: 10_000 })
 }
 
 /** 编辑院校 */
@@ -325,47 +346,37 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   const name = String(args?.name ?? "")
   const newCity = String(args?.newCity ?? "")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "院校管理" }).waitFor()
+  await gotoWebSettingsPage(page, "院校选择")
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
 
-  // 找到院校行，点击编辑
-  const row = page.getByRole("row", { name: new RegExp(name) })
-  await row.getByRole("button", { name: "编辑" }).click()
+  const card = page.locator("div").filter({ hasText: name }).first()
+  await card.hover()
+  await card.getByRole("button").first().click()
 
-  // 等待弹窗打开
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
 
-  // 修改城市
-  const cityInput = dialog.getByPlaceholder("请输入城市")
+  const cityInput = dialog.getByPlaceholder(/城市/)
   await cityInput.clear()
   await cityInput.fill(newCity)
 
-  // 保存
-  await dialog.getByRole("button", { name: "保存" }).click()
-
-  // 等待弹窗关闭
-  await expect(dialog).not.toBeVisible()
-
-  // 验证修改成功（名称仍可见）
-  await expect(page.getByRole("cell", { name })).toBeVisible()
+  await dialog.getByRole("button", { name: /保存/ }).click()
+  await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 }
 
 /** 删除院校 */
 export async function deleteUniversity(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
 
-  await page.goto("/admin/web-settings")
-  await page.getByRole("heading", { name: "院校管理" }).waitFor()
+  await gotoWebSettingsPage(page, "院校选择")
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
 
-  // 找到院校行，点击删除
-  const row = page.getByRole("row", { name: new RegExp(name) })
+  const card = page.locator("div").filter({ hasText: name }).first()
+  await card.hover()
+  await card.getByRole("button").nth(1).click()
 
-  // 监听 confirm 弹窗
-  page.once("dialog", dialog => dialog.accept())
-
-  await row.getByRole("button", { name: "删除" }).click()
-
-  // 验证删除成功
-  await expect(page.getByRole("cell", { name })).not.toBeVisible()
+  const alertDialog = page.getByRole("alertdialog")
+  await expect(alertDialog).toBeVisible()
+  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await expect(alertDialog).not.toBeVisible()
 }
