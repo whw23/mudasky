@@ -86,6 +86,25 @@ export function calculateCoverage(): CoverageReport {
   }
 }
 
+/** 保存覆盖率报告到 JSON 文件。 */
+export function saveCoverageReport(report: CoverageReport): void {
+  const fs = require("fs")
+  const path = require("path")
+  const outputDir = process.env.E2E_OUTPUT_DIR
+    ? path.resolve(__dirname, "../..", process.env.E2E_OUTPUT_DIR)
+    : path.resolve(__dirname, "../../test-results")
+  fs.mkdirSync(outputDir, { recursive: true })
+  fs.writeFileSync(
+    path.join(outputDir, "e2e-coverage.json"),
+    JSON.stringify({
+      api: { covered: report.api.covered.length, total: report.api.total.length, percent: report.api.percent },
+      routes: { covered: report.routes.covered.length, total: report.routes.total.length, percent: report.routes.percent },
+      components: { covered: report.components.covered.length, total: report.components.total.length, percent: report.components.percent },
+      security: { covered: report.security.covered.length, total: report.security.total.length, percent: report.security.percent },
+    }, null, 2),
+  )
+}
+
 /** 打印覆盖率报告。 */
 export function printCoverageReport(report: CoverageReport): void {
   console.log(`\n[API Coverage] ${report.api.covered.length}/${report.api.total.length} (${report.api.percent}%)`)

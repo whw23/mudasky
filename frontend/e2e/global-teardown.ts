@@ -7,7 +7,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { chromium } from "@playwright/test"
 import { getAllSignals, cleanupSignals } from "./framework/signal"
-import { calculateCoverage, printCoverageReport } from "./framework/coverage"
+import { calculateCoverage, printCoverageReport, saveCoverageReport } from "./framework/coverage"
 
 export default async function globalTeardown(): Promise<void> {
   const signals = getAllSignals()
@@ -53,6 +53,7 @@ export default async function globalTeardown(): Promise<void> {
   // 3. 覆盖率报告
   const report = calculateCoverage()
   printCoverageReport(report)
+  saveCoverageReport(report)
 
   // 4. 清理 E2E 数据
   await cleanupE2EData()

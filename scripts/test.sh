@@ -72,7 +72,7 @@ run_vitest() {
   header "前端单元测试 (vitest)"
   VITEST_COVERAGE_DIR="../$RESULTS_DIR/vitest-coverage" \
     run_and_log "vitest.log" \
-    pnpm --prefix frontend test
+    pnpm --prefix frontend test -- --coverage
 }
 
 # 检查本地容器是否为生产构建
