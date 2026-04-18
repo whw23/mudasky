@@ -31,3 +31,20 @@ class ConfigService:
         if not config:
             raise NotFoundException(message=f"配置项 {key} 不存在", code="CONFIG_NOT_FOUND")
         return ConfigResponse.model_validate(config), config.updated_at
+
+    async def get_all_homepage_config(
+        self,
+    ) -> tuple[dict, datetime]:
+        """获取首页所需的全部配置，返回 (数据, 最大更新时间)。"""
+        keys = ["contact_info", "site_info", "homepage_stats", "about_info"]
+        result = {}
+        max_updated = datetime.min
+        for key in keys:
+            config = await repository.get_by_key(self.session, key)
+            if config:
+                result[key] = config.value
+                if config.updated_at and config.updated_at > max_updated:
+                    max_updated = config.updated_at
+            else:
+                result[key] = {}
+        return result, max_updated
