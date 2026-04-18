@@ -12,10 +12,12 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 async function gotoWebSettingsPage(page: Page, navLabel: string): Promise<void> {
   await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
-  // 点击 NavEditor 中的导航项切换预览
-  await page.getByRole("button", { name: navLabel }).click()
+  // 点击 NavEditor 中的导航项切换预览（用 exact 防止部分匹配）
+  const navBtn = page.locator("nav button").filter({ hasText: navLabel })
+  await navBtn.first().waitFor({ timeout: 10_000 })
+  await navBtn.first().click()
   // 等待预览内容加载
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(1000)
 }
 
 /* ── 分类 CRUD（通过 NavEditor 的增删操作） ── */
@@ -107,7 +109,7 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
   await gotoWebSettingsPage(page, navLabel)
 
   // 等待文章管理区域加载
-  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
 
   // 点击写文章按钮
   await page.getByRole("button", { name: "写文章" }).click()
@@ -159,7 +161,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   const navLabel = String(args?.navLabel ?? "新闻政策")
 
   await gotoWebSettingsPage(page, navLabel)
-  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
 
   // 找到文章卡片，点击编辑按钮
   const card = page.locator("div").filter({ hasText: oldTitle }).first()
@@ -190,7 +192,7 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   const navLabel = String(args?.navLabel ?? "新闻政策")
 
   await gotoWebSettingsPage(page, navLabel)
-  await page.getByText("文章管理").waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
 
   // 找到文章卡片，点击删除按钮
   const card = page.locator("div").filter({ hasText: title }).first()
