@@ -155,7 +155,7 @@ class TestUpdateRole:
     ):
         """可更新角色。"""
         self.mock_svc.update_role.return_value = (
-            _make_role(name="更新后")
+            _make_role(name="更新后"), []
         )
         resp = await client.post(
             "/admin/roles/meta/list/detail/edit",
@@ -185,7 +185,7 @@ class TestDeleteRole:
         self, client, superuser_headers
     ):
         """可删除角色。"""
-        self.mock_svc.delete_role.return_value = None
+        self.mock_svc.delete_role.return_value = []
         resp = await client.post(
             "/admin/roles/meta/list/detail/delete",
             json={"role_id": "role-001"},

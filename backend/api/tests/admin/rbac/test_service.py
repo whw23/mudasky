@@ -234,8 +234,9 @@ async def test_update_role(
         name="新名称",
         permissions=["admin/users/*"],
     )
-    result = await service.update_role("r1", data)
+    result, affected_ids = await service.update_role("r1", data)
 
+    assert affected_ids == []
     assert result.name == "新名称"
     mock_repo.update_role.assert_awaited_once()
 
@@ -255,17 +256,25 @@ async def test_update_role_protected_name(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(AUTH_REPO)
+@patch(USER_REPO)
 @patch(REPO)
-async def test_delete_role(mock_repo, service):
-    """普通角色可以删除。"""
+async def test_delete_role(mock_repo, mock_user_repo, mock_auth_repo, service):
+    """普通角色可以删除，返回受影响用户 ID。"""
     role = _make_role(
         "普通角色", role_id="r1"
     )
+    visitor_role = _make_role("visitor", role_id="v1")
     mock_repo.get_role_by_id = AsyncMock(return_value=role)
+    mock_repo.get_role_by_name = AsyncMock(return_value=visitor_role)
     mock_repo.delete_role = AsyncMock()
+    mock_user_repo.list_by_role_id = AsyncMock(return_value=[])
+    mock_user_repo.set_role_id = AsyncMock()
+    mock_auth_repo.revoke_user_refresh_tokens = AsyncMock()
 
-    await service.delete_role("r1")
+    result = await service.delete_role("r1")
 
+    assert result == []
     mock_repo.delete_role.assert_awaited_once_with(
         service.session, "r1"
     )
@@ -414,7 +423,8 @@ async def test_update_role_permissions_kick_users(
         role_id="r1",
         permissions=["admin/content/*"],
     )
-    await service.update_role("r1", data)
+    _, affected_ids = await service.update_role("r1", data)
 
     # 两个用户都被踢下线
     assert mock_auth_repo.delete_refresh_tokens_by_user.await_count == 2
+    assert set(affected_ids) == {"user-1", "user-2"}
