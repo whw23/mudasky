@@ -92,7 +92,7 @@ export async function ensureTestUser(
 /** 创建测试文章，返回 article id */
 export async function createArticle(page: Page, categorySlug?: string): Promise<string | null> {
   // 获取分类
-  const catRes = await apiCall(page, "GET", "/api/admin/categories/list")
+  const catRes = await apiCall(page, "GET", "/api/admin/web-settings/categories/list")
   if (catRes.status !== 200) return null
   const cats = Array.isArray(catRes.data) ? catRes.data : []
   const cat = categorySlug
@@ -100,7 +100,7 @@ export async function createArticle(page: Page, categorySlug?: string): Promise<
     : cats[0]
   if (!cat) return null
 
-  const res = await apiCall(page, "POST", "/api/admin/articles/list/create", {
+  const res = await apiCall(page, "POST", "/api/admin/web-settings/articles/list/create", {
     title: `E2E文章${Date.now()}`,
     slug: `e2e-${Date.now()}`,
     category_id: cat.id,

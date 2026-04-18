@@ -176,7 +176,7 @@ export const tasks: Task[] = [
     requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/articles"],
+      routes: ["/admin/web-settings"],
     },
     coverage: {
       security: [["permission", "route-denied-articles"]],
@@ -189,7 +189,7 @@ export const tasks: Task[] = [
     requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/categories"],
+      routes: ["/admin/web-settings"],
     },
     coverage: {
       security: [["permission", "route-denied-categories"]],
@@ -202,7 +202,7 @@ export const tasks: Task[] = [
     requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/cases"],
+      routes: ["/admin/web-settings"],
     },
     coverage: {
       security: [["permission", "route-denied-cases"]],
@@ -215,7 +215,7 @@ export const tasks: Task[] = [
     requires: ["w6_reload_auth"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/universities"],
+      routes: ["/admin/web-settings"],
     },
     coverage: {
       security: [["permission", "route-denied-universities"]],

@@ -13,8 +13,8 @@ ROLES = [
     ("superuser", "超级管理员", ["*"], 0),
     ("content_admin", "内容运营", [
         "admin/dashboard",
-        "admin/articles/*",
-        "admin/categories/*",
+        "admin/web-settings/articles/*",
+        "admin/web-settings/categories/*",
         "admin/web-settings/cases/*",
         "admin/web-settings/universities/*",
         "admin/general-settings/*",

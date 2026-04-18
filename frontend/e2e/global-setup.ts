@@ -15,8 +15,7 @@ const WARMUP_ROUTES = [
   "/cases", "/visa", "/life", "/news", "/about",
   // admin 面板
   "/admin/dashboard", "/admin/users", "/admin/students",
-  "/admin/contacts", "/admin/articles", "/admin/categories",
-  "/admin/cases", "/admin/universities", "/admin/roles",
+  "/admin/contacts", "/admin/roles",
   "/admin/general-settings", "/admin/web-settings",
   // portal 面板
   "/portal/overview", "/portal/profile", "/portal/documents",

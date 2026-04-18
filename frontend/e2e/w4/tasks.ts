@@ -431,7 +431,7 @@ export const tasks: Task[] = [
     requires: ["w4_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/dashboard", "/admin/users", "/admin/articles"],
+      routes: ["/admin/dashboard", "/admin/users", "/admin/web-settings"],
     },
     coverage: {
       routes: [],
@@ -465,13 +465,13 @@ export const tasks: Task[] = [
     fnArgs: {
       endpoints: [
         "/api/admin/users/list",
-        "/api/admin/articles/list",
+        "/api/admin/web-settings/articles/list",
         "/api/portal/profile/detail",
       ],
     },
     coverage: {
       routes: [],
-      api: ["/api/admin/users/list", "/api/admin/articles/list", "/api/portal/profile/detail"],
+      api: ["/api/admin/users/list", "/api/admin/web-settings/articles/list", "/api/portal/profile/detail"],
       components: [],
       security: ["api-denied"],
     },

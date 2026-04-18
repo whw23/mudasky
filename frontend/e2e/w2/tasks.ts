@@ -415,7 +415,7 @@ export const tasks: Task[] = [
     requires: ["w2_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/dashboard", "/admin/users", "/admin/articles"],
+      routes: ["/admin/dashboard", "/admin/users", "/admin/web-settings"],
     },
     coverage: {
       routes: [],
@@ -431,11 +431,11 @@ export const tasks: Task[] = [
     requires: ["w2_register"],
     fn: verifyApiDenied,
     fnArgs: {
-      endpoints: ["/api/admin/users/list", "/api/admin/articles/list"],
+      endpoints: ["/api/admin/users/list", "/api/admin/web-settings/articles/list"],
     },
     coverage: {
       routes: [],
-      api: ["/api/admin/users/list", "/api/admin/articles/list"],
+      api: ["/api/admin/users/list", "/api/admin/web-settings/articles/list"],
       components: [],
       security: ["api-denied"],
     },

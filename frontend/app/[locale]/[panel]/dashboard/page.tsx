@@ -56,8 +56,8 @@ export default function AdminDashboardPage() {
     try {
       const [usersRes, articlesRes, categoriesRes] = await Promise.allSettled([
         api.get("/admin/users/list", { params: { limit: 5 } }),
-        api.get("/admin/articles/list", { params: { limit: 5 } }),
-        api.get("/admin/categories/list"),
+        api.get("/admin/web-settings/articles/list", { params: { limit: 5 } }),
+        api.get("/admin/web-settings/categories/list"),
       ])
 
       if (usersRes.status === "fulfilled") {
@@ -133,7 +133,7 @@ export default function AdminDashboardPage() {
         {article.status === "published" ? t("published") : t("draft")}
       </span>
     ),
-    href: "/admin/articles",
+    href: "/admin/web-settings",
   }))
 
   return (
@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
         <RecentList
           title={t("recentArticles")}
           items={articleItems}
-          viewAllHref="/admin/articles"
+          viewAllHref="/admin/web-settings"
           viewAllText={t("viewAll")}
           emptyText={t("noData")}
           loading={loading}
@@ -196,11 +196,11 @@ export default function AdminDashboardPage() {
             <UserCog className="mr-2 size-4" />
             {t("manageUsers")}
           </Button>
-          <Button variant="outline" render={<Link href="/admin/articles" />}>
+          <Button variant="outline" render={<Link href="/admin/web-settings" />}>
             <FileEdit className="mr-2 size-4" />
             {t("manageArticles")}
           </Button>
-          <Button variant="outline" render={<Link href="/admin/articles" />}>
+          <Button variant="outline" render={<Link href="/admin/web-settings" />}>
             <PenLine className="mr-2 size-4" />
             {t("writeArticle")}
           </Button>

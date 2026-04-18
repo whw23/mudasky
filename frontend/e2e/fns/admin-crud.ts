@@ -17,7 +17,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   const description = String(args?.description ?? "")
   const sortOrder = Number(args?.sortOrder ?? 0)
 
-  await page.goto("/admin/categories")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 点击创建分类按钮
@@ -37,7 +37,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
 
   // 保存（等待 API 响应）
   const saveResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/admin/categories") && r.request().method() === "POST",
+    (r) => r.url().includes("/api/admin/web-settings/categories") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
   await dialog.getByRole("button", { name: "保存" }).click()
@@ -59,7 +59,7 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
   const oldName = String(args?.oldName ?? "")
   const newName = String(args?.newName ?? "")
 
-  await page.goto("/admin/categories")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击编辑
@@ -89,7 +89,7 @@ export async function editCategory(page: Page, args?: Record<string, unknown>): 
 export async function deleteCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
 
-  await page.goto("/admin/categories")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "分类管理" }).waitFor()
 
   // 找到分类行，点击删除
@@ -112,7 +112,7 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
   const slug = String(args?.slug ?? "")
   const content = String(args?.content ?? "")
 
-  await page.goto("/admin/articles")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 点击写文章按钮
@@ -149,7 +149,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   const oldTitle = String(args?.oldTitle ?? "")
   const newTitle = String(args?.newTitle ?? "")
 
-  await page.goto("/admin/articles")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击编辑
@@ -178,7 +178,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
 export async function deleteArticle(page: Page, args?: Record<string, unknown>): Promise<void> {
   const title = String(args?.title ?? "")
 
-  await page.goto("/admin/articles")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "文章管理" }).waitFor()
 
   // 找到文章行，点击删除
@@ -202,7 +202,7 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   const program = String(args?.program ?? "")
   const year = Number(args?.year ?? 2026)
 
-  await page.goto("/admin/cases")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 点击添加案例按钮
@@ -238,7 +238,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   const studentName = String(args?.studentName ?? "")
   const newUniversity = String(args?.newUniversity ?? "")
 
-  await page.goto("/admin/cases")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击编辑
@@ -268,7 +268,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
 export async function deleteCase(page: Page, args?: Record<string, unknown>): Promise<void> {
   const studentName = String(args?.studentName ?? "")
 
-  await page.goto("/admin/cases")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "案例管理" }).waitFor()
 
   // 找到案例行，点击删除
@@ -292,7 +292,7 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   const country = String(args?.country ?? "")
   const city = String(args?.city ?? "")
 
-  await page.goto("/admin/universities")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 点击添加院校按钮
@@ -325,7 +325,7 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   const name = String(args?.name ?? "")
   const newCity = String(args?.newCity ?? "")
 
-  await page.goto("/admin/universities")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击编辑
@@ -355,7 +355,7 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
 export async function deleteUniversity(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
 
-  await page.goto("/admin/universities")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "院校管理" }).waitFor()
 
   // 找到院校行，点击删除

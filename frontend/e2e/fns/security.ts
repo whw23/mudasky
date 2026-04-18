@@ -17,7 +17,7 @@ const XRW_HEADERS = { "Content-Type": "application/json", "X-Requested-With": "X
 /** 测试 CSRF 防护 */
 export async function testCsrf(page: Page): Promise<void> {
   // POST 不带 X-Requested-With 应返回 403
-  const res = await page.request.post("/api/admin/categories/list", {
+  const res = await page.request.post("/api/admin/web-settings/categories/list", {
     headers: JSON_HEADERS,
     data: {},
   })
@@ -68,13 +68,13 @@ export async function testSqlInjection(page: Page): Promise<void> {
 /** 测试输入验证 */
 export async function testInputValidation(page: Page): Promise<void> {
   // 空 body
-  const emptyRes = await page.request.post("/api/admin/categories/list/create", {
+  const emptyRes = await page.request.post("/api/admin/web-settings/categories/list/create", {
     headers: XRW_HEADERS,
   })
   expect(emptyRes.status()).toBe(422)
 
   // 无效 JSON
-  const invalidRes = await page.request.post("/api/admin/categories/list/create", {
+  const invalidRes = await page.request.post("/api/admin/web-settings/categories/list/create", {
     headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
     data: "not-valid-json{{{",
   })
@@ -82,7 +82,7 @@ export async function testInputValidation(page: Page): Promise<void> {
 
   // 超长字符串
   const longStr = "A".repeat(10_000)
-  const longRes = await page.request.post("/api/admin/categories/list/create", {
+  const longRes = await page.request.post("/api/admin/web-settings/categories/list/create", {
     headers: XRW_HEADERS,
     data: { name: longStr, slug: longStr },
   })

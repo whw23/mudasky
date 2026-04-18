@@ -43,7 +43,7 @@ class TestAdminCategories:
         self.mock_svc.list_categories.return_value = []
         self.mock_svc.get_article_counts_by_category.return_value = {}
         resp = await client.get(
-            "/admin/config/web-settings/categories/list",
+            "/admin/web-settings/categories/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -56,7 +56,7 @@ class TestAdminCategories:
             _make_category()
         )
         resp = await client.post(
-            "/admin/config/web-settings/categories/list/create",
+            "/admin/web-settings/categories/list/create",
             json={
                 "name": "新分类",
                 "slug": "new-cat",
@@ -73,7 +73,7 @@ class TestAdminCategories:
             _make_category(name="更新分类")
         )
         resp = await client.post(
-            "/admin/config/web-settings/categories/list/detail/edit",
+            "/admin/web-settings/categories/list/detail/edit",
             json={
                 "category_id": "cat-001",
                 "name": "更新分类",
@@ -88,7 +88,7 @@ class TestAdminCategories:
         """管理员删除分类返回 204。"""
         self.mock_svc.delete_category.return_value = None
         resp = await client.post(
-            "/admin/config/web-settings/categories/list/detail/delete",
+            "/admin/web-settings/categories/list/detail/delete",
             json={"category_id": "cat-001"},
             headers=superuser_headers,
         )

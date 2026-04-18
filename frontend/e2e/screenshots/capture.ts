@@ -37,10 +37,7 @@ async function main() {
     "/admin/dashboard",
     "/admin/users",
     "/admin/roles",
-    "/admin/articles",
-    "/admin/categories",
-    "/admin/universities",
-    "/admin/cases",
+    "/admin/web-settings",
     "/admin/general-settings",
     "/admin/web-settings",
   ]

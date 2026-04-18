@@ -77,8 +77,8 @@ export const tasks: Task[] = [
       sortOrder: 100,
     },
     coverage: {
-      routes: ["/admin/categories"],
-      api: ["/api/admin/categories/list", "/api/admin/categories/list/create"],
+      routes: ["/admin/web-settings"],
+      api: ["/api/admin/web-settings/categories/list", "/api/admin/web-settings/categories/list/create"],
       components: [
         ["CategoriesPage", "create-button"],
         ["CategoryDialog", "name-input"],
@@ -97,7 +97,7 @@ export const tasks: Task[] = [
       newName: `E2E-分类-${TS}-edited`,
     },
     coverage: {
-      api: ["/api/admin/categories/list/detail/edit"],
+      api: ["/api/admin/web-settings/categories/list/detail/edit"],
       components: [["CategoryDialog", "edit-button"]],
     },
   },
@@ -109,7 +109,7 @@ export const tasks: Task[] = [
     fn: deleteCategory,
     fnArgs: { name: `E2E-分类-${TS}-edited` },
     coverage: {
-      api: ["/api/admin/categories/list/detail/delete"],
+      api: ["/api/admin/web-settings/categories/list/detail/delete"],
       components: [["CategoryDialog", "delete-button"]],
     },
   },
@@ -127,8 +127,8 @@ export const tasks: Task[] = [
       content: "E2E测试文章内容",
     },
     coverage: {
-      routes: ["/admin/articles"],
-      api: ["/api/admin/articles/list", "/api/admin/articles/list/create"],
+      routes: ["/admin/web-settings"],
+      api: ["/api/admin/web-settings/articles/list", "/api/admin/web-settings/articles/list/create"],
       components: [
         ["ArticlesPage", "create-button"],
         ["ArticleDialog", "title-input"],
@@ -148,7 +148,7 @@ export const tasks: Task[] = [
       newTitle: `E2E-文章-${TS}-edited`,
     },
     coverage: {
-      api: ["/api/admin/articles/list/detail/edit"],
+      api: ["/api/admin/web-settings/articles/list/detail/edit"],
       components: [["ArticleDialog", "edit-button"]],
     },
   },
@@ -160,7 +160,7 @@ export const tasks: Task[] = [
     fn: deleteArticle,
     fnArgs: { title: `E2E-文章-${TS}-edited` },
     coverage: {
-      api: ["/api/admin/articles/list/detail/delete"],
+      api: ["/api/admin/web-settings/articles/list/detail/delete"],
       components: [["ArticleDialog", "delete-button"]],
     },
   },
@@ -179,7 +179,7 @@ export const tasks: Task[] = [
       year: 2026,
     },
     coverage: {
-      routes: ["/admin/cases"],
+      routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/cases/list", "/api/admin/web-settings/cases/list/create"],
       components: [
         ["CasesPage", "create-button"],
@@ -230,7 +230,7 @@ export const tasks: Task[] = [
       city: "北京",
     },
     coverage: {
-      routes: ["/admin/universities"],
+      routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/universities/list", "/api/admin/web-settings/universities/list/create"],
       components: [
         ["UniversitiesPage", "create-button"],
@@ -376,10 +376,6 @@ export const tasks: Task[] = [
     fnArgs: { role: "content_admin" },
     coverage: {
       routes: [
-        "/admin/articles",
-        "/admin/categories",
-        "/admin/cases",
-        "/admin/universities",
         "/admin/general-settings",
         "/admin/web-settings",
       ],

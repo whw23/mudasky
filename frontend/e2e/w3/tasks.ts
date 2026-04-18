@@ -251,7 +251,7 @@ export const tasks: Task[] = [
     requires: ["w3_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/users", "/admin/articles", "/admin/roles"],
+      routes: ["/admin/users", "/admin/web-settings", "/admin/roles"],
     },
     coverage: {
       routes: [],
@@ -267,11 +267,11 @@ export const tasks: Task[] = [
     requires: ["w3_register"],
     fn: verifyApiDenied,
     fnArgs: {
-      endpoints: ["/api/admin/users/list", "/api/admin/articles/list", "/api/admin/roles/list"],
+      endpoints: ["/api/admin/users/list", "/api/admin/web-settings/articles/list", "/api/admin/roles/list"],
     },
     coverage: {
       routes: [],
-      api: ["/api/admin/users/list", "/api/admin/articles/list", "/api/admin/roles/list"],
+      api: ["/api/admin/users/list", "/api/admin/web-settings/articles/list", "/api/admin/roles/list"],
       components: [],
       security: ["api-denied"],
     },

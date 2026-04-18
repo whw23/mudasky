@@ -247,8 +247,8 @@ export const tasks: Task[] = [
       sortOrder: 10,
     },
     coverage: {
-      routes: ["/admin/categories"],
-      api: ["/admin/categories/list", "/admin/categories/list/create"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/categories/list", "/admin/web-settings/categories/list/create"],
       components: ["CategoryList", "CategoryDialog"],
       security: [],
     },
@@ -264,8 +264,8 @@ export const tasks: Task[] = [
       newName: `E2E分类W1-${TS}-edited`,
     },
     coverage: {
-      routes: ["/admin/categories"],
-      api: ["/admin/categories/list/detail/edit"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/categories/list/detail/edit"],
       components: ["CategoryDialog"],
       security: [],
     },
@@ -280,8 +280,8 @@ export const tasks: Task[] = [
       name: `E2E分类W1-${TS}-edited`,
     },
     coverage: {
-      routes: ["/admin/categories"],
-      api: ["/admin/categories/list/detail/delete"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/categories/list/detail/delete"],
       components: ["CategoryList"],
       security: [],
     },
@@ -299,8 +299,8 @@ export const tasks: Task[] = [
       content: "E2E测试文章内容",
     },
     coverage: {
-      routes: ["/admin/articles"],
-      api: ["/admin/articles/list", "/admin/articles/list/create"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/articles/list", "/admin/web-settings/articles/list/create"],
       components: ["ArticleList", "ArticleDialog"],
       security: [],
     },
@@ -316,8 +316,8 @@ export const tasks: Task[] = [
       newTitle: `E2E文章-${TS}-edited`,
     },
     coverage: {
-      routes: ["/admin/articles"],
-      api: ["/admin/articles/list/detail/edit"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/articles/list/detail/edit"],
       components: ["ArticleDialog"],
       security: [],
     },
@@ -332,8 +332,8 @@ export const tasks: Task[] = [
       title: `E2E文章-${TS}-edited`,
     },
     coverage: {
-      routes: ["/admin/articles"],
-      api: ["/admin/articles/list/detail/delete"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/articles/list/detail/delete"],
       components: ["ArticleList"],
       security: [],
     },
@@ -352,7 +352,7 @@ export const tasks: Task[] = [
       year: 2026,
     },
     coverage: {
-      routes: ["/admin/cases"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list", "/admin/web-settings/cases/list/create"],
       components: ["CaseList", "CaseDialog"],
       security: [],
@@ -369,7 +369,7 @@ export const tasks: Task[] = [
       newUniversity: "E2E大学-edited",
     },
     coverage: {
-      routes: ["/admin/cases"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/edit"],
       components: ["CaseDialog"],
       security: [],
@@ -385,7 +385,7 @@ export const tasks: Task[] = [
       studentName: `E2E学生-${TS}`,
     },
     coverage: {
-      routes: ["/admin/cases"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/delete"],
       components: ["CaseList"],
       security: [],
@@ -405,7 +405,7 @@ export const tasks: Task[] = [
       city: "E2E城市",
     },
     coverage: {
-      routes: ["/admin/universities"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list", "/admin/web-settings/universities/list/create"],
       components: ["UniversityList", "UniversityDialog"],
       security: [],
@@ -422,7 +422,7 @@ export const tasks: Task[] = [
       newCity: "E2E城市-edited",
     },
     coverage: {
-      routes: ["/admin/universities"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/edit"],
       components: ["UniversityDialog"],
       security: [],
@@ -438,7 +438,7 @@ export const tasks: Task[] = [
       name: `E2E院校-${TS}`,
     },
     coverage: {
-      routes: ["/admin/universities"],
+      routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/delete"],
       components: ["UniversityList"],
       security: [],
@@ -607,7 +607,7 @@ export const tasks: Task[] = [
     fnArgs: {},
     coverage: {
       routes: [],
-      api: ["/admin/categories/list"],
+      api: ["/admin/web-settings/categories/list"],
       components: [],
       security: ["csrf-protection"],
     },
@@ -651,7 +651,7 @@ export const tasks: Task[] = [
     fnArgs: {},
     coverage: {
       routes: [],
-      api: ["/admin/categories/list/create", "/admin/users/list/detail"],
+      api: ["/admin/web-settings/categories/list/create", "/admin/users/list/detail"],
       components: [],
       security: ["input-validation"],
     },
@@ -684,11 +684,8 @@ export const tasks: Task[] = [
     coverage: {
       routes: [
         "/admin/users",
-        "/admin/articles",
         "/admin/roles",
-        "/admin/categories",
-        "/admin/cases",
-        "/admin/universities",
+        "/admin/web-settings",
       ],
       api: [],
       components: ["AdminSidebar"],
