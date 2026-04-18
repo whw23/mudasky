@@ -85,7 +85,7 @@ export const verifyDocumentInList: TaskFn = async (page, args) => {
   await page.goto("/portal/documents")
   await page.waitForLoadState("networkidle")
   try {
-    await expect(page.getByText(fileName)).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(fileName).first()).toBeVisible({ timeout: 15_000 })
   } catch {
     // 调试：输出当前列表内容
     const listText = await page.locator("main").textContent().catch(() => "")
