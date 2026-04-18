@@ -1,6 +1,6 @@
 """系统配置公开业务逻辑层。"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,7 +38,7 @@ class ConfigService:
         """获取首页所需的全部配置，返回 (数据, 最大更新时间)。"""
         keys = ["contact_info", "site_info", "homepage_stats", "about_info"]
         result = {}
-        max_updated = datetime.min
+        max_updated = datetime.min.replace(tzinfo=timezone.utc)
         for key in keys:
             config = await repository.get_by_key(self.session, key)
             if config:
