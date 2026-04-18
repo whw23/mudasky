@@ -177,6 +177,7 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
                   <li>
                     <button
                       onClick={() => setAddDialogOpen(true)}
+                      aria-label="添加导航项"
                       className="flex items-center gap-0.5 whitespace-nowrap px-2 py-1.5 text-sm font-medium text-muted-foreground/50 hover:text-primary transition-colors"
                     >
                       <Plus className="size-3.5" />

@@ -31,7 +31,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
 
   // 点击 NavEditor 的 "+" 按钮
-  await page.getByRole("button", { name: "+" }).click()
+  await page.getByRole("button", { name: "添加导航项" }).click()
 
   // 等待新增导航项弹窗
   const dialog = page.getByRole("dialog")
@@ -73,12 +73,9 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
 
-  // 找到 NavEditor 中该项旁边的删除按钮
-  // NavEditor 中每个自定义项有一个 "×" 按钮
-  const navItem = page.getByRole("button", { name })
-  await expect(navItem).toBeVisible()
-  // "×" 按钮在导航项旁边
-  const removeBtn = navItem.locator("..").getByRole("button", { name: "×" })
+  // 找到 NavEditor 中该项旁边的删除按钮（aria-label="删除 {name}"）
+  const removeBtn = page.getByRole("button", { name: `删除 ${name}` })
+  await expect(removeBtn).toBeVisible()
   await removeBtn.click()
 
   // 等待删除确认弹窗
@@ -94,7 +91,7 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   await removeResponse
 
   // 验证导航项已消失
-  await expect(navItem).not.toBeVisible()
+  await expect(removeBtn).not.toBeVisible()
 }
 
 /* ── 文章 CRUD ── */
