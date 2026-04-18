@@ -101,7 +101,14 @@ case "${1:-}" in
     run_gateway
     run_e2e
     echo ""
-    echo -e "${GREEN}━━━ 全部测试完成 ━━━${NC}"
+    echo -e "${GREEN}━━━ 全部本地测试完成 ━━━${NC}"
+    ;;
+  all:prod)
+    run_unit
+    run_vitest
+    run_e2e_prod
+    echo ""
+    echo -e "${GREEN}━━━ 全部线上测试完成 ━━━${NC}"
     ;;
   ""|help|--help|-h)
     echo "统一测试脚本"
@@ -109,7 +116,8 @@ case "${1:-}" in
     echo "用法: ./scripts/test.sh [类型]"
     echo ""
     echo "类型:"
-    echo "  all          运行全部测试（默认）"
+    echo "  all          运行全部本地测试（unit+vitest+gateway+e2e）"
+    echo "  all:prod     运行全部线上测试（unit+vitest+e2e:prod）"
     echo "  unit         后端单元测试 + 覆盖率 (pytest)"
     echo "  gateway      后端网关集成测试 (port 80)"
     echo "  vitest       前端单元测试 (vitest)"
