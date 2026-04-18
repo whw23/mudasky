@@ -76,10 +76,13 @@ async def anon_client(wait_for_healthy):
 
 @pytest.fixture
 async def e2e_client(wait_for_healthy):
-    """未认证但带 CSRF header 的 client。"""
+    """未认证但带 CSRF header 和 internal_secret cookie 的 client。"""
+    internal_secret = os.environ.get("INTERNAL_SECRET", "")
+    cookies = {"internal_secret": internal_secret} if internal_secret else {}
     async with httpx.AsyncClient(
         base_url=E2E_BASE_URL,
         headers=CSRF_HEADER,
+        cookies=cookies,
     ) as client:
         yield client
 

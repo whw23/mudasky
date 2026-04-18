@@ -1,5 +1,7 @@
 """用户模块 E2E 测试。"""
 
+import os
+
 import httpx
 import pytest
 
@@ -119,6 +121,7 @@ class TestUserProfileActions:
         async with httpx.AsyncClient(
             base_url="http://localhost",
             headers=CSRF_HEADER,
+            cookies={"internal_secret": os.environ.get("INTERNAL_SECRET", "")},
         ) as user_client:
             # 1. 发送验证码
             sms_resp = await user_client.post(
@@ -197,6 +200,7 @@ class TestUserProfileActions:
         async with httpx.AsyncClient(
             base_url="http://localhost",
             headers=CSRF_HEADER,
+            cookies={"internal_secret": os.environ.get("INTERNAL_SECRET", "")},
         ) as user_client:
             # 1. 发送验证码
             sms_resp = await user_client.post(
@@ -266,6 +270,7 @@ class TestTwoFactorAuth:
         async with httpx.AsyncClient(
             base_url="http://localhost",
             headers=CSRF_HEADER,
+            cookies={"internal_secret": os.environ.get("INTERNAL_SECRET", "")},
         ) as user_client:
             # 1. 发送验证码
             sms_resp = await user_client.post(
@@ -340,6 +345,7 @@ class TestTwoFactorAuth:
         async with httpx.AsyncClient(
             base_url="http://localhost",
             headers=CSRF_HEADER,
+            cookies={"internal_secret": os.environ.get("INTERNAL_SECRET", "")},
         ) as user_client:
             # 1. 发送验证码
             sms_resp = await user_client.post(
