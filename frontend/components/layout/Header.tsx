@@ -17,6 +17,7 @@ import { getLocalizedValue } from "@/lib/i18n-config"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 import { HeaderLogo } from "./HeaderLogo"
+import { useHydrated } from "@/hooks/useHydrated"
 
 /** 导航菜单键与路径映射 */
 const NAV_KEYS = [
@@ -54,6 +55,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const hydrated = useHydrated()
 
   const brandName = siteInfo.brand_name || tHeader("brandName")
   const brandNameEn = getLocalizedValue(rawConfig.siteInfo.brand_name, "en") || "MUTU International Education"
@@ -146,43 +148,47 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               "编辑热线"
             )}
 
-            <div className={editable ? "pointer-events-none" : ""}>
-              <LocaleSwitcher />
-            </div>
+            {hydrated && (
+              <div className={editable ? "pointer-events-none" : ""}>
+                <LocaleSwitcher />
+              </div>
+            )}
 
-            <div className={editable ? "pointer-events-none" : ""}>
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/portal/overview"
-                    className="text-foreground/70 hover:text-foreground transition-colors"
-                  >
-                    {user.username || user.phone}
-                  </Link>
-                  {isAdmin && (
+            {hydrated && (
+              <div className={editable ? "pointer-events-none" : ""}>
+                {user ? (
+                  <div className="flex items-center gap-3">
                     <Link
-                      href="/admin/dashboard"
+                      href="/portal/overview"
+                      className="text-foreground/70 hover:text-foreground transition-colors"
+                    >
+                      {user.username || user.phone}
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin/dashboard"
+                        className="text-foreground/60 hover:text-foreground transition-colors"
+                      >
+                        {tHeader("adminPanel")}
+                      </Link>
+                    )}
+                    <button
+                      onClick={logout}
                       className="text-foreground/60 hover:text-foreground transition-colors"
                     >
-                      {tHeader("adminPanel")}
-                    </Link>
-                  )}
+                      {tHeader("logout")}
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={logout}
-                    className="text-foreground/60 hover:text-foreground transition-colors"
+                    onClick={showLoginModal}
+                    className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
                   >
-                    {tHeader("logout")}
+                    {tHeader("loginOrRegister")}
                   </button>
-                </div>
-              ) : (
-                <button
-                  onClick={showLoginModal}
-                  className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
-                >
-                  {tHeader("loginOrRegister")}
-                </button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -266,34 +272,38 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
                 <Phone className="size-4" />
               </a>
             )}
-            {user ? (
-              <Link
-                href="/portal/overview"
-                onClick={closeMenu}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 transition-colors"
-              >
-                <span className="size-4 flex items-center justify-center text-xs font-medium">
-                  {(user.username || user.phone || "U").charAt(0).toUpperCase()}
-                </span>
-              </Link>
-            ) : (
-              <button
-                onClick={showLoginModal}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 hover:text-foreground transition-colors"
-                aria-label={tHeader("loginOrRegister")}
-              >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </button>
+            {hydrated && (
+              <>
+                {user ? (
+                  <Link
+                    href="/portal/overview"
+                    onClick={closeMenu}
+                    className="p-2 rounded-full bg-foreground/5 text-foreground/60 transition-colors"
+                  >
+                    <span className="size-4 flex items-center justify-center text-xs font-medium">
+                      {(user.username || user.phone || "U").charAt(0).toUpperCase()}
+                    </span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={showLoginModal}
+                    className="p-2 rounded-full bg-foreground/5 text-foreground/60 hover:text-foreground transition-colors"
+                    aria-label={tHeader("loginOrRegister")}
+                  >
+                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                >
+                  {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+                </button>
+              </>
             )}
-            <button
-              className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-            </button>
           </div>
         </div>
       </div>
