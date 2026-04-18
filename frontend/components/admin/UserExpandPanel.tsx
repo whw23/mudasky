@@ -202,7 +202,13 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("assignGroups")}</h3>
           <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("noGroup")} />
+              <SelectValue placeholder={t("noGroup")}>
+                {(value: string) => {
+                  if (!value) return t("noGroup")
+                  const role = roles.find((r) => r.id === value)
+                  return role?.name ?? t("noGroup")
+                }}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">{t("noGroup")}</SelectItem>
