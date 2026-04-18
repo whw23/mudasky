@@ -6,6 +6,8 @@
 import type { Task } from "../framework/types"
 import register from "../fns/register"
 import logout from "../fns/logout"
+import login from "../fns/login"
+import assignRole from "../fns/assign-role"
 import { verifyDisabledApi, verifyEnabledApi } from "../fns/disabled-verify"
 import { testMissingToken, testInvalidToken, testTamperedJwt } from "../fns/jwt-security"
 import { testAccessOtherDoc, testDeleteOtherDoc } from "../fns/idor"
@@ -26,12 +28,49 @@ export const tasks: Task[] = [
     coverage: { routes: [], api: [], components: [], security: [] },
   },
 
+  // ── SEED_USER_1 登录并给 W1 赋权 ──
+  {
+    id: "w7_login_seed1",
+    worker: "w7",
+    name: "W7 用 SEED_USER_1 登录",
+    requires: ["w7_set_cookie"],
+    fn: login,
+    fnArgs: {
+      username: process.env.SEED_USER_1_USERNAME || "admin",
+      password: process.env.SEED_USER_1_PASSWORD || "Admin123!",
+      worker: "w7",
+    },
+    coverage: {
+      routes: ["/"],
+      api: ["/api/auth/login"],
+      components: ["LoginDialog", "LoginForm"],
+      security: [],
+    },
+  },
+  {
+    id: "w7_assign_superuser_w1",
+    worker: "w7",
+    name: "W7 给 W1 赋权 superuser",
+    requires: ["w7_login_seed1", "w1_register"],
+    fn: assignRole,
+    fnArgs: {
+      phone: PHONES.w1,
+      roleName: "superuser",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/api/admin/users/list", "/api/admin/users/list/detail/assign-role"],
+      components: ["UserList", "UserDetail"],
+      security: ["role-assignment"],
+    },
+  },
+
   // ── 禁用/启用测试组 ──
   {
     id: "w7_reg_disable",
     worker: "w7",
     name: "注册临时账号(禁用测试)",
-    requires: ["w7_set_cookie"],
+    requires: ["w7_assign_superuser_w1"],
     fn: register,
     fnArgs: { phone: PHONES.w7_disabled, worker: "w7" },
     coverage: {
@@ -151,8 +190,8 @@ export const tasks: Task[] = [
     requires: ["w7_auth_dialog"],
     fn: testLoginSuccess,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME,
-      password: process.env.SEED_USER_E2E_PASSWORD,
+      username: process.env.SEED_USER_1_USERNAME || "admin",
+      password: process.env.SEED_USER_1_PASSWORD || "Admin123!",
     },
     coverage: {
       api: ["/api/auth/login"],
@@ -178,7 +217,7 @@ export const tasks: Task[] = [
     requires: ["w7_auth_logout"],
     fn: testWrongPassword,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME,
+      username: process.env.SEED_USER_1_USERNAME || "admin",
       password: "wrong-password-12345",
     },
     coverage: {
