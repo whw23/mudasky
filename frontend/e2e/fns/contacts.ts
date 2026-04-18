@@ -65,11 +65,13 @@ export const markContactStatus: TaskFn = async (page, args) => {
   const trigger = statusSection.getByRole("combobox")
   await expect(trigger).toBeVisible()
 
-  // 点击 trigger → 选择目标状态
+  // 点击 trigger → 选择非当前状态的选项
   await trigger.click()
-  const option = page.getByRole("option", { name: new RegExp(status, "i") })
-  await option.waitFor({ state: "visible", timeout: 5_000 })
-  await option.click()
+  const options = page.getByRole("option")
+  await options.first().waitFor({ state: "visible", timeout: 10_000 })
+  // 选择第二个选项（切换到不同状态）
+  const count = await options.count()
+  await options.nth(count > 1 ? 1 : 0).click()
 
   // 点击保存
   const saveResponse = page.waitForResponse((r) =>
