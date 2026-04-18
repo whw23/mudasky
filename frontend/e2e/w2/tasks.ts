@@ -293,7 +293,7 @@ export const tasks: Task[] = [
     requires: ["w2_documents_upload"],
     fn: verifyDocumentInList,
     fnArgs: {
-      fileName: `E2E-student-doc-${TS}.txt`,
+      fileName: `E2E_239_student-doc-${TS}.txt`,
     },
     coverage: {
       routes: ["/portal/documents"],
@@ -337,7 +337,7 @@ export const tasks: Task[] = [
     requires: ["w2_documents_verify_list"],
     fn: deleteDocument,
     fnArgs: {
-      fileName: `E2E-student-doc-${TS}.txt`,
+      fileName: `E2E_239_student-doc-${TS}.txt`,
     },
     coverage: {
       routes: ["/portal/documents"],

@@ -13,7 +13,7 @@ function getDbConfig(): pg.ClientConfig {
     }
   }
   const host = "localhost"
-  const port = Number(process.env.DB_EXTERNAL_PORT || "15432")
+  const port = Number(process.env.DB_EXTERNAL_PORT || "5432")
   return {
     host,
     port,
