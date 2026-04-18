@@ -5,7 +5,7 @@
 
 import * as fs from "fs"
 import * as path from "path"
-import { getAllSignals, cleanupSignals } from "./framework/signal"
+import { getAllSignals, closeDb } from "./framework/signal"
 import { calculateCoverage, printCoverageReport, saveCoverageReport } from "./framework/coverage"
 import { cleanupE2EData } from "./framework/db-cleanup"
 import { E2E_RUNTIME_DIR } from "./constants"
@@ -63,6 +63,6 @@ export default async function globalTeardown(): Promise<void> {
     console.warn("[Teardown] E2E 数据清理失败:", e)
   }
 
-  // 5. 清理信号文件
-  cleanupSignals()
+  // 5. 关闭数据库连接
+  closeDb()
 }

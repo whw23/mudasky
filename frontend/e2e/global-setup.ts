@@ -6,7 +6,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import { chromium } from "@playwright/test"
-import { cleanupSignals, ensureSignalDir, writeSignal } from "./framework/signal"
+import { initSignalDb, writeSignal } from "./framework/signal"
 import { E2E_RUNTIME_DIR, getAuthFile } from "./constants"
 import { cleanupE2EData } from "./framework/db-cleanup"
 
@@ -29,9 +29,8 @@ export default async function globalSetup(): Promise<void> {
   const tsFile = path.join(E2E_RUNTIME_DIR, "e2e-ts")
   fs.writeFileSync(tsFile, Date.now().toString().slice(-6))
 
-  // 1. 清理信号文件
-  cleanupSignals()
-  ensureSignalDir()
+  // 1. 初始化信号数据库
+  initSignalDb()
 
   // 2. 清理 E2E 测试数据（通过 pg 直连）
   try {
