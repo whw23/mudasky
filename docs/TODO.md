@@ -20,6 +20,7 @@
 - [x] 首页性能：config 请求合并（6→1）+ countryCodes/panelConfig 按需加载
 - [x] Token 即时撤销（X-Revoke-User + gateway 黑名单）
 - [ ] 网页设置所见即所得：E2E CRUD 选择器调试（11 个任务待修）
+- [ ] E2E 架构优化：W1 改为自注册账号 + 清理所有 worker 账号
 - [ ] E2E 架构优化：信号文件改 SQLite
 - [ ] E2E 架构优化：关键任务重试 + 级联熔断收窄
 - [ ] E2E 架构优化：W1 任务拆分到空闲 worker
@@ -36,6 +37,15 @@
 - 院校/案例编辑/删除（hover 后编辑按钮）
 
 设计文档：`docs/superpowers/specs/2026-04-18-wysiwyg-web-settings-design.md`
+
+## E2E 架构优化：W1 改为自注册账号 + 清理所有 worker 账号
+
+当前 W1 使用预设种子用户 `SEED_USER_E2E_USERNAME` 进行测试。改为：
+
+- W1 自行注册账号（`SEED_USER_1_USERNAME`）
+- W1 注册后，通过种子 superuser 给 `SEED_USER_1_USERNAME` 赋权 superuser
+- 不再创建 `SEED_USER_E2E_USERNAME`
+- W1-W7 所有 worker 账号在测试结束后统一清理
 
 ## E2E 架构优化：信号文件改 SQLite
 
