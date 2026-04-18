@@ -61,10 +61,30 @@ export default async function assignRole(
     return // 已是目标角色，跳过
   }
 
-  // 选择角色
-  await combobox.selectOption({ label: roleName })
+  // 选择角色并验证（重试最多 3 次，防止 React 重渲染重置选择）
+  const targetRoleId = await combobox.evaluate(
+    (el: HTMLSelectElement, label: string) =>
+      Array.from(el.options).find(o => o.text === label)?.value ?? "",
+    roleName,
+  )
+  if (!targetRoleId) throw new Error(`未找到角色选项: "${roleName}"`)
 
-  // 监听角色分配 API 请求和响应
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await combobox.selectOption({ label: roleName })
+    // 验证选择生效
+    const currentValue = await combobox.inputValue()
+    if (currentValue === targetRoleId) break
+    // 没生效，等一下再试
+    await page.waitForTimeout(200)
+  }
+
+  // 最终确认
+  const finalValue = await combobox.inputValue()
+  if (finalValue !== targetRoleId) {
+    throw new Error(`角色选择失败: 期望 ${targetRoleId}, 实际 ${finalValue}`)
+  }
+
+  // 监听角色分配 API 响应
   const saveResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/users/list/detail/assign-role") && r.request().method() === "POST",
     { timeout: 15_000 },
@@ -75,16 +95,15 @@ export default async function assignRole(
 
   // 等待 API 返回并验证
   const res = await saveResponse
-  const reqBody = res.request().postData() || ""
   const resBody = await res.text().catch(() => "")
 
   if (!res.ok()) {
-    throw new Error(`角色分配 API 返回 ${res.status()}: req=${reqBody}, res=${resBody.substring(0, 200)}`)
+    throw new Error(`角色分配 API 返回 ${res.status()}: ${resBody.substring(0, 200)}`)
   }
 
-  // 验证响应中的角色名是否正确
   const resData = JSON.parse(resBody)
   if (resData.role_name && resData.role_name !== roleName) {
-    throw new Error(`角色分配未生效: 期望 "${roleName}", 响应中角色为 "${resData.role_name}", 请求体=${reqBody}`)
+    const reqBody = res.request().postData() || ""
+    throw new Error(`角色分配未生效: 期望 "${roleName}", 响应 "${resData.role_name}", 请求=${reqBody}`)
   }
 }
