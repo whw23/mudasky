@@ -13,12 +13,8 @@ ROLES = [
     ("superuser", "超级管理员", ["*"], 0),
     ("content_admin", "内容运营", [
         "admin/dashboard",
-        "admin/web-settings/articles/*",
-        "admin/web-settings/categories/*",
-        "admin/web-settings/cases/*",
-        "admin/web-settings/universities/*",
-        "admin/general-settings/*",
         "admin/web-settings/*",
+        "admin/general-settings/*",
         "portal/profile/*",
     ], 1),
     ("advisor", "留学顾问", [
@@ -33,9 +29,7 @@ ROLES = [
         "portal/profile/*",
     ], 3),
     ("student", "学员", [
-        "portal/overview",
-        "portal/profile/*",
-        "portal/documents/*",
+        "portal/*",
     ], 4),
     ("visitor", "访客", [
         "portal/profile/*",
