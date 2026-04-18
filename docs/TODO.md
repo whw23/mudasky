@@ -46,6 +46,8 @@
 - W1 注册后，通过种子 superuser 给 `SEED_USER_1_USERNAME` 赋权 superuser
 - 不再创建 `SEED_USER_E2E_USERNAME`
 - W1-W7 所有 worker 账号在测试结束后统一清理
+- GitHub Actions 去掉 `SEED_USER_E2E_USERNAME` / `SEED_USER_E2E_PASSWORD` 相关的 secrets 和引用
+- 后端删除 `SEED_USER_E2E` 的初始化创建代码
 
 ## E2E 架构优化：信号文件改 SQLite
 
