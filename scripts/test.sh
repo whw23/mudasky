@@ -49,7 +49,8 @@ run_unit() {
   run_and_log "unit.log" \
     uv run --project backend/api python -m pytest backend/api/tests/ -v \
     --ignore=backend/api/tests/e2e \
-    --cov=api --cov-report=term-missing
+    --cov=api --cov-report=term-missing \
+    --cov-report="html:$RESULTS_DIR/pytest-coverage"
 }
 
 # 后端网关集成测试
