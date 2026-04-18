@@ -27,10 +27,19 @@ export default async function register(
     ])
   }
 
-  // 导航到首页，等待登录按钮出现并点击（水合后 auth check 可能导致重渲染，重试 click）
+  // 导航到首页，处理已登录/未登录两种状态
   await page.goto("/")
   const loginBtn = page.getByRole("button", { name: /登录|注册/ })
-  await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+  const logoutBtn = page.getByRole("button", { name: "退出" })
+  await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 30_000 })
+
+  // 如果已登录（LAST_NOT_PASS 场景），先退出
+  if (await logoutBtn.isVisible()) {
+    await logoutBtn.click()
+    await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+  }
+
+  // 点击登录按钮（重试处理水合重渲染 detach）
   for (let i = 0; i < 3; i++) {
     try {
       await loginBtn.click({ timeout: 5_000 })
