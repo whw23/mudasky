@@ -348,7 +348,7 @@ export const tasks: Task[] = [
     id: "w4_auth_login_dialog",
     worker: "w4",
     name: "测试登录弹窗",
-    requires: [],
+    requires: ["w4_logout"],
     fn: testLoginDialog,
     fnArgs: {},
     coverage: {
@@ -362,7 +362,7 @@ export const tasks: Task[] = [
     id: "w4_auth_login_success",
     worker: "w4",
     name: "测试账号密码登录成功",
-    requires: [],
+    requires: ["w4_auth_login_dialog"],
     fn: testLoginSuccess,
     fnArgs: {
       username: process.env.SEED_USER_E2E_USERNAME || "admin",
@@ -393,7 +393,7 @@ export const tasks: Task[] = [
     id: "w4_auth_wrong_password",
     worker: "w4",
     name: "测试错误密码",
-    requires: [],
+    requires: ["w4_auth_logout"],
     fn: testWrongPassword,
     fnArgs: {
       username: process.env.SEED_USER_E2E_USERNAME || "admin",
