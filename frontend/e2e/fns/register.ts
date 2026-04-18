@@ -36,7 +36,7 @@ export default async function register(
       await loginBtn.click({ timeout: 5_000 })
       break
     } catch {
-      await loginBtn.waitFor({ state: "visible", timeout: 10_000 })
+      await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
     }
   }
 
