@@ -365,8 +365,8 @@ export const tasks: Task[] = [
     requires: ["w4_auth_login_dialog"],
     fn: testLoginSuccess,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME || "admin",
-      password: process.env.SEED_USER_E2E_PASSWORD || "Admin123!",
+      username: process.env.SEED_USER_1_USERNAME || "admin",
+      password: process.env.SEED_USER_1_PASSWORD || "Admin123!",
     },
     coverage: {
       routes: ["/"],
@@ -396,7 +396,7 @@ export const tasks: Task[] = [
     requires: ["w4_auth_logout"],
     fn: testWrongPassword,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME || "admin",
+      username: process.env.SEED_USER_1_USERNAME || "admin",
       password: "wrong-password-12345",
     },
     coverage: {
