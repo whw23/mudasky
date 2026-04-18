@@ -12,11 +12,9 @@ function getDbConfig(): pg.ClientConfig {
       password: process.env.DB_PASSWORD,
     }
   }
-  const host = "localhost"
-  const port = Number(process.env.DB_EXTERNAL_PORT || "5432")
   return {
-    host,
-    port,
+    host: "localhost",
+    port: Number(process.env.DB_EXTERNAL_PORT || "5432"),
     database: process.env.DB_NAME || "mudasky",
     user: process.env.DB_USER || "mudasky",
     password: process.env.DB_PASSWORD,
