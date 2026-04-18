@@ -396,7 +396,7 @@ export const tasks: Task[] = [
     id: "w2_permission_portal_allowed",
     worker: "w2",
     name: "验证 portal 访问权限",
-    requires: ["w2_register"],
+    requires: ["w2_reload_auth"],
     fn: verifyPermissionAllowed,
     fnArgs: {
       routes: ["/portal/profile", "/portal/documents"],

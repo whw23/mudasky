@@ -170,7 +170,7 @@ export const tasks: Task[] = [
     id: "w3_contacts_view",
     worker: "w3",
     name: "查看联系人列表",
-    requires: ["w3_register"],
+    requires: ["w3_reload_auth"],
     fn: viewContactList,
     fnArgs: {},
     coverage: {
@@ -232,7 +232,7 @@ export const tasks: Task[] = [
     id: "w3_permission_students_allowed",
     worker: "w3",
     name: "验证学生管理访问权限",
-    requires: ["w3_register"],
+    requires: ["w3_reload_auth"],
     fn: verifyPermissionAllowed,
     fnArgs: {
       routes: ["/admin/students", "/admin/contacts"],
@@ -282,7 +282,7 @@ export const tasks: Task[] = [
     id: "w3_sidebar_verify",
     worker: "w3",
     name: "验证顾问侧边栏",
-    requires: ["w3_register"],
+    requires: ["w3_reload_auth"],
     fn: verifyAdminSidebar,
     fnArgs: {
       role: "advisor",

@@ -32,16 +32,19 @@ export default async function reloadAuth(
   await page.goto("/")
   await page.waitForLoadState("networkidle")
 
-  // 2. 通过 UI 退出（点击"退出"按钮）
+  // 2. 等待 header 按钮出现（可能是"退出"或"登录/注册"）
   const logoutBtn = page.getByRole("button", { name: "退出" })
-  await logoutBtn.waitFor({ state: "visible", timeout: 15_000 })
-  await logoutBtn.click()
+  const loginBtn = page.getByRole("button", { name: /登录/ })
+  await logoutBtn.or(loginBtn).first().waitFor({ state: "visible", timeout: 15_000 })
 
-  // 等待退出完成（登录按钮出现）
-  await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible", timeout: 15_000 })
+  // 如果已登录，先通过 UI 退出
+  if (await logoutBtn.isVisible()) {
+    await logoutBtn.click()
+    await loginBtn.waitFor({ state: "visible", timeout: 15_000 })
+  }
 
   // 3. 通过 UI 重新 SMS 登录
-  await page.getByRole("button", { name: /登录/ }).click()
+  await loginBtn.click()
   await page.getByRole("dialog").waitFor({ state: "visible" })
 
   // 确保在 SMS tab
