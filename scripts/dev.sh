@@ -6,6 +6,7 @@
 #   ./scripts/dev.sh --clean  清理数据卷后重新启动
 #   ./scripts/dev.sh --down   停止并移除容器
 #   ./scripts/dev.sh --logs   查看实时日志
+#   ./scripts/dev.sh --prod  构建并启动生产容器（E2E 测试用）
 
 set -e
 
@@ -27,6 +28,15 @@ case "${1:-}" in
   --logs)
     docker compose logs -f "${2:-}"
     ;;
+  --prod)
+    echo "构建并启动生产容器（E2E 测试用）..."
+    docker compose down
+    docker build -t ghcr.io/whw23/mudasky-gateway:latest ./gateway
+    docker build -t ghcr.io/whw23/mudasky-api:latest -f backend/api/Dockerfile ./backend
+    docker build -t ghcr.io/whw23/mudasky-frontend:latest ./frontend
+    docker compose -f docker-compose.yml up -d
+    echo "生产容器已启动，可运行 ./scripts/test.sh e2e"
+    ;;
   "")
     echo "构建并启动开发环境..."
     docker compose down
@@ -35,7 +45,7 @@ case "${1:-}" in
     docker compose up
     ;;
   *)
-    echo "用法: $0 [--clean|--down|--logs [服务名]]"
+    echo "用法: $0 [--clean|--down|--logs [服务名]|--prod]"
     exit 1
     ;;
 esac
