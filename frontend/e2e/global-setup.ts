@@ -55,7 +55,7 @@ export default async function globalSetup(): Promise<void> {
 
   // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
   if (process.env.LAST_NOT_PASS === "1") {
-    const lastRunPath = path.join(__dirname, ".last-run.json")
+    const lastRunPath = path.resolve(__dirname, "../../test-results/latest/e2e-runtime/last-run.json")
     if (fs.existsSync(lastRunPath)) {
       const lastRun = JSON.parse(fs.readFileSync(lastRunPath, "utf-8")) as Record<string, string>
 
