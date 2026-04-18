@@ -200,6 +200,56 @@ class TestGetDocument:
         assert resp.status_code == 403
 
 
+class TestDownloadDocument:
+    """下载文档端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_deps(self):
+        """模拟 document.service。"""
+        with patch(
+            "api.portal.document.router.get_document"
+        ) as mock_fn:
+            self.mock_get = mock_fn
+            yield
+
+    async def test_download_document_success(
+        self, client, user_headers
+    ):
+        """下载文档返回文件内容。"""
+        doc = _make_document(original_name="transcript.pdf")
+        self.mock_get.return_value = doc
+        resp = await client.get(
+            "/portal/documents/list/detail/download?doc_id=doc-001",
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.content == b"fake file content"
+        assert "Content-Disposition" in resp.headers
+        assert "transcript.pdf" in resp.headers["Content-Disposition"]
+
+    async def test_download_document_not_found(
+        self, client, user_headers
+    ):
+        """下载不存在的文档返回 404。"""
+        from app.core.exceptions import NotFoundException
+
+        self.mock_get.side_effect = NotFoundException(
+            message="文档不存在"
+        )
+        resp = await client.get(
+            "/portal/documents/list/detail/download?doc_id=nonexistent",
+            headers=user_headers,
+        )
+        assert resp.status_code == 404
+
+    async def test_download_document_no_auth(self, client):
+        """未认证无法下载文档。"""
+        resp = await client.get(
+            "/portal/documents/list/detail/download?doc_id=doc-001"
+        )
+        assert resp.status_code == 403
+
+
 class TestDeleteDocument:
     """删除文档端点测试。"""
 

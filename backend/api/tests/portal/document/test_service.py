@@ -101,6 +101,48 @@ async def test_upload_document_success(
 @pytest.mark.asyncio
 @patch(DOC_REPO)
 @patch(USER_REPO)
+async def test_upload_document_file_size_exceeded(
+    mock_user_repo,
+    mock_doc_repo,
+):
+    """单文件大小超过限制抛出 QuotaExceededException。"""
+    session = AsyncMock()
+    # 设置最大上传限制很小
+    big_data = b"x" * 1000
+    file = _make_upload_file(data=big_data)
+
+    with patch("api.portal.document.service.settings") as mock_settings:
+        mock_settings.max_upload_size_bytes = 100
+        mock_settings.MAX_UPLOAD_SIZE_MB = 0.0001
+
+        with pytest.raises(QuotaExceededException):
+            await doc_service.upload_document(
+                session, "user-1", file, DocumentCategory.OTHER
+            )
+
+
+@pytest.mark.asyncio
+@patch(DOC_REPO)
+@patch(USER_REPO)
+async def test_upload_document_user_not_found(
+    mock_user_repo,
+    mock_doc_repo,
+):
+    """上传文档时用户不存在抛出 NotFoundException。"""
+    session = AsyncMock()
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    file = _make_upload_file(data=b"small")
+
+    with pytest.raises(NotFoundException):
+        await doc_service.upload_document(
+            session, "nonexistent", file, DocumentCategory.OTHER
+        )
+
+
+@pytest.mark.asyncio
+@patch(DOC_REPO)
+@patch(USER_REPO)
 async def test_upload_document_quota_exceeded(
     mock_user_repo,
     mock_doc_repo,

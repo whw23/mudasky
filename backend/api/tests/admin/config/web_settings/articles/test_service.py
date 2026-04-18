@@ -194,6 +194,117 @@ async def test_delete_own_article_success(
 
 @pytest.mark.asyncio
 @patch(REPO)
+async def test_update_article_sets_published_at(
+    mock_repo, service
+):
+    """将文章从 draft 改为 published 时设置 published_at。"""
+    article = _make_article(status="draft")
+    article.published_at = None
+    mock_repo.get_article_by_id = AsyncMock(
+        return_value=article
+    )
+
+    def fake_apply(obj, data):
+        """模拟 apply_updates 将 status 设为 published。"""
+        obj.status = "published"
+
+    with patch(
+        "api.admin.config.web_settings.articles.service.apply_updates",
+        side_effect=fake_apply,
+    ):
+        mock_repo.update_article = AsyncMock(
+            return_value=article
+        )
+        data = ArticleUpdate(
+            article_id="art-1", status="published"
+        )
+        result = await service.update_article(
+            "art-1", data
+        )
+
+    assert article.published_at is not None
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_update_article_already_published_no_change(
+    mock_repo, service
+):
+    """已发布文章更新标题不改变 published_at。"""
+    from datetime import datetime, timezone
+
+    original_published = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    article = _make_article(status="published")
+    article.published_at = original_published
+    mock_repo.get_article_by_id = AsyncMock(
+        return_value=article
+    )
+
+    def fake_apply(obj, data):
+        """模拟 apply_updates 只改标题。"""
+        obj.title = "新标题"
+
+    with patch(
+        "api.admin.config.web_settings.articles.service.apply_updates",
+        side_effect=fake_apply,
+    ):
+        mock_repo.update_article = AsyncMock(
+            return_value=article
+        )
+        data = ArticleUpdate(
+            article_id="art-1", title="新标题"
+        )
+        await service.update_article("art-1", data)
+
+    assert article.published_at == original_published
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_create_article_published_sets_published_at(
+    mock_repo, service
+):
+    """创建已发布状态的文章时设置 published_at。"""
+    article = _make_article()
+    mock_repo.create_article = AsyncMock(return_value=article)
+
+    data = ArticleCreate(
+        title="发布文章",
+        slug="published-article",
+        content="内容",
+        category_id="cat-1",
+        status="published",
+    )
+    await service.create_article(data, "user-1")
+
+    call_args = mock_repo.create_article.call_args[0][1]
+    assert call_args.published_at is not None
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_create_article_draft_no_published_at(
+    mock_repo, service
+):
+    """创建草稿文章时不设置 published_at。"""
+    article = _make_article(status="draft")
+    mock_repo.create_article = AsyncMock(return_value=article)
+
+    data = ArticleCreate(
+        title="草稿",
+        slug="draft",
+        content="内容",
+        category_id="cat-1",
+        status="draft",
+    )
+    await service.create_article(data, "user-1")
+
+    call_args = mock_repo.create_article.call_args[0][1]
+    assert call_args.published_at is None
+
+
+@pytest.mark.asyncio
+@patch(REPO)
 async def test_delete_own_article_forbidden(
     mock_repo, service
 ):

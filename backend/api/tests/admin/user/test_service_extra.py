@@ -272,3 +272,132 @@ async def test_get_user_model_not_found(mock_user_repo, service):
 
     with pytest.raises(NotFoundException):
         await service.get_user_model("nonexistent")
+
+
+# ---- assign_role: 角色不存在 ----
+
+
+@patch(RBAC_REPO)
+async def test_assign_role_role_not_found(
+    mock_rbac_repo, service
+):
+    """分配不存在的角色抛出异常。"""
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=None
+    )
+
+    with pytest.raises(NotFoundException):
+        await service.assign_role("user-1", "nonexistent-role")
+
+
+# ---- delete_user ----
+
+
+@patch("api.admin.user.service.doc_repo")
+@patch(AUTH_REPO)
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_user_success(
+    mock_user_repo, mock_rbac_repo, mock_auth_repo,
+    mock_doc_repo, service
+):
+    """删除普通用户成功。"""
+    user = _make_user(user_id="user-del")
+    user.phone = "+86-13800138000"
+    user.role_id = None
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
+    mock_auth_repo.delete_sms_codes_by_phone = AsyncMock()
+    mock_doc_repo.delete_by_user = AsyncMock()
+    mock_user_repo.delete = AsyncMock()
+
+    await service.delete_user("user-del")
+
+    mock_auth_repo.delete_refresh_tokens_by_user.assert_awaited_once()
+    mock_auth_repo.delete_sms_codes_by_phone.assert_awaited_once()
+    mock_doc_repo.delete_by_user.assert_awaited_once()
+    mock_user_repo.delete.assert_awaited_once()
+
+
+@patch(USER_REPO)
+async def test_delete_user_not_found(mock_user_repo, service):
+    """删除不存在的用户抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.delete_user("nonexistent")
+
+
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_superuser_forbidden(
+    mock_user_repo, mock_rbac_repo, service
+):
+    """删除超级管理员抛出 ForbiddenException。"""
+    from app.core.exceptions import ForbiddenException
+
+    user = _make_user(user_id="admin-1")
+    user.role_id = "role-su"
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    role_mock = MagicMock()
+    role_mock.name = "superuser"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
+    )
+
+    with pytest.raises(ForbiddenException):
+        await service.delete_user("admin-1")
+
+
+@patch("api.admin.user.service.doc_repo")
+@patch(AUTH_REPO)
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_user_no_phone(
+    mock_user_repo, mock_rbac_repo, mock_auth_repo,
+    mock_doc_repo, service
+):
+    """删除无手机号的用户（跳过 sms_codes 删除）。"""
+    user = _make_user(user_id="user-nophone")
+    user.phone = None
+    user.role_id = None
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
+    mock_doc_repo.delete_by_user = AsyncMock()
+    mock_user_repo.delete = AsyncMock()
+
+    await service.delete_user("user-nophone")
+
+    mock_auth_repo.delete_refresh_tokens_by_user.assert_awaited_once()
+    mock_auth_repo.delete_sms_codes_by_phone.assert_not_called()
+    mock_doc_repo.delete_by_user.assert_awaited_once()
+
+
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_user_with_role_not_superuser(
+    mock_user_repo, mock_rbac_repo, service
+):
+    """用户有角色但不是 superuser，允许删除前的角色检查通过。"""
+    from unittest.mock import patch as mpatch
+
+    user = _make_user(user_id="user-normal")
+    user.phone = "+86-13800138000"
+    user.role_id = "role-normal"
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    role_mock = MagicMock()
+    role_mock.name = "student"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
+    )
+
+    with mpatch(AUTH_REPO) as mock_auth, \
+         mpatch("api.admin.user.service.doc_repo") as mock_doc:
+        mock_auth.delete_refresh_tokens_by_user = AsyncMock()
+        mock_auth.delete_sms_codes_by_phone = AsyncMock()
+        mock_doc.delete_by_user = AsyncMock()
+        mock_user_repo.delete = AsyncMock()
+
+        await service.delete_user("user-normal")
+
+    mock_user_repo.delete.assert_awaited_once()

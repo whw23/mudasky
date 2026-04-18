@@ -11,6 +11,55 @@ import pytest
 from app.core.exceptions import NotFoundException
 
 
+class TestGetAllConfig:
+    """获取首页全部配置端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 ConfigService。"""
+        with patch(
+            "api.public.config.router.ConfigService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_get_all_config_success(self, client):
+        """获取全部配置返回 200。"""
+        ts = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        self.mock_svc.get_all_homepage_config.return_value = (
+            {
+                "contact_info": {"address": "北京"},
+                "site_info": {"brand_name": "测试"},
+                "homepage_stats": [],
+                "about_info": {},
+            },
+            ts,
+        )
+        resp = await client.get("/public/config/all")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "contact_info" in data
+        assert "ETag" in resp.headers
+
+    async def test_get_all_config_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        ts = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        self.mock_svc.get_all_homepage_config.return_value = (
+            {"contact_info": {}, "site_info": {}},
+            ts,
+        )
+        resp1 = await client.get("/public/config/all")
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/config/all",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
+
+
 class TestGetConfig:
     """获取单个配置值端点测试。"""
 
@@ -129,3 +178,24 @@ class TestGetPanelConfig:
         self.mock_svc.get_value_with_timestamp.assert_awaited_once_with(
             "panel_pages"
         )
+
+    async def test_get_panel_config_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        ts = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        self.mock_svc.get_value_with_timestamp.return_value = (
+            {
+                "key": "panel_pages",
+                "value": {},
+                "description": "面板配置",
+            },
+            ts,
+        )
+        resp1 = await client.get("/public/panel-config")
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/panel-config",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304

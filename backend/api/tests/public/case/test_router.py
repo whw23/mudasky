@@ -66,6 +66,19 @@ class TestListCases:
         data = resp.json()
         assert data["total"] == 0
 
+    async def test_list_cases_etag_match(self, client):
+        """列表 ETag 匹配时返回 304。"""
+        self.mock_svc.list_cases.return_value = ([], 0)
+        resp1 = await client.get("/public/cases/list")
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/cases/list",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
+
     async def test_list_cases_pagination(self, client):
         """分页参数正确传递。"""
         self.mock_svc.list_cases.return_value = ([], 0)
@@ -118,6 +131,28 @@ class TestGetCase:
             "/public/cases/detail/nonexistent"
         )
         assert resp.status_code == 404
+
+    async def test_get_case_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        case = MagicMock(
+            id="case-001", student_name="张三",
+            university="测试大学", program="计算机",
+            year=2025, testimonial="很棒",
+            avatar_url=None, is_featured=False,
+            sort_order=0,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        )
+        self.mock_svc.get_case.return_value = case
+        resp1 = await client.get("/public/cases/detail/case-001")
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/cases/detail/case-001",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
 
     async def test_get_case_no_updated_at(self, client):
         """案例 updated_at 为 None 时仍正常返回。"""

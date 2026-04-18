@@ -399,6 +399,93 @@ async def test_create_role_with_merge_from(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(REPO)
+async def test_update_role_description_only(mock_repo, service):
+    """只更新角色描述，不涉及名称和权限。"""
+    role = _make_role("编辑", role_id="r1")
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+    mock_repo.update_role = AsyncMock()
+
+    data = RoleUpdate(role_id="r1", description="新描述")
+    result, affected_ids = await service.update_role("r1", data)
+
+    assert result.description == "新描述"
+    assert affected_ids == []
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_update_superuser_permissions_forbidden(mock_repo, service):
+    """超级管理员角色不允许修改权限。"""
+    role = _make_role("superuser", role_id="r-sys", permissions=["*"])
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+
+    data = RoleUpdate(role_id="r-sys", permissions=["admin/*"])
+    with pytest.raises(ForbiddenException):
+        await service.update_role("r-sys", data)
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_get_user_role_id(mock_user_repo, service):
+    """查询用户所属角色 ID。"""
+    mock_user_repo.get_role_id = AsyncMock(
+        return_value="role-x"
+    )
+
+    result = await service.get_user_role_id("user-1")
+
+    assert result == "role-x"
+    mock_user_repo.get_role_id.assert_awaited_once_with(
+        service.session, "user-1"
+    )
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_get_user_role_id_none(mock_user_repo, service):
+    """用户无角色时返回 None。"""
+    mock_user_repo.get_role_id = AsyncMock(return_value=None)
+
+    result = await service.get_user_role_id("user-no-role")
+
+    assert result is None
+
+
+@pytest.mark.asyncio
+@patch(AUTH_REPO)
+@patch(USER_REPO)
+@patch(REPO)
+async def test_delete_role_with_users(
+    mock_repo, mock_user_repo, mock_auth_repo, service
+):
+    """删除角色时，将该角色下的用户迁移到 visitor 并踢下线。"""
+    role = _make_role("普通角色", role_id="r1")
+    visitor_role = _make_role("visitor", role_id="v1")
+    user1 = MagicMock()
+    user1.id = "user-1"
+    user2 = MagicMock()
+    user2.id = "user-2"
+    mock_repo.get_role_by_id = AsyncMock(return_value=role)
+    mock_repo.get_role_by_name = AsyncMock(return_value=visitor_role)
+    mock_repo.delete_role = AsyncMock()
+    mock_user_repo.list_by_role_id = AsyncMock(
+        return_value=[user1, user2]
+    )
+    mock_user_repo.set_role_id = AsyncMock()
+    mock_auth_repo.revoke_user_refresh_tokens = AsyncMock()
+
+    result = await service.delete_role("r1")
+
+    assert set(result) == {"user-1", "user-2"}
+    assert mock_user_repo.set_role_id.await_count == 2
+    assert mock_auth_repo.revoke_user_refresh_tokens.await_count == 2
+    mock_repo.delete_role.assert_awaited_once_with(
+        service.session, "r1"
+    )
+
+
+@pytest.mark.asyncio
 @patch(AUTH_REPO)
 @patch(USER_REPO)
 @patch(REPO)

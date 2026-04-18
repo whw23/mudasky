@@ -71,6 +71,19 @@ class TestListUniversities:
         assert data["total"] == 0
         assert data["items"] == []
 
+    async def test_list_universities_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        self.mock_svc.list_universities.return_value = ([], 0)
+        resp1 = await client.get("/public/universities/list")
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/universities/list",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
+
     async def test_list_universities_empty(self, client):
         """查询结果为空时返回空列表。"""
         self.mock_svc.list_universities.return_value = ([], 0)
@@ -103,6 +116,23 @@ class TestListCountries:
         assert "中国" in data
         assert "美国" in data
         assert "ETag" in resp.headers
+
+    async def test_list_countries_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        self.mock_svc.get_distinct_countries.return_value = [
+            "中国"
+        ]
+        resp1 = await client.get(
+            "/public/universities/countries"
+        )
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/universities/countries",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
 
     async def test_list_countries_empty(self, client):
         """无院校时国家列表为空。"""
@@ -143,6 +173,23 @@ class TestListProvinces:
         assert resp.status_code == 200
         assert resp.json() == ["北京"]
 
+    async def test_list_provinces_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        self.mock_svc.get_distinct_provinces.return_value = [
+            "北京"
+        ]
+        resp1 = await client.get(
+            "/public/universities/provinces"
+        )
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/universities/provinces",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
+
     async def test_list_provinces_empty(self, client):
         """省份列表为空时返回空数组。"""
         self.mock_svc.get_distinct_provinces.return_value = []
@@ -182,6 +229,23 @@ class TestListCities:
         assert resp.status_code == 200
         assert resp.json() == ["东京"]
 
+    async def test_list_cities_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        self.mock_svc.get_distinct_cities.return_value = [
+            "北京"
+        ]
+        resp1 = await client.get(
+            "/public/universities/cities"
+        )
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/universities/cities",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
+
     async def test_list_cities_empty(self, client):
         """城市列表为空时返回空数组。"""
         self.mock_svc.get_distinct_cities.return_value = []
@@ -215,6 +279,26 @@ class TestGetUniversity:
         data = resp.json()
         assert data["id"] == "uni-001"
         assert "ETag" in resp.headers
+
+    async def test_get_university_etag_match(self, client):
+        """ETag 匹配时返回 304。"""
+        uni = _uni_obj(
+            updated_at=datetime(
+                2026, 1, 1, tzinfo=timezone.utc
+            ),
+        )
+        self.mock_svc.get_university.return_value = uni
+        resp1 = await client.get(
+            "/public/universities/detail/uni-001"
+        )
+        etag = resp1.headers.get("ETag")
+        assert etag is not None
+
+        resp2 = await client.get(
+            "/public/universities/detail/uni-001",
+            headers={"If-None-Match": etag},
+        )
+        assert resp2.status_code == 304
 
     async def test_get_university_not_found(self, client):
         """院校不存在返回 404。"""

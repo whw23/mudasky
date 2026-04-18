@@ -261,3 +261,32 @@ class TestDeleteAccount:
             json={"code": "123456"},
         )
         assert resp.status_code == 403
+
+    async def test_delete_account_success(
+        self, client, user_headers
+    ):
+        """注销账号成功返回 200。"""
+        user = _make_user_model(phone="+86-13800138000")
+        self.mock_svc.get_user.return_value = user
+        self.mock_auth.verify_sms_code = AsyncMock()
+        self.mock_svc.delete_user.return_value = None
+        resp = await client.post(
+            "/portal/profile/delete-account",
+            json={"code": "123456"},
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "账号已注销"
+
+    async def test_delete_account_no_phone(
+        self, client, user_headers
+    ):
+        """未绑定手机号无法注销账号。"""
+        user = _make_user_model(phone=None)
+        self.mock_svc.get_user.return_value = user
+        resp = await client.post(
+            "/portal/profile/delete-account",
+            json={"code": "123456"},
+            headers=user_headers,
+        )
+        assert resp.status_code == 403

@@ -64,6 +64,48 @@ class TestAdminArticles:
         )
         assert resp.status_code == 200
 
+    async def test_admin_create_article(
+        self, client, superuser_headers
+    ):
+        """管理员创建文章返回 201。"""
+        self.mock_svc.create_article.return_value = (
+            _make_article(id="article-new")
+        )
+        resp = await client.post(
+            "/admin/web-settings/articles/list/create",
+            json={
+                "title": "新文章",
+                "slug": "new-article",
+                "content": "内容",
+                "category_id": "cat-001",
+                "status": "draft",
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["id"] == "article-new"
+
+    async def test_admin_create_article_published(
+        self, client, superuser_headers
+    ):
+        """管理员创建已发布文章返回 201。"""
+        self.mock_svc.create_article.return_value = (
+            _make_article(id="article-pub", status="published")
+        )
+        resp = await client.post(
+            "/admin/web-settings/articles/list/create",
+            json={
+                "title": "发布文章",
+                "slug": "pub-article",
+                "content": "内容",
+                "category_id": "cat-001",
+                "status": "published",
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 201
+
     async def test_admin_update_article(
         self, client, superuser_headers
     ):

@@ -31,6 +31,88 @@ class TestEnableTotp:
         )
         assert resp.status_code == 403
 
+    async def test_enable_totp_success(
+        self, client, user_headers
+    ):
+        """认证用户启用 TOTP 返回二维码图片。"""
+        user_mock = MagicMock()
+        user_mock.phone = "+86-13800138000"
+        user_mock.username = "testuser"
+        user_mock.id = "user-1"
+
+        import pyotp
+        secret = pyotp.random_base32()
+        self.mock_svc.enable_totp.return_value = (
+            secret, user_mock
+        )
+
+        config_mock = MagicMock()
+        config_mock.value = {
+            "brand_name": {"zh": "测试品牌", "en": "Test"}
+        }
+        self.mock_config.get_by_key = AsyncMock(
+            return_value=config_mock
+        )
+
+        resp = await client.post(
+            "/portal/profile/two-factor/enable-totp",
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "image/png"
+
+    async def test_enable_totp_brand_string(
+        self, client, user_headers
+    ):
+        """品牌名为字符串时正常工作。"""
+        user_mock = MagicMock()
+        user_mock.phone = "+86-13800138000"
+        user_mock.username = "testuser"
+        user_mock.id = "user-1"
+
+        import pyotp
+        secret = pyotp.random_base32()
+        self.mock_svc.enable_totp.return_value = (
+            secret, user_mock
+        )
+
+        config_mock = MagicMock()
+        config_mock.value = {"brand_name": "简单品牌名"}
+        self.mock_config.get_by_key = AsyncMock(
+            return_value=config_mock
+        )
+
+        resp = await client.post(
+            "/portal/profile/two-factor/enable-totp",
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+
+    async def test_enable_totp_no_config(
+        self, client, user_headers
+    ):
+        """无品牌配置时使用默认名称。"""
+        user_mock = MagicMock()
+        user_mock.phone = "+86-13800138000"
+        user_mock.username = "testuser"
+        user_mock.id = "user-1"
+
+        import pyotp
+        secret = pyotp.random_base32()
+        self.mock_svc.enable_totp.return_value = (
+            secret, user_mock
+        )
+
+        self.mock_config.get_by_key = AsyncMock(
+            return_value=None
+        )
+
+        resp = await client.post(
+            "/portal/profile/two-factor/enable-totp",
+            headers=user_headers,
+        )
+        assert resp.status_code == 200
+
 
 class TestConfirmTotp:
     """确认 TOTP 端点测试。"""

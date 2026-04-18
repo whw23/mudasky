@@ -48,6 +48,39 @@ class TestAdminCategories:
         )
         assert resp.status_code == 200
 
+    async def test_admin_list_categories_with_counts(
+        self, client, superuser_headers
+    ):
+        """分类列表包含文章计数。"""
+        cat = _make_category(id="cat-001")
+        self.mock_svc.list_categories.return_value = [cat]
+        self.mock_svc.get_article_counts_by_category.return_value = {
+            "cat-001": 5
+        }
+        resp = await client.get(
+            "/admin/web-settings/categories/list",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["article_count"] == 5
+
+    async def test_admin_list_categories_zero_count(
+        self, client, superuser_headers
+    ):
+        """分类无文章时计数为 0。"""
+        cat = _make_category(id="cat-002")
+        self.mock_svc.list_categories.return_value = [cat]
+        self.mock_svc.get_article_counts_by_category.return_value = {}
+        resp = await client.get(
+            "/admin/web-settings/categories/list",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data[0]["article_count"] == 0
+
     async def test_admin_create_category(
         self, client, superuser_headers
     ):
