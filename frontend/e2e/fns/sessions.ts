@@ -13,7 +13,6 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  */
 export const viewSessions: TaskFn = async (page) => {
   await page.goto("/portal/profile")
-  await page.waitForLoadState("networkidle")
 
   // 登录设备区域在 profile 页面底部，滚动到可见
   const sessionsHeading = page.getByText("登录设备")

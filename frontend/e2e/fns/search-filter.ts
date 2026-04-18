@@ -73,6 +73,7 @@ export const testResetFilter: TaskFn = async (page) => {
  */
 export const testLocaleSwitcher: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   await page.locator("header").waitFor()
 
   // 语言切换下拉
@@ -96,6 +97,7 @@ export const testLocaleSwitcher: TaskFn = async (page) => {
  */
 export const testConsultButton: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   await page.locator("main").waitFor()
 
   // 咨询按钮在首页 CTA 区域

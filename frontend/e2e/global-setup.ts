@@ -27,6 +27,14 @@ export default async function globalSetup(): Promise<void> {
     psql("DELETE FROM \\\"user\\\" WHERE username IS NULL OR username = '' OR username LIKE 'E2E%';")
     // 清理测试角色
     psql("DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';")
+    // 清理测试分类
+    psql("DELETE FROM category WHERE slug LIKE 'e2e-%';")
+    // 清理测试文章
+    psql("DELETE FROM article WHERE title LIKE 'E2E%';")
+    // 清理测试案例
+    psql("DELETE FROM success_case WHERE student_name LIKE 'E2E%';")
+    // 清理测试院校
+    psql("DELETE FROM university WHERE name LIKE 'E2E%';")
   } catch { /* 清理失败不阻塞测试 */ }
 
   // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号

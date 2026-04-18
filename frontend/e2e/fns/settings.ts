@@ -10,28 +10,24 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 /** 验证通用配置页面 */
 export async function verifyGeneralSettings(page: Page): Promise<void> {
   await page.goto("/admin/general-settings")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
 }
 
 /** 编辑通用配置 */
 export async function editGeneralSettings(page: Page): Promise<void> {
   await page.goto("/admin/general-settings")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
 }
 
 /** 验证网页设置页面 */
 export async function verifyWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
 }
 
 /** 编辑网页设置（修改品牌名称后回滚） */
 export async function editWebSettings(page: Page): Promise<void> {
   await page.goto("/admin/web-settings")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 15_000 })
 
   // 点击品牌区域打开编辑弹窗
@@ -65,6 +61,5 @@ export async function editWebSettings(page: Page): Promise<void> {
 
   // 验证回滚成功
   await page.reload()
-  await page.waitForLoadState("networkidle")
   await expect(page.locator("main").getByText(original).first()).toBeVisible({ timeout: 10_000 })
 }

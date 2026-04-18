@@ -165,18 +165,24 @@
 - 无效路由（如 `/portal/articles`）作为 404 反向测试
 - **手机号使用 `constants.ts` 中的固定号码**，禁止 `Date.now()` 生成随机号（跨 worker 需要匹配）
 - **角色变更后必须 SMS 重新登录**（`reload-auth.ts`），不能用 `refreshToken`（后端会删 refresh_token）
-- **首页交互前加 `waitForLoadState("networkidle")`**，防止 Next.js 水合导致元素 detach
+- **禁用/启用用户后也需重新登录**：禁用时 refresh_token 被删，启用后旧 token 仍无效
+- **首页 (`/`) 交互前加 `waitForLoadState("networkidle")`**，Next.js Streaming SSR + React 水合需要时间
+- **admin 页面不用 `networkidle`**，用具体的 heading/row `waitFor` 替代（更快更精确）
+- **`goto()` 保持默认 `load`**，不加 `waitUntil: "domcontentloaded"`（Streaming SSR 内容未到达就返回）
+- **React controlled `<select>` 用 native setter**：`selectOption()` 可能不触发 React `onChange`，需用 `HTMLSelectElement.prototype.value` 的 native setter + `dispatchEvent(new Event('change', { bubbles: true }))`
+- **跨 worker 测试数据名称必须区分**：如 W1 和 W5 同时创建分类时 slug 不能相同
+- **global-setup 清理所有 E2E 数据**：user、role、category、article、success_case、university
 - **写新 fn 前先用 Playwright MCP 查看真实 DOM**（`browser_navigate` + `browser_snapshot`），不猜选择器
 
 #### 测试结果
 
 ```
-[Test Results] 230 pass / 1 fail / 3 breaker / 0 timeout (total: 234)
+[Test Results] 184 pass / 0 fail / 0 breaker / 0 timeout (total: 184)
 ```
 
 - 0 failed（含 breaker 和 timeout）为通过标准
 - 不重试，首次通过
-- 四维度覆盖率 100%
+- 四维度覆盖率 100%（API 92/92, Route 22/22, Component 166/166, Security 77/77）
 
 #### E2E 测试目录结构
 

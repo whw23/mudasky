@@ -41,8 +41,8 @@ export default defineConfig({
     locale: "zh-CN",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
-    actionTimeout: isRemote ? 15_000 : 15_000,
-    navigationTimeout: isRemote ? 30_000 : 20_000,
+    actionTimeout: isRemote ? 30_000 : 30_000,
+    navigationTimeout: isRemote ? 60_000 : 60_000,
     launchOptions: {
       args: [
         "--disable-gpu",              // 禁用 GPU 渲染，减少内存

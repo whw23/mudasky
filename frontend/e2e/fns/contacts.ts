@@ -13,7 +13,6 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
  */
 export const viewContactList: TaskFn = async (page) => {
   const response = await page.goto("/admin/contacts")
-  await page.waitForLoadState("networkidle")
 
   // 如果被重定向（无权限），报告实际 URL
   const url = page.url()
@@ -28,11 +27,9 @@ export const viewContactList: TaskFn = async (page) => {
  * 展开联系人面板。
  */
 export const expandContact: TaskFn = async (page) => {
+  // 等待列表数据加载
   const rows = page.locator("tbody tr")
-  const rowCount = await rows.count()
-  if (rowCount === 0) {
-    return
-  }
+  await rows.first().waitFor({ timeout: 15_000 })
 
   await rows.first().click()
 
@@ -55,11 +52,10 @@ export const markContactStatus: TaskFn = async (page, args) => {
 
   // 确保在联系人页面且面板已展开
   await page.goto("/admin/contacts")
-  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor()
   const rows = page.locator("tbody tr")
-  if (await rows.count() > 0) {
-    await rows.first().click()
-  }
+  await rows.first().waitFor({ timeout: 15_000 })
+  await rows.first().click()
 
   const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
   await markStatusHeading.waitFor({ timeout: 15_000 })
@@ -89,11 +85,10 @@ export const addContactNote: TaskFn = async (page, args) => {
 
   // 确保在联系人页面且面板已展开
   await page.goto("/admin/contacts")
-  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor()
   const rows = page.locator("tbody tr")
-  if (await rows.count() > 0) {
-    await rows.first().click()
-  }
+  await rows.first().waitFor({ timeout: 15_000 })
+  await rows.first().click()
 
   const addNoteHeading = page.locator("h3").filter({ hasText: "添加备注" })
   await addNoteHeading.waitFor({ timeout: 15_000 })

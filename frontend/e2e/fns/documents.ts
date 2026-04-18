@@ -21,7 +21,6 @@ function createTempFile(name: string, content: string): string {
 /** 导航到文档管理页并验证。 */
 export const viewDocuments: TaskFn = async (page) => {
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
   await expect(page.getByRole("heading", { name: "文档管理" })).toBeVisible()
   await expect(page.getByRole("button", { name: "上传文档" })).toBeVisible()
 }
@@ -32,7 +31,6 @@ export const uploadDocument: TaskFn = async (page, args) => {
   const content = args?.content as string || "E2E test content"
 
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
 
   const tmpFile = createTempFile(fileName, content)
 
@@ -83,7 +81,6 @@ export const uploadDocument: TaskFn = async (page, args) => {
 export const verifyDocumentInList: TaskFn = async (page, args) => {
   const fileName = args?.fileName as string
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
   try {
     await expect(page.getByText(fileName).first()).toBeVisible({ timeout: 15_000 })
   } catch {
@@ -97,21 +94,39 @@ export const verifyDocumentInList: TaskFn = async (page, args) => {
 export const deleteDocument: TaskFn = async (page, args) => {
   const fileName = args?.fileName as string
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "文档管理" }).waitFor()
 
-  // 找到文件行，点击删除
-  const row = page.locator("tr", { hasText: fileName })
+  // 记录删除前的匹配行数
+  const rows = page.locator("tr", { hasText: fileName })
+  await rows.first().waitFor({ timeout: 15_000 })
+  const countBefore = await rows.count()
+
+  // 找到第一行，点击删除
   page.once("dialog", (d) => d.accept())
-  await row.getByRole("button", { name: /删除/ }).click()
+  const deleteResponse = page.waitForResponse(
+    (r) => r.url().includes("/portal/documents/list/detail/delete") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  await rows.first().getByRole("button", { name: /删除/ }).click()
 
-  // 等待文件从列表消失
-  await expect(page.getByText(fileName)).not.toBeVisible()
+  // 等待 API 响应
+  const res = await deleteResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`删除 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
+
+  // 等待行数减少
+  if (countBefore <= 1) {
+    await expect(page.getByText(fileName)).not.toBeVisible()
+  } else {
+    await expect(rows).toHaveCount(countBefore - 1)
+  }
 }
 
 /** 切换文档分类 Tab。 */
 export const switchDocumentTab: TaskFn = async (page) => {
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
 
   const allTab = page.getByRole("tab", { name: "全部" })
   await expect(allTab).toBeVisible()
@@ -129,6 +144,5 @@ export const switchDocumentTab: TaskFn = async (page) => {
 /** 验证存储用量显示。 */
 export const viewStorageUsage: TaskFn = async (page) => {
   await page.goto("/portal/documents")
-  await page.waitForLoadState("networkidle")
   await expect(page.getByText("存储用量")).toBeVisible()
 }

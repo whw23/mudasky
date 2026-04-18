@@ -19,7 +19,6 @@ export const verifyPermissionAllowed: TaskFn = async (page, args) => {
 
   for (const route of routes) {
     await page.goto(route)
-    await page.waitForLoadState("networkidle")
     await expect(page.locator("main")).toBeVisible()
   }
 }

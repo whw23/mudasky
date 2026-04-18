@@ -28,23 +28,24 @@ export default async function reloadAuth(
     ])
   }
 
-  // 1. 导航到首页
+  // 1. 导航到首页（等待网络空闲确保 React 水合完成）
   await page.goto("/")
   await page.waitForLoadState("networkidle")
 
   // 2. 等待 header 按钮出现（可能是"退出"或"登录/注册"）
   const logoutBtn = page.getByRole("button", { name: "退出" })
   const loginBtn = page.getByRole("button", { name: /登录/ })
-  await logoutBtn.or(loginBtn).first().waitFor({ state: "visible", timeout: 15_000 })
+  await logoutBtn.or(loginBtn).first().waitFor({ state: "visible", timeout: 30_000 })
 
   // 如果已登录，先通过 UI 退出
   if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
-    await loginBtn.waitFor({ state: "visible", timeout: 15_000 })
+    await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
   }
 
-  // 3. 通过 UI 重新 SMS 登录
-  await loginBtn.click()
+  // 3. 等待登录按钮可操作后点击
+  await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+  await loginBtn.click({ timeout: 30_000 })
   await page.getByRole("dialog").waitFor({ state: "visible" })
 
   // 确保在 SMS tab

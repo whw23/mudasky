@@ -14,7 +14,6 @@ export async function createRole(page: Page, args?: Record<string, unknown>): Pr
   const description = String(args?.description ?? "")
 
   await page.goto("/admin/roles")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
   await page.getByRole("button", { name: "创建角色" }).click()
@@ -36,7 +35,6 @@ export async function editRole(page: Page, args?: Record<string, unknown>): Prom
   const newDescription = String(args?.newDescription ?? "")
 
   await page.goto("/admin/roles")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
   // 角色名的直接父级就是角色行，包含编辑按钮
@@ -72,7 +70,6 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
   const expectFail = Boolean(args?.expectFail ?? false)
 
   await page.goto("/admin/roles")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
 
   if (expectFail) {
@@ -95,7 +92,6 @@ export async function deleteRole(page: Page, args?: Record<string, unknown>): Pr
 /** 验证角色列表可见 */
 export async function verifyRoleList(page: Page): Promise<void> {
   await page.goto("/admin/roles")
-  await page.waitForLoadState("networkidle")
   await page.getByRole("heading", { name: "角色管理" }).waitFor()
   await expect(page.getByText("superuser")).toBeVisible()
   await expect(page.getByRole("button", { name: "创建角色" })).toBeVisible()

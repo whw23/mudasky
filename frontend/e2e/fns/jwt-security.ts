@@ -18,6 +18,7 @@ const XHR = { "X-Requested-With": "XMLHttpRequest" }
  */
 export const testMissingToken: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   await page.context().clearCookies()
 
   const res = await page.request.get("/api/admin/users/list", { headers: XHR })
@@ -31,6 +32,7 @@ export const testMissingToken: TaskFn = async (page) => {
  */
 export const testInvalidToken: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   const domain = new URL(page.url()).hostname
 
   await page.context().clearCookies()
@@ -54,6 +56,7 @@ export const testInvalidToken: TaskFn = async (page) => {
  */
 export const testTamperedJwt: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   const domain = new URL(page.url()).hostname
 
   // 构造一个看起来像 JWT 但签名无效的 token
@@ -83,6 +86,7 @@ export const testTamperedJwt: TaskFn = async (page) => {
  */
 export const testValidToken: TaskFn = async (page) => {
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   const res = await page.request.get("/api/public/config/site_info", { headers: XHR })
   expect(res.status()).toBe(200)
 }

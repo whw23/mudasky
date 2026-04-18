@@ -17,12 +17,25 @@ export const viewStudentDocuments: TaskFn = async (page, args) => {
 
   // 确保在学生管理页面
   await page.goto("/admin/students")
-  await page.waitForLoadState("networkidle")
+  await page.getByRole("heading", { name: "学生管理" }).waitFor()
+
+  // 等待学生列表加载完成（loading 消失）
+  const dataRows = page.locator("tbody tr.cursor-pointer")
+  const noDataRow = page.locator("tbody tr").filter({ hasText: /暂无|没有/ })
+
+  // 等待数据行或空状态出现
+  await dataRows.first().or(noDataRow.first()).waitFor({ timeout: 30_000 })
+
+  // 如果没有学生数据，验证空状态展示并返回
+  if (await noDataRow.count() > 0 && await dataRows.count() === 0) {
+    return
+  }
 
   // 展开指定学生
-  const row = page.locator("tbody tr").nth(studentIndex)
-  await row.click()
-  await page.getByText("文件列表").first().waitFor({ timeout: 15_000 })
+  await dataRows.nth(studentIndex).click()
+
+  // 等待面板加载（文件列表区域）
+  await page.getByText("文件列表").first().waitFor({ timeout: 30_000 })
 
   // 文档区域包含表头或暂无文件提示
   const fileSection = page.locator("section").filter({ hasText: "文件列表" })

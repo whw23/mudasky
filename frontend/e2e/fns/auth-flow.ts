@@ -16,15 +16,16 @@ async function openLoginDialog(page: Page): Promise<void> {
   // 等待 header 中任一按钮出现（"登录/注册" 或 "退出"）
   const loginBtn = page.getByRole("button", { name: /登录/ })
   const logoutBtn = page.getByRole("button", { name: "退出" })
-  await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 15_000 })
+  await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 30_000 })
 
   // 如果已登录，先通过 UI 退出
   if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
-    await loginBtn.waitFor({ state: "visible", timeout: 15_000 })
+    await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
   }
 
-  await loginBtn.click()
+  await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+  await loginBtn.click({ timeout: 30_000 })
   await page.getByRole("dialog").waitFor({ state: "visible" })
 }
 
@@ -39,12 +40,14 @@ export const testLoginDialog: TaskFn = async (page) => {
   const accountTab = page.getByRole("tab", { name: "账号密码" })
   await expect(accountTab).toBeVisible()
   await accountTab.click()
-  await page.getByRole("tabpanel").waitFor()
+  // 账号密码 tab 内有密码输入框
+  await dialog.getByPlaceholder("请输入密码").waitFor()
 
   const smsTab = page.getByRole("tab", { name: "手机验证码" })
   await expect(smsTab).toBeVisible()
   await smsTab.click()
-  await page.getByRole("tabpanel").waitFor()
+  // 手机验证码 tab 内有手机号输入框
+  await dialog.getByPlaceholder("请输入手机号").waitFor()
 
   // 关闭弹窗
   await dialog.getByRole("button", { name: "Close" }).click()

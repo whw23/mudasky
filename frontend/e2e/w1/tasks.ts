@@ -241,8 +241,8 @@ export const tasks: Task[] = [
     requires: ["w1_login"],
     fn: createCategory,
     fnArgs: {
-      name: `E2E分类-${TS}`,
-      slug: `e2e-cat-${TS}`,
+      name: `E2E分类W1-${TS}`,
+      slug: `e2e-cat-w1-${TS}`,
       description: "E2E测试分类",
       sortOrder: 10,
     },
@@ -260,8 +260,8 @@ export const tasks: Task[] = [
     requires: ["w1_crud_category_create"],
     fn: editCategory,
     fnArgs: {
-      oldName: `E2E分类-${TS}`,
-      newName: `E2E分类-${TS}-edited`,
+      oldName: `E2E分类W1-${TS}`,
+      newName: `E2E分类W1-${TS}-edited`,
     },
     coverage: {
       routes: ["/admin/categories"],
@@ -277,7 +277,7 @@ export const tasks: Task[] = [
     requires: ["w1_crud_category_edit"],
     fn: deleteCategory,
     fnArgs: {
-      name: `E2E分类-${TS}-edited`,
+      name: `E2E分类W1-${TS}-edited`,
     },
     coverage: {
       routes: ["/admin/categories"],

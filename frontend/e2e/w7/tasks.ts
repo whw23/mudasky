@@ -59,6 +59,7 @@ export const tasks: Task[] = [
     name: "验证启用后访问恢复",
     requires: ["w1_enable_temp"],
     fn: verifyEnabledApi,
+    fnArgs: { phone: PHONES.w7_disabled },
     coverage: {
       security: [["auth", "enabled-user-200"]],
     },

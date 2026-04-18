@@ -35,7 +35,6 @@ export async function verifyAdminSidebar(page: Page, args?: Record<string, unkno
     : role === "advisor" ? "/admin/students"
     : "/admin/dashboard"
   await page.goto(firstPage)
-  await page.waitForLoadState("networkidle")
 
   const sidebar = page.locator("aside, [role='complementary']").first()
   await sidebar.waitFor()
@@ -61,7 +60,6 @@ export async function testAdminNavigation(page: Page, args?: Record<string, unkn
   const role = String(args?.role ?? "superuser")
 
   await page.goto("/admin/dashboard")
-  await page.waitForLoadState("networkidle")
 
   const sidebar = page.locator("aside, [role='complementary']").first()
   const expectedMenus = ROLE_MENUS[role] || ROLE_MENUS.superuser
@@ -72,7 +70,6 @@ export async function testAdminNavigation(page: Page, args?: Record<string, unkn
     const link = sidebar.getByRole("link", { name: item })
     if (await link.isVisible().catch(() => false)) {
       await link.click()
-      await page.waitForLoadState("networkidle")
     }
   }
 
@@ -84,7 +81,6 @@ export async function testAdminNavigation(page: Page, args?: Record<string, unkn
 /** 验证仪表盘 */
 export async function verifyDashboard(page: Page): Promise<void> {
   await page.goto("/admin/dashboard")
-  await page.waitForLoadState("networkidle")
   await page.locator("main").waitFor()
 
   // 验证仪表盘有内容（标题或统计卡片）
@@ -97,7 +93,6 @@ export async function verifyMenuHighlight(page: Page, args?: Record<string, unkn
   const path = String(args?.path ?? "/admin/users")
 
   await page.goto(path)
-  await page.waitForLoadState("networkidle")
 
   // 验证当前菜单存在于侧边栏
   const sidebar = page.locator("aside, [role='complementary']").first()

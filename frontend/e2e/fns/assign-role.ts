@@ -55,13 +55,7 @@ export default async function assignRole(
     { timeout: 10_000 },
   )
 
-  // 确认当前选中的不是目标角色
-  const currentText = await combobox.locator("option:checked").textContent()
-  if (currentText?.trim() === roleName) {
-    return // 已是目标角色，跳过
-  }
-
-  // 选择角色并验证（重试最多 3 次，防止 React 重渲染重置选择）
+  // 获取目标角色 ID
   const targetRoleId = await combobox.evaluate(
     (el: HTMLSelectElement, label: string) =>
       Array.from(el.options).find(o => o.text === label)?.value ?? "",
@@ -69,13 +63,29 @@ export default async function assignRole(
   )
   if (!targetRoleId) throw new Error(`未找到角色选项: "${roleName}"`)
 
+  // 确认当前选中的不是目标角色
+  const currentValue = await combobox.inputValue()
+  if (currentValue === targetRoleId) {
+    return // 已是目标角色，跳过
+  }
+
+  // 使用 React 兼容方式设置 select 值（重试最多 3 次）
   for (let attempt = 0; attempt < 3; attempt++) {
-    await combobox.selectOption({ label: roleName })
+    // 通过 native setter + dispatchEvent 触发 React onChange
+    await combobox.evaluate((el: HTMLSelectElement, value: string) => {
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLSelectElement.prototype, "value",
+      )?.set
+      nativeSetter?.call(el, value)
+      el.dispatchEvent(new Event("change", { bubbles: true }))
+    }, targetRoleId)
+
+    // 等待 React 重渲染
+    await page.waitForTimeout(300)
+
     // 验证选择生效
-    const currentValue = await combobox.inputValue()
-    if (currentValue === targetRoleId) break
-    // 没生效，等一下再试
-    await page.waitForTimeout(200)
+    const val = await combobox.inputValue()
+    if (val === targetRoleId) break
   }
 
   // 最终确认
