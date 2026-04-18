@@ -36,11 +36,75 @@ header() {
   echo ""
 }
 
-# 运行命令并同时输出到终端和文件
+# 运行命令并同时输出到终端和文件（允许非零退出码）
 run_and_log() {
   local log_file="$1"
   shift
-  "$@" 2>&1 | tee "$RESULTS_DIR/$log_file"
+  "$@" 2>&1 | tee "$RESULTS_DIR/$log_file" || true
+}
+
+# 从 pytest 日志提取摘要并写入 JSON
+parse_pytest_summary() {
+  local log_file="$RESULTS_DIR/$1"
+  local output_file="$RESULTS_DIR/$2"
+  local passed failed errors warnings coverage
+  # 解析 "X passed, Y failed, Z errors, W warnings"
+  passed=$(grep -oP '\d+(?= passed)' "$log_file" | tail -1 || echo 0)
+  failed=$(grep -oP '\d+(?= failed)' "$log_file" | tail -1 || echo 0)
+  errors=$(grep -oP '\d+(?= error)' "$log_file" | tail -1 || echo 0)
+  warnings=$(grep -oP '\d+(?= warning)' "$log_file" | tail -1 || echo 0)
+  skipped=$(grep -oP '\d+(?= skipped)' "$log_file" | tail -1 || echo 0)
+  coverage=$(grep -oP 'TOTAL\s+\d+\s+\d+\s+\K\d+' "$log_file" | tail -1 || echo "")
+  cat > "$output_file" <<EOF
+{
+  "passed": ${passed:-0},
+  "failed": ${failed:-0},
+  "errors": ${errors:-0},
+  "skipped": ${skipped:-0},
+  "warnings": ${warnings:-0},
+  "coverage": "${coverage:-N/A}%"
+}
+EOF
+}
+
+# 从 vitest 日志提取摘要
+parse_vitest_summary() {
+  local log_file="$RESULTS_DIR/$1"
+  local output_file="$RESULTS_DIR/$2"
+  local test_files_passed test_files_failed tests_passed tests_failed
+  test_files_passed=$(grep -oP '\d+(?= passed)' "$log_file" | head -1 || echo 0)
+  test_files_failed=$(grep -oP '\d+(?= failed)' "$log_file" | head -1 || echo 0)
+  tests_passed=$(grep -oP '\d+(?= passed)' "$log_file" | tail -1 || echo 0)
+  tests_failed=$(grep -oP '\d+(?= failed)' "$log_file" | tail -1 || echo 0)
+  cat > "$output_file" <<EOF
+{
+  "test_files_passed": ${test_files_passed:-0},
+  "test_files_failed": ${test_files_failed:-0},
+  "tests_passed": ${tests_passed:-0},
+  "tests_failed": ${tests_failed:-0}
+}
+EOF
+}
+
+# 从 E2E 日志提取摘要
+parse_e2e_summary() {
+  local log_file="$RESULTS_DIR/$1"
+  local output_file="$RESULTS_DIR/$2"
+  local pass fail breaker timeout total
+  pass=$(grep -oP '\d+(?= pass)' "$log_file" | tail -1 || echo 0)
+  fail=$(grep -oP '\d+(?= fail)' "$log_file" | tail -1 || echo 0)
+  breaker=$(grep -oP '\d+(?= breaker)' "$log_file" | tail -1 || echo 0)
+  timeout=$(grep -oP '\d+(?= timeout)' "$log_file" | tail -1 || echo 0)
+  total=$(grep -oP 'total: \K\d+' "$log_file" | tail -1 || echo 0)
+  cat > "$output_file" <<EOF
+{
+  "pass": ${pass:-0},
+  "fail": ${fail:-0},
+  "breaker": ${breaker:-0},
+  "timeout": ${timeout:-0},
+  "total": ${total:-0}
+}
+EOF
 }
 
 # 后端单元测试
@@ -51,6 +115,7 @@ run_unit() {
     --ignore=backend/api/tests/e2e \
     --cov=api --cov-report=term-missing \
     --cov-report="html:$RESULTS_DIR/pytest-coverage"
+  parse_pytest_summary "unit.log" "unit-summary.json"
 }
 
 # 后端网关集成测试
@@ -65,6 +130,7 @@ run_gateway() {
   load_env
   run_and_log "gateway.log" \
     uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
+  parse_pytest_summary "gateway.log" "gateway-summary.json"
 }
 
 # 前端单元测试
@@ -73,6 +139,7 @@ run_vitest() {
   VITEST_COVERAGE_DIR="../$RESULTS_DIR/vitest-coverage" \
     run_and_log "vitest.log" \
     pnpm --prefix frontend test -- --coverage
+  parse_vitest_summary "vitest.log" "vitest-summary.json"
 }
 
 # 检查本地容器是否为生产构建
@@ -104,6 +171,7 @@ run_e2e() {
   check_prod_container
   run_and_log "e2e.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  parse_e2e_summary "e2e.log" "e2e-summary.json"
 }
 
 # 前端 E2E (LAST_NOT_PASS)
@@ -112,6 +180,7 @@ run_e2e_lnp() {
   check_prod_container
   LAST_NOT_PASS=1 run_and_log "e2e-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  parse_e2e_summary "e2e-lnp.log" "e2e-lnp-summary.json"
 }
 
 # 线上 E2E
@@ -124,6 +193,7 @@ run_e2e_prod() {
   fi
   TEST_ENV=production run_and_log "e2e-prod.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  parse_e2e_summary "e2e-prod.log" "e2e-prod-summary.json"
 }
 
 # 线上 E2E (LAST_NOT_PASS)
@@ -136,6 +206,7 @@ run_e2e_prod_lnp() {
   fi
   LAST_NOT_PASS=1 TEST_ENV=production run_and_log "e2e-prod-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  parse_e2e_summary "e2e-prod-lnp.log" "e2e-prod-lnp-summary.json"
 }
 
 # 主逻辑
