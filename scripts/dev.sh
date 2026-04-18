@@ -33,9 +33,9 @@ case "${1:-}" in
   --prod)
     echo "构建并启动生产容器（E2E 测试用）..."
     docker compose down
-    docker build -t ghcr.io/whw23/mudasky-gateway:latest ./gateway
-    docker build -t ghcr.io/whw23/mudasky-api:latest -f backend/api/Dockerfile ./backend
-    docker build -t ghcr.io/whw23/mudasky-frontend:latest ./frontend
+    docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-gateway:latest ./gateway
+    docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-api:latest -f backend/api/Dockerfile ./backend
+    docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-frontend:latest ./frontend
     docker compose -f docker-compose.yml up -d
     echo "生产容器已启动，可运行 ./scripts/test.sh e2e"
     ;;

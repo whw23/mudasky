@@ -59,6 +59,7 @@ run_vitest() {
 }
 
 # 检查本地容器是否为生产构建
+# dev = 开发容器, local = 本地生产容器, YYYYMMDD-hash = 线上生产容器
 check_prod_container() {
   local version
   version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
@@ -67,13 +68,14 @@ check_prod_container() {
     echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
     exit 1
   fi
-  # 开发容器版本号为 "dev"，生产容器为 "YYYYMMDD-hash"
   if echo "$version" | grep -q '"frontend":"dev"'; then
-    echo -e "${RED}错误: 当前运行的是开发容器，E2E 需要生产容器${NC}"
+    echo -e "${RED}错误: 当前运行的是开发容器（version=dev），E2E 需要生产容器${NC}"
     echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
     exit 1
   fi
-  echo -e "${GREEN}✓ 生产容器已就绪${NC}"
+  local fe_version
+  fe_version=$(echo "$version" | python3 -c "import sys,json; print(json.load(sys.stdin).get('frontend',''))" 2>/dev/null || echo "")
+  echo -e "${GREEN}✓ 生产容器已就绪 (version=$fe_version)${NC}"
 }
 
 # 前端 E2E
