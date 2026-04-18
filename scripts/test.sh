@@ -211,6 +211,7 @@ export E2E_SIGNAL_DIR="$(pwd)/$RESULTS_DIR/e2e-signals"
 
 run_e2e() {
   check_prod_container || return 1
+  load_env
   run_and_log "e2e.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
   local rc=$?
@@ -220,6 +221,7 @@ run_e2e() {
 
 run_e2e_lnp() {
   check_prod_container || return 1
+  load_env
   LAST_NOT_PASS=1 run_and_log "e2e-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
   local rc=$?
