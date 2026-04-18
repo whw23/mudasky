@@ -260,6 +260,7 @@ export const tasks: Task[] = [
       description: "E2E_239_测试分类",
       sortOrder: 10,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/nav/list", "/admin/web-settings/nav/add-item"],
@@ -276,6 +277,7 @@ export const tasks: Task[] = [
     fnArgs: {
       name: `E2E_239_分类W1-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/nav/remove-item"],
@@ -295,6 +297,7 @@ export const tasks: Task[] = [
       slug: `e2e-239-article-${TS}`,
       content: "E2E_239_测试文章内容",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list", "/admin/web-settings/articles/list/create"],
@@ -312,6 +315,7 @@ export const tasks: Task[] = [
       oldTitle: `E2E_239_文章-${TS}`,
       newTitle: `E2E_239_文章-${TS}-edited`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list/detail/edit"],
@@ -328,6 +332,7 @@ export const tasks: Task[] = [
     fnArgs: {
       title: `E2E_239_文章-${TS}-edited`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list/detail/delete"],
@@ -348,6 +353,7 @@ export const tasks: Task[] = [
       program: "E2E_239_专业",
       year: 2026,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list", "/admin/web-settings/cases/list/create"],
@@ -365,6 +371,7 @@ export const tasks: Task[] = [
       studentName: `E2E_239_学生-${TS}`,
       newUniversity: "E2E_239_大学-edited",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/edit"],
@@ -381,6 +388,7 @@ export const tasks: Task[] = [
     fnArgs: {
       studentName: `E2E_239_学生-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/delete"],
@@ -401,6 +409,7 @@ export const tasks: Task[] = [
       country: "E2E_239_国家",
       city: "E2E_239_城市",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list", "/admin/web-settings/universities/list/create"],
@@ -418,6 +427,7 @@ export const tasks: Task[] = [
       name: `E2E_239_院校-${TS}`,
       newCity: "E2E_239_城市-edited",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/edit"],
@@ -434,6 +444,7 @@ export const tasks: Task[] = [
     fnArgs: {
       name: `E2E_239_院校-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/delete"],
@@ -572,6 +583,7 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: verifyGeneralSettings,
     fnArgs: {},
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/general-settings"],
       api: ["/admin/general-settings/list"],
@@ -586,6 +598,7 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: verifyWebSettings,
     fnArgs: {},
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/list"],

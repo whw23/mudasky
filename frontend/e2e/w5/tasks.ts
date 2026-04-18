@@ -76,6 +76,7 @@ export const tasks: Task[] = [
       description: "E2E_239_测试分类",
       sortOrder: 100,
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/categories/list", "/api/admin/web-settings/categories/list/create"],
@@ -96,6 +97,7 @@ export const tasks: Task[] = [
       oldName: `E2E_239_分类-${TS}`,
       newName: `E2E_239_分类-${TS}-edited`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/categories/list/detail/edit"],
       components: [["CategoryDialog", "edit-button"]],
@@ -108,6 +110,7 @@ export const tasks: Task[] = [
     requires: ["w5_edit_category"],
     fn: deleteCategory,
     fnArgs: { name: `E2E_239_分类-${TS}-edited` },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/categories/list/detail/delete"],
       components: [["CategoryDialog", "delete-button"]],
@@ -126,6 +129,7 @@ export const tasks: Task[] = [
       slug: `e2e-239-article-${TS}`,
       content: "E2E_239_测试文章内容",
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/articles/list", "/api/admin/web-settings/articles/list/create"],
@@ -147,6 +151,7 @@ export const tasks: Task[] = [
       oldTitle: `E2E_239_文章-${TS}`,
       newTitle: `E2E_239_文章-${TS}-edited`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/articles/list/detail/edit"],
       components: [["ArticleDialog", "edit-button"]],
@@ -159,6 +164,7 @@ export const tasks: Task[] = [
     requires: ["w5_edit_article"],
     fn: deleteArticle,
     fnArgs: { title: `E2E_239_文章-${TS}-edited` },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/articles/list/detail/delete"],
       components: [["ArticleDialog", "delete-button"]],
@@ -178,6 +184,7 @@ export const tasks: Task[] = [
       program: "计算机科学",
       year: 2026,
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/cases/list", "/api/admin/web-settings/cases/list/create"],
@@ -198,6 +205,7 @@ export const tasks: Task[] = [
       studentName: `E2E_239_学生-${TS}`,
       newUniversity: "E2E_239_大学-edited",
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/cases/list/detail/edit"],
       components: [["CaseDialog", "edit-button"]],
@@ -210,6 +218,7 @@ export const tasks: Task[] = [
     requires: ["w5_edit_case"],
     fn: deleteCase,
     fnArgs: { studentName: `E2E_239_学生-${TS}` },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/cases/list/detail/delete"],
       components: [["CaseDialog", "delete-button"]],
@@ -229,6 +238,7 @@ export const tasks: Task[] = [
       country: "中国",
       city: "北京",
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/universities/list", "/api/admin/web-settings/universities/list/create"],
@@ -249,6 +259,7 @@ export const tasks: Task[] = [
       name: `E2E_239_院校-${TS}`,
       newCity: "上海",
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/universities/list/detail/edit"],
       components: [["UniversityDialog", "edit-button"]],
@@ -261,6 +272,7 @@ export const tasks: Task[] = [
     requires: ["w5_edit_university"],
     fn: deleteUniversity,
     fnArgs: { name: `E2E_239_院校-${TS}` },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/universities/list/detail/delete"],
       components: [["UniversityDialog", "delete-button"]],
@@ -274,6 +286,7 @@ export const tasks: Task[] = [
     name: "查看通用配置",
     requires: ["w5_reload_auth"],
     fn: verifyGeneralSettings,
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/general-settings"],
       api: ["/api/admin/general-settings/list"],
@@ -291,6 +304,7 @@ export const tasks: Task[] = [
       field: "hotline",
       newValue: `400-TEST-${TS}`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/general-settings/list/detail/edit"],
       components: [["EditableOverlay", "edit-button"]],
@@ -304,6 +318,7 @@ export const tasks: Task[] = [
     name: "查看网页设置",
     requires: ["w5_reload_auth"],
     fn: verifyWebSettings,
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/api/admin/web-settings/list"],
@@ -321,6 +336,7 @@ export const tasks: Task[] = [
       field: "tagline",
       newValue: `E2E-标语-${TS}`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/list/detail/edit"],
       components: [["EditableOverlay", "save-button"]],

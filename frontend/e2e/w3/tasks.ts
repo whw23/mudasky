@@ -109,6 +109,7 @@ export const tasks: Task[] = [
     requires: ["w3_students_view"],
     fn: toggleMyStudentsFilter,
     fnArgs: {},
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/students"],
       api: ["/admin/students/list"],
@@ -123,6 +124,7 @@ export const tasks: Task[] = [
     requires: ["w3_students_view"],
     fn: expandStudent,
     fnArgs: {},
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/students"],
       api: ["/admin/students/list/detail"],
@@ -139,6 +141,7 @@ export const tasks: Task[] = [
     fnArgs: {
       note: `E2E-advisor-note-${TS}`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/students"],
       api: ["/admin/students/list/detail/edit"],
@@ -157,6 +160,7 @@ export const tasks: Task[] = [
     fnArgs: {
       studentIndex: 0,
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/students"],
       api: ["/admin/students/list/detail/documents"],
@@ -187,6 +191,7 @@ export const tasks: Task[] = [
     requires: ["w3_contacts_view"],
     fn: expandContact,
     fnArgs: {},
+    backupWorkers: ["w1", "w6"],
     coverage: {
       routes: ["/admin/contacts"],
       api: ["/admin/contacts/list/detail"],
@@ -203,6 +208,7 @@ export const tasks: Task[] = [
     fnArgs: {
       status: "contacted",
     },
+    backupWorkers: ["w1", "w6"],
     coverage: {
       routes: ["/admin/contacts"],
       api: ["/admin/contacts/list/detail/mark"],
@@ -219,6 +225,7 @@ export const tasks: Task[] = [
     fnArgs: {
       note: `E2E-advisor-contact-note-${TS}`,
     },
+    backupWorkers: ["w1", "w6"],
     coverage: {
       routes: ["/admin/contacts"],
       api: ["/admin/contacts/list/detail/note"],

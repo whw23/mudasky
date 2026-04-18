@@ -279,6 +279,7 @@ export const tasks: Task[] = [
       category: "other",
       content: "E2E_239_student test document",
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/portal/documents"],
       api: ["/portal/documents/list/upload"],
@@ -309,6 +310,7 @@ export const tasks: Task[] = [
     requires: ["w2_documents_view"],
     fn: switchDocumentTab,
     fnArgs: {},
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/portal/documents"],
       api: [],
@@ -323,6 +325,7 @@ export const tasks: Task[] = [
     requires: ["w2_documents_upload"],
     fn: viewStorageUsage,
     fnArgs: {},
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/portal/documents"],
       api: [],
@@ -339,6 +342,7 @@ export const tasks: Task[] = [
     fnArgs: {
       fileName: `E2E_239_student-doc-${TS}.txt`,
     },
+    backupWorkers: ["w1"],
     coverage: {
       routes: ["/portal/documents"],
       api: ["/portal/documents/list/detail/delete"],
