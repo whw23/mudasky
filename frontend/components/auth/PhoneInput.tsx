@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
-import { useConfig } from '@/contexts/ConfigContext'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import type { CountryCode } from '@/types/config'
 
 interface PhoneInputProps {
@@ -60,7 +60,7 @@ export function PhoneInput({
   required,
   disabled,
 }: PhoneInputProps) {
-  const { countryCodes } = useConfig()
+  const countryCodes = useCountryCodes()
   const parsed = parsePhone(value, countryCodes)
   const [countryCode, setCountryCode] = useState(parsed.countryCode)
   const localNumber = parsed.local

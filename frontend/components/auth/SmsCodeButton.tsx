@@ -11,21 +11,21 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
 import { isValidPhone } from '@/components/auth/PhoneInput'
-import { useConfig } from '@/contexts/ConfigContext'
 import { getApiError } from '@/lib/api-error'
+import type { CountryCode } from '@/types/config'
 
 interface SmsCodeButtonProps {
   phone: string
+  countryCodes: CountryCode[]
   disabled?: boolean
 }
 
 /** 短信验证码发送按钮 */
-export function SmsCodeButton({ phone, disabled }: SmsCodeButtonProps) {
+export function SmsCodeButton({ phone, countryCodes, disabled }: SmsCodeButtonProps) {
   const [countdown, setCountdown] = useState(0)
   const [sending, setSending] = useState(false)
   const t = useTranslations('Auth')
   const tErr = useTranslations('ApiErrors')
-  const { countryCodes } = useConfig()
   const phoneValid = isValidPhone(phone, countryCodes)
 
   useEffect(() => {

@@ -8,6 +8,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/use-auth'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import { getApiError } from '@/lib/api-error'
@@ -29,6 +30,7 @@ import { PhoneInput } from './PhoneInput'
 /** 注册弹窗组件 */
 export function RegisterModal() {
   const { authModal, hideAuthModal, fetchUser, showLoginModal } = useAuth()
+  const countryCodes = useCountryCodes()
   const t = useTranslations('Auth')
   const tErr = useTranslations('ApiErrors')
 
@@ -122,7 +124,7 @@ export function RegisterModal() {
                   autoComplete="one-time-code"
                   required
                 />
-                <SmsCodeButton phone={phone} />
+                <SmsCodeButton phone={phone} countryCodes={countryCodes} />
               </div>
             </div>
 

@@ -9,6 +9,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import api from '@/lib/api'
 import { getApiError } from '@/lib/api-error'
 import {
@@ -26,6 +27,7 @@ import { PhoneInput } from '@/components/auth/PhoneInput'
 /** 修改手机号表单 */
 export function ChangePhone() {
   const { fetchUser } = useAuth()
+  const countryCodes = useCountryCodes()
   const t = useTranslations('Profile')
   const tErr = useTranslations('ApiErrors')
 
@@ -83,7 +85,7 @@ export function ChangePhone() {
                 autoComplete="one-time-code"
                 required
               />
-              <SmsCodeButton phone={phone} />
+              <SmsCodeButton phone={phone} countryCodes={countryCodes} />
             </div>
           </div>
           <Button type="submit" disabled={loading}>
