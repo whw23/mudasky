@@ -47,4 +47,19 @@ class ConfigService:
                     max_updated = config.updated_at
             else:
                 result[key] = {}
+        # 导航栏配置
+        nav = await repository.get_by_key(self.session, "nav_config")
+        if nav:
+            result["nav_config"] = nav.value
+            if nav.updated_at and nav.updated_at > max_updated:
+                max_updated = nav.updated_at
+        else:
+            result["nav_config"] = {
+                "order": [
+                    "home", "universities", "study-abroad",
+                    "requirements", "cases", "visa",
+                    "life", "news", "about",
+                ],
+                "custom_items": [],
+            }
         return result, max_updated

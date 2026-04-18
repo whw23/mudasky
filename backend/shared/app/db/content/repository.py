@@ -205,6 +205,20 @@ async def list_all_articles(
     return articles, total
 
 
+async def delete_articles_by_category(
+    session: AsyncSession, category_id: str
+) -> None:
+    """删除指定分类下的所有文章。"""
+    stmt = select(Article).where(
+        Article.category_id == category_id
+    )
+    result = await session.execute(stmt)
+    articles = result.scalars().all()
+    for article in articles:
+        await session.delete(article)
+    await session.commit()
+
+
 async def delete_article(
     session: AsyncSession, article: Article
 ) -> None:

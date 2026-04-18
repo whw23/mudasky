@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react"
 import { Phone, Menu, X } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -19,18 +19,31 @@ import { LocaleSwitcher } from "./LocaleSwitcher"
 import { HeaderLogo } from "./HeaderLogo"
 import { useHydrated } from "@/hooks/useHydrated"
 
-/** 导航菜单键与路径映射 */
-const NAV_KEYS = [
-  { key: "home", href: "/" },
-  { key: "universities", href: "/universities" },
-  { key: "studyAbroad", href: "/study-abroad" },
-  { key: "requirements", href: "/requirements" },
-  { key: "cases", href: "/cases" },
-  { key: "visa", href: "/visa" },
-  { key: "life", href: "/life" },
-  { key: "news", href: "/news" },
-  { key: "about", href: "/about" },
-] as const
+/** 预设导航项 key → href 映射 */
+const BUILTIN_HREF: Record<string, string> = {
+  home: "/",
+  universities: "/universities",
+  "study-abroad": "/study-abroad",
+  requirements: "/requirements",
+  cases: "/cases",
+  visa: "/visa",
+  life: "/life",
+  news: "/news",
+  about: "/about",
+}
+
+/** 预设导航项 key → 翻译 key 映射（kebab-case → camelCase） */
+const NAV_KEY_TO_I18N: Record<string, string> = {
+  home: "home",
+  universities: "universities",
+  "study-abroad": "studyAbroad",
+  requirements: "requirements",
+  cases: "cases",
+  visa: "visa",
+  life: "life",
+  news: "news",
+  about: "about",
+}
 
 /** 判断导航项是否激活 */
 function isActive(pathname: string, href: string): boolean {
@@ -48,9 +61,10 @@ interface HeaderProps {
 
 export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: HeaderProps) {
   const pathname = usePathname()
+  const locale = useLocale()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
-  const { siteInfo } = useLocalizedConfig()
+  const { siteInfo, navConfig } = useLocalizedConfig()
   const rawConfig = useConfig()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
@@ -63,6 +77,20 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
   const tagline = siteInfo.tagline || tHeader("tagline")
   const hotline = siteInfo.hotline
   const hotlineContact = siteInfo.hotline_contact
+
+  /** 根据 navConfig 生成导航项列表 */
+  const navItems = navConfig.order.map((key) => {
+    const i18nKey = NAV_KEY_TO_I18N[key]
+    if (i18nKey) {
+      // 预设项
+      return { key, href: BUILTIN_HREF[key] || `/${key}`, label: tNav(i18nKey) }
+    }
+    // 自定义项
+    const custom = navConfig.custom_items.find((c) => c.slug === key)
+    const name = custom?.name
+    const label = typeof name === "string" ? name : (name as Record<string, string>)?.[locale] || key
+    return { key, href: `/${key}`, label }
+  })
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string) {
@@ -199,7 +227,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
         <nav className="hidden md:block border-t border-black/[0.04]">
           <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
             <ul className="flex flex-1 items-center justify-evenly">
-              {NAV_KEYS.map((item) => {
+              {navItems.map((item) => {
                 const active = editable
                   ? activePage === item.key
                   : isActive(pathname, item.href)
@@ -214,7 +242,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                             : "text-foreground/60 hover:text-foreground"
                         }`}
                       >
-                        {tNav(item.key)}
+                        {item.label}
                       </button>
                     ) : (
                       <Link
@@ -225,7 +253,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                             : "text-foreground/60 hover:text-foreground"
                         }`}
                       >
-                        {tNav(item.key)}
+                        {item.label}
                       </Link>
                     )}
                   </li>
@@ -315,8 +343,8 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
       {menuOpen && (
         <div className="md:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
           <ul className="flex flex-col px-4 py-2">
-            {NAV_KEYS.map((item) => (
-              <li key={item.href}>
+            {navItems.map((item) => (
+              <li key={item.key}>
                 <Link
                   href={item.href}
                   onClick={closeMenu}
@@ -326,7 +354,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                       : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  {tNav(item.key)}
+                  {item.label}
                 </Link>
               </li>
             ))}

@@ -66,6 +66,24 @@ CONFIGS = [
         },
     ),
     (
+        "nav_config",
+        "导航栏配置",
+        lambda: {
+            "order": [
+                "home",
+                "universities",
+                "study-abroad",
+                "requirements",
+                "cases",
+                "visa",
+                "life",
+                "news",
+                "about",
+            ],
+            "custom_items": [],
+        },
+    ),
+    (
         "contact_info",
         "联系方式",
         lambda: {

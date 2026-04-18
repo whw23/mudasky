@@ -12,6 +12,7 @@ from .service import ConfigService
 from .web_settings.articles import router as ws_articles_router
 from .web_settings.cases import router as ws_cases_router
 from .web_settings.categories import router as ws_categories_router
+from .web_settings.nav import router as ws_nav_router
 from .web_settings.universities import router as ws_universities_router
 
 router = APIRouter(tags=["admin-settings"])
@@ -84,6 +85,7 @@ web_settings_router.include_router(ws_categories_router)
 web_settings_router.include_router(ws_articles_router)
 web_settings_router.include_router(ws_universities_router)
 web_settings_router.include_router(ws_cases_router)
+web_settings_router.include_router(ws_nav_router)
 
 # 挂载子路由到主路由
 router.include_router(general_settings_router)

@@ -49,6 +49,25 @@ const DEFAULT_ABOUT_INFO: AboutInfo = {
   partnership: '',
 }
 
+/** 导航栏自定义项 */
+interface NavCustomItem {
+  slug: string
+  name: string | Record<string, string>
+  category_id: string
+}
+
+/** 导航栏配置 */
+interface NavConfig {
+  order: string[]
+  custom_items: NavCustomItem[]
+}
+
+/** 默认导航配置（兜底） */
+const DEFAULT_NAV_CONFIG: NavConfig = {
+  order: ['home', 'universities', 'study-abroad', 'requirements', 'cases', 'visa', 'life', 'news', 'about'],
+  custom_items: [],
+}
+
 interface ConfigContextType {
   /** 联系方式配置 */
   contactInfo: ContactInfo
@@ -58,6 +77,8 @@ interface ConfigContextType {
   homepageStats: HomepageStat[]
   /** 关于我们页面内容 */
   aboutInfo: AboutInfo
+  /** 导航栏配置 */
+  navConfig: NavConfig
 }
 
 const ConfigContext = createContext<ConfigContextType>({
@@ -65,6 +86,7 @@ const ConfigContext = createContext<ConfigContextType>({
   siteInfo: DEFAULT_SITE_INFO,
   homepageStats: DEFAULT_HOMEPAGE_STATS,
   aboutInfo: DEFAULT_ABOUT_INFO,
+  navConfig: DEFAULT_NAV_CONFIG,
 })
 
 /** 系统配置 Provider */
@@ -73,6 +95,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO)
   const [homepageStats, setHomepageStats] = useState<HomepageStat[]>(DEFAULT_HOMEPAGE_STATS)
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
+  const [navConfig, setNavConfig] = useState<NavConfig>(DEFAULT_NAV_CONFIG)
 
   useEffect(() => {
     api.get('/public/config/all')
@@ -82,12 +105,13 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         if (data.site_info) setSiteInfo({ ...DEFAULT_SITE_INFO, ...data.site_info })
         if (Array.isArray(data.homepage_stats)) setHomepageStats(data.homepage_stats)
         if (data.about_info) setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...data.about_info })
+        if (data.nav_config) setNavConfig({ ...DEFAULT_NAV_CONFIG, ...data.nav_config })
       })
       .catch((err) => console.warn('[ConfigProvider] 配置加载失败:', err.message))
   }, [])
 
   return (
-    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo }}>
+    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig }}>
       {children}
     </ConfigContext>
   )
@@ -125,6 +149,7 @@ interface LocalizedConfigType {
     vision: string
     partnership: string
   }
+  navConfig: NavConfig
 }
 
 /** 获取已解析为当前语言的配置（展示用） */
@@ -154,5 +179,6 @@ export function useLocalizedConfig(): LocalizedConfigType {
       vision: getLocalizedValue(config.aboutInfo.vision, locale),
       partnership: getLocalizedValue(config.aboutInfo.partnership, locale),
     },
+    navConfig: config.navConfig,
   }
 }
