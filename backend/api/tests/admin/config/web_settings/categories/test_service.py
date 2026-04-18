@@ -17,7 +17,12 @@ from api.admin.config.web_settings.categories.schemas import (
 from api.admin.config.web_settings.categories.service import (
     CategoryService,
 )
-from app.core.exceptions import NotFoundException
+from sqlalchemy.exc import IntegrityError
+
+from app.core.exceptions import (
+    ConflictException,
+    NotFoundException,
+)
 
 
 REPO = "api.admin.config.web_settings.categories.service.repository"
@@ -104,6 +109,33 @@ async def test_update_category_success(mock_repo, service):
 
 @pytest.mark.asyncio
 @patch(REPO)
+async def test_update_category_all_fields(
+    mock_repo, service
+):
+    """更新分类全部字段成功。"""
+    category = _make_category()
+    mock_repo.get_category_by_id = AsyncMock(
+        return_value=category
+    )
+    mock_repo.update_category = AsyncMock(
+        return_value=category
+    )
+
+    data = CategoryUpdate(
+        category_id="cat-1",
+        name="新名称",
+        slug="new-slug",
+        description="新描述",
+        sort_order=10,
+    )
+    result = await service.update_category("cat-1", data)
+
+    assert result is not None
+    mock_repo.update_category.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(REPO)
 async def test_update_category_not_found(
     mock_repo, service
 ):
@@ -147,3 +179,88 @@ async def test_delete_category_not_found(
 
     with pytest.raises(NotFoundException):
         await service.delete_category("nonexistent")
+
+
+# ---- 分类：create_category IntegrityError ----
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_create_category_slug_conflict(
+    mock_repo, service
+):
+    """创建分类 slug 冲突时抛出 ConflictException。"""
+    mock_repo.create_category = AsyncMock(
+        side_effect=IntegrityError(
+            "duplicate", {}, Exception()
+        )
+    )
+
+    data = CategoryCreate(
+        name="重复分类", slug="duplicate-slug"
+    )
+    with pytest.raises(ConflictException) as exc_info:
+        await service.create_category(data)
+
+    assert exc_info.value.code == "SLUG_ALREADY_EXISTS"
+
+
+# ---- 分类：update_category IntegrityError ----
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_update_category_slug_conflict(
+    mock_repo, service
+):
+    """更新分类 slug 冲突时抛出 ConflictException。"""
+    category = _make_category()
+    mock_repo.get_category_by_id = AsyncMock(
+        return_value=category
+    )
+    mock_repo.update_category = AsyncMock(
+        side_effect=IntegrityError(
+            "duplicate", {}, Exception()
+        )
+    )
+
+    data = CategoryUpdate(
+        category_id="cat-1", slug="existing-slug"
+    )
+    with pytest.raises(ConflictException) as exc_info:
+        await service.update_category("cat-1", data)
+
+    assert exc_info.value.code == "SLUG_ALREADY_EXISTS"
+
+
+# ---- 分类：get_article_counts_by_category ----
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_get_article_counts_by_category(
+    mock_repo, service
+):
+    """获取分类文章计数。"""
+    mock_repo.count_articles_by_category = AsyncMock(
+        return_value={"cat-1": 5, "cat-2": 3}
+    )
+
+    result = await service.get_article_counts_by_category()
+
+    assert result == {"cat-1": 5, "cat-2": 3}
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_get_article_counts_empty(
+    mock_repo, service
+):
+    """没有文章时返回空字典。"""
+    mock_repo.count_articles_by_category = AsyncMock(
+        return_value={}
+    )
+
+    result = await service.get_article_counts_by_category()
+
+    assert result == {}
