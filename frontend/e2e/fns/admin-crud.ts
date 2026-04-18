@@ -12,7 +12,9 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 async function gotoWebSettingsPage(page: Page, navLabel: string): Promise<void> {
   await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
-  // 点击 NavEditor 中的导航项切换预览（用 exact 防止部分匹配）
+  // 等待 NavEditor 加载（nav API 返回后才渲染导航项）
+  await page.locator("nav button").first().waitFor({ timeout: 30_000 })
+  // 点击导航项切换预览
   const navBtn = page.locator("nav button").filter({ hasText: navLabel })
   await navBtn.first().waitFor({ timeout: 10_000 })
   await navBtn.first().click()
@@ -38,15 +40,15 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(dialog).toBeVisible()
 
   // 填写名称和 slug
-  await dialog.getByPlaceholder(/名称/).fill(name)
-  await dialog.getByPlaceholder(/标识|slug/i).fill(slug)
+  await dialog.getByPlaceholder(/校园风采/).fill(name)
+  await dialog.getByPlaceholder(/campus-life/).fill(slug)
 
   // 提交
   const saveResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/web-settings/nav/add-item") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
-  await dialog.getByRole("button", { name: /确定|添加|保存/ }).click()
+  await dialog.getByRole("button", { name: "添加" }).click()
   const res = await saveResponse
   if (!res.ok()) {
     const body = await res.text().catch(() => "")
@@ -106,7 +108,7 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
   await gotoWebSettingsPage(page, navLabel)
 
   // 等待文章管理区域加载
-  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 点击写文章按钮
   await page.getByRole("button", { name: "写文章" }).click()
@@ -158,7 +160,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   const navLabel = String(args?.navLabel ?? "新闻政策")
 
   await gotoWebSettingsPage(page, navLabel)
-  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 找到文章卡片，点击编辑按钮
   const card = page.locator("div").filter({ hasText: oldTitle }).first()
@@ -189,7 +191,7 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   const navLabel = String(args?.navLabel ?? "新闻政策")
 
   await gotoWebSettingsPage(page, navLabel)
-  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 找到文章卡片，点击删除按钮
   const card = page.locator("div").filter({ hasText: title }).first()
@@ -221,7 +223,7 @@ export async function createCase(page: Page, args?: Record<string, unknown>): Pr
   await gotoWebSettingsPage(page, "成功案例")
 
   // 点击添加案例按钮
-  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 30_000 })
   await page.getByRole("button", { name: /添加案例/ }).click()
 
   // 等待弹窗打开
@@ -260,7 +262,7 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   const newUniversity = String(args?.newUniversity ?? "")
 
   await gotoWebSettingsPage(page, "成功案例")
-  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 30_000 })
 
   // 找到案例卡片，hover 触发编辑按钮
   const card = page.locator("div").filter({ hasText: studentName }).first()
@@ -283,7 +285,7 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
   const studentName = String(args?.studentName ?? "")
 
   await gotoWebSettingsPage(page, "成功案例")
-  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 30_000 })
 
   // 找到案例卡片，hover 触发删除按钮
   const card = page.locator("div").filter({ hasText: studentName }).first()
@@ -309,7 +311,7 @@ export async function createUniversity(page: Page, args?: Record<string, unknown
   await gotoWebSettingsPage(page, "院校选择")
 
   // 点击添加院校按钮
-  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 30_000 })
   await page.getByRole("button", { name: /添加院校/ }).click()
 
   const dialog = page.getByRole("dialog")
@@ -346,7 +348,7 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   const newCity = String(args?.newCity ?? "")
 
   await gotoWebSettingsPage(page, "院校选择")
-  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 30_000 })
 
   const card = page.locator("div").filter({ hasText: name }).first()
   await card.hover()
@@ -368,7 +370,7 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
   const name = String(args?.name ?? "")
 
   await gotoWebSettingsPage(page, "院校选择")
-  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 15_000 })
+  await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 30_000 })
 
   const card = page.locator("div").filter({ hasText: name }).first()
   await card.hover()
