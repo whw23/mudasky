@@ -175,7 +175,7 @@ export function ArticleEditDialog({
           </div>
           <div className="space-y-1.5">
             <Label>状态</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setStatus(v ?? "draft")}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
