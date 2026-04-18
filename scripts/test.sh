@@ -149,11 +149,13 @@ EOF
 # ── 测试运行函数 ──
 
 run_unit() {
-  run_and_log "unit.log" \
+  COVERAGE_FILE="$RESULTS_DIR/.coverage" \
+    run_and_log "unit.log" \
     uv run --project backend/api python -m pytest backend/api/tests/ -v \
     --ignore=backend/api/tests/e2e \
     --cov=api --cov-report=term-missing \
-    --cov-report="html:$RESULTS_DIR/pytest-coverage"
+    --cov-report="html:$RESULTS_DIR/pytest-coverage" \
+    -o "cache_dir=$RESULTS_DIR/.pytest_cache"
   local rc=$?
   parse_pytest_summary "unit.log" "unit-summary.json"
   return $rc
@@ -168,7 +170,8 @@ run_gateway() {
   fi
   load_env
   run_and_log "gateway.log" \
-    uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
+    uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v \
+    -o "cache_dir=$RESULTS_DIR/.pytest_cache"
   local rc=$?
   parse_pytest_summary "gateway.log" "gateway-summary.json"
   return $rc
