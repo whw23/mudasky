@@ -1,10 +1,10 @@
 /**
  * ConfigContext 系统配置上下文测试。
+ * 改造后 ConfigProvider 通过 /public/config/all 一次获取全部配置。
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
-import { useContext } from "react"
 
 vi.mock("@/lib/api", () => ({
   default: {
@@ -19,19 +19,19 @@ vi.mock("next-intl", () => ({
 import api from "@/lib/api"
 import { ConfigProvider, useConfig, useLocalizedConfig } from "@/contexts/ConfigContext"
 
-/** 辅助组件:展示 useConfig 结果 */
+/** 辅助组件：展示 useConfig 结果 */
 function ConfigConsumer() {
   const config = useConfig()
   return (
     <div>
       <span data-testid="brand">{config.siteInfo.brand_name as string}</span>
-      <span data-testid="codes">{config.countryCodes.length}</span>
       <span data-testid="stats">{config.homepageStats.length}</span>
+      <span data-testid="phone">{config.contactInfo.phone}</span>
     </div>
   )
 }
 
-/** 辅助组件:展示 useLocalizedConfig 结果 */
+/** 辅助组件：展示 useLocalizedConfig 结果 */
 function LocalizedConsumer() {
   const config = useLocalizedConfig()
   return (
@@ -56,16 +56,16 @@ describe("ConfigContext", () => {
     renderWithProvider(<ConfigConsumer />)
 
     expect(screen.getByTestId("brand").textContent).toBe("慕大国际教育")
-    expect(screen.getByTestId("codes").textContent).toBe("1")
     expect(screen.getByTestId("stats").textContent).toBe("4")
   })
 
-  it("API 成功后更新 siteInfo", async () => {
+  it("/config/all 成功后更新配置", async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/public/config/site_info") {
+      if (url === "/public/config/all") {
         return Promise.resolve({
           data: {
-            value: {
+            contact_info: { phone: "123-456", email: "test@test.com", address: "", wechat: "", registered_address: "" },
+            site_info: {
               brand_name: "新品牌",
               tagline: "新标语",
               hotline: "123",
@@ -73,8 +73,11 @@ describe("ConfigContext", () => {
               logo_url: "",
               favicon_url: "",
               wechat_qr_url: "",
+              company_name: "",
               icp_filing: "",
             },
+            homepage_stats: [{ value: "10+", label: "测试" }],
+            about_info: { history: "", mission: "", vision: "", partnership: "" },
           },
         })
       }
@@ -85,50 +88,29 @@ describe("ConfigContext", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("brand").textContent).toBe("新品牌")
+      expect(screen.getByTestId("stats").textContent).toBe("1")
+      expect(screen.getByTestId("phone").textContent).toBe("123-456")
     })
   })
 
-  it("countryCodes 只保留 enabled: true 的", async () => {
-    vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/public/config/phone_country_codes") {
-        return Promise.resolve({
-          data: {
-            value: [
-              { code: "+86", country: "CN", label: "中国", digits: 11, enabled: true },
-              { code: "+1", country: "US", label: "美国", digits: 10, enabled: false },
-              { code: "+81", country: "JP", label: "日本", digits: 11, enabled: true },
-            ],
-          },
-        })
-      }
-      return Promise.reject(new Error("not mocked"))
-    })
-
-    renderWithProvider(<ConfigConsumer />)
-
-    await waitFor(() => {
-      expect(screen.getByTestId("codes").textContent).toBe("2")
-    })
-  })
-
-  it("API 全部失败时保持默认值", async () => {
+  it("API 失败时保持默认值", async () => {
     vi.mocked(api.get).mockRejectedValue(new Error("500"))
 
     renderWithProvider(<ConfigConsumer />)
 
-    /* 等待所有请求完成 */
     await new Promise((r) => setTimeout(r, 50))
 
     expect(screen.getByTestId("brand").textContent).toBe("慕大国际教育")
-    expect(screen.getByTestId("codes").textContent).toBe("1")
+    expect(screen.getByTestId("stats").textContent).toBe("4")
   })
 
   it("useLocalizedConfig 解析多语言字段", async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
-      if (url === "/public/config/site_info") {
+      if (url === "/public/config/all") {
         return Promise.resolve({
           data: {
-            value: {
+            contact_info: { phone: "", email: "", address: "", wechat: "", registered_address: "" },
+            site_info: {
               brand_name: { zh: "中文品牌", en: "English Brand" },
               tagline: "标语",
               hotline: "123",
@@ -136,8 +118,11 @@ describe("ConfigContext", () => {
               logo_url: "",
               favicon_url: "",
               wechat_qr_url: "",
+              company_name: "",
               icp_filing: "",
             },
+            homepage_stats: [],
+            about_info: { history: "", mission: "", vision: "", partnership: "" },
           },
         })
       }
@@ -147,7 +132,6 @@ describe("ConfigContext", () => {
     renderWithProvider(<LocalizedConsumer />)
 
     await waitFor(() => {
-      /* useLocale mock 返回 "zh",所以取中文值 */
       expect(screen.getByTestId("l-brand").textContent).toBe("中文品牌")
     })
   })
