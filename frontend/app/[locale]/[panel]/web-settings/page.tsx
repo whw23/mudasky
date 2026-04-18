@@ -11,6 +11,7 @@ import api from '@/lib/api'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
+import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo } from '@/types/config'
 
@@ -300,10 +301,10 @@ export default function WebSettingsPage() {
       <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
         <Header
           editable
+          hideNav
           onEdit={handleHeaderEdit}
-          onPageChange={setActivePage}
-          activePage={activePage}
         />
+        <NavEditor activePage={activePage} onPageChange={setActivePage} />
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>

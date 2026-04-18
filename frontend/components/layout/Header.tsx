@@ -43,9 +43,10 @@ interface HeaderProps {
   onEdit?: (section: string) => void
   onPageChange?: (key: string) => void
   activePage?: string
+  hideNav?: boolean
 }
 
-export function Header({ editable, onEdit, onPageChange, activePage }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: HeaderProps) {
   const pathname = usePathname()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
@@ -194,44 +195,46 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
       </div>
 
       {/* === 桌面导航栏 Row 2 === */}
-      <nav className="hidden md:block border-t border-black/[0.04]">
-        <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
-          <ul className="flex flex-1 items-center justify-evenly">
-            {NAV_KEYS.map((item) => {
-              const active = editable
-                ? activePage === item.key
-                : isActive(pathname, item.href)
-              return (
-                <li key={item.key}>
-                  {editable ? (
-                    <button
-                      onClick={() => onPageChange?.(item.key)}
-                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
-                        active
-                          ? "text-primary border-b-2 border-primary"
-                          : "text-foreground/60 hover:text-foreground"
-                      }`}
-                    >
-                      {tNav(item.key)}
-                    </button>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
-                        active
-                          ? "text-primary border-b-2 border-primary"
-                          : "text-foreground/60 hover:text-foreground"
-                      }`}
-                    >
-                      {tNav(item.key)}
-                    </Link>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      </nav>
+      {!hideNav && (
+        <nav className="hidden md:block border-t border-black/[0.04]">
+          <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
+            <ul className="flex flex-1 items-center justify-evenly">
+              {NAV_KEYS.map((item) => {
+                const active = editable
+                  ? activePage === item.key
+                  : isActive(pathname, item.href)
+                return (
+                  <li key={item.key}>
+                    {editable ? (
+                      <button
+                        onClick={() => onPageChange?.(item.key)}
+                        className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                          active
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        {tNav(item.key)}
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                          active
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        {tNav(item.key)}
+                      </Link>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </nav>
+      )}
 
       {/* === 移动端单行 === */}
       <div className="md:hidden">
