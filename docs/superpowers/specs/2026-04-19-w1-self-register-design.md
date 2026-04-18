@@ -41,13 +41,30 @@ w7_login_seed1 (SEED_USER_1 密码登录) ─→ w7_assign_superuser_w1
                                       w1_assign_role_w2, w1_assign_role_w3, ...
 ```
 
-### global-teardown 清理流程
+### global-setup / global-teardown 数据库清理
 
-1. 用 SEED_USER_1 密码登录（替代 SEED_USER_E2E）
-2. 查询所有 `E2E` 前缀用户
-3. 对 superuser 角色的 E2E 用户，先降级到 visitor 角色
-4. 删除所有 E2E 用户（W1-W7）
-5. 清理其他 E2E 数据（角色、分类、文章、案例、院校）
+改为用 `pg` 库（Node.js PostgreSQL client）直连数据库执行 SQL，不再依赖 `docker compose exec` 或 API 登录。
+
+**连接信息来源**：
+- 开发环境：`env/backend.env` 中的 `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`，端口用 `DB_EXTERNAL_PORT`（默认 15432）
+- 线上测试：`env/production.env` 中的 `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`
+- `DB_HOST` 在容器内是 `db`，直连时统一替换为 `localhost`（开发环境）或使用 production.env 中的真实 host（线上）
+
+**global-setup SQL 清理**（替代现有的 `docker compose exec psql`）：
+
+```sql
+DELETE FROM refresh_token WHERE user_id IN (SELECT id FROM "user" WHERE username LIKE 'E2E%');
+DELETE FROM sms_code WHERE phone IN (SELECT phone FROM "user" WHERE username LIKE 'E2E%');
+DELETE FROM document WHERE user_id IN (SELECT id FROM "user" WHERE username LIKE 'E2E%');
+DELETE FROM "user" WHERE username LIKE 'E2E%';
+DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';
+DELETE FROM category WHERE slug LIKE 'e2e-%';
+DELETE FROM article WHERE title LIKE 'E2E%';
+DELETE FROM success_case WHERE student_name LIKE 'E2E%';
+DELETE FROM university WHERE name LIKE 'E2E%';
+```
+
+**global-teardown SQL 清理**（替代现有的 API 调用）：同上 SQL，不再需要登录账号。
 
 ### SEED_USER_E2E 引用替换
 
@@ -67,8 +84,8 @@ w7_login_seed1 (SEED_USER_1 密码登录) ─→ w7_assign_superuser_w1
 | 文件 | 改动 |
 |------|------|
 | `frontend/e2e/constants.ts` | PHONES 新增 `w1: +86-139${TS}01` |
-| `frontend/e2e/global-setup.ts` | 登录改用 SEED_USER_1_USERNAME / SEED_USER_1_PASSWORD |
-| `frontend/e2e/global-teardown.ts` | 清理登录改用 SEED_USER_1；删除前先降级 superuser 角色的 E2E 用户 |
+| `frontend/e2e/global-setup.ts` | 登录改用 SEED_USER_1；SQL 清理改为 pg 直连数据库 |
+| `frontend/e2e/global-teardown.ts` | SQL 清理改为 pg 直连数据库，不再依赖 API 登录 |
 | `frontend/e2e/w1/tasks.ts` | `w1_login` → `w1_register`（手机号注册）；新增 `w1_refresh_superuser` 任务（依赖 W7 赋权） |
 | `frontend/e2e/w7/tasks.ts` | 新增 `w7_login_seed1`（SEED_USER_1 密码登录）+ `w7_assign_superuser_w1`（给 W1 赋权 superuser） |
 | `frontend/e2e/w4/tasks.ts` | `w4_auth_login_success` 改用 SEED_USER_1 凭证 |
@@ -84,13 +101,14 @@ w7_login_seed1 (SEED_USER_1 密码登录) ─→ w7_assign_superuser_w1
 
 | 文件 | 改动 |
 |------|------|
-| `.github/workflows/build.yml` | 删除 SEED_USER_E2E_USERNAME / SEED_USER_E2E_PASSWORD 两行 |
-| `env/backend.env.example` | 删除 SEED_USER_E2E 两行 |
-| `env/production.env.example` | 删除 SEED_USER_E2E 两行 |
+| `.github/workflows/build.yml` | 删除 SEED_USER_E2E 两行 |
+| `env/backend.env.example` | 删除 SEED_USER_E2E 两行，新增 `DB_EXTERNAL_PORT=15432` |
+| `env/production.env.example` | 删除 SEED_USER_E2E 两行，新增 SEED_USER_1 + DB 连接变量 |
+| `frontend/package.json` | 新增 `pg` 依赖 |
 
 ## 不变的部分
 
 - SEED_USER_1/2/3 的种子用户机制不变
 - W2-W7 的自注册流程不变
 - 后端 E2E 测试（pytest）已经用 SEED_USER_1，不受影响
-- admin 用户删除的 superuser 保护逻辑已存在，不需要改动
+- admin 用户删除的 superuser 保护逻辑已存在，不需要改动（SQL 直连清理绕过此限制）
