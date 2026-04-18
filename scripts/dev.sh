@@ -1,12 +1,7 @@
 #!/bin/bash
 # 开发环境管理脚本
-#
-# 用法:
-#   ./scripts/dev.sh          启动开发环境（自动 rebuild）
-#   ./scripts/dev.sh --clean  清理数据卷后重新启动
-#   ./scripts/dev.sh --down   停止并移除容器
-#   ./scripts/dev.sh --logs   查看实时日志
-#   ./scripts/dev.sh --prod  构建并启动生产容器（E2E 测试用）
+# 用法: ./scripts/dev.sh <选项>
+# 不加参数显示帮助，详见 ./scripts/dev.sh --help
 
 set -e
 

@@ -1,14 +1,7 @@
 #!/bin/bash
 # 统一测试脚本
-# 用法:
-#   ./scripts/test.sh          # 运行全部测试（单元+vitest+网关+E2E）
-#   ./scripts/test.sh unit     # 后端单元测试 + 覆盖率
-#   ./scripts/test.sh gateway  # 网关集成测试 (port 80)
-#   ./scripts/test.sh vitest   # 前端单元测试
-#   ./scripts/test.sh e2e      # 前端 E2E（本地生产容器）
-#   ./scripts/test.sh e2e:lnp  # 前端 E2E 重跑失败
-#   ./scripts/test.sh e2e:prod     # 前端 E2E（线上生产环境）
-#   ./scripts/test.sh e2e:prod:lnp # 线上 E2E 重跑失败
+# 用法: ./scripts/test.sh <类型>
+# 不加参数显示帮助，详见 ./scripts/test.sh help
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
