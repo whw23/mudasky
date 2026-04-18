@@ -3,15 +3,16 @@
 # 用法: ./scripts/test.sh <类型>
 # 不加参数显示帮助，详见 ./scripts/test.sh help
 
-set -euo pipefail
+set -uo pipefail
 cd "$(dirname "$0")/.."
 
 # 测试结果输出目录（按时间戳创建子文件夹）
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 RESULTS_DIR="test-results/$TIMESTAMP"
 mkdir -p "$RESULTS_DIR"
-# 创建 latest 软链接方便查看最新结果
-ln -sfn "$TIMESTAMP" test-results/latest
+
+# 失败计数器
+FAILURES=0
 
 # 从 env/backend.env 加载环境变量（跳过注释和含括号的行）
 load_env() {
@@ -36,19 +37,59 @@ header() {
   echo ""
 }
 
-# 运行命令并同时输出到终端和文件（允许非零退出码）
+# 运行命令并同时输出到终端和文件，返回实际退出码
 run_and_log() {
   local log_file="$1"
   shift
-  "$@" 2>&1 | tee "$RESULTS_DIR/$log_file" || true
+  local exit_code=0
+  "$@" 2>&1 | tee "$RESULTS_DIR/$log_file" || exit_code=${PIPESTATUS[0]}
+  return $exit_code
 }
 
-# 从 pytest 日志提取摘要并写入 JSON
+# 记录耗时的包装器
+run_timed() {
+  local test_name="$1"
+  local start_time
+  start_time=$(date +%s)
+  shift
+
+  local exit_code=0
+  "$@" || exit_code=$?
+
+  local end_time
+  end_time=$(date +%s)
+  local duration=$((end_time - start_time))
+
+  # 写入耗时到对应的 summary
+  local summary_file="$RESULTS_DIR/${test_name}-summary.json"
+  if [ -f "$summary_file" ]; then
+    # 在 JSON 末尾 } 前插入 duration 字段
+    python3 -c "
+import json, sys
+with open('$summary_file') as f:
+    d = json.load(f)
+d['duration_seconds'] = $duration
+d['status'] = 'pass' if $exit_code == 0 else 'fail'
+with open('$summary_file', 'w') as f:
+    json.dump(d, f, indent=2)
+" 2>/dev/null || true
+  fi
+
+  if [ $exit_code -ne 0 ]; then
+    FAILURES=$((FAILURES + 1))
+    echo -e "${RED}✗ $test_name 失败 (${duration}s)${NC}"
+  else
+    echo -e "${GREEN}✓ $test_name 通过 (${duration}s)${NC}"
+  fi
+  return 0  # 不中断 all 模式
+}
+
+# ── 日志解析函数 ──
+
 parse_pytest_summary() {
   local log_file="$RESULTS_DIR/$1"
   local output_file="$RESULTS_DIR/$2"
-  local passed failed errors warnings coverage
-  # 解析 "X passed, Y failed, Z errors, W warnings"
+  local passed failed errors warnings skipped coverage
   passed=$(grep -oP '\d+(?= passed)' "$log_file" | tail -1 || echo 0)
   failed=$(grep -oP '\d+(?= failed)' "$log_file" | tail -1 || echo 0)
   errors=$(grep -oP '\d+(?= error)' "$log_file" | tail -1 || echo 0)
@@ -67,7 +108,6 @@ parse_pytest_summary() {
 EOF
 }
 
-# 从 vitest 日志提取摘要
 parse_vitest_summary() {
   local log_file="$RESULTS_DIR/$1"
   local output_file="$RESULTS_DIR/$2"
@@ -86,7 +126,6 @@ parse_vitest_summary() {
 EOF
 }
 
-# 从 E2E 日志提取摘要
 parse_e2e_summary() {
   local log_file="$RESULTS_DIR/$1"
   local output_file="$RESULTS_DIR/$2"
@@ -107,133 +146,165 @@ parse_e2e_summary() {
 EOF
 }
 
-# 后端单元测试
+# ── 测试运行函数 ──
+
 run_unit() {
-  header "后端单元测试 (pytest)"
   run_and_log "unit.log" \
     uv run --project backend/api python -m pytest backend/api/tests/ -v \
     --ignore=backend/api/tests/e2e \
     --cov=api --cov-report=term-missing \
     --cov-report="html:$RESULTS_DIR/pytest-coverage"
+  local rc=$?
   parse_pytest_summary "unit.log" "unit-summary.json"
+  return $rc
 }
 
-# 后端网关集成测试
 run_gateway() {
-  header "后端网关测试 (port 80)"
   local version
   version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
   if [ -z "$version" ]; then
     echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
-    exit 1
+    return 1
   fi
   load_env
   run_and_log "gateway.log" \
     uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
+  local rc=$?
   parse_pytest_summary "gateway.log" "gateway-summary.json"
+  return $rc
 }
 
-# 前端单元测试
 run_vitest() {
-  header "前端单元测试 (vitest)"
   VITEST_COVERAGE_DIR="../$RESULTS_DIR/vitest-coverage" \
     run_and_log "vitest.log" \
     pnpm --prefix frontend test -- --coverage
+  local rc=$?
   parse_vitest_summary "vitest.log" "vitest-summary.json"
+  return $rc
 }
 
-# 检查本地容器是否为生产构建
 check_prod_container() {
   local version
   version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
   if [ -z "$version" ]; then
     echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
     echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
-    exit 1
+    return 1
   fi
   if echo "$version" | grep -q '"frontend":"dev"'; then
     echo -e "${RED}错误: 当前运行的是开发容器（version=dev），E2E 需要生产容器${NC}"
     echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
-    exit 1
+    return 1
   fi
   local fe_version
   fe_version=$(echo "$version" | python3 -c "import sys,json; print(json.load(sys.stdin).get('frontend',''))" 2>/dev/null || echo "")
   echo -e "${GREEN}✓ 生产容器已就绪 (version=$fe_version)${NC}"
 }
 
-# E2E 公共环境变量（Playwright 输出到当前时间戳目录）
 export E2E_OUTPUT_DIR="../../$RESULTS_DIR/e2e-artifacts"
 export E2E_REPORT_DIR="../../$RESULTS_DIR/e2e-report"
 
-# 前端 E2E
 run_e2e() {
-  header "前端 E2E (playwright)"
-  check_prod_container
+  check_prod_container || return 1
   run_and_log "e2e.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  local rc=$?
   parse_e2e_summary "e2e.log" "e2e-summary.json"
+  return $rc
 }
 
-# 前端 E2E (LAST_NOT_PASS)
 run_e2e_lnp() {
-  header "前端 E2E (LAST_NOT_PASS)"
-  check_prod_container
+  check_prod_container || return 1
   LAST_NOT_PASS=1 run_and_log "e2e-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  local rc=$?
   parse_e2e_summary "e2e-lnp.log" "e2e-lnp-summary.json"
+  return $rc
 }
 
-# 线上 E2E
 run_e2e_prod() {
-  header "线上 E2E (production)"
   load_env
   if [ -z "${PRODUCTION_HOST:-}" ]; then
     echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
-    exit 1
+    return 1
   fi
   TEST_ENV=production run_and_log "e2e-prod.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  local rc=$?
   parse_e2e_summary "e2e-prod.log" "e2e-prod-summary.json"
+  return $rc
 }
 
-# 线上 E2E (LAST_NOT_PASS)
 run_e2e_prod_lnp() {
-  header "线上 E2E (production LAST_NOT_PASS)"
   load_env
   if [ -z "${PRODUCTION_HOST:-}" ]; then
     echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
-    exit 1
+    return 1
   fi
   LAST_NOT_PASS=1 TEST_ENV=production run_and_log "e2e-prod-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+  local rc=$?
   parse_e2e_summary "e2e-prod-lnp.log" "e2e-prod-lnp-summary.json"
+  return $rc
 }
 
-# 主逻辑
+# ── 清理旧结果（保留最近 10 次） ──
+cleanup_old_results() {
+  local count
+  count=$(ls -d test-results/2*/  2>/dev/null | wc -l)
+  if [ "$count" -gt 10 ]; then
+    ls -d test-results/2*/ | head -$((count - 10)) | xargs rm -rf
+    echo -e "${YELLOW}已清理 $((count - 10)) 个旧测试结果${NC}"
+  fi
+}
+
+# ── 主逻辑 ──
 case "${1:-}" in
-  unit)    run_unit ;;
-  gateway) run_gateway ;;
-  vitest)  run_vitest ;;
-  e2e)     run_e2e ;;
-  e2e:lnp) run_e2e_lnp ;;
-  e2e:prod) run_e2e_prod ;;
-  e2e:prod:lnp) run_e2e_prod_lnp ;;
+  unit)
+    header "后端单元测试 (pytest)"
+    run_timed "unit" run_unit
+    ;;
+  gateway)
+    header "后端网关测试 (port 80)"
+    run_timed "gateway" run_gateway
+    ;;
+  vitest)
+    header "前端单元测试 (vitest)"
+    run_timed "vitest" run_vitest
+    ;;
+  e2e)
+    header "前端 E2E (playwright)"
+    run_timed "e2e" run_e2e
+    ;;
+  e2e:lnp)
+    header "前端 E2E (LAST_NOT_PASS)"
+    run_timed "e2e-lnp" run_e2e_lnp
+    ;;
+  e2e:prod)
+    header "线上 E2E (production)"
+    run_timed "e2e-prod" run_e2e_prod
+    ;;
+  e2e:prod:lnp)
+    header "线上 E2E (production LAST_NOT_PASS)"
+    run_timed "e2e-prod-lnp" run_e2e_prod_lnp
+    ;;
   all)
-    run_unit
-    run_vitest
-    run_gateway
-    run_e2e
-    echo ""
-    echo -e "${GREEN}━━━ 全部本地测试完成 ━━━${NC}"
-    echo "结果保存在 $RESULTS_DIR/"
+    header "后端单元测试 (pytest)"
+    run_timed "unit" run_unit
+    header "前端单元测试 (vitest)"
+    run_timed "vitest" run_vitest
+    header "后端网关测试 (port 80)"
+    run_timed "gateway" run_gateway
+    header "前端 E2E (playwright)"
+    run_timed "e2e" run_e2e
     ;;
   all:prod)
-    run_unit
-    run_vitest
-    run_e2e_prod
-    echo ""
-    echo -e "${GREEN}━━━ 全部线上测试完成 ━━━${NC}"
-    echo "结果保存在 $RESULTS_DIR/"
+    header "后端单元测试 (pytest)"
+    run_timed "unit" run_unit
+    header "前端单元测试 (vitest)"
+    run_timed "vitest" run_vitest
+    header "线上 E2E (production)"
+    run_timed "e2e-prod" run_e2e_prod
     ;;
   ""|help|--help|-h)
     echo "统一测试脚本"
@@ -258,11 +329,32 @@ case "${1:-}" in
     echo "  e2e          需要生产容器运行 (./scripts/dev.sh --prod)"
     echo "  e2e:prod     需要线上已部署 + env/backend.env 配置 PRODUCTION_HOST"
     echo ""
-    echo "测试结果保存在 test-results/ 目录"
+    echo "测试结果保存在 test-results/<时间戳>/ 目录，latest 指向最新"
+    # help 不创建结果目录，清理空目录
+    rmdir "$RESULTS_DIR" 2>/dev/null || true
+    exit 0
     ;;
   *)
     echo "未知类型: $1"
     echo "运行 ./scripts/test.sh help 查看帮助"
+    rmdir "$RESULTS_DIR" 2>/dev/null || true
     exit 1
     ;;
 esac
+
+# 清理旧结果
+cleanup_old_results
+
+# 完成后创建 latest 软链接（确保指向完整的结果）
+ln -sfn "$TIMESTAMP" test-results/latest
+echo ""
+echo "结果保存在 $RESULTS_DIR/"
+
+# 返回正确的退出码
+if [ "$FAILURES" -gt 0 ]; then
+  echo -e "${RED}━━━ $FAILURES 个测试失败 ━━━${NC}"
+  exit 1
+else
+  echo -e "${GREEN}━━━ 全部通过 ━━━${NC}"
+  exit 0
+fi
