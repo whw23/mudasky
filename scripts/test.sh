@@ -6,9 +6,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# 测试结果输出目录
-RESULTS_DIR="test-results"
+# 测试结果输出目录（按时间戳创建子文件夹）
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+RESULTS_DIR="test-results/$TIMESTAMP"
 mkdir -p "$RESULTS_DIR"
+# 创建 latest 软链接方便查看最新结果
+ln -sfn "$TIMESTAMP" test-results/latest
 
 # 从 env/backend.env 加载环境变量（跳过注释和含括号的行）
 load_env() {
@@ -88,6 +91,10 @@ check_prod_container() {
   fe_version=$(echo "$version" | python3 -c "import sys,json; print(json.load(sys.stdin).get('frontend',''))" 2>/dev/null || echo "")
   echo -e "${GREEN}✓ 生产容器已就绪 (version=$fe_version)${NC}"
 }
+
+# E2E 公共环境变量（Playwright 输出到当前时间戳目录）
+export E2E_OUTPUT_DIR="../../$RESULTS_DIR/e2e-artifacts"
+export E2E_REPORT_DIR="../../$RESULTS_DIR/e2e-report"
 
 # 前端 E2E
 run_e2e() {

@@ -27,8 +27,8 @@ const isRemote = !!process.env.BASE_URL
 export default defineConfig({
   testDir: ".",
   testMatch: "runner.spec.ts",
-  outputDir: "../../test-results/e2e-artifacts",
-  reporter: [["html", { outputFolder: "../../test-results/e2e-report", open: "never" }]],
+  outputDir: process.env.E2E_OUTPUT_DIR || "../../test-results/e2e-artifacts",
+  reporter: [["html", { outputFolder: process.env.E2E_REPORT_DIR || "../../test-results/e2e-report", open: "never" }]],
   timeout: isRemote ? 660_000 : 630_000,
   retries: 0,
   workers: 7,
