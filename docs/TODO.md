@@ -19,7 +19,7 @@
 - [ ] E2E 架构优化：关键任务重试 + 级联熔断收窄
 - [ ] E2E 架构优化：W1 任务拆分到空闲 worker
 - [ ] 首页性能：config 请求延迟加载（phone_country_codes / panel-config）
-- [ ] 权限树重构：PermissionTree 从后端 permission_tree API 获取层级数据，替代 OpenAPI + 硬编码
+- [x] 权限树重构：PermissionTree 从后端 permission_tree API 获取层级数据，替代 OpenAPI + 硬编码
 - [ ] 角色分配换 shadcn Select（当前 E2E 操作不稳定，已回退原生 select）
 - [ ] 压力测试
 
