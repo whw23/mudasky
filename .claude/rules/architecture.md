@@ -70,5 +70,9 @@ Router → Service → Repository → Models
 
 - **内部密钥（INTERNAL_SECRET）**：通过 `internal_secret` cookie 传递（统一浏览器和 E2E 场景）；网关层：跳过 IP 限流；后端 sms-code 接口：跳过短信发送并返回验证码；网关→后端的内部调用（refresh_proxy、auth_proxy）仍用 `X-Internal-Secret` 请求头
 - **gzip 压缩**：gateway nginx.conf 开启 gzip，覆盖 text/css/js/json/xml/svg
+- **Token 即时撤销**：禁用/改角色/删角色时，后端通过 `X-Revoke-User` 响应头通知网关写入 shared dict 黑名单（TTL=20min）；登录/续签时自动清除黑名单；前端收到 `TOKEN_REVOKED` 触发会话过期跳转登录
+- **网页设置所见即所得**：文章/分类/院校/案例管理统一到网页设置预览中；导航栏可拖动排序/增删（NavEditor + nav_config）；预设导航项硬编码，自定义项和排序存数据库；侧边栏不再有独立的文章/分类/院校/案例管理入口
+- **权限树**：后端启动时从路由 description 自动生成 `permission_tree`，前端 PermissionTree 组件从 `/admin/roles/meta` API 获取递归渲染，不依赖 OpenAPI spec
+- **UI 组件**：所有下拉选择用 shadcn Select（base-ui），所有确认弹窗用 AlertDialog，不用原生 `<select>` 和 `confirm()`
 
 新功能开发遵循面板化组织结构，认证相关改动在网关层处理。

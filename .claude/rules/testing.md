@@ -25,18 +25,20 @@
 
 ### 测试验证流程
 
-功能开发完成后按以下顺序验证：
+功能开发完成后通过 `scripts/test.sh` 验证：
 
-| 阶段 | 目标 | 命令 |
+| 阶段 | 命令 | 说明 |
 |------|------|------|
-| 1. 后端单元测试 | mock 验证逻辑 | `uv run --project backend/api python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e` |
-| 2. 后端接口测试 | `localhost:8000` 直连 API | `uv run --project backend/api python -m pytest backend/api/tests/ -v -m api` |
-| 3. 后端网关测试 | `localhost:80` 走 gateway | `uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v` |
-| 4. 前端 E2E（本地） | `localhost` 生产构建容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
-| 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+| 1. 后端单元测试 | `./scripts/test.sh unit` | mock 验证逻辑 + 覆盖率 |
+| 2. 前端单元测试 | `./scripts/test.sh vitest` | 组件/hooks/工具函数 |
+| 3. 后端网关测试 | `./scripts/test.sh gateway` | `localhost:80` 走 gateway |
+| 4. 前端 E2E（本地） | `./scripts/test.sh e2e` | 生产容器，自动检查版本 |
+| 5. 前端 E2E（线上） | `./scripts/test.sh e2e:prod` | 部署后验证 |
+| 全部（本地） | `./scripts/test.sh all` | 1-4 依次执行 |
+| 全部（线上） | `./scripts/test.sh all:prod` | 1+2+5 |
 
-- 本地前端 E2E 使用生产构建的容器（速度快、行为一致）
-- 线上 E2E 在部署后执行，验证生产环境实际行为
+- 本地 E2E 必须用生产容器（`./scripts/dev.sh --prod` 构建），脚本自动检查
+- 环境变量由脚本从 `env/backend.env` 自动加载，无需手动输入
 
 ### 测试覆盖要求
 
