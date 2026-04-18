@@ -61,8 +61,8 @@ def staff_headers():
     return {
         "X-User-Id": "staff-1",
         "X-User-Permissions": (
-            "admin/users/*,admin/content/*,"
-            "admin/categories/*,portal/articles/create"
+            "admin/users/*,admin/config/web-settings/*,"
+            "portal/articles/create"
         ),
     }
 

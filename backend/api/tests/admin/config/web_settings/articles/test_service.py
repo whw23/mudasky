@@ -1,8 +1,7 @@
-"""ContentService 单元测试。
+"""ArticleService 单元测试。
 
-测试文章和分类的 CRUD 业务逻辑，包括权限校验。
+测试文章的 CRUD 业务逻辑。
 使用 mock 隔离数据库层。
-注：此文件包含 admin/portal/public 三个面板的 ContentService 测试。
 """
 
 from datetime import datetime, timezone
@@ -10,13 +9,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.db.content.models import Article, Category
-from api.admin.content.schemas import ArticleCreate, ArticleUpdate, CategoryCreate, CategoryUpdate
-from api.admin.content.service import ContentService
-from app.core.exceptions import ForbiddenException, NotFoundException
+from app.db.content.models import Article
+from api.admin.config.web_settings.articles.schemas import (
+    ArticleCreate,
+    ArticleUpdate,
+)
+from api.admin.config.web_settings.articles.service import (
+    ArticleService,
+)
+from app.core.exceptions import NotFoundException
 
 
-REPO = "api.admin.content.service.repository"
+REPO = "api.admin.config.web_settings.articles.service.repository"
 
 
 def _make_article(
@@ -45,26 +49,14 @@ def _make_article(
     return a
 
 
-def _make_category(category_id: str = "cat-1") -> Category:
-    """创建模拟 Category 对象。"""
-    c = MagicMock(spec=Category)
-    c.id = category_id
-    c.name = "测试分类"
-    c.slug = "test-cat"
-    c.description = "描述"
-    c.sort_order = 0
-    c.created_at = datetime.now(timezone.utc)
-    return c
-
-
 @pytest.fixture
-def service() -> ContentService:
-    """构建 ContentService 实例，注入 mock session。"""
+def service() -> ArticleService:
+    """构建 ArticleService 实例，注入 mock session。"""
     session = AsyncMock()
-    return ContentService(session)
+    return ArticleService(session)
 
 
-# ---- 文章：list_published ----
+# ---- 文章：list_all_articles ----
 
 
 @pytest.mark.asyncio
@@ -137,7 +129,7 @@ async def test_create_article_success(mock_repo, service):
     mock_repo.create_article.assert_awaited_once()
 
 
-# ---- 文章：update_own_article ----
+# ---- 文章：update_article ----
 
 
 @pytest.mark.asyncio
@@ -180,7 +172,7 @@ async def test_update_own_article_forbidden(
         )
 
 
-# ---- 文章：delete_own_article ----
+# ---- 文章：delete_article_admin ----
 
 
 @pytest.mark.asyncio
@@ -212,110 +204,3 @@ async def test_delete_own_article_forbidden(
 
     with pytest.raises(NotFoundException):
         await service.delete_article_admin("nonexistent")
-
-
-# ---- 分类：list_categories ----
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_list_categories(mock_repo, service):
-    """查询所有分类。"""
-    categories = [_make_category(), _make_category("cat-2")]
-    mock_repo.list_categories = AsyncMock(
-        return_value=categories
-    )
-
-    result = await service.list_categories()
-
-    assert len(result) == 2
-
-
-# ---- 分类：create_category ----
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_create_category_success(mock_repo, service):
-    """创建分类成功。"""
-    category = _make_category()
-    mock_repo.create_category = AsyncMock(
-        return_value=category
-    )
-
-    data = CategoryCreate(
-        name="测试分类", slug="test-cat"
-    )
-    result = await service.create_category(data)
-
-    assert result.id == "cat-1"
-    mock_repo.create_category.assert_awaited_once()
-
-
-# ---- 分类：update_category ----
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_update_category_success(mock_repo, service):
-    """更新分类成功。"""
-    category = _make_category()
-    mock_repo.get_category_by_id = AsyncMock(
-        return_value=category
-    )
-    mock_repo.update_category = AsyncMock(
-        return_value=category
-    )
-
-    data = CategoryUpdate(category_id="cat-1", name="新分类名")
-    result = await service.update_category("cat-1", data)
-
-    assert result is not None
-    mock_repo.update_category.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_update_category_not_found(
-    mock_repo, service
-):
-    """更新不存在的分类抛出 NotFoundException。"""
-    mock_repo.get_category_by_id = AsyncMock(
-        return_value=None
-    )
-
-    data = CategoryUpdate(category_id="cat-1", name="新分类名")
-    with pytest.raises(NotFoundException):
-        await service.update_category("nonexistent", data)
-
-
-# ---- 分类：delete_category ----
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_delete_category_success(mock_repo, service):
-    """删除分类成功。"""
-    category = _make_category()
-    mock_repo.get_category_by_id = AsyncMock(
-        return_value=category
-    )
-    mock_repo.delete_category = AsyncMock()
-
-    await service.delete_category("cat-1")
-
-    mock_repo.delete_category.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-@patch(REPO)
-async def test_delete_category_not_found(
-    mock_repo, service
-):
-    """删除不存在的分类抛出 NotFoundException。"""
-    mock_repo.get_category_by_id = AsyncMock(
-        return_value=None
-    )
-
-    with pytest.raises(NotFoundException):
-        await service.delete_category("nonexistent")

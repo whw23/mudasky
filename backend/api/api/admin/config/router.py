@@ -9,6 +9,8 @@ from api.core.dependencies import DbSession
 
 from .schemas import ConfigDetailResponse, ConfigResponse, ConfigUpdateRequest
 from .service import ConfigService
+from .web_settings.articles import router as ws_articles_router
+from .web_settings.categories import router as ws_categories_router
 
 router = APIRouter(tags=["admin-settings"])
 
@@ -74,6 +76,10 @@ async def update_web_config(
     svc = ConfigService(session)
     return await svc.update_value(data.key, data.value)
 
+
+# 挂载分类和文章子路由到 web_settings_router
+web_settings_router.include_router(ws_categories_router)
+web_settings_router.include_router(ws_articles_router)
 
 # 挂载子路由到主路由
 router.include_router(general_settings_router)
