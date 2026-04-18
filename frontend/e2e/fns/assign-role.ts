@@ -36,42 +36,59 @@ export default async function assignRole(
   // 等待展开面板加载（等待"分配角色"标题出现）
   await page.getByRole("heading", { name: "分配角色" }).waitFor()
 
-  // 选择角色（shadcn Select）
+  // 选择角色（原生 select）
   const roleSection = page.getByRole("heading", { name: "分配角色" }).locator("..")
+  const combobox = roleSection.getByRole("combobox")
 
-  // 获取 Select trigger
-  const trigger = roleSection.getByRole("combobox")
+  // 等待角色列表 API 返回（combobox options 包含目标角色）
+  await page.waitForFunction(
+    (label: string) => {
+      const selects = document.querySelectorAll("select")
+      for (const sel of selects) {
+        for (const opt of sel.options) {
+          if (opt.text === label) return true
+        }
+      }
+      return false
+    },
+    roleName,
+    { timeout: 10_000 },
+  )
 
-  // 检查当前选中值
-  const currentText = await trigger.textContent()
-  if (currentText?.includes(roleName)) {
+  // 获取目标角色 ID
+  const targetRoleId = await combobox.evaluate(
+    (el: HTMLSelectElement, label: string) =>
+      Array.from(el.options).find(o => o.text === label)?.value ?? "",
+    roleName,
+  )
+  if (!targetRoleId) throw new Error(`未找到角色选项: "${roleName}"`)
+
+  // 确认当前选中的不是目标角色
+  const currentValue = await combobox.inputValue()
+  if (currentValue === targetRoleId) {
     return // 已是目标角色，跳过
   }
 
-  // 点击打开下拉列表（重试最多 3 次）
+  // 使用 React 兼容方式设置 select 值（重试最多 3 次）
   for (let attempt = 0; attempt < 3; attempt++) {
-    await trigger.click()
+    await combobox.evaluate((el: HTMLSelectElement, value: string) => {
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLSelectElement.prototype, "value",
+      )?.set
+      nativeSetter?.call(el, value)
+      el.dispatchEvent(new Event("change", { bubbles: true }))
+    }, targetRoleId)
 
-    // 等待选项列表出现
-    const option = page.getByRole("option", { name: roleName })
-    try {
-      await option.waitFor({ state: "visible", timeout: 5_000 })
-      await option.click()
+    await page.waitForTimeout(300)
 
-      // 验证选中
-      const newText = await trigger.textContent()
-      if (newText?.includes(roleName)) break
-    } catch {
-      // 选项没出现，关闭下拉重试
-      await page.keyboard.press("Escape")
-      await page.waitForTimeout(300)
-    }
+    const val = await combobox.inputValue()
+    if (val === targetRoleId) break
   }
 
-  // 最终验证
-  const finalText = await trigger.textContent()
-  if (!finalText?.includes(roleName)) {
-    throw new Error(`角色选择失败: 期望包含 "${roleName}", 实际 "${finalText}"`)
+  // 最终确认
+  const finalValue = await combobox.inputValue()
+  if (finalValue !== targetRoleId) {
+    throw new Error(`角色选择失败: 期望 ${targetRoleId}, 实际 ${finalValue}`)
   }
 
   // 监听角色分配 API 响应
