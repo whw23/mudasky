@@ -44,8 +44,22 @@ case "${1:-}" in
     docker image prune -f
     docker compose up
     ;;
+  --help|-h)
+    echo "开发环境管理脚本"
+    echo ""
+    echo "用法: ./scripts/dev.sh [选项]"
+    echo ""
+    echo "选项:"
+    echo "  (无)      构建并启动开发环境（自动 rebuild）"
+    echo "  --clean   清理数据卷后重新启动（重置数据库）"
+    echo "  --down    停止并移除容器"
+    echo "  --logs    查看实时日志（可指定服务名：--logs api）"
+    echo "  --prod    构建并启动生产容器（E2E 测试用）"
+    echo "  --help    显示此帮助信息"
+    ;;
   *)
-    echo "用法: $0 [--clean|--down|--logs [服务名]|--prod]"
+    echo "未知选项: $1"
+    echo "运行 ./scripts/dev.sh --help 查看帮助"
     exit 1
     ;;
 esac

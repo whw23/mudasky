@@ -110,8 +110,31 @@ case "${1:-all}" in
     echo ""
     echo -e "${GREEN}━━━ 全部测试完成 ━━━${NC}"
     ;;
+  help|--help|-h)
+    echo "统一测试脚本"
+    echo ""
+    echo "用法: ./scripts/test.sh [类型]"
+    echo ""
+    echo "类型:"
+    echo "  all          运行全部测试（默认）"
+    echo "  unit         后端单元测试 + 覆盖率 (pytest)"
+    echo "  gateway      后端网关集成测试 (port 80)"
+    echo "  vitest       前端单元测试 (vitest)"
+    echo "  e2e          前端 E2E 本地生产容器 (playwright)"
+    echo "  e2e:lnp      前端 E2E 重跑失败 (LAST_NOT_PASS)"
+    echo "  e2e:prod     前端 E2E 线上生产环境"
+    echo "  e2e:prod:lnp 线上 E2E 重跑失败"
+    echo "  help         显示此帮助信息"
+    echo ""
+    echo "环境要求:"
+    echo "  unit/vitest  无需容器"
+    echo "  gateway      需要开发容器运行 (./scripts/dev.sh)"
+    echo "  e2e          需要生产容器运行 (./scripts/dev.sh --prod)"
+    echo "  e2e:prod     需要线上已部署 + env/backend.env 配置 PRODUCTION_HOST"
+    ;;
   *)
-    echo "用法: $0 {unit|gateway|vitest|e2e|e2e:lnp|e2e:prod|e2e:prod:lnp|all}"
+    echo "未知类型: $1"
+    echo "运行 ./scripts/test.sh help 查看帮助"
     exit 1
     ;;
 esac
