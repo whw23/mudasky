@@ -179,6 +179,17 @@ export function Footer({ editable, onEdit }: FooterProps) {
             true
           )}
         </p>
+        <p className="mt-1 opacity-40">
+          Licensed under{" "}
+          <a
+            href="https://polyformproject.org/licenses/noncommercial/1.0.0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors underline"
+          >
+            PolyForm Noncommercial 1.0.0
+          </a>
+        </p>
       </div>
     </footer>
   )
