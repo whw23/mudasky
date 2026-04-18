@@ -41,6 +41,8 @@ mudasky/
 │   └── scripts/       # 运维脚本（init/start-api.sh）
 ├── gateway/           # OpenResty / Lua config
 ├── db/                # 数据库（Dockerfile, init, cron）
+├── scripts/           # 运维脚本（dev.sh, test.sh）
+├── test-results/      # 测试结果（按时间戳，gitignore）
 ├── legacy/            # Code migrated from old system
 ├── .github/workflows/ # CI/CD (main branch only)
 ├── docker-compose.yml
@@ -61,12 +63,24 @@ mudasky/
 ## Development
 
 ```bash
-# Start dev environment (auto-loads override)
-docker compose up
-
-# Build for production
-docker compose -f docker-compose.yml build
+./scripts/dev.sh start   # 启动开发环境
+./scripts/dev.sh --prod  # 构建并启动生产容器（E2E 用）
+./scripts/dev.sh --clean # 清理数据卷重建
+./scripts/dev.sh --down  # 停止容器
 ```
+
+## Testing
+
+```bash
+./scripts/test.sh unit         # 后端单元测试 + 覆盖率
+./scripts/test.sh vitest       # 前端单元测试
+./scripts/test.sh gateway      # 网关集成测试
+./scripts/test.sh e2e          # 本地 E2E（需生产容器）
+./scripts/test.sh e2e:prod     # 线上 E2E
+./scripts/test.sh all          # 本地全部
+```
+
+测试结果保存在 `test-results/<时间戳>/`，`test-results/latest` 指向最新。
 
 ## Project Context
 
@@ -100,7 +114,7 @@ See `.claude/rules/logging.md`
 
 See `.claude/rules/git.md`
 
-## Testing
+## Testing Rules
 
 See `.claude/rules/testing.md`
 
