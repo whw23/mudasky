@@ -127,6 +127,10 @@ save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash
   },
 })
 
+-- 登录成功，清除该用户的黑名单（禁用/改角色后重新登录）
+local blacklist = ngx.shared.user_blacklist
+blacklist:delete("bl:" .. user.id)
+
 -- 读取 X-Keep-Login
 local keep_login = ngx.req.get_headers()["X-Keep-Login"]
 local keep = (keep_login ~= "false")

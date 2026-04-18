@@ -38,6 +38,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
   const [isActive, setIsActive] = useState(false)
   const [contactNote, setContactNote] = useState("")
   const [advisorId, setAdvisorId] = useState("")
+  const [advisors, setAdvisors] = useState<Array<{ id: string; username: string | null; phone: string | null }>>([])
   const [saving, setSaving] = useState(false)
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false)
 
@@ -70,10 +71,23 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
     }
   }, [userId])
 
+  /** 加载可选顾问列表 */
+  const fetchAdvisors = useCallback(async () => {
+    try {
+      const { data } = await api.get<Array<{ id: string; username: string | null; phone: string | null }>>(
+        "/admin/students/meta/advisors",
+      )
+      setAdvisors(data)
+    } catch {
+      /* 忽略 */
+    }
+  }, [])
+
   useEffect(() => {
     fetchStudent()
     fetchDocuments()
-  }, [fetchStudent, fetchDocuments])
+    fetchAdvisors()
+  }, [fetchStudent, fetchDocuments, fetchAdvisors])
 
   /** 通用操作包装 */
   async function runAction(action: () => Promise<void>, successMsg: string): Promise<void> {
@@ -205,11 +219,18 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
             {t("assignAdvisor")}
           </h3>
-          <Input
-            placeholder={t("advisorIdPlaceholder")}
+          <select
             value={advisorId}
             onChange={(e) => setAdvisorId(e.target.value)}
-          />
+            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <option value="">{t("noAdvisor")}</option>
+            {advisors.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.username || a.phone || a.id}
+              </option>
+            ))}
+          </select>
           <Button size="sm" disabled={saving} onClick={handleAssignAdvisor}>
             {t("confirm")}
           </Button>

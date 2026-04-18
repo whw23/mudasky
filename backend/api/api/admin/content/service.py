@@ -5,9 +5,11 @@
 
 from datetime import datetime, timezone
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
+    ConflictException,
     NotFoundException,
 )
 from app.db.content import repository
@@ -41,9 +43,15 @@ class ContentService:
             description=data.description,
             sort_order=data.sort_order,
         )
-        return await repository.create_category(
-            self.session, category
-        )
+        try:
+            return await repository.create_category(
+                self.session, category
+            )
+        except IntegrityError:
+            raise ConflictException(
+                message="分类标识已存在",
+                code="SLUG_ALREADY_EXISTS",
+            )
 
     async def update_category(
         self, category_id: str, data: CategoryUpdate
@@ -64,9 +72,15 @@ class ContentService:
         if data.sort_order is not None:
             category.sort_order = data.sort_order
 
-        return await repository.update_category(
-            self.session, category
-        )
+        try:
+            return await repository.update_category(
+                self.session, category
+            )
+        except IntegrityError:
+            raise ConflictException(
+                message="分类标识已存在",
+                code="SLUG_ALREADY_EXISTS",
+            )
 
     async def delete_category(
         self, category_id: str

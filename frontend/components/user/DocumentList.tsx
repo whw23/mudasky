@@ -10,6 +10,16 @@ import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { Download, Trash2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Pagination } from "@/components/common/Pagination"
 import api from "@/lib/api"
 import type { Document, DocumentCategory, DocumentListResponse } from "@/types"
@@ -59,6 +69,7 @@ export function DocumentList({
   const [totalPages, setTotalPages] = useState(1)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Document | null>(null)
 
   /** 获取文档列表 */
   const fetchDocuments = useCallback(async () => {
@@ -96,15 +107,17 @@ export function DocumentList({
     window.open(`/api/portal/documents/list/detail/download?doc_id=${doc.id}`, "_blank")
   }
 
-  /** 删除文档 */
-  const handleDelete = async (doc: Document) => {
-    if (!confirm(t("deleteConfirm"))) return
+  /** 确认删除文档 */
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await api.post('/portal/documents/list/detail/delete', { doc_id: doc.id })
+      await api.post('/portal/documents/list/detail/delete', { doc_id: deleteTarget.id })
       toast.success(t("deleteSuccess"))
       fetchDocuments()
     } catch {
       toast.error(t("uploadError"))
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -192,7 +205,7 @@ export function DocumentList({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(doc)}
+                        onClick={() => setDeleteTarget(doc)}
                       >
                         <Trash2 className="mr-1 size-4" />
                         {t("delete")}
@@ -244,7 +257,7 @@ export function DocumentList({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDelete(doc)}
+                  onClick={() => setDeleteTarget(doc)}
                 >
                   <Trash2 className="mr-1 size-4" />
                   {t("delete")}
@@ -268,6 +281,24 @@ export function DocumentList({
           />
         </div>
       )}
+
+      {/* 删除确认弹窗 */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.original_name}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

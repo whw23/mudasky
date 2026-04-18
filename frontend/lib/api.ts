@@ -37,8 +37,16 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    /* 如果是 access_token 过期或缺失，尝试用 refresh_token 刷新 */
+    /* 令牌被撤销（禁用/改角色），无法刷新，直接跳登录 */
     const code = error.response?.data?.code
+    if (error.response?.status === 401 && code === "TOKEN_REVOKED") {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth:session-expired"))
+      }
+      return Promise.reject(error)
+    }
+
+    /* 如果是 access_token 过期，尝试用 refresh_token 刷新 */
     const isRefreshRequest = originalRequest.url?.includes("/auth/refresh")
     if (
       error.response?.status === 401 &&

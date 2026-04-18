@@ -94,8 +94,8 @@ class RbacService:
 
     async def update_role(
         self, role_id: str, data: RoleUpdate
-    ) -> RoleResponse:
-        """更新角色。
+    ) -> tuple[RoleResponse, list[str]]:
+        """更新角色，返回 (角色响应, 受影响用户 ID 列表)。
 
         如果权限变更，踢下线该角色下的所有用户（删除 refresh_token）。
         """
@@ -135,6 +135,7 @@ class RbacService:
         await repository.update_role(self.session, role)
 
         # 权限变更时踢下线该角色下的所有用户
+        affected_user_ids: list[str] = []
         if permissions_changed:
             users = await user_repo.list_by_role_id(
                 self.session, role.id
@@ -143,11 +144,12 @@ class RbacService:
                 await auth_repo.delete_refresh_tokens_by_user(
                     self.session, user.id
                 )
+                affected_user_ids.append(user.id)
 
-        return RoleResponse.model_validate(role)
+        return RoleResponse.model_validate(role), affected_user_ids
 
-    async def delete_role(self, role_id: str) -> None:
-        """删除角色。
+    async def delete_role(self, role_id: str) -> list[str]:
+        """删除角色，返回受影响的用户 ID 列表。
 
         受保护角色（superuser、visitor）不允许删除。
         """
@@ -165,6 +167,7 @@ class RbacService:
             self.session, "visitor"
         )
         users = await user_repo.list_by_role_id(self.session, role.id)
+        affected_user_ids = []
         for user in users:
             await user_repo.set_role_id(
                 self.session, user.id,
@@ -173,7 +176,9 @@ class RbacService:
             await auth_repo.revoke_user_refresh_tokens(
                 self.session, user.id
             )
+            affected_user_ids.append(user.id)
         await repository.delete_role(self.session, role_id)
+        return affected_user_ids
 
     async def reorder_roles(self, data: RoleReorder) -> None:
         """批量更新角色排序。"""

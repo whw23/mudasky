@@ -147,6 +147,10 @@ save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash
   },
 })
 
+-- 续签成功，清除该用户的黑名单
+local blacklist = ngx.shared.user_blacklist
+blacklist:delete("bl:" .. user.id)
+
 -- 设置 Cookie
 local keep_login = ngx.req.get_headers()["X-Keep-Login"]
 local keep = (keep_login ~= "false")

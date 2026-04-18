@@ -11,6 +11,9 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import {
   AlertDialog,
@@ -197,18 +200,19 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
         {/* 角色分配 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("assignGroups")}</h3>
-          <select
-            value={selectedRoleId}
-            onChange={(e) => setSelectedRoleId(e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <option value="">{t("noGroup")}</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t("noGroup")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t("noGroup")}</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" disabled={saving} onClick={handleSaveRole}>
             {t("saveGroups")}
           </Button>

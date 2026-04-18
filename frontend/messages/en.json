@@ -1183,7 +1183,8 @@
     "fileSize": "Size",
     "uploadDate": "Upload date",
     "actions": "Actions",
-    "allCategories": "All"
+    "allCategories": "All",
+    "cancel": "Cancel"
   },
   "AdminUniversities": {
     "createUniversity": "Add University",
@@ -1245,6 +1246,7 @@
     "col_createdAt": "Created At",
     "filterMyStudents": "My students only",
     "advisorIdPlaceholder": "Advisor ID",
+    "noAdvisor": "No Advisor",
     "loading": "Loading...",
     "noData": "No data",
     "statusActive": "Active",

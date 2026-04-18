@@ -155,9 +155,16 @@ end
 
 local payload = jwt_obj.payload
 
--- 检查用户是否启用
+-- 检查用户是否启用（JWT claims 快速检查）
 if not payload.is_active then
   reject(401, "USER_DISABLED")
+end
+
+-- 检查用户黑名单（后端禁用/改角色时 push 写入）
+local user_id = payload.sub
+local blacklist = ngx.shared.user_blacklist
+if blacklist:get("bl:" .. user_id) then
+  reject(401, "TOKEN_REVOKED")
 end
 
 -- 注入请求头（强制覆盖，防伪造）

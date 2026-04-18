@@ -22,6 +22,16 @@ class StudentResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class AdvisorOption(BaseModel):
+    """顾问选项（下拉用）。"""
+
+    id: str
+    username: str | None = None
+    phone: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
 class StudentEdit(BaseModel):
     """编辑学生信息请求。"""
 

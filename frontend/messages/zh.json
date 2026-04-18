@@ -1183,7 +1183,8 @@
     "fileSize": "大小",
     "uploadDate": "上传日期",
     "actions": "操作",
-    "allCategories": "全部"
+    "allCategories": "全部",
+    "cancel": "取消"
   },
   "AdminGeneral": {
     "title": "通用配置",
@@ -1254,6 +1255,7 @@
     "col_createdAt": "创建时间",
     "filterMyStudents": "仅我的学生",
     "advisorIdPlaceholder": "顾问 ID",
+    "noAdvisor": "无顾问",
     "loading": "加载中...",
     "noData": "暂无数据",
     "statusActive": "已激活",

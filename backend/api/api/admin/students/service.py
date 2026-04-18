@@ -14,6 +14,18 @@ class StudentService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def list_advisors(self) -> list:
+        """查询所有顾问角色用户（用于下拉选择）。"""
+        advisor_role = await rbac_repo.get_role_by_name(
+            self.session, "advisor"
+        )
+        if not advisor_role:
+            return []
+        users, _ = await user_repo.list_by_role_and_advisor(
+            self.session, advisor_role.id, 0, 100, None
+        )
+        return users
+
     async def list_students(
         self,
         offset: int,
