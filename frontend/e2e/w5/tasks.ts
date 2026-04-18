@@ -71,9 +71,9 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createCategory,
     fnArgs: {
-      name: `E2E-分类-${TS}`,
-      slug: `e2e-cat-${TS}`,
-      description: "E2E测试分类",
+      name: `E2E_239_分类-${TS}`,
+      slug: `e2e-239-cat-${TS}`,
+      description: "E2E_239_测试分类",
       sortOrder: 100,
     },
     coverage: {
@@ -93,8 +93,8 @@ export const tasks: Task[] = [
     requires: ["w5_create_category"],
     fn: editCategory,
     fnArgs: {
-      oldName: `E2E-分类-${TS}`,
-      newName: `E2E-分类-${TS}-edited`,
+      oldName: `E2E_239_分类-${TS}`,
+      newName: `E2E_239_分类-${TS}-edited`,
     },
     coverage: {
       api: ["/api/admin/web-settings/categories/list/detail/edit"],
@@ -107,7 +107,7 @@ export const tasks: Task[] = [
     name: "删除分类",
     requires: ["w5_edit_category"],
     fn: deleteCategory,
-    fnArgs: { name: `E2E-分类-${TS}-edited` },
+    fnArgs: { name: `E2E_239_分类-${TS}-edited` },
     coverage: {
       api: ["/api/admin/web-settings/categories/list/detail/delete"],
       components: [["CategoryDialog", "delete-button"]],
@@ -122,9 +122,9 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createArticle,
     fnArgs: {
-      title: `E2E-文章-${TS}`,
-      slug: `e2e-article-${TS}`,
-      content: "E2E测试文章内容",
+      title: `E2E_239_文章-${TS}`,
+      slug: `e2e-239-article-${TS}`,
+      content: "E2E_239_测试文章内容",
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -144,8 +144,8 @@ export const tasks: Task[] = [
     requires: ["w5_create_article"],
     fn: editArticle,
     fnArgs: {
-      oldTitle: `E2E-文章-${TS}`,
-      newTitle: `E2E-文章-${TS}-edited`,
+      oldTitle: `E2E_239_文章-${TS}`,
+      newTitle: `E2E_239_文章-${TS}-edited`,
     },
     coverage: {
       api: ["/api/admin/web-settings/articles/list/detail/edit"],
@@ -158,7 +158,7 @@ export const tasks: Task[] = [
     name: "删除文章",
     requires: ["w5_edit_article"],
     fn: deleteArticle,
-    fnArgs: { title: `E2E-文章-${TS}-edited` },
+    fnArgs: { title: `E2E_239_文章-${TS}-edited` },
     coverage: {
       api: ["/api/admin/web-settings/articles/list/detail/delete"],
       components: [["ArticleDialog", "delete-button"]],
@@ -173,8 +173,8 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createCase,
     fnArgs: {
-      studentName: `E2E-学生-${TS}`,
-      university: "E2E大学",
+      studentName: `E2E_239_学生-${TS}`,
+      university: "E2E_239_大学",
       program: "计算机科学",
       year: 2026,
     },
@@ -195,8 +195,8 @@ export const tasks: Task[] = [
     requires: ["w5_create_case"],
     fn: editCase,
     fnArgs: {
-      studentName: `E2E-学生-${TS}`,
-      newUniversity: "E2E大学-edited",
+      studentName: `E2E_239_学生-${TS}`,
+      newUniversity: "E2E_239_大学-edited",
     },
     coverage: {
       api: ["/api/admin/web-settings/cases/list/detail/edit"],
@@ -209,7 +209,7 @@ export const tasks: Task[] = [
     name: "删除案例",
     requires: ["w5_edit_case"],
     fn: deleteCase,
-    fnArgs: { studentName: `E2E-学生-${TS}` },
+    fnArgs: { studentName: `E2E_239_学生-${TS}` },
     coverage: {
       api: ["/api/admin/web-settings/cases/list/detail/delete"],
       components: [["CaseDialog", "delete-button"]],
@@ -224,8 +224,8 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createUniversity,
     fnArgs: {
-      name: `E2E-院校-${TS}`,
-      nameEn: `E2E-University-${TS}`,
+      name: `E2E_239_院校-${TS}`,
+      nameEn: `E2E_239_University-${TS}`,
       country: "中国",
       city: "北京",
     },
@@ -246,7 +246,7 @@ export const tasks: Task[] = [
     requires: ["w5_create_university"],
     fn: editUniversity,
     fnArgs: {
-      name: `E2E-院校-${TS}`,
+      name: `E2E_239_院校-${TS}`,
       newCity: "上海",
     },
     coverage: {
@@ -260,7 +260,7 @@ export const tasks: Task[] = [
     name: "删除院校",
     requires: ["w5_edit_university"],
     fn: deleteUniversity,
-    fnArgs: { name: `E2E-院校-${TS}` },
+    fnArgs: { name: `E2E_239_院校-${TS}` },
     coverage: {
       api: ["/api/admin/web-settings/universities/list/detail/delete"],
       components: [["UniversityDialog", "delete-button"]],

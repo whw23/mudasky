@@ -255,9 +255,9 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: createCategory,
     fnArgs: {
-      name: `E2E分类W1-${TS}`,
-      slug: `e2e-cat-w1-${TS}`,
-      description: "E2E测试分类",
+      name: `E2E_239_分类W1-${TS}`,
+      slug: `e2e-239-cat-w1-${TS}`,
+      description: "E2E_239_测试分类",
       sortOrder: 10,
     },
     coverage: {
@@ -274,7 +274,7 @@ export const tasks: Task[] = [
     requires: ["w1_crud_category_create"],
     fn: deleteCategory,
     fnArgs: {
-      name: `E2E分类W1-${TS}`,
+      name: `E2E_239_分类W1-${TS}`,
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -291,9 +291,9 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: createArticle,
     fnArgs: {
-      title: `E2E文章-${TS}`,
-      slug: `e2e-article-${TS}`,
-      content: "E2E测试文章内容",
+      title: `E2E_239_文章-${TS}`,
+      slug: `e2e-239-article-${TS}`,
+      content: "E2E_239_测试文章内容",
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -309,8 +309,8 @@ export const tasks: Task[] = [
     requires: ["w1_crud_article_create"],
     fn: editArticle,
     fnArgs: {
-      oldTitle: `E2E文章-${TS}`,
-      newTitle: `E2E文章-${TS}-edited`,
+      oldTitle: `E2E_239_文章-${TS}`,
+      newTitle: `E2E_239_文章-${TS}-edited`,
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -326,7 +326,7 @@ export const tasks: Task[] = [
     requires: ["w1_crud_article_edit"],
     fn: deleteArticle,
     fnArgs: {
-      title: `E2E文章-${TS}-edited`,
+      title: `E2E_239_文章-${TS}-edited`,
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -343,9 +343,9 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: createCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
-      university: "E2E大学",
-      program: "E2E专业",
+      studentName: `E2E_239_学生-${TS}`,
+      university: "E2E_239_大学",
+      program: "E2E_239_专业",
       year: 2026,
     },
     coverage: {
@@ -362,8 +362,8 @@ export const tasks: Task[] = [
     requires: ["w1_crud_case_create"],
     fn: editCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
-      newUniversity: "E2E大学-edited",
+      studentName: `E2E_239_学生-${TS}`,
+      newUniversity: "E2E_239_大学-edited",
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -379,7 +379,7 @@ export const tasks: Task[] = [
     requires: ["w1_crud_case_edit"],
     fn: deleteCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
+      studentName: `E2E_239_学生-${TS}`,
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -396,10 +396,10 @@ export const tasks: Task[] = [
     requires: ["w1_refresh_superuser"],
     fn: createUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
-      nameEn: `E2E-University-${TS}`,
-      country: "E2E国家",
-      city: "E2E城市",
+      name: `E2E_239_院校-${TS}`,
+      nameEn: `E2E_239_University-${TS}`,
+      country: "E2E_239_国家",
+      city: "E2E_239_城市",
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -415,8 +415,8 @@ export const tasks: Task[] = [
     requires: ["w1_crud_university_create"],
     fn: editUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
-      newCity: "E2E城市-edited",
+      name: `E2E_239_院校-${TS}`,
+      newCity: "E2E_239_城市-edited",
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -432,7 +432,7 @@ export const tasks: Task[] = [
     requires: ["w1_crud_university_edit"],
     fn: deleteUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
+      name: `E2E_239_院校-${TS}`,
     },
     coverage: {
       routes: ["/admin/web-settings"],
@@ -464,8 +464,8 @@ export const tasks: Task[] = [
     requires: ["w1_role_list"],
     fn: createRole,
     fnArgs: {
-      name: `E2E-role-${TS}`,
-      description: "E2E测试角色",
+      name: `E2E_239_role-${TS}`,
+      description: "E2E_239_测试角色",
       permissions: ["public/*"],
     },
     coverage: {
@@ -482,9 +482,9 @@ export const tasks: Task[] = [
     requires: ["w1_role_create"],
     fn: editRole,
     fnArgs: {
-      oldName: `E2E-role-${TS}`,
-      newName: `E2E-role-${TS}-edited`,
-      newDescription: "E2E测试角色-edited",
+      oldName: `E2E_239_role-${TS}`,
+      newName: `E2E_239_role-${TS}-edited`,
+      newDescription: "E2E_239_测试角色-edited",
     },
     coverage: {
       routes: ["/admin/roles"],
@@ -500,7 +500,7 @@ export const tasks: Task[] = [
     requires: ["w1_role_edit"],
     fn: deleteRole,
     fnArgs: {
-      name: `E2E-role-${TS}-edited`,
+      name: `E2E_239_role-${TS}-edited`,
       expectFail: false,
     },
     coverage: {

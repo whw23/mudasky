@@ -101,11 +101,11 @@ export async function createArticle(page: Page, categorySlug?: string): Promise<
   if (!cat) return null
 
   const res = await apiCall(page, "POST", "/api/admin/web-settings/articles/list/create", {
-    title: `E2E文章${Date.now()}`,
-    slug: `e2e-${Date.now()}`,
+    title: `E2E_239_文章${Date.now()}`,
+    slug: `e2e-239-${Date.now()}`,
     category_id: cat.id,
     content_type: "markdown",
-    content: "E2E 测试内容",
+    content: "E2E_239_测试内容",
     status: "published",
   })
   return res.status === 201 ? res.data?.id : null
@@ -114,11 +114,11 @@ export async function createArticle(page: Page, categorySlug?: string): Promise<
 /** 创建测试案例，返回 case id */
 export async function createCase(page: Page): Promise<string | null> {
   const res = await apiCall(page, "POST", "/api/admin/web-settings/cases/list/create", {
-    student_name: `E2E学生${Date.now()}`,
-    university: "E2E大学",
-    program: "E2E专业",
+    student_name: `E2E_239_学生${Date.now()}`,
+    university: "E2E_239_大学",
+    program: "E2E_239_专业",
     year: 2026,
-    testimonial: "E2E 测试感言",
+    testimonial: "E2E_239_测试感言",
   })
   return res.status === 201 ? res.data?.id : null
 }
@@ -126,12 +126,12 @@ export async function createCase(page: Page): Promise<string | null> {
 /** 创建测试院校，返回 university id */
 export async function createUniversity(page: Page): Promise<string | null> {
   const res = await apiCall(page, "POST", "/api/admin/web-settings/universities/list/create", {
-    name: `E2E大学${Date.now()}`,
-    name_en: "E2E Test University",
+    name: `E2E_239_大学${Date.now()}`,
+    name_en: "E2E_239_Test University",
     country: "德国",
     city: "柏林",
     programs: ["计算机", "机械"],
-    description: "E2E 测试院校",
+    description: "E2E_239_测试院校",
   })
   return res.status === 201 ? res.data?.id : null
 }
