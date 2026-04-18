@@ -69,7 +69,8 @@ run_gateway() {
 # 前端单元测试
 run_vitest() {
   header "前端单元测试 (vitest)"
-  run_and_log "vitest.log" \
+  VITEST_COVERAGE_DIR="../$RESULTS_DIR/vitest-coverage" \
+    run_and_log "vitest.log" \
     pnpm --prefix frontend test
 }
 
