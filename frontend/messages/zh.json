@@ -920,6 +920,8 @@
     "fetchError": "获取配置失败",
     "noData": "暂无国家码",
     "deleteConfirm": "确定删除 {code} 吗？",
+    "cancel": "取消",
+    "confirmDelete": "删除",
     "siteInfo": "品牌信息",
     "siteInfoDesc": "管理网站品牌名称、标语、Logo 等信息",
     "brandName": "品牌名称（中文）",

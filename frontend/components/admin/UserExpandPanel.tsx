@@ -22,11 +22,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import api from "@/lib/api"
 import { encryptPassword } from "@/lib/crypto"
 import { getApiError } from "@/lib/api-error"
 import { PasswordInput } from "@/components/auth/PasswordInput"
 import type { User, Role } from "@/types"
+
+/** "无角色"的特殊值（SelectItem 不支持空字符串） */
+const NO_ROLE = "__none__"
 
 interface UserExpandPanelProps {
   userId: string
@@ -100,7 +104,7 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
   /** 保存角色 */
   function handleSaveRole(): void {
     runAction(
-      () => api.post("/admin/users/list/detail/assign-role", { user_id: userId, role_id: selectedRoleId || null }),
+      () => api.post("/admin/users/list/detail/assign-role", { user_id: userId, role_id: selectedRoleId === NO_ROLE ? null : selectedRoleId || null }),
       t("saveGroupsSuccess"),
     )
   }
@@ -197,18 +201,25 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
         {/* 角色分配 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("assignGroups")}</h3>
-          <select
-            value={selectedRoleId}
-            onChange={(e) => setSelectedRoleId(e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <option value="">{t("noGroup")}</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedRoleId || NO_ROLE} onValueChange={(v) => setSelectedRoleId(v === NO_ROLE ? "" : v ?? "")}>
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                {(value: string | null) => {
+                  if (!value || value === NO_ROLE) return t("noGroup")
+                  const role = roles.find((r) => r.id === value)
+                  return role?.name ?? t("noGroup")
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_ROLE}>{t("noGroup")}</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" disabled={saving} onClick={handleSaveRole}>
             {t("saveGroups")}
           </Button>

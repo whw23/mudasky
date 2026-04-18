@@ -920,6 +920,8 @@
     "fetchError": "Failed to fetch config",
     "noData": "No country codes",
     "deleteConfirm": "Delete {code}?",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete",
     "siteInfo": "Brand Info",
     "siteInfoDesc": "Manage brand name, tagline, logo, etc.",
     "brandName": "Brand Name (Chinese)",

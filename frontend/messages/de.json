@@ -920,6 +920,8 @@
     "fetchError": "Konfiguration konnte nicht geladen werden",
     "noData": "Keine Ländercodes",
     "deleteConfirm": "{code} löschen?",
+    "cancel": "Abbrechen",
+    "confirmDelete": "Löschen",
     "siteInfo": "Markeninformationen",
     "siteInfoDesc": "Markenname, Slogan, Logo usw. verwalten",
     "brandName": "Markenname (Chinesisch)",

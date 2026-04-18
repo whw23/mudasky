@@ -920,6 +920,8 @@
     "fetchError": "設定の取得に失敗しました",
     "noData": "国コードがありません",
     "deleteConfirm": "{code} を削除しますか？",
+    "cancel": "キャンセル",
+    "confirmDelete": "削除",
     "siteInfo": "ブランド情報",
     "siteInfoDesc": "ブランド名、スローガン、ロゴなどを管理",
     "brandName": "ブランド名（中国語）",

@@ -6,10 +6,21 @@
  * 编辑模式下支持增删改统计项。
  */
 
+import { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { useLocalizedConfig } from '@/contexts/ConfigContext'
 import { EditableOverlay } from '@/components/admin/EditableOverlay'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface StatsSectionProps {
   editable?: boolean
@@ -21,12 +32,19 @@ interface StatsSectionProps {
 /** 首页统计区块 */
 export function StatsSection({ editable, onEdit, onAdd, onDelete }: StatsSectionProps) {
   const { homepageStats } = useLocalizedConfig()
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
 
   /** 删除统计项（带确认） */
   function handleDelete(e: React.MouseEvent, index: number): void {
     e.stopPropagation()
-    if (confirm('确认删除该统计项？')) {
-      onDelete?.(index)
+    setDeleteTarget(index)
+  }
+
+  /** 确认删除 */
+  function confirmDelete(): void {
+    if (deleteTarget !== null) {
+      onDelete?.(deleteTarget)
+      setDeleteTarget(null)
     }
   }
 
@@ -94,6 +112,25 @@ export function StatsSection({ editable, onEdit, onAdd, onDelete }: StatsSection
           </div>
         )}
       </div>
+
+      {/* 删除确认弹窗 */}
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>确认删除该统计项？</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   )
 }

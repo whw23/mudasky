@@ -10,7 +10,11 @@ import { useTranslations } from "next-intl"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import api from "@/lib/api"
+
+/** "全部"的特殊值（SelectItem 不支持空字符串） */
+const ALL = "__all__"
 
 interface Filters {
   search: string
@@ -132,43 +136,52 @@ export function UniversitySearch({
       </div>
 
       {/* 国家下拉 */}
-      <select
-        value={country}
-        onChange={(e) => handleCountryChange(e.target.value)}
-        className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <option value="">{t("allCountries")}</option>
-        {countries.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-      </select>
+      <Select value={country || ALL} onValueChange={(v) => handleCountryChange(v === ALL ? "" : v ?? "")}>
+        <SelectTrigger className="h-10">
+          <SelectValue>
+            {(value: string | null) => (!value || value === ALL) ? t("allCountries") : value}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>{t("allCountries")}</SelectItem>
+          {countries.map((c) => (
+            <SelectItem key={c} value={c}>{c}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* 省份下拉（选了国家后才显示） */}
       {provinces.length > 0 && (
-        <select
-          value={province}
-          onChange={(e) => handleProvinceChange(e.target.value)}
-          className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          <option value="">{t("allProvinces")}</option>
-          {provinces.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+        <Select value={province || ALL} onValueChange={(v) => handleProvinceChange(v === ALL ? "" : v ?? "")}>
+          <SelectTrigger className="h-10">
+            <SelectValue>
+              {(value: string | null) => (!value || value === ALL) ? t("allProvinces") : value}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>{t("allProvinces")}</SelectItem>
+            {provinces.map((p) => (
+              <SelectItem key={p} value={p}>{p}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
       {/* 城市下拉（选了国家后才显示） */}
       {cities.length > 0 && (
-        <select
-          value={city}
-          onChange={(e) => handleCityChange(e.target.value)}
-          className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          <option value="">{t("allCities")}</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        <Select value={city || ALL} onValueChange={(v) => handleCityChange(v === ALL ? "" : v ?? "")}>
+          <SelectTrigger className="h-10">
+            <SelectValue>
+              {(value: string | null) => (!value || value === ALL) ? t("allCities") : value}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>{t("allCities")}</SelectItem>
+            {cities.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
       {/* 重置按钮 */}
