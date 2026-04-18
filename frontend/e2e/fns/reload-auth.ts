@@ -30,7 +30,6 @@ export default async function reloadAuth(
 
   // 1. 导航到首页（等待网络空闲确保 React 水合完成）
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   // 2. 等待 header 按钮出现（可能是"退出"或"登录/注册"）
   const logoutBtn = page.getByRole("button", { name: "退出" })

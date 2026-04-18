@@ -8,7 +8,6 @@ import type { Page } from "@playwright/test"
 export default async function logout(page: Page): Promise<void> {
   // 导航到首页
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   // 检查是否已登录
   const logoutBtn = page.getByRole("button", { name: "退出" })

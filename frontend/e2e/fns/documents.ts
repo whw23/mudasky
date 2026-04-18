@@ -101,13 +101,19 @@ export const deleteDocument: TaskFn = async (page, args) => {
   await rows.first().waitFor({ timeout: 15_000 })
   const countBefore = await rows.count()
 
-  // 找到第一行，点击删除
-  page.once("dialog", (d) => d.accept())
+  // 找到第一行，点击删除（触发 AlertDialog）
+  await rows.first().getByRole("button", { name: /删除/ }).click()
+
+  // 等待 AlertDialog 确认弹窗出现
+  const alertDialog = page.getByRole("alertdialog")
+  await alertDialog.waitFor({ state: "visible" })
+
+  // 点击确认删除
   const deleteResponse = page.waitForResponse(
     (r) => r.url().includes("/portal/documents/list/detail/delete") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
-  await rows.first().getByRole("button", { name: /删除/ }).click()
+  await alertDialog.getByRole("button", { name: /删除/ }).click()
 
   // 等待 API 响应
   const res = await deleteResponse

@@ -29,7 +29,6 @@ export default async function register(
 
   // 导航到首页（等待水合完成）
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   // 点击登录按钮打开弹窗
   await page.getByRole("button", { name: /登录|注册/ }).click()

@@ -18,7 +18,6 @@ const XHR = { "X-Requested-With": "XMLHttpRequest" }
  */
 export const verifyDisabledApi: TaskFn = async (page) => {
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
   const res = await page.request.get("/api/portal/overview", { headers: XHR })
   // 禁用用户可能返回 401 或 403
   expect([401, 403]).toContain(res.status())
@@ -44,7 +43,6 @@ export const verifyEnabledApi: TaskFn = async (page, args) => {
 
   // 重新 SMS 登录获取新 token
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   const logoutBtn = page.getByRole("button", { name: "退出" })
   const loginBtn = page.getByRole("button", { name: /登录/ })

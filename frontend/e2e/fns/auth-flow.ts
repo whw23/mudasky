@@ -11,7 +11,6 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 /** 通过 UI 确保未登录状态后打开登录弹窗 */
 async function openLoginDialog(page: Page): Promise<void> {
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   // 等待 header 中任一按钮出现（"登录/注册" 或 "退出"）
   const loginBtn = page.getByRole("button", { name: /登录/ })
@@ -87,7 +86,6 @@ export const testLoginSuccess: TaskFn = async (page, args) => {
 export const testLogoutFlow: TaskFn = async (page) => {
   // 导航到首页
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
 
   // 点击退出按钮
   await page.getByRole("button", { name: "退出" }).click()

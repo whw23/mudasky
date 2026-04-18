@@ -24,7 +24,6 @@ export const verifyPublicPage: TaskFn = async (page, args) => {
  */
 export const verifyNavbar: TaskFn = async (page) => {
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
   await page.locator("nav").waitFor()
   const navLinks = page.locator("nav a")
   const count = await navLinks.count()
@@ -36,7 +35,6 @@ export const verifyNavbar: TaskFn = async (page) => {
  */
 export const verifyFooter: TaskFn = async (page) => {
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
   await page.locator("footer").waitFor()
 
   // ICP 备案链接

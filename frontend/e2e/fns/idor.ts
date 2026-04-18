@@ -21,7 +21,6 @@ export const testAccessOtherDoc: TaskFn = async (page, args) => {
   const docId = args?.docId as string
 
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
   const res = await page.request.get(
     `/api/portal/documents/list/detail?doc_id=${docId}`,
     { headers: XHR },
@@ -38,7 +37,6 @@ export const testDeleteOtherDoc: TaskFn = async (page, args) => {
   const docId = args?.docId as string
 
   await page.goto("/")
-  await page.waitForLoadState("networkidle")
   const res = await page.request.post(
     "/api/portal/documents/list/detail/delete",
     {
