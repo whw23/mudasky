@@ -94,7 +94,7 @@ run_e2e_prod_lnp() {
 }
 
 # 主逻辑
-case "${1:-all}" in
+case "${1:-}" in
   unit)    run_unit ;;
   gateway) run_gateway ;;
   vitest)  run_vitest ;;
@@ -110,7 +110,7 @@ case "${1:-all}" in
     echo ""
     echo -e "${GREEN}━━━ 全部测试完成 ━━━${NC}"
     ;;
-  help|--help|-h)
+  ""|help|--help|-h)
     echo "统一测试脚本"
     echo ""
     echo "用法: ./scripts/test.sh [类型]"
