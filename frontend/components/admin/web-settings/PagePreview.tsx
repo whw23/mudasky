@@ -2,13 +2,13 @@
 
 /**
  * 页面预览容器组件。
- * 根据 activePage 渲染对应公开页面的真实组件，
- * 配合 EditableOverlay 和 DataSectionOverlay 实现可编辑浮层。
+ * 根据 activePage 渲染对应页面的预览或编辑界面。
+ * 首页和关于页使用 EditableOverlay 编辑配置项，
+ * 其余页面（院校/案例/文章）直接在预览中增删改。
  */
 
 import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
-import { DataSectionOverlay } from "./DataSectionOverlay"
 
 import { Banner } from "@/components/layout/Banner"
 import { StatsSection } from "@/components/home/StatsSection"
@@ -19,9 +19,10 @@ import {
   AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { UniversityList } from "@/components/public/UniversityList"
-import { CasesPreview } from "./CasesPreview"
 import { NewsPreview } from "./NewsPreview"
+import { UniversitiesEditPreview } from "./UniversitiesEditPreview"
+import { CasesEditPreview } from "./CasesEditPreview"
+import { ArticleListPreview } from "./ArticleListPreview"
 
 interface PagePreviewProps {
   activePage: string
@@ -34,15 +35,13 @@ export function PagePreview({ activePage, onEditConfig }: PagePreviewProps) {
     case "home":
       return <HomePreview onEditConfig={onEditConfig} />
     case "universities":
-      return <UniversitiesPreview />
+      return <UniversitiesEditPreview />
     case "cases":
-      return <CasesPagePreview />
-    case "news":
-      return <NewsPagePreview />
+      return <CasesEditPreview />
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} />
     default:
-      return <StaticPagePreview pageKey={activePage} />
+      return <ArticleListPreview categorySlug={activePage} />
   }
 }
 
@@ -120,44 +119,9 @@ function HomePreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
         </section>
       </EditableOverlay>
 
-      {/* 最新资讯 */}
-      <DataSectionOverlay label="管理文章" href="/admin/articles">
-        <NewsPreview />
-      </DataSectionOverlay>
-    </>
-  )
-}
-
-/** 院校选择预览 */
-function UniversitiesPreview() {
-  const t = useTranslations("Pages")
-  return (
-    <DataSectionOverlay label="管理院校" href="/admin/universities">
-      <Banner title={t("universities")} subtitle={t("universitiesSubtitle")} />
-      <UniversityList />
-    </DataSectionOverlay>
-  )
-}
-
-/** 案例页预览 */
-function CasesPagePreview() {
-  const t = useTranslations("Pages")
-  return (
-    <DataSectionOverlay label="管理案例" href="/admin/cases">
-      <Banner title={t("cases")} subtitle={t("casesSubtitle")} />
-      <CasesPreview />
-    </DataSectionOverlay>
-  )
-}
-
-/** 新闻页预览 */
-function NewsPagePreview() {
-  const t = useTranslations("Pages")
-  return (
-    <DataSectionOverlay label="管理文章" href="/admin/articles">
-      <Banner title={t("news")} subtitle={t("newsSubtitle")} />
+      {/* 最新资讯（只读预览） */}
       <NewsPreview />
-    </DataSectionOverlay>
+    </>
   )
 }
 
@@ -186,15 +150,3 @@ function AboutPreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
   )
 }
 
-/** 静态页面预览（i18n 管理） */
-function StaticPagePreview({ pageKey }: { pageKey: string }) {
-  const t = useTranslations("Nav")
-  return (
-    <div className="px-10 py-16 text-center">
-      <h2 className="text-2xl font-bold">{t(pageKey)}</h2>
-      <p className="mt-4 text-muted-foreground">
-        此页面内容由翻译文件管理，暂不支持后台编辑
-      </p>
-    </div>
-  )
-}
