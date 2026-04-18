@@ -7,7 +7,8 @@
 #   ./scripts/test.sh vitest   # 前端单元测试
 #   ./scripts/test.sh e2e      # 前端 E2E（本地生产容器）
 #   ./scripts/test.sh e2e:lnp  # 前端 E2E 重跑失败
-#   ./scripts/test.sh e2e:prod # 前端 E2E（线上生产环境）
+#   ./scripts/test.sh e2e:prod     # 前端 E2E（线上生产环境）
+#   ./scripts/test.sh e2e:prod:lnp # 线上 E2E 重跑失败
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -81,6 +82,17 @@ run_e2e_prod() {
   TEST_ENV=production pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
+# 线上 E2E (LAST_NOT_PASS)
+run_e2e_prod_lnp() {
+  header "线上 E2E (production LAST_NOT_PASS)"
+  load_env
+  if [ -z "${PRODUCTION_HOST:-}" ]; then
+    echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
+    exit 1
+  fi
+  LAST_NOT_PASS=1 TEST_ENV=production pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
+}
+
 # 主逻辑
 case "${1:-all}" in
   unit)    run_unit ;;
@@ -89,6 +101,7 @@ case "${1:-all}" in
   e2e)     run_e2e ;;
   e2e:lnp) run_e2e_lnp ;;
   e2e:prod) run_e2e_prod ;;
+  e2e:prod:lnp) run_e2e_prod_lnp ;;
   all)
     run_unit
     run_vitest
@@ -98,7 +111,7 @@ case "${1:-all}" in
     echo -e "${GREEN}━━━ 全部测试完成 ━━━${NC}"
     ;;
   *)
-    echo "用法: $0 {unit|gateway|vitest|e2e|e2e:lnp|e2e:prod|all}"
+    echo "用法: $0 {unit|gateway|vitest|e2e|e2e:lnp|e2e:prod|e2e:prod:lnp|all}"
     exit 1
     ;;
 esac
