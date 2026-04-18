@@ -4,7 +4,7 @@
  */
 
 import type { Page } from "@playwright/test"
-import * as path from "path"
+import { getAuthFile } from "../constants"
 
 export default async function register(
   page: Page,
@@ -97,6 +97,6 @@ export default async function register(
   }
 
   // 保存 storageState
-  const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
+  const authFile = getAuthFile(worker)
   await page.context().storageState({ path: authFile })
 }

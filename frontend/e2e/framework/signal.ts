@@ -7,7 +7,7 @@ import * as fs from "fs"
 import * as path from "path"
 import type { Signal, SignalStatus } from "./types"
 
-const SIGNAL_DIR = "/tmp/e2e-signals"
+const SIGNAL_DIR = process.env.E2E_SIGNAL_DIR || "/tmp/e2e-signals"
 
 /** 确保信号目录存在。 */
 export function ensureSignalDir(): void {

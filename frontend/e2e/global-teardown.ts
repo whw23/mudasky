@@ -8,19 +8,20 @@ import * as path from "path"
 import { chromium } from "@playwright/test"
 import { getAllSignals, cleanupSignals } from "./framework/signal"
 import { calculateCoverage, printCoverageReport, saveCoverageReport } from "./framework/coverage"
+import { E2E_RUNTIME_DIR } from "./constants"
 
 export default async function globalTeardown(): Promise<void> {
   const signals = getAllSignals()
 
-  // 1. 汇总结果 → .last-run.json
+  // 1. 汇总结果 → .last-run.json（同时写两处：runtime 目录存档 + e2e 根目录供 LAST_NOT_PASS 读取）
   const summary: Record<string, string> = {}
   for (const [taskId, signal] of Object.entries(signals)) {
     summary[taskId] = signal.status
   }
-  fs.writeFileSync(
-    path.join(__dirname, ".last-run.json"),
-    JSON.stringify(summary, null, 2),
-  )
+  const summaryJSON = JSON.stringify(summary, null, 2)
+  fs.mkdirSync(E2E_RUNTIME_DIR, { recursive: true })
+  fs.writeFileSync(path.join(E2E_RUNTIME_DIR, "last-run.json"), summaryJSON)
+  fs.writeFileSync(path.join(__dirname, ".last-run.json"), summaryJSON)
 
   // 2. 统计
   const statuses = Object.values(signals).map((s) => s.status)

@@ -203,6 +203,8 @@ check_prod_container() {
 
 export E2E_OUTPUT_DIR="../../$RESULTS_DIR/e2e-artifacts"
 export E2E_REPORT_DIR="../../$RESULTS_DIR/e2e-report"
+export E2E_RUNTIME_DIR="$(pwd)/$RESULTS_DIR/e2e-runtime"
+export E2E_SIGNAL_DIR="$(pwd)/$RESULTS_DIR/e2e-signals"
 
 run_e2e() {
   check_prod_container || return 1

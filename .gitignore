@@ -75,7 +75,7 @@ tmp/
 test-results/
 playwright-report/
 coverage/
-frontend/e2e/.auth/
+frontend/e2e/.runtime/
 .playwright-mcp/
 
 # ─── Claude Code ─────────────────────────────────────────────────────────────

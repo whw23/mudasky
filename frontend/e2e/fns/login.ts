@@ -4,7 +4,7 @@
  */
 
 import type { Page } from "@playwright/test"
-import * as path from "path"
+import { getAuthFile } from "../constants"
 
 export default async function login(
   page: Page,
@@ -43,6 +43,6 @@ export default async function login(
   await page.getByRole("dialog").waitFor({ state: "hidden" })
 
   // 保存 storageState
-  const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
+  const authFile = getAuthFile(worker)
   await page.context().storageState({ path: authFile })
 }

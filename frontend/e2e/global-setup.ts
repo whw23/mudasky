@@ -7,6 +7,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { chromium } from "@playwright/test"
 import { cleanupSignals, ensureSignalDir, writeSignal } from "./framework/signal"
+import { E2E_RUNTIME_DIR, getAuthFile } from "./constants"
 
 /** 所有需要预热的页面路由 */
 const WARMUP_ROUTES = [
@@ -23,7 +24,8 @@ const WARMUP_ROUTES = [
 
 export default async function globalSetup(): Promise<void> {
   // 0. 生成共享 TS（所有 worker 通过文件读取同一个值）
-  const tsFile = path.join(__dirname, ".e2e-ts")
+  fs.mkdirSync(E2E_RUNTIME_DIR, { recursive: true })
+  const tsFile = path.join(E2E_RUNTIME_DIR, "e2e-ts")
   fs.writeFileSync(tsFile, Date.now().toString().slice(-6))
 
   // 1. 清理信号文件
@@ -141,9 +143,7 @@ export default async function globalSetup(): Promise<void> {
     await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
 
     // 保存 W1 的 storageState
-    const authDir = path.join(__dirname, ".auth")
-    if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
-    await context.storageState({ path: path.join(authDir, "w1.json") })
+    await context.storageState({ path: getAuthFile("w1") })
 
     // 遍历所有页面预热（不关心内容，只要 Next.js 编译缓存）
     for (const route of WARMUP_ROUTES) {

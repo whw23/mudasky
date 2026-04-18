@@ -6,9 +6,20 @@
 import * as fs from "fs"
 import * as path from "path"
 
+/** E2E 运行时目录（auth state、时间戳等临时文件） */
+export const E2E_RUNTIME_DIR = process.env.E2E_RUNTIME_DIR || path.join(__dirname, ".runtime")
+
+/** 获取 auth state 文件路径 */
+export function getAuthFile(worker: string): string {
+  const dir = path.join(E2E_RUNTIME_DIR, "auth")
+  fs.mkdirSync(dir, { recursive: true })
+  return path.join(dir, `${worker}.json`)
+}
+
 /** 从文件读取共享 TS（global-setup 写入） */
 function getSharedTS(): string {
-  const tsFile = path.join(__dirname, ".e2e-ts")
+  const tsFile = path.join(E2E_RUNTIME_DIR, "e2e-ts")
+  fs.mkdirSync(E2E_RUNTIME_DIR, { recursive: true })
   if (fs.existsSync(tsFile)) {
     return fs.readFileSync(tsFile, "utf-8").trim()
   }

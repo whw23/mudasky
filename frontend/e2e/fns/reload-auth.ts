@@ -5,7 +5,7 @@
  */
 
 import type { Page } from "@playwright/test"
-import * as path from "path"
+import { getAuthFile } from "../constants"
 
 export default async function reloadAuth(
   page: Page,
@@ -94,6 +94,6 @@ export default async function reloadAuth(
   }
 
   // 5. 保存新的 storageState
-  const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
+  const authFile = getAuthFile(worker)
   await page.context().storageState({ path: authFile })
 }

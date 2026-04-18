@@ -5,7 +5,7 @@
 
 import { chromium } from "@playwright/test"
 import type { Page } from "@playwright/test"
-import * as path from "path"
+import { getAuthFile } from "../constants"
 
 export default async function refreshToken(
   page: Page,
@@ -17,7 +17,7 @@ export default async function refreshToken(
     throw new Error("refreshToken fn 需要 worker 参数")
   }
 
-  const authFile = path.join(__dirname, "..", ".auth", `${worker}.json`)
+  const authFile = getAuthFile(worker)
   const baseURL = process.env.BASE_URL || "http://localhost"
 
   // 启动新浏览器（不使用传入的 page，因为需要独立的 context）
