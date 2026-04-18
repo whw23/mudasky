@@ -42,6 +42,12 @@ run_unit() {
 # 后端网关集成测试
 run_gateway() {
   header "后端网关测试 (port 80)"
+  local version
+  version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
+  if [ -z "$version" ]; then
+    echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
+    exit 1
+  fi
   load_env
   uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v
 }
@@ -52,15 +58,35 @@ run_vitest() {
   pnpm --prefix frontend test
 }
 
+# 检查本地容器是否为生产构建
+check_prod_container() {
+  local version
+  version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
+  if [ -z "$version" ]; then
+    echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
+    echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
+    exit 1
+  fi
+  # 开发容器版本号为 "dev"，生产容器为 "YYYYMMDD-hash"
+  if echo "$version" | grep -q '"frontend":"dev"'; then
+    echo -e "${RED}错误: 当前运行的是开发容器，E2E 需要生产容器${NC}"
+    echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
+    exit 1
+  fi
+  echo -e "${GREEN}✓ 生产容器已就绪${NC}"
+}
+
 # 前端 E2E
 run_e2e() {
   header "前端 E2E (playwright)"
+  check_prod_container
   pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
 # 前端 E2E (LAST_NOT_PASS)
 run_e2e_lnp() {
   header "前端 E2E (LAST_NOT_PASS)"
+  check_prod_container
   LAST_NOT_PASS=1 pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
 }
 
