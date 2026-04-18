@@ -27,11 +27,18 @@ export default async function register(
     ])
   }
 
-  // 导航到首页，等待登录按钮出现（水合完成后才渲染）
+  // 导航到首页，等待登录按钮出现并点击（水合后 auth check 可能导致重渲染，重试 click）
   await page.goto("/")
   const loginBtn = page.getByRole("button", { name: /登录|注册/ })
   await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
-  await loginBtn.click()
+  for (let i = 0; i < 3; i++) {
+    try {
+      await loginBtn.click({ timeout: 5_000 })
+      break
+    } catch {
+      await loginBtn.waitFor({ state: "visible", timeout: 10_000 })
+    }
+  }
 
   // 等待弹窗出现
   await page.getByRole("dialog").waitFor({ state: "visible" })
