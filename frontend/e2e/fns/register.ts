@@ -27,11 +27,11 @@ export default async function register(
     ])
   }
 
-  // 导航到首页（等待水合完成）
+  // 导航到首页，等待登录按钮出现（水合完成后才渲染）
   await page.goto("/")
-
-  // 点击登录按钮打开弹窗
-  await page.getByRole("button", { name: /登录|注册/ }).click()
+  const loginBtn = page.getByRole("button", { name: /登录|注册/ })
+  await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+  await loginBtn.click()
 
   // 等待弹窗出现
   await page.getByRole("dialog").waitFor({ state: "visible" })
