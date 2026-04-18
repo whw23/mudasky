@@ -38,7 +38,7 @@ class TestAdminListUniversities:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -53,7 +53,7 @@ class TestAdminListUniversities:
             1,
         )
         resp = await client.get(
-            "/admin/universities/list",
+            "/admin/web-settings/universities/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -70,7 +70,7 @@ class TestAdminListUniversities:
             0,
         )
         resp = await client.get(
-            "/admin/universities/list",
+            "/admin/web-settings/universities/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -87,7 +87,7 @@ class TestAdminListUniversities:
             0,
         )
         resp = await client.get(
-            "/admin/universities/list?page_size=50",
+            "/admin/web-settings/universities/list?page_size=50",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -103,7 +103,7 @@ class TestAdminCreateUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -117,7 +117,7 @@ class TestAdminCreateUniversity:
             _make_university()
         )
         resp = await client.post(
-            "/admin/universities/list/create",
+            "/admin/web-settings/universities/list/create",
             json={
                 "name": "北京大学",
                 "country": "中国",
@@ -134,7 +134,7 @@ class TestAdminCreateUniversity:
     ):
         """缺少必填字段返回 422。"""
         resp = await client.post(
-            "/admin/universities/list/create",
+            "/admin/web-settings/universities/list/create",
             json={"name": "北京大学"},
             headers=superuser_headers,
         )
@@ -148,7 +148,7 @@ class TestAdminUpdateUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -162,7 +162,7 @@ class TestAdminUpdateUniversity:
             _make_university(name="清华大学")
         )
         resp = await client.post(
-            "/admin/universities/list/detail/edit",
+            "/admin/web-settings/universities/list/detail/edit",
             json={
                 "university_id": "uni-001",
                 "name": "清华大学",
@@ -186,7 +186,7 @@ class TestAdminUpdateUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/list/detail/edit",
+            "/admin/web-settings/universities/list/detail/edit",
             json={
                 "university_id": "nonexistent",
                 "name": "不存在",
@@ -203,7 +203,7 @@ class TestAdminDeleteUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -215,7 +215,7 @@ class TestAdminDeleteUniversity:
         """管理员删除院校返回 204。"""
         self.mock_svc.delete_university.return_value = None
         resp = await client.post(
-            "/admin/universities/list/detail/delete",
+            "/admin/web-settings/universities/list/detail/delete",
             json={"university_id": "uni-001"},
             headers=superuser_headers,
         )
@@ -234,7 +234,7 @@ class TestAdminDeleteUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/list/detail/delete",
+            "/admin/web-settings/universities/list/detail/delete",
             json={"university_id": "nonexistent"},
             headers=superuser_headers,
         )

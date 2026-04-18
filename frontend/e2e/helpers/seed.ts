@@ -113,7 +113,7 @@ export async function createArticle(page: Page, categorySlug?: string): Promise<
 
 /** 创建测试案例，返回 case id */
 export async function createCase(page: Page): Promise<string | null> {
-  const res = await apiCall(page, "POST", "/api/admin/cases/list/create", {
+  const res = await apiCall(page, "POST", "/api/admin/web-settings/cases/list/create", {
     student_name: `E2E学生${Date.now()}`,
     university: "E2E大学",
     program: "E2E专业",
@@ -125,7 +125,7 @@ export async function createCase(page: Page): Promise<string | null> {
 
 /** 创建测试院校，返回 university id */
 export async function createUniversity(page: Page): Promise<string | null> {
-  const res = await apiCall(page, "POST", "/api/admin/universities/list/create", {
+  const res = await apiCall(page, "POST", "/api/admin/web-settings/universities/list/create", {
     name: `E2E大学${Date.now()}`,
     name_en: "E2E Test University",
     country: "德国",

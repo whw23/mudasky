@@ -180,7 +180,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/cases"],
-      api: ["/api/admin/cases/list", "/api/admin/cases/list/create"],
+      api: ["/api/admin/web-settings/cases/list", "/api/admin/web-settings/cases/list/create"],
       components: [
         ["CasesPage", "create-button"],
         ["CaseDialog", "student-name-input"],
@@ -199,7 +199,7 @@ export const tasks: Task[] = [
       newUniversity: "E2E大学-edited",
     },
     coverage: {
-      api: ["/api/admin/cases/list/detail/edit"],
+      api: ["/api/admin/web-settings/cases/list/detail/edit"],
       components: [["CaseDialog", "edit-button"]],
     },
   },
@@ -211,7 +211,7 @@ export const tasks: Task[] = [
     fn: deleteCase,
     fnArgs: { studentName: `E2E-学生-${TS}` },
     coverage: {
-      api: ["/api/admin/cases/list/detail/delete"],
+      api: ["/api/admin/web-settings/cases/list/detail/delete"],
       components: [["CaseDialog", "delete-button"]],
     },
   },
@@ -231,7 +231,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/universities"],
-      api: ["/api/admin/universities/list", "/api/admin/universities/list/create"],
+      api: ["/api/admin/web-settings/universities/list", "/api/admin/web-settings/universities/list/create"],
       components: [
         ["UniversitiesPage", "create-button"],
         ["UniversityDialog", "name-input"],
@@ -250,7 +250,7 @@ export const tasks: Task[] = [
       newCity: "上海",
     },
     coverage: {
-      api: ["/api/admin/universities/list/detail/edit"],
+      api: ["/api/admin/web-settings/universities/list/detail/edit"],
       components: [["UniversityDialog", "edit-button"]],
     },
   },
@@ -262,7 +262,7 @@ export const tasks: Task[] = [
     fn: deleteUniversity,
     fnArgs: { name: `E2E-院校-${TS}` },
     coverage: {
-      api: ["/api/admin/universities/list/detail/delete"],
+      api: ["/api/admin/web-settings/universities/list/detail/delete"],
       components: [["UniversityDialog", "delete-button"]],
     },
   },

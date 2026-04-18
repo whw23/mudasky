@@ -353,7 +353,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/cases"],
-      api: ["/admin/cases/list", "/admin/cases/list/create"],
+      api: ["/admin/web-settings/cases/list", "/admin/web-settings/cases/list/create"],
       components: ["CaseList", "CaseDialog"],
       security: [],
     },
@@ -370,7 +370,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/cases"],
-      api: ["/admin/cases/list/detail/edit"],
+      api: ["/admin/web-settings/cases/list/detail/edit"],
       components: ["CaseDialog"],
       security: [],
     },
@@ -386,7 +386,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/cases"],
-      api: ["/admin/cases/list/detail/delete"],
+      api: ["/admin/web-settings/cases/list/detail/delete"],
       components: ["CaseList"],
       security: [],
     },
@@ -406,7 +406,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/universities"],
-      api: ["/admin/universities/list", "/admin/universities/list/create"],
+      api: ["/admin/web-settings/universities/list", "/admin/web-settings/universities/list/create"],
       components: ["UniversityList", "UniversityDialog"],
       security: [],
     },
@@ -423,7 +423,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/universities"],
-      api: ["/admin/universities/list/detail/edit"],
+      api: ["/admin/web-settings/universities/list/detail/edit"],
       components: ["UniversityDialog"],
       security: [],
     },
@@ -439,7 +439,7 @@ export const tasks: Task[] = [
     },
     coverage: {
       routes: ["/admin/universities"],
-      api: ["/admin/universities/list/detail/delete"],
+      api: ["/admin/web-settings/universities/list/detail/delete"],
       components: ["UniversityList"],
       security: [],
     },
