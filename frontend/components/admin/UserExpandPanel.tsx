@@ -200,10 +200,10 @@ export function UserExpandPanel({ userId, onUpdate }: UserExpandPanelProps) {
         {/* 角色分配 */}
         <section className="space-y-2">
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{t("assignGroups")}</h3>
-          <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+          <Select value={selectedRoleId} onValueChange={(v) => setSelectedRoleId(v ?? "")}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t("noGroup")}>
-                {(value: string) => {
+                {(value: string | null) => {
                   if (!value) return t("noGroup")
                   const role = roles.find((r) => r.id === value)
                   return role?.name ?? t("noGroup")
