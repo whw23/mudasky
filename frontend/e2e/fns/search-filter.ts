@@ -15,7 +15,6 @@ export const testUniversitySearch: TaskFn = async (page) => {
   await page.goto("/universities")
   await page.locator("main").waitFor()
 
-  // 搜索输入框
   const searchInput = page.getByPlaceholder("搜索院校名称、城市...")
   await expect(searchInput).toBeVisible()
 
@@ -24,25 +23,27 @@ export const testUniversitySearch: TaskFn = async (page) => {
 }
 
 /**
- * 测试国家下拉筛选。
+ * 测试国家下拉筛选（shadcn Select）。
  */
 export const testCountryFilter: TaskFn = async (page) => {
   await page.goto("/universities")
   await page.locator("main").waitFor()
 
-  // 国家下拉框
-  const countrySelect = page.locator("main select").first()
-  await expect(countrySelect).toBeVisible()
+  // shadcn Select 的 trigger 是 combobox role
+  const triggers = page.locator("main").getByRole("combobox")
+  const countryTrigger = triggers.first()
+  await expect(countryTrigger).toBeVisible()
 
-  // 选择一个选项（第一个非空选项）
-  const options = countrySelect.locator("option")
+  // 点击打开下拉
+  await countryTrigger.click()
+
+  // 等待选项出现，选择第一个非"全部"的选项
+  const options = page.getByRole("option")
   const count = await options.count()
   if (count > 1) {
-    const value = await options.nth(1).getAttribute("value")
-    if (value) {
-      await countrySelect.selectOption(value)
-      await expect(countrySelect).toHaveValue(value)
-    }
+    await options.nth(1).click()
+  } else {
+    await page.keyboard.press("Escape")
   }
 }
 
@@ -53,15 +54,12 @@ export const testResetFilter: TaskFn = async (page) => {
   await page.goto("/universities")
   await page.locator("main").waitFor()
 
-  // 先输入搜索词触发筛选
   const searchInput = page.getByPlaceholder("搜索院校名称、城市...")
   await searchInput.fill("SomeUniversity")
 
-  // 等待防抖后重置按钮出现
   await page.waitForTimeout(500)
   const resetBtn = page.getByRole("button", { name: /重置/ })
 
-  // 重置按钮可能不可见（如果没有筛选状态），先检查
   if (await resetBtn.isVisible()) {
     await resetBtn.click()
     await expect(searchInput).toHaveValue("")
@@ -69,24 +67,30 @@ export const testResetFilter: TaskFn = async (page) => {
 }
 
 /**
- * 测试语言切换器。
+ * 测试语言切换器（shadcn Select）。
  */
 export const testLocaleSwitcher: TaskFn = async (page) => {
   await page.goto("/")
   await page.locator("header").waitFor()
 
-  // 语言切换下拉
-  const localeSelect = page.locator("header select").first()
+  // 语言切换器是 header 中的 combobox
+  const localeSelect = page.locator("header").getByRole("combobox")
   const visible = await localeSelect.isVisible().catch(() => false)
 
   if (visible) {
-    // 切换到英文
-    await localeSelect.selectOption("en")
+    // 打开下拉 → 切换到英文
+    await localeSelect.click()
+    const enOption = page.getByRole("option", { name: "English" })
+    await enOption.waitFor({ state: "visible", timeout: 5_000 })
+    await enOption.click()
     await expect(page).toHaveURL(/\/en/)
 
-    // 切换回中文
-    const localeSelect2 = page.locator("header select").first()
-    await localeSelect2.selectOption("zh")
+    // 打开下拉 → 切换回中文
+    const localeSelect2 = page.locator("header").getByRole("combobox")
+    await localeSelect2.click()
+    const zhOption = page.getByRole("option", { name: "中文" })
+    await zhOption.waitFor({ state: "visible", timeout: 5_000 })
+    await zhOption.click()
     await expect(page).not.toHaveURL(/\/en/, { timeout: 15_000 })
   }
 }
@@ -98,7 +102,6 @@ export const testConsultButton: TaskFn = async (page) => {
   await page.goto("/")
   await page.locator("main").waitFor()
 
-  // 咨询按钮在首页 CTA 区域
   const consultBtns = page.locator("main button")
   const count = await consultBtns.count()
   expect(count).toBeGreaterThanOrEqual(1)

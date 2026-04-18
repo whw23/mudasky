@@ -60,13 +60,16 @@ export const markContactStatus: TaskFn = async (page, args) => {
   const markStatusHeading = page.locator("h3").filter({ hasText: "标记状态" })
   await markStatusHeading.waitFor({ timeout: 15_000 })
 
-  // 状态下拉
+  // 状态下拉（shadcn Select）
   const statusSection = page.locator("section").filter({ hasText: "标记状态" })
-  const select = statusSection.locator("select")
-  await expect(select).toBeVisible()
+  const trigger = statusSection.getByRole("combobox")
+  await expect(trigger).toBeVisible()
 
-  // 选择状态
-  await select.selectOption(status)
+  // 点击 trigger → 选择目标状态
+  await trigger.click()
+  const option = page.getByRole("option", { name: new RegExp(status, "i") })
+  await option.waitFor({ state: "visible", timeout: 5_000 })
+  await option.click()
 
   // 点击保存
   const saveResponse = page.waitForResponse((r) =>
