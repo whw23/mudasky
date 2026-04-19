@@ -62,7 +62,9 @@ export function calculateCoverage(): CoverageReport {
 
     const signal = signals[task.id]
     if (signal?.status === "pass") {
-      cov.api?.forEach((a) => {
+      // API 覆盖从信号拦截的实际调用中收集
+      const apis = (signal.data as Record<string, unknown>)?.apis as string[] | undefined
+      apis?.forEach((a) => {
         if (!scanTotals || totalApi.has(a)) coveredApi.add(a)
       })
       cov.routes?.forEach((r) => {

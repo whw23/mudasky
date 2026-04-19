@@ -32,11 +32,20 @@ export class TaskRunner {
   private workerName: string
   private page: Page
   private startTime: number = 0
+  private capturedApis: Set<string> = new Set()
+  private capturing = false
 
   constructor(tasks: Task[], workerName: string, page: Page) {
     this.records = tasks.map((task) => ({ task, status: "pending" as TaskStatus }))
     this.workerName = workerName
     this.page = page
+    page.on("response", (res) => {
+      if (!this.capturing) return
+      const url = new URL(res.url())
+      if (url.pathname.startsWith("/api/")) {
+        this.capturedApis.add(url.pathname)
+      }
+    })
   }
 
   /** 运行任务队列。 */
@@ -114,12 +123,23 @@ export class TaskRunner {
       if (!claimTask(task.id, this.workerName)) continue
 
       // 执行
+      this.capturedApis.clear()
+      this.capturing = true
       try {
         await task.fn(this.page, task.fnArgs)
-        writeSignal(task.id, "pass", { worker: this.workerName })
+        this.capturing = false
+        writeSignal(task.id, "pass", {
+          worker: this.workerName,
+          apis: [...this.capturedApis],
+        })
       } catch (err) {
+        this.capturing = false
         const msg = err instanceof Error ? err.message : String(err)
-        writeSignal(task.id, "fail", { worker: this.workerName, error: msg })
+        writeSignal(task.id, "fail", {
+          worker: this.workerName,
+          error: msg,
+          apis: [...this.capturedApis],
+        })
       }
       return "executed"
     }
@@ -137,15 +157,26 @@ export class TaskRunner {
     }
 
     record.status = "running"
+    this.capturedApis.clear()
+    this.capturing = true
     try {
       await record.task.fn(this.page, record.task.fnArgs)
+      this.capturing = false
       record.status = "pass"
-      writeSignal(record.task.id, "pass", { worker: this.workerName })
+      writeSignal(record.task.id, "pass", {
+        worker: this.workerName,
+        apis: [...this.capturedApis],
+      })
     } catch (err) {
+      this.capturing = false
       const msg = err instanceof Error ? err.message : String(err)
       record.status = "fail"
       record.error = msg
-      writeSignal(record.task.id, "fail", { worker: this.workerName, error: msg })
+      writeSignal(record.task.id, "fail", {
+        worker: this.workerName,
+        error: msg,
+        apis: [...this.capturedApis],
+      })
     }
   }
 

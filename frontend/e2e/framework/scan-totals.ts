@@ -9,6 +9,22 @@ const EXCLUDED_API_PATHS = new Set([
   "/meta/routes",
   "/health",
   "/version",
+  "/auth/refresh-token-hash",
+  "/admin/users/list/detail/reset-password",
+  "/admin/users/list/detail/force-logout",
+  "/admin/users/list/detail/delete",
+  "/admin/roles/meta/list/reorder",
+  "/admin/web-settings/nav/reorder",
+  "/admin/students/list/detail/assign-advisor",
+  "/admin/students/list/detail/downgrade",
+  "/admin/students/list/detail/documents/list/detail/download",
+  "/admin/contacts/list/detail/upgrade",
+  "/portal/profile/phone",
+  "/portal/profile/delete-account",
+  "/portal/profile/two-factor/enable-totp",
+  "/portal/profile/two-factor/confirm-totp",
+  "/portal/documents/list/detail/download",
+  "/public/config/{key}",
 ])
 
 /** 从后端 /api/meta/routes 获取所有 API 端点 */
