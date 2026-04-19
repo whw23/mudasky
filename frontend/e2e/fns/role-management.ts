@@ -100,3 +100,36 @@ export async function verifyRoleList(page: Page): Promise<void> {
   await expect(page.getByText("superuser")).toBeVisible()
   await expect(page.getByRole("button", { name: "创建角色" })).toBeVisible()
 }
+
+/** 查看角色详情（触发 /api/admin/roles/meta/list/detail） */
+export async function viewRoleDetail(page: Page, args?: Record<string, unknown>): Promise<void> {
+  const roleName = String(args?.name ?? "superuser")
+
+  await page.goto("/admin/roles")
+  await page.getByRole("heading", { name: "角色管理" }).waitFor()
+
+  // 找到角色行并点击编辑按钮
+  const nameEl = page.locator("main").getByText(roleName, { exact: true })
+  await nameEl.waitFor()
+  const row = nameEl.locator("xpath=..")
+
+  // 监听详情 API
+  const detailResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/admin/roles/meta/list/detail") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+
+  await row.getByRole("button", { name: "编辑" }).click()
+
+  // 等待 API 响应
+  await detailResponse
+
+  // 验证详情对话框出现
+  const dialog = page.getByRole("dialog")
+  await expect(dialog).toBeVisible({ timeout: 5_000 })
+
+  // 关闭对话框
+  const cancelBtn = dialog.getByRole("button", { name: /取消|关闭/ })
+  await cancelBtn.click()
+  await expect(dialog).not.toBeVisible({ timeout: 5_000 })
+}

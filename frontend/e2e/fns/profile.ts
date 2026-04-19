@@ -127,3 +127,89 @@ export const viewPhoneSection: TaskFn = async (page) => {
 export const view2faSection: TaskFn = async (page) => {
   await expect(page.getByText("两步验证", { exact: true })).toBeVisible()
 }
+
+/**
+ * 修改手机号并回滚（触发 /api/portal/profile/phone）。
+ * args.currentPhone: 当前手机号
+ * args.newPhone: 新手机号
+ */
+export const changePhoneAndRollback: TaskFn = async (page, args) => {
+  const currentPhone = args?.currentPhone as string
+  const newPhone = args?.newPhone as string
+
+  // 导航到个人资料页面
+  await page.goto("/portal/profile")
+  await page.locator("main").waitFor()
+
+  // 展开手机号编辑
+  const editBtns = page.getByRole("button", { name: "修改" })
+  for (let i = 0; i < (await editBtns.count()); i++) {
+    await editBtns.nth(i).click()
+    if (await page.getByPlaceholder("请输入新手机号").isVisible().catch(() => false)) break
+    const cancelBtn = page.getByRole("button", { name: "取消" }).first()
+    if (await cancelBtn.isVisible().catch(() => false)) await cancelBtn.click()
+  }
+
+  // 获取新手机号的验证码
+  const smsCode = await getSmsCode(page, newPhone)
+
+  // 填写表单
+  await page.getByPlaceholder("请输入新手机号").fill(newPhone)
+  await page.getByPlaceholder("请输入验证码").fill(smsCode)
+
+  // 监听 API 响应
+  const changeResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/phone") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+  await page.getByRole("button", { name: "保存" }).click()
+  await changeResponse
+
+  await expect(page.getByText("手机号修改成功")).toBeVisible()
+
+  // 立即回滚：重新修改回原手机号
+  await page.reload()
+  await page.locator("main").waitFor()
+
+  // 再次展开手机号编辑
+  for (let i = 0; i < (await editBtns.count()); i++) {
+    await editBtns.nth(i).click()
+    if (await page.getByPlaceholder("请输入新手机号").isVisible().catch(() => false)) break
+    const cancelBtn = page.getByRole("button", { name: "取消" }).first()
+    if (await cancelBtn.isVisible().catch(() => false)) await cancelBtn.click()
+  }
+
+  // 获取原手机号的验证码
+  const rollbackCode = await getSmsCode(page, currentPhone)
+
+  // 填写表单
+  await page.getByPlaceholder("请输入新手机号").fill(currentPhone)
+  await page.getByPlaceholder("请输入验证码").fill(rollbackCode)
+
+  // 监听回滚 API 响应
+  const rollbackResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/phone") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+  await page.getByRole("button", { name: "保存" }).click()
+  await rollbackResponse
+
+  await expect(page.getByText("手机号修改成功")).toBeVisible()
+}
+
+/**
+ * 验证账号删除选项可见（触发 /api/portal/profile/meta）。
+ */
+export const viewDeleteAccountSection: TaskFn = async (page) => {
+  await page.goto("/portal/profile")
+  await page.locator("main").waitFor()
+
+  // 等待 meta API 被调用（页面加载时自动调用）
+  await page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/meta"),
+    { timeout: 15_000 }
+  )
+
+  // 验证删除账号按钮可见
+  await expect(page.getByRole("button", { name: /删除账号/ })).toBeVisible()
+}

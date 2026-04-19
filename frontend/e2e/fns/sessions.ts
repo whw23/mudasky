@@ -36,15 +36,57 @@ export const verifyCurrentDevice: TaskFn = async (page) => {
 }
 
 /**
- * 退出所有其他设备。
+ * 踢出单个设备（触发 /api/portal/profile/sessions/list/revoke）。
+ */
+export const revokeSingleSession: TaskFn = async (page) => {
+  await page.goto("/portal/profile")
+
+  // 滚动到登录设备区域
+  const sessionsHeading = page.getByText("登录设备")
+  await sessionsHeading.scrollIntoViewIfNeeded()
+  await expect(sessionsHeading).toBeVisible()
+
+  // 找到第一个非当前设备的踢出按钮
+  const kickBtns = page.getByRole("button", { name: "踢出" })
+  const count = await kickBtns.count()
+
+  if (count > 0) {
+    // 监听 API 响应
+    const revokeResponse = page.waitForResponse(
+      (r) => r.url().includes("/api/portal/profile/sessions/list/revoke") && r.request().method() === "POST",
+      { timeout: 15_000 }
+    )
+
+    await kickBtns.first().click()
+    await revokeResponse
+
+    await expect(page.getByText("设备已踢出")).toBeVisible()
+  }
+}
+
+/**
+ * 退出所有其他设备（触发 /api/portal/profile/sessions/list/revoke-all）。
  */
 export const revokeAllOthers: TaskFn = async (page) => {
-  await expect(page.getByText("当前").first()).toBeVisible()
+  await page.goto("/portal/profile")
+
+  // 滚动到登录设备区域
+  const sessionsHeading = page.getByText("登录设备")
+  await sessionsHeading.scrollIntoViewIfNeeded()
+  await expect(sessionsHeading).toBeVisible()
 
   // 如果有"退出所有其他设备"按钮则点击
   const revokeAllBtn = page.getByRole("button", { name: /退出所有其他设备/ })
   if (await revokeAllBtn.isVisible().catch(() => false)) {
+    // 监听 API 响应
+    const revokeAllResponse = page.waitForResponse(
+      (r) => r.url().includes("/api/portal/profile/sessions/list/revoke-all") && r.request().method() === "POST",
+      { timeout: 15_000 }
+    )
+
     await revokeAllBtn.click()
+    await revokeAllResponse
+
     await expect(page.getByText("已踢出所有其他设备")).toBeVisible()
   }
 }

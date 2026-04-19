@@ -112,3 +112,37 @@ export const addContactNote: TaskFn = async (page, args) => {
   await noteSection.getByRole("button", { name: "保存" }).click()
   await saveResponse
 }
+
+/**
+ * 升级联系人为学生（触发 /api/admin/contacts/list/detail/upgrade）。
+ */
+export const upgradeContactToStudent: TaskFn = async (page) => {
+  // 确保在联系人页面且面板已展开
+  await page.goto("/admin/contacts")
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor()
+  const rows = page.locator("tbody tr")
+  await rows.first().waitFor({ timeout: 15_000 })
+  await rows.first().click()
+
+  await page.locator("h3").filter({ hasText: "基本信息" }).waitFor({ timeout: 15_000 })
+
+  // 找到"升级"或"转为学生"按钮
+  const upgradeBtn = page.getByRole("button", { name: /升级|转为学生/ })
+  if (await upgradeBtn.isVisible().catch(() => false)) {
+    // 监听 API 响应
+    const upgradeResponse = page.waitForResponse(
+      (r) => r.url().includes("/api/admin/contacts/list/detail/upgrade") && r.request().method() === "POST",
+      { timeout: 15_000 }
+    )
+
+    await upgradeBtn.click()
+
+    // 如果有确认弹窗
+    const alertDialog = page.getByRole("alertdialog")
+    if (await alertDialog.isVisible().catch(() => false)) {
+      await alertDialog.getByRole("button", { name: /确认|升级/ }).click()
+    }
+
+    await upgradeResponse
+  }
+}

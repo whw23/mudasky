@@ -152,3 +152,69 @@ export const viewStorageUsage: TaskFn = async (page) => {
   await page.goto("/portal/documents")
   await expect(page.getByText("存储用量")).toBeVisible()
 }
+
+/** 查看文档详情（触发 /api/portal/documents/list/detail）。 */
+export const viewDocumentDetail: TaskFn = async (page, args) => {
+  const fileName = args?.fileName as string
+  await page.goto("/portal/documents")
+  await page.getByRole("heading", { name: "文档管理" }).waitFor()
+
+  // 找到文档行
+  const row = page.locator("tr", { hasText: fileName }).first()
+  await row.waitFor({ timeout: 15_000 })
+
+  // 点击文档名或查看按钮，触发详情弹窗
+  const detailResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/documents/list/detail") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+
+  // 尝试点击文档名或详情按钮
+  const detailBtn = row.getByRole("button", { name: /详情|查看/ })
+  if (await detailBtn.isVisible().catch(() => false)) {
+    await detailBtn.click()
+  } else {
+    // 如果没有详情按钮，点击文档名
+    await row.getByText(fileName).click()
+  }
+
+  // 等待 API 响应
+  await detailResponse
+
+  // 验证详情对话框出现
+  const dialog = page.getByRole("dialog")
+  await expect(dialog).toBeVisible({ timeout: 5_000 })
+
+  // 关闭对话框
+  const closeBtn = dialog.getByRole("button", { name: /关闭|取消/ })
+  await closeBtn.click()
+  await expect(dialog).not.toBeVisible({ timeout: 5_000 })
+}
+
+/** 下载文档（触发 /api/portal/documents/list/detail/download）。 */
+export const downloadDocument: TaskFn = async (page, args) => {
+  const fileName = args?.fileName as string
+  await page.goto("/portal/documents")
+  await page.getByRole("heading", { name: "文档管理" }).waitFor()
+
+  // 找到文档行
+  const row = page.locator("tr", { hasText: fileName }).first()
+  await row.waitFor({ timeout: 15_000 })
+
+  // 监听下载 API 响应
+  const downloadResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/documents/list/detail/download") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+
+  // 点击下载按钮
+  const downloadBtn = row.getByRole("button", { name: /下载/ })
+  await downloadBtn.click()
+
+  // 等待 API 响应
+  const res = await downloadResponse
+  if (!res.ok()) {
+    const body = await res.text().catch(() => "")
+    throw new Error(`下载 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  }
+}

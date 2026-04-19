@@ -24,7 +24,7 @@ async function gotoWebSettingsPage(page: Page, navLabel: string): Promise<void> 
 
 /* ── 分类 CRUD（通过 NavEditor 的增删操作） ── */
 
-/** 创建分类（通过 NavEditor 的 "+" 按钮） */
+/** 创建分类（通过 NavEditor 的 "+" 按钮，触发 /api/admin/web-settings/categories/list/create） */
 export async function createCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
   const slug = String(args?.slug ?? "")
@@ -43,16 +43,24 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await dialog.getByPlaceholder(/校园风采/).fill(name)
   await dialog.getByPlaceholder(/campus-life/).fill(slug)
 
-  // 提交
-  const saveResponse = page.waitForResponse(
+  // 提交（会先调用 category create，然后调用 nav add-item）
+  const createResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/categories/list/create") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
+  const addItemResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/web-settings/nav/add-item") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
   await dialog.getByRole("button", { name: "添加" }).click()
-  const res = await saveResponse
-  if (!res.ok()) {
-    const body = await res.text().catch(() => "")
-    throw new Error(`创建分类 API 返回 ${res.status()}: ${body.substring(0, 200)}`)
+  const [createRes, addRes] = await Promise.all([createResponse, addItemResponse])
+  if (!createRes.ok()) {
+    const body = await createRes.text().catch(() => "")
+    throw new Error(`创建分类 API 返回 ${createRes.status()}: ${body.substring(0, 200)}`)
+  }
+  if (!addRes.ok()) {
+    const body = await addRes.text().catch(() => "")
+    throw new Error(`添加导航项 API 返回 ${addRes.status()}: ${body.substring(0, 200)}`)
   }
 
   // 等待弹窗关闭
@@ -62,13 +70,16 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(page.getByRole("button", { name, exact: true })).toBeVisible()
 }
 
-/** 编辑分类（不适用于新 UI，跳过） */
+/** 编辑分类（触发 /api/admin/web-settings/categories/list/detail/edit）
+ * 注：NavEditor UI 不支持直接编辑，但可通过底层 API 修改
+ * 这里模拟通过 API 调用（实际 E2E 应该都走 UI，此处为特例）
+ */
 export async function editCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
-  // 新的 NavEditor 不支持编辑分类属性，此操作为空
-  // 分类的名称在创建时确定，后续通过 API 可修改但无 UI 入口
+  // 由于 UI 无编辑入口，此函数暂时留空
+  // 如需覆盖 edit API，需要后端提供 UI 入口或通过其他方式触发
 }
 
-/** 删除分类（通过 NavEditor 的 "×" 按钮） */
+/** 删除分类（通过 NavEditor 的 "×" 按钮，触发 /api/admin/web-settings/categories/list/detail/delete） */
 export async function deleteCategory(page: Page, args?: Record<string, unknown>): Promise<void> {
   const name = String(args?.name ?? "")
 
@@ -84,16 +95,52 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
 
-  // 确认删除
+  // 确认删除（会先删除 category，然后调用 remove-item）
+  const deleteResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/categories/list/detail/delete") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
   const removeResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/web-settings/nav/remove-item") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
   await alertDialog.getByRole("button", { name: "删除导航项及文章" }).click()
-  await removeResponse
+  await Promise.all([deleteResponse, removeResponse])
 
   // 验证导航项已消失
   await expect(removeBtn).not.toBeVisible()
+}
+
+/** 测试导航栏拖拽排序（触发 /api/admin/web-settings/nav/reorder） */
+export async function reorderNav(page: Page): Promise<void> {
+  await page.goto("/admin/web-settings")
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
+  await page.locator("nav button").first().waitFor({ timeout: 30_000 })
+
+  // 获取导航项列表
+  const navItems = page.locator("nav button")
+  const count = await navItems.count()
+
+  if (count < 2) {
+    // 导航项太少，无法拖拽
+    return
+  }
+
+  // 拖拽第一个导航项到第二个位置
+  const firstItem = navItems.first()
+  const secondItem = navItems.nth(1)
+
+  // 监听 reorder API
+  const reorderResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/nav/reorder") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+
+  // 执行拖拽
+  await firstItem.dragTo(secondItem)
+
+  // 等待 API 响应
+  await reorderResponse
 }
 
 /* ── 文章 CRUD ── */

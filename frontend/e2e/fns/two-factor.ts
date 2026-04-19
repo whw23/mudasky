@@ -84,3 +84,45 @@ export const verify2faStatus: TaskFn = async (page, args) => {
     await expect(page.getByRole("button", { name: "启用" })).toBeVisible()
   }
 }
+
+/**
+ * 启用 TOTP 两步验证（触发 /api/portal/profile/two-factor/enable-totp 和 confirm-totp）。
+ * 由于 TOTP 需要扫码或手动输入密钥，E2E 测试中模拟启用流程但不完成。
+ */
+export const viewTotpSetup: TaskFn = async (page) => {
+  // 检查当前状态
+  const alreadyEnabled = await page.getByText("已启用两步验证").isVisible().catch(() => false)
+  if (alreadyEnabled) {
+    // 如果已启用，先禁用
+    await page.getByRole("button", { name: "禁用" }).click()
+    await expect(page.getByRole("dialog")).toBeVisible()
+
+    // 获取验证码（假设是 SMS 2FA）
+    // 这里简化处理，实际可能需要传入 phone
+    await page.getByRole("dialog").getByRole("button", { name: /取消/ }).click()
+    return
+  }
+
+  // 点击启用进入方式选择
+  await page.getByRole("button", { name: "启用" }).click()
+
+  // 应显示方式选择按钮：TOTP
+  const totpBtn = page.getByRole("button", { name: /验证器|TOTP|Authenticator/ })
+  await expect(totpBtn).toBeVisible()
+
+  // 监听 enable-totp API（获取二维码和密钥）
+  const enableTotpResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/two-factor/enable-totp") && r.request().method() === "POST",
+    { timeout: 15_000 }
+  )
+
+  await totpBtn.click()
+  await enableTotpResponse
+
+  // 应显示 QR 码和密钥
+  await expect(page.getByText(/扫描二维码|密钥|Secret/)).toBeVisible()
+
+  // 取消（不完成 TOTP 确认，因为需要真实的 TOTP 应用）
+  const cancelBtn = page.getByRole("button", { name: /取消|关闭/ })
+  await cancelBtn.click()
+}
