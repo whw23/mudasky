@@ -48,9 +48,10 @@ api.interceptors.response.use(
 
     /* 如果是 access_token 过期，尝试用 refresh_token 刷新 */
     const isRefreshRequest = originalRequest.url?.includes("/auth/refresh")
+    const refreshable = code === "ACCESS_TOKEN_EXPIRED" || code === "ACCESS_TOKEN_MISSING"
     if (
       error.response?.status === 401 &&
-      code === "ACCESS_TOKEN_EXPIRED" &&
+      refreshable &&
       !originalRequest._retry &&
       !isRefreshRequest
     ) {
