@@ -64,20 +64,20 @@ export function scanFrontendRoutes(): {
   function walk(dir: string, prefix: string): void {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (entry.isDirectory()) {
-        let segment = entry.name
-        if (segment.startsWith("(") && segment.endsWith(")")) {
-          walk(path.join(dir, segment), prefix)
+        const dirName = entry.name
+        if (dirName.startsWith("(") && dirName.endsWith(")")) {
+          walk(path.join(dir, dirName), prefix)
           continue
         }
-        if (segment === "[panel]") {
-          walk(path.join(dir, segment), `${prefix}/admin`)
-          walk(path.join(dir, segment), `${prefix}/portal`)
+        if (dirName === "[panel]") {
+          walk(path.join(dir, dirName), `${prefix}/admin`)
+          walk(path.join(dir, dirName), `${prefix}/portal`)
           continue
         }
-        if (segment.startsWith("[") && segment.endsWith("]")) {
-          segment = `:${segment.slice(1, -1)}`
-        }
-        walk(path.join(dir, segment), `${prefix}/${segment}`)
+        const routeSegment = dirName.startsWith("[") && dirName.endsWith("]")
+          ? `:${dirName.slice(1, -1)}`
+          : dirName
+        walk(path.join(dir, dirName), `${prefix}/${routeSegment}`)
       } else if (entry.name === "page.tsx") {
         routes.push(prefix || "/")
       }
