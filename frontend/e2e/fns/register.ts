@@ -39,10 +39,15 @@ export default async function register(
     await loginBtn.waitFor({ timeout: 30_000 })
   }
 
-  // 点击登录按钮打开弹窗（SSR 按钮可能未水合，重试直到弹窗出现）
+  // 点击登录按钮打开弹窗（SSR 按钮可能未水合或 detach，重试直到弹窗出现）
   const dialog = page.getByRole("dialog")
-  for (let i = 0; i < 10; i++) {
-    await loginBtn.click()
+  for (let i = 0; i < 15; i++) {
+    try {
+      await loginBtn.click({ timeout: 3_000 })
+    } catch {
+      await page.waitForTimeout(500)
+      continue
+    }
     if (await dialog.isVisible().catch(() => false)) break
     await page.waitForTimeout(1000)
   }
