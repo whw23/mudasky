@@ -130,7 +130,7 @@ export class TaskRunner {
         this.capturing = false
         writeSignal(task.id, "pass", {
           worker: this.workerName,
-          apis: [...this.capturedApis],
+          data: { apis: [...this.capturedApis] },
         })
       } catch (err) {
         this.capturing = false
@@ -138,7 +138,7 @@ export class TaskRunner {
         writeSignal(task.id, "fail", {
           worker: this.workerName,
           error: msg,
-          apis: [...this.capturedApis],
+          data: { apis: [...this.capturedApis] },
         })
       }
       return "executed"
@@ -165,7 +165,7 @@ export class TaskRunner {
       record.status = "pass"
       writeSignal(record.task.id, "pass", {
         worker: this.workerName,
-        apis: [...this.capturedApis],
+        data: { apis: [...this.capturedApis] },
       })
     } catch (err) {
       this.capturing = false
@@ -175,7 +175,7 @@ export class TaskRunner {
       writeSignal(record.task.id, "fail", {
         worker: this.workerName,
         error: msg,
-        apis: [...this.capturedApis],
+        data: { apis: [...this.capturedApis] },
       })
     }
   }
