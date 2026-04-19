@@ -8,7 +8,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 # RBAC 模型需在其他领域模块之前导入，确保关系映射正确注册
 from app.db.rbac.models import Role  # noqa: F401
@@ -114,6 +114,31 @@ async def api_health_check() -> dict:
     """API 健康检查端点。"""
     import os
     return {"status": "ok", "version": os.environ.get("BUILD_VERSION", "dev")}
+
+
+@api.get("/meta/routes", summary="获取所有注册路由")
+async def list_routes(request: Request) -> list[dict]:
+    """返回所有注册的 API 路由（仅 internal_secret 可访问）。"""
+    from app.core.config import settings
+    from app.core.exceptions import ForbiddenException
+
+    secret = request.cookies.get("internal_secret", "")
+    if not settings.INTERNAL_SECRET or secret != settings.INTERNAL_SECRET:
+        raise ForbiddenException(
+            message="内部接口禁止外部访问",
+            code="INTERNAL_API_FORBIDDEN",
+        )
+
+    routes = []
+    for route in api.routes:
+        if hasattr(route, "methods") and hasattr(route, "path"):
+            for method in route.methods:
+                if method in ("GET", "POST"):
+                    routes.append({
+                        "method": method,
+                        "path": route.path,
+                    })
+    return routes
 
 
 @api.get("/version", summary="版本信息")
