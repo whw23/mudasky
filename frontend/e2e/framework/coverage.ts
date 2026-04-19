@@ -64,14 +64,37 @@ export function calculateCoverage(): CoverageReport {
     if (signal?.status === "pass") {
       // API 覆盖从信号拦截的实际调用中收集
       const apis = (signal.data as Record<string, unknown>)?.apis as string[] | undefined
-      apis?.forEach((a) => {
-        if (!scanTotals || totalApi.has(a)) coveredApi.add(a)
-      })
+      apis?.forEach((a) => coveredApi.add(a))
       cov.routes?.forEach((r) => {
         if (!scanTotals || totalRoutes.has(r)) coveredRoutes.add(r)
       })
       cov.components?.forEach((c) => coveredComponents.push(c))
       cov.security?.forEach((s) => coveredSecurity.push(s))
+    }
+  }
+
+  /** 将实际请求路径匹配到模板路径（处理 {param} 动态参数） */
+  function matchApiToTemplate(actual: string, templates: Set<string>): string | null {
+    if (templates.has(actual)) return actual
+    const actualParts = actual.split("/")
+    for (const tmpl of templates) {
+      const tmplParts = tmpl.split("/")
+      if (tmplParts.length !== actualParts.length) continue
+      const match = tmplParts.every((t, i) =>
+        t.startsWith("{") && t.endsWith("}") || t === actualParts[i],
+      )
+      if (match) return tmpl
+    }
+    return null
+  }
+
+  // 重新计算 coveredApi（用模板匹配）
+  if (scanTotals) {
+    const rawCovered = new Set(coveredApi)
+    coveredApi.clear()
+    for (const a of rawCovered) {
+      const matched = matchApiToTemplate(a, totalApi)
+      if (matched) coveredApi.add(matched)
     }
   }
 
