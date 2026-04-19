@@ -80,7 +80,6 @@ export default async function register(
   await page.getByPlaceholder("请输入验证码").fill(code)
 
   // 点击弹窗内的登录/注册提交按钮
-  const dialog = page.getByRole("dialog")
   await dialog.getByRole("button", { name: /登录/ }).click()
 
   // 等待弹窗关闭（登录成功）
