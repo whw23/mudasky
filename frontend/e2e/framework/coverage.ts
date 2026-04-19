@@ -5,7 +5,7 @@
 
 import type { Task } from "./types"
 import { getAllSignals } from "./signal"
-import { loadScanTotals } from "./scan-totals"
+import { loadScanTotals, SSR_ONLY_APIS } from "./scan-totals"
 
 /** 加载所有 worker 的任务。 */
 function loadAllTasks(): Task[] {
@@ -149,8 +149,16 @@ export function printCoverageReport(report: CoverageReport): void {
   console.log(`\n[API Coverage] ${report.api.covered.length}/${report.api.total.length} (${report.api.percent}%)`)
   if (report.api.covered.length < report.api.total.length) {
     const uncovered = report.api.total.filter((a) => !report.api.covered.includes(a))
-    console.log("  Uncovered:")
-    uncovered.forEach((a) => console.log(`    - ${a}`))
+    const ssrApis = uncovered.filter((a) => SSR_ONLY_APIS.has(a))
+    const clientApis = uncovered.filter((a) => !SSR_ONLY_APIS.has(a))
+    if (clientApis.length > 0) {
+      console.log("  Uncovered:")
+      clientApis.forEach((a) => console.log(`    - ${a}`))
+    }
+    if (ssrApis.length > 0) {
+      console.log("  SSR Only (Server Component 调用，Playwright 无法拦截):")
+      ssrApis.forEach((a) => console.log(`    - ${a}`))
+    }
   }
 
   console.log(`\n[Route Coverage] ${report.routes.covered.length}/${report.routes.total.length} (${report.routes.percent}%)`)

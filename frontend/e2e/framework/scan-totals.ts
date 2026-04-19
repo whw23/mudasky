@@ -7,6 +7,14 @@ import path from "node:path"
 
 const EXCLUDED_API_PATHS = new Set<string>([])
 
+/** SSR 专用 API（Server Component 通过内部网络调用，Playwright 拦截不到） */
+export const SSR_ONLY_APIS = new Set([
+  "/api/public/cases/list",
+  "/api/public/cases/detail/{case_id}",
+  "/api/public/content/article/{article_id}",
+  "/api/public/universities/detail/{university_id}",
+])
+
 /** 从后端 /api/meta/routes 获取所有 API 端点 */
 export async function scanApiEndpoints(
   baseUrl: string,
