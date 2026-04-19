@@ -5,12 +5,7 @@
 import fs from "node:fs"
 import path from "node:path"
 
-const EXCLUDED_API_PATHS = new Set([
-  "/meta/routes",
-  "/health",
-  "/version",
-  "/auth/refresh-token-hash",
-])
+const EXCLUDED_API_PATHS = new Set<string>([])
 
 /** 从后端 /api/meta/routes 获取所有 API 端点 */
 export async function scanApiEndpoints(
