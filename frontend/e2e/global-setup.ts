@@ -160,10 +160,6 @@ export default async function globalSetup(): Promise<void> {
         .join("; ")
       const apiEndpoints = await scanApiEndpoints(baseURL, cookies)
       const { routes: frontendRoutes, panelRoutes } = scanFrontendRoutes()
-      // 这些端点不经过 page 但在测试流程中被调用，手动加入
-      setupApis.add("/api/meta/routes")
-      setupApis.add("/api/health")
-      setupApis.add("/api/version")
       saveScanTotals(E2E_RUNTIME_DIR, apiEndpoints, frontendRoutes, panelRoutes, [...setupApis])
       console.log(`[Setup] 覆盖率基准扫描完成: API ${apiEndpoints.length} 个, Route ${frontendRoutes.length} 个, Setup 调用 ${setupApis.size} 个`)
     } catch (err) {
