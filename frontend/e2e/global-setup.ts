@@ -9,6 +9,7 @@ import { chromium } from "@playwright/test"
 import { initSignalDb, writeSignal } from "./framework/signal"
 import { E2E_RUNTIME_DIR, getAuthFile } from "./constants"
 import { cleanupE2EData } from "./framework/db-cleanup"
+import { scanApiEndpoints, scanFrontendRoutes, saveScanTotals } from "./framework/scan-totals"
 
 /** 所有需要预热的页面路由 */
 const WARMUP_ROUTES = [
@@ -141,6 +142,19 @@ export default async function globalSetup(): Promise<void> {
       } catch {
         // 预热失败不阻塞（如权限不足被 302 也算预热成功）
       }
+    }
+
+    // 动态扫描 API 端点和前端路由
+    try {
+      const cookies = (await context.cookies())
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ")
+      const apiEndpoints = await scanApiEndpoints(baseURL, cookies)
+      const { routes: frontendRoutes, panelRoutes } = scanFrontendRoutes()
+      saveScanTotals(E2E_RUNTIME_DIR, apiEndpoints, frontendRoutes, panelRoutes)
+      console.log(`[Setup] 覆盖率基准扫描完成: API ${apiEndpoints.length} 个, Route ${frontendRoutes.length} 个`)
+    } catch (err) {
+      console.warn("[Setup] 覆盖率扫描失败:", (err as Error).message)
     }
 
     await page.close()
