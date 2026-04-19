@@ -119,10 +119,8 @@ export const viewTotpSetup: TaskFn = async (page) => {
   await totpBtn.click()
   await enableTotpResponse
 
-  // 应显示 QR 码和密钥
-  await expect(page.getByText(/扫描二维码|密钥|Secret/)).toBeVisible()
+  await expect(page.getByText(/验证器应用扫描/)).toBeVisible()
 
-  // 取消（不完成 TOTP 确认，因为需要真实的 TOTP 应用）
-  const cancelBtn = page.getByRole("button", { name: /取消|关闭/ })
+  const cancelBtn = page.getByRole("button", { name: /取消/ })
   await cancelBtn.click()
 }

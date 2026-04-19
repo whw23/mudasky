@@ -96,20 +96,12 @@ export async function resetPassword(page: Page, args?: Record<string, unknown>):
   await passwordInputs.first().fill(newPassword)
   await passwordInputs.last().fill(newPassword)
 
-  // 监听 API 响应
   const resetResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/admin/users/list/detail/reset-password") && r.request().method() === "POST",
-    { timeout: 15_000 }
+    (r) => r.url().includes("/api/admin/users/list/detail/reset-password") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
   )
-
-  // 点击重置密码按钮
   await section.getByRole("button", { name: "重置密码" }).click()
-
-  // 等待 API 响应
   await resetResponse
-
-  // 验证成功提示
-  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 强制登出用户（触发 /api/admin/users/list/detail/force-logout） */
@@ -121,19 +113,12 @@ export async function forceLogout(page: Page, args?: Record<string, unknown>): P
   // 点击强制登出按钮（heading "强制登出" 区域的按钮）
   const section = page.getByRole("heading", { name: "强制登出" }).locator("..")
 
-  // 监听 API 响应
   const logoutResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/admin/users/list/detail/force-logout") && r.request().method() === "POST",
-    { timeout: 15_000 }
+    (r) => r.url().includes("/api/admin/users/list/detail/force-logout") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
   )
-
   await section.getByRole("button", { name: "强制登出" }).click()
-
-  // 等待 API 响应
   await logoutResponse
-
-  // 验证成功提示
-  await page.getByText(/成功/).waitFor({ state: "visible" })
 }
 
 /** 删除用户（触发 /api/admin/users/list/detail/delete） */
@@ -150,18 +135,11 @@ export async function deleteUser(page: Page, args?: Record<string, unknown>): Pr
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
 
-  // 监听 API 响应
   const deleteResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/admin/users/list/detail/delete") && r.request().method() === "POST",
-    { timeout: 15_000 }
+    (r) => r.url().includes("/api/admin/users/list/detail/delete") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
   )
-
-  // 确认删除
   await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
-
-  // 等待 API 响应
   await deleteResponse
-
-  // 等待弹窗关闭
   await expect(alertDialog).not.toBeVisible()
 }

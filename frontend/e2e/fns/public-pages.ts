@@ -30,6 +30,32 @@ export const verifyNavbar: TaskFn = async (page) => {
   expect(count).toBeGreaterThanOrEqual(8)
 }
 
+/** 院校页面筛选（触发 provinces + cities API）。 */
+export const filterUniversities: TaskFn = async (page) => {
+  await page.goto("/universities")
+  await page.locator("main").waitFor()
+
+  const countrySelect = page.locator("main").getByRole("combobox")
+  await countrySelect.first().click()
+
+  const options = page.getByRole("option")
+  await options.first().waitFor({ timeout: 10_000 })
+
+  const count = await options.count()
+  if (count <= 1) return
+
+  const provincesResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/public/universities/provinces"),
+    { timeout: 15_000 },
+  )
+  const citiesResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/public/universities/cities"),
+    { timeout: 15_000 },
+  )
+  await options.nth(1).click()
+  await Promise.all([provincesResponse, citiesResponse])
+}
+
 /**
  * 验证 Footer ICP 备案和联系信息。
  */

@@ -204,8 +204,16 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await gotoWebSettingsPage(page, navLabel)
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
-  // 找到文章卡片
-  const card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: title }) })
+  // 找到文章卡片（编辑后标题可能未更新，逐步重试）
+  let card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: title }) })
+  const found = await card.first().isVisible().catch(() => false)
+  if (!found) {
+    await page.reload()
+    await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
+    await page.locator("nav button").filter({ hasText: navLabel }).first().click()
+    await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
+    await card.first().waitFor({ timeout: 15_000 })
+  }
   await card.locator("button:has(svg.lucide-trash-2)").first().click()
 
   // 等待删除确认弹窗
@@ -218,10 +226,12 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
     { timeout: 15_000 },
   )
   await alertDialog.getByRole("button", { name: "确认删除" }).click()
-  await deleteResponse
-
-  // 等待弹窗关闭
-  await expect(alertDialog).not.toBeVisible({ timeout: 15_000 })
+  const delRes = await deleteResponse
+  if (!delRes.ok()) {
+    const body = await delRes.text().catch(() => "")
+    throw new Error(`删除文章 API 返回 ${delRes.status()}: ${body.substring(0, 200)}`)
+  }
+  await expect(alertDialog).not.toBeVisible({ timeout: 30_000 })
 }
 
 /* ── 案例 CRUD ── */

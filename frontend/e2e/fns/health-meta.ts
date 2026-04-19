@@ -6,50 +6,32 @@ import { expect } from "@playwright/test"
 
 export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<void>
 
-/**
- * 瑙﹀彂鍋ュ悍妫�鏌ョ��鐐癸紙/api/health锛夈�俓n */
+/** 触发健康检查端点（/api/health）。 */
 export const checkHealth: TaskFn = async (page) => {
   const healthResponse = page.waitForResponse(
     (r) => r.url().includes("/api/health"),
-    { timeout: 15_000 }
+    { timeout: 15_000 },
   )
-
-  await page.goto("/")
-  await page.evaluate(async () => {
-    await fetch("/api/health")
-  })
-
+  await page.evaluate(() => fetch("/api/health", { credentials: "omit" }))
   await healthResponse
 }
 
-/**
- * 瑙﹀彂鍏冩暟鎹�璺�鐢辩��鐐癸紙/api/meta/routes锛夈�俓n */
+/** 触发元数据路由端点（/api/meta/routes）。 */
 export const fetchMetaRoutes: TaskFn = async (page) => {
   const metaResponse = page.waitForResponse(
     (r) => r.url().includes("/api/meta/routes"),
-    { timeout: 15_000 }
+    { timeout: 15_000 },
   )
-
-  await page.goto("/")
-  await page.evaluate(async () => {
-    await fetch("/api/meta/routes")
-  })
-
+  await page.evaluate(() => fetch("/api/meta/routes"))
   await metaResponse
 }
 
-/**
- * 瑙﹀彂鐗堟湰绔�鐐癸紙/api/version锛夈�俓n */
+/** 触发版本端点（/api/version）。 */
 export const fetchVersion: TaskFn = async (page) => {
   const versionResponse = page.waitForResponse(
     (r) => r.url().includes("/api/version"),
-    { timeout: 15_000 }
+    { timeout: 15_000 },
   )
-
-  await page.goto("/")
-  await page.evaluate(async () => {
-    await fetch("/api/version")
-  })
-
+  await page.evaluate(() => fetch("/api/version", { credentials: "omit" }))
   await versionResponse
 }

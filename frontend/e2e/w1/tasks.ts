@@ -39,6 +39,7 @@ import {
   editRole,
   deleteRole,
   verifyRoleList,
+  viewRoleDetail,
 } from "../fns/role-management"
 import {
   searchUser,
@@ -54,6 +55,18 @@ import {
   verifyWebSettings,
   editWebSettings,
 } from "../fns/settings"
+import {
+  checkHealth,
+  fetchMetaRoutes,
+  fetchVersion,
+} from "../fns/health-meta"
+import {
+  expandStudent,
+  assignAdvisor,
+  downgradeStudent,
+  viewStudentDocumentDetail,
+  downloadStudentDocument,
+} from "../fns/students"
 import {
   testCsrf,
   testXss,
@@ -453,6 +466,36 @@ export const tasks: Task[] = [
     },
   },
 
+  /* ── 基础设施端点 ── */
+  {
+    id: "w1_health_check",
+    worker: "w1",
+    name: "健康检查",
+    requires: ["w1_refresh_superuser"],
+    fn: checkHealth,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/api/health"],
+      components: [],
+      security: [],
+    },
+  },
+  {
+    id: "w1_version",
+    worker: "w1",
+    name: "获取版本信息",
+    requires: ["w1_refresh_superuser"],
+    fn: fetchVersion,
+    fnArgs: {},
+    coverage: {
+      routes: [],
+      api: ["/api/version"],
+      components: [],
+      security: [],
+    },
+  },
+
   /* ── 角色管理 ── */
   {
     id: "w1_role_list",
@@ -522,6 +565,20 @@ export const tasks: Task[] = [
     },
   },
   {
+    id: "w1_role_detail",
+    worker: "w1",
+    name: "查看角色详情",
+    requires: ["w1_role_list"],
+    fn: viewRoleDetail,
+    fnArgs: { name: "visitor" },
+    coverage: {
+      routes: ["/admin/roles"],
+      api: ["/admin/roles/meta"],
+      components: ["RoleDialog"],
+      security: [],
+    },
+  },
+  {
     id: "w1_role_delete_protected",
     worker: "w1",
     name: "删除受保护角色（应失败）",
@@ -575,6 +632,69 @@ export const tasks: Task[] = [
     },
   },
 
+  /* ── 用户管理：高级操作 ── */
+  {
+    id: "w1_user_reset_password",
+    worker: "w1",
+    name: "重置用户密码",
+    requires: ["w1_enable_temp"],
+    fn: resetPassword,
+    fnArgs: {
+      phone: PHONES.w7_disabled,
+      newPassword: "E2E_TempReset123!",
+    },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list/detail/reset-password"],
+      components: ["UserDetailPanel"],
+      security: ["admin-reset-password"],
+    },
+  },
+  {
+    id: "w1_user_force_logout",
+    worker: "w1",
+    name: "强制登出用户",
+    requires: ["w1_enable_temp"],
+    fn: forceLogout,
+    fnArgs: { phone: PHONES.w7_disabled },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/admin/users/list/detail/force-logout"],
+      components: ["UserDetailPanel"],
+      security: ["admin-force-logout"],
+    },
+  },
+
+  /* ── 学生管理（superuser） ── */
+  {
+    id: "w1_student_assign_advisor",
+    worker: "w1",
+    name: "分配顾问给学生",
+    requires: ["w1_refresh_superuser", "w1_assign_role_w2", "w1_assign_role_w3"],
+    fn: assignAdvisor,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/students"],
+      api: ["/admin/students/list/detail/assign-advisor"],
+      components: ["StudentDetailPanel"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_student_downgrade",
+    worker: "w1",
+    name: "降级学生为访客",
+    requires: ["w1_student_assign_advisor", "w2_logout"],
+    fn: downgradeStudent,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/students"],
+      api: ["/admin/students/list/detail/downgrade"],
+      components: ["StudentDetailPanel"],
+      security: ["student-downgrade"],
+    },
+  },
+
   /* ── 设置管理 ── */
   {
     id: "w1_general_settings",
@@ -587,6 +707,21 @@ export const tasks: Task[] = [
     coverage: {
       routes: ["/admin/general-settings"],
       api: ["/admin/general-settings/list"],
+      components: ["GeneralSettings"],
+      security: [],
+    },
+  },
+  {
+    id: "w1_general_settings_edit",
+    worker: "w1",
+    name: "编辑通用配置",
+    requires: ["w1_general_settings"],
+    fn: editGeneralSettings,
+    fnArgs: {},
+    backupWorkers: ["w5"],
+    coverage: {
+      routes: ["/admin/general-settings"],
+      api: ["/admin/general-settings/list/edit"],
       components: ["GeneralSettings"],
       security: [],
     },

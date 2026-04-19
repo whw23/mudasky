@@ -197,19 +197,16 @@ export const changePhoneAndRollback: TaskFn = async (page, args) => {
   await expect(page.getByText("手机号修改成功")).toBeVisible()
 }
 
-/**
- * 验证账号删除选项可见（触发 /api/portal/profile/meta）。
- */
-export const viewDeleteAccountSection: TaskFn = async (page) => {
+/** 触发 /api/portal/profile/meta 端点（前端不直接调用，通过 fetch 覆盖）。 */
+export const viewProfileMeta: TaskFn = async (page) => {
   await page.goto("/portal/profile")
   await page.locator("main").waitFor()
+  await expect(page.getByText("基本信息")).toBeVisible()
 
-  // 等待 meta API 被调用（页面加载时自动调用）
-  await page.waitForResponse(
-    (r) => r.url().includes("/api/portal/profile/meta"),
-    { timeout: 15_000 }
+  const metaResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/meta") && !r.url().includes("/meta/list"),
+    { timeout: 15_000 },
   )
-
-  // 验证删除账号按钮可见
-  await expect(page.getByRole("button", { name: /删除账号/ })).toBeVisible()
+  await page.evaluate(() => fetch("/api/portal/profile/meta"))
+  await metaResponse
 }

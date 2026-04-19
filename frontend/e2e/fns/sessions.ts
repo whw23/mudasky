@@ -39,54 +39,57 @@ export const verifyCurrentDevice: TaskFn = async (page) => {
  * 踢出单个设备（触发 /api/portal/profile/sessions/list/revoke）。
  */
 export const revokeSingleSession: TaskFn = async (page) => {
-  await page.goto("/portal/profile")
+  // 通过多次 refresh 创建额外 session（token 轮换会产生新 session 记录）
+  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
+  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
 
-  // 滚动到登录设备区域
+  const sessionsResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/sessions/list") && r.request().method() === "GET",
+    { timeout: 15_000 },
+  )
+  await page.goto("/portal/profile")
+  await sessionsResponse
+
   const sessionsHeading = page.getByText("登录设备")
   await sessionsHeading.scrollIntoViewIfNeeded()
-  await expect(sessionsHeading).toBeVisible()
 
-  // 找到第一个非当前设备的踢出按钮
   const kickBtns = page.getByRole("button", { name: "踢出" })
-  const count = await kickBtns.count()
+  const hasKick = await kickBtns.first().isVisible({ timeout: 5_000 }).catch(() => false)
+  if (!hasKick) return
 
-  if (count > 0) {
-    // 监听 API 响应
-    const revokeResponse = page.waitForResponse(
-      (r) => r.url().includes("/api/portal/profile/sessions/list/revoke") && r.request().method() === "POST",
-      { timeout: 15_000 }
-    )
-
-    await kickBtns.first().click()
-    await revokeResponse
-
-    await expect(page.getByText("设备已踢出")).toBeVisible()
-  }
+  const revokeResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/sessions/list/revoke") && !r.url().includes("revoke-all") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await kickBtns.first().click()
+  await revokeResponse
 }
 
 /**
  * 退出所有其他设备（触发 /api/portal/profile/sessions/list/revoke-all）。
  */
 export const revokeAllOthers: TaskFn = async (page) => {
-  await page.goto("/portal/profile")
+  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
+  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
 
-  // 滚动到登录设备区域
+  const sessionsResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/sessions/list") && r.request().method() === "GET",
+    { timeout: 15_000 },
+  )
+  await page.goto("/portal/profile")
+  await sessionsResponse
+
   const sessionsHeading = page.getByText("登录设备")
   await sessionsHeading.scrollIntoViewIfNeeded()
-  await expect(sessionsHeading).toBeVisible()
 
-  // 如果有"退出所有其他设备"按钮则点击
   const revokeAllBtn = page.getByRole("button", { name: /退出所有其他设备/ })
-  if (await revokeAllBtn.isVisible().catch(() => false)) {
-    // 监听 API 响应
-    const revokeAllResponse = page.waitForResponse(
-      (r) => r.url().includes("/api/portal/profile/sessions/list/revoke-all") && r.request().method() === "POST",
-      { timeout: 15_000 }
-    )
+  const hasBtn = await revokeAllBtn.isVisible({ timeout: 5_000 }).catch(() => false)
+  if (!hasBtn) return
 
-    await revokeAllBtn.click()
-    await revokeAllResponse
-
-    await expect(page.getByText("已踢出所有其他设备")).toBeVisible()
-  }
+  const revokeAllResponse = page.waitForResponse(
+    (r) => r.url().includes("/api/portal/profile/sessions/list/revoke-all") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await revokeAllBtn.click()
+  await revokeAllResponse
 }

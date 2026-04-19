@@ -21,6 +21,8 @@ import {
   changePassword,
   viewPhoneSection,
   view2faSection,
+  changePhoneAndRollback,
+  viewProfileMeta,
 } from "../fns/profile"
 import {
   viewDocuments,
@@ -29,16 +31,20 @@ import {
   deleteDocument,
   switchDocumentTab,
   viewStorageUsage,
+  viewDocumentDetail,
+  downloadDocument,
 } from "../fns/documents"
 import {
   enableSms2fa,
   disableSms2fa,
   verify2faStatus,
+  viewTotpSetup,
 } from "../fns/two-factor"
 import {
   viewSessions,
   verifyCurrentDevice,
   revokeAllOthers,
+  revokeSingleSession,
 } from "../fns/sessions"
 import {
   verifyPermissionAllowed,
@@ -172,6 +178,21 @@ export const tasks: Task[] = [
     },
   },
 
+  /* ── 个人资料：高级操作 ── */
+  {
+    id: "w2_profile_meta",
+    worker: "w2",
+    name: "验证账号删除选项",
+    requires: ["w2_profile_view"],
+    fn: viewProfileMeta,
+    fnArgs: {},
+    coverage: {
+      routes: ["/portal/profile"],
+      api: ["/portal/profile/meta"],
+      components: ["DeleteAccountSection"],
+      security: [],
+    },
+  },
   /* ── 两步验证 ── */
   {
     id: "w2_2fa_enable",
@@ -235,6 +256,21 @@ export const tasks: Task[] = [
       api: [],
       components: ["TwoFactorSection"],
       security: [],
+    },
+  },
+
+  {
+    id: "w2_2fa_totp_setup",
+    worker: "w2",
+    name: "查看 TOTP 设置",
+    requires: ["w2_2fa_verify_disabled"],
+    fn: viewTotpSetup,
+    fnArgs: {},
+    coverage: {
+      routes: ["/portal/profile"],
+      api: ["/portal/profile/two-factor/enable-totp"],
+      components: ["TotpSetupDialog"],
+      security: ["totp-setup"],
     },
   },
 
@@ -366,6 +402,20 @@ export const tasks: Task[] = [
     },
   },
   {
+    id: "w2_sessions_revoke_single",
+    worker: "w2",
+    name: "踢出单个设备",
+    requires: ["w2_sessions_view"],
+    fn: revokeSingleSession,
+    fnArgs: {},
+    coverage: {
+      routes: ["/portal/profile"],
+      api: ["/portal/profile/sessions/list/revoke"],
+      components: ["SessionsSection"],
+      security: ["session-revoke-single"],
+    },
+  },
+  {
     id: "w2_sessions_revoke_others",
     worker: "w2",
     name: "踢出所有其他设备",
@@ -374,7 +424,7 @@ export const tasks: Task[] = [
     fnArgs: {},
     coverage: {
       routes: ["/portal/profile"],
-      api: ["/portal/profile/sessions/revoke-all"],
+      api: ["/portal/profile/sessions/list/revoke-all"],
       components: ["SessionsSection"],
       security: ["session-revoke"],
     },

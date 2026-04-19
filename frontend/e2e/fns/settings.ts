@@ -13,11 +13,33 @@ export async function verifyGeneralSettings(page: Page): Promise<void> {
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
 }
 
-/** 编辑通用配置 */
+/** 编辑通用配置（修改国家码启用状态后回滚） */
 export async function editGeneralSettings(page: Page): Promise<void> {
   await page.goto("/admin/general-settings")
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
-  // TODO: 用 Playwright MCP 调试 DOM 后实现编辑+回滚逻辑
+  await page.getByRole("button", { name: "保存" }).waitFor({ timeout: 15_000 })
+
+  const checkboxes = page.locator("main").getByRole("checkbox")
+  const secondCheckbox = checkboxes.nth(1)
+  const wasChecked = await secondCheckbox.isChecked()
+
+  await secondCheckbox.click()
+
+  const saveResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/general-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await page.getByRole("button", { name: "保存" }).click()
+  await saveResponse
+
+  // 回滚
+  await secondCheckbox.click()
+  const rollbackResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/general-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await page.getByRole("button", { name: "保存" }).click()
+  await rollbackResponse
 }
 
 /** 验证网页设置页面 */

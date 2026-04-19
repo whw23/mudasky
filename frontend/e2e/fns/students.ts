@@ -112,87 +112,76 @@ export const editStudentNote: TaskFn = async (page, args) => {
  * 分配顾问给学生（触发 /api/admin/students/list/detail/assign-advisor）。
  */
 export const assignAdvisor: TaskFn = async (page) => {
-  // 导航到学生管理页面并展开学生面板
   await page.goto("/admin/students")
   await page.locator("main").waitFor()
 
-  // 取消"仅我的学生"筛选
   const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
   if (await checkbox.isChecked()) {
+    const listResponse = page.waitForResponse(
+      (r) => r.url().includes("/admin/students/list") && r.status() === 200,
+    )
     await checkbox.uncheck()
-    await page.waitForTimeout(1000)
+    await listResponse
   }
 
   const firstRow = page.locator("tbody tr").first()
   await firstRow.waitFor({ timeout: 15_000 })
   await firstRow.click()
 
-  await page.locator("h3").filter({ hasText: "基本信息" }).waitFor({ timeout: 15_000 })
+  const advisorHeading = page.locator("h3").filter({ hasText: "分配顾问" })
+  await advisorHeading.waitFor({ timeout: 15_000 })
+  const advisorSection = advisorHeading.locator("..")
 
-  // 找到"分配顾问"区域
-  const advisorSection = page.locator("section").filter({ hasText: "分配顾问" })
-  await expect(advisorSection).toBeVisible()
-
-  // 选择顾问（假设下拉框有选项）
   const selectTrigger = advisorSection.getByRole("combobox")
-  if (await selectTrigger.isVisible().catch(() => false)) {
-    await selectTrigger.click()
+  await selectTrigger.click()
 
-    // 等待下拉选项出现
-    const firstOption = page.getByRole("option").first()
-    await firstOption.waitFor({ timeout: 5_000 })
+  const firstOption = page.getByRole("option").first()
+  await firstOption.waitFor({ timeout: 5_000 })
+  await firstOption.click()
 
-    // 监听 API 响应
-    const assignResponse = page.waitForResponse(
-      (r) => r.url().includes("/api/admin/students/list/detail/assign-advisor") && r.request().method() === "POST",
-      { timeout: 15_000 }
-    )
-
-    await firstOption.click()
-    await assignResponse
-  }
+  const assignResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/students/list/detail/assign-advisor") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await advisorSection.getByRole("button", { name: "确认" }).click()
+  await assignResponse
 }
 
 /**
  * 降级学生为访客（触发 /api/admin/students/list/detail/downgrade）。
  */
 export const downgradeStudent: TaskFn = async (page) => {
-  // 导航到学生管理页面并展开学生面板
   await page.goto("/admin/students")
   await page.locator("main").waitFor()
 
-  // 取消"仅我的学生"筛选
   const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
   if (await checkbox.isChecked()) {
+    const listResponse = page.waitForResponse(
+      (r) => r.url().includes("/admin/students/list") && r.status() === 200,
+    )
     await checkbox.uncheck()
-    await page.waitForTimeout(1000)
+    await listResponse
   }
 
   const firstRow = page.locator("tbody tr").first()
   await firstRow.waitFor({ timeout: 15_000 })
   await firstRow.click()
 
-  await page.locator("h3").filter({ hasText: "基本信息" }).waitFor({ timeout: 15_000 })
+  const downgradeBtn = page.getByRole("button", { name: "降为访客" })
+  await downgradeBtn.waitFor({ timeout: 15_000 })
 
-  // 找到"降级"或"转为访客"按钮
-  const downgradeBtn = page.getByRole("button", { name: /降级|转为访客/ })
-  if (await downgradeBtn.isVisible().catch(() => false)) {
-    // 监听 API 响应
-    const downgradeResponse = page.waitForResponse(
-      (r) => r.url().includes("/api/admin/students/list/detail/downgrade") && r.request().method() === "POST",
-      { timeout: 15_000 }
-    )
+  const downgradeResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/students/list/detail/downgrade") && r.request().method() === "POST" && r.status() === 200,
+    { timeout: 15_000 },
+  )
+  await downgradeBtn.click()
 
-    await downgradeBtn.click()
-
-    // 如果有确认弹窗
-    const alertDialog = page.getByRole("alertdialog")
-    if (await alertDialog.isVisible().catch(() => false)) {
-      await alertDialog.getByRole("button", { name: /确认|降级/ }).click()
-    }
-
-    await downgradeResponse
+  const alertDialog = page.getByRole("alertdialog")
+  if (await alertDialog.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await alertDialog.getByRole("button", { name: /确认|降为访客/ }).click()
   }
+
+  await downgradeResponse
 }
 
 /**

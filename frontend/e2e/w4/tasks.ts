@@ -21,6 +21,7 @@ import {
   verifyPublicPage,
   verifyNavbar,
   verifyFooter,
+  filterUniversities,
 } from "../fns/public-pages"
 import {
   verifyArticleDetail,
@@ -175,6 +176,21 @@ export const tasks: Task[] = [
       routes: ["/universities"],
       api: ["/api/public/universities/list"],
       components: ["UniversitiesPage"],
+      security: [],
+    },
+  },
+  {
+    id: "w4_filter_universities",
+    worker: "w4",
+    name: "院校国家筛选",
+    requires: ["w1_crud_university_create"],
+    fn: filterUniversities,
+    fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
+    coverage: {
+      routes: ["/universities"],
+      api: ["/api/public/universities/provinces", "/api/public/universities/cities"],
+      components: ["UniversitySearch"],
       security: [],
     },
   },
