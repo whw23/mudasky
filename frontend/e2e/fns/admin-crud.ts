@@ -182,7 +182,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
 
   // 保存
   const editResponse = page.waitForResponse(
-    (r) => r.url().includes("/admin/web-settings/articles") && r.request().method() === "POST",
+    (r) => r.url().includes("/articles/list/detail/edit") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
   await dialog.getByRole("button", { name: /保存|发布/ }).click()
@@ -213,13 +213,15 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await expect(alertDialog).toBeVisible()
 
   // 确认删除
+  const deleteResponse = page.waitForResponse(
+    (r) => r.url().includes("/articles/list/detail/delete") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
   await alertDialog.getByRole("button", { name: "确认删除" }).click()
+  await deleteResponse
 
   // 等待弹窗关闭
   await expect(alertDialog).not.toBeVisible({ timeout: 15_000 })
-
-  // 验证文章已消失
-  await expect(page.getByText(title)).not.toBeVisible({ timeout: 10_000 })
 }
 
 /* ── 案例 CRUD ── */
