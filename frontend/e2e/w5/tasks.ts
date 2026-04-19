@@ -109,7 +109,7 @@ export const tasks: Task[] = [
     name: "删除分类",
     requires: ["w5_edit_category"],
     fn: deleteCategory,
-    fnArgs: { name: `E2E_239_分类-${TS}-edited` },
+    fnArgs: { name: `E2E_239_分类-${TS}` },
     backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/categories/list/detail/delete"],
@@ -125,8 +125,8 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createArticle,
     fnArgs: {
-      title: `E2E_239_文章-${TS}`,
-      slug: `e2e-239-article-${TS}`,
+      title: `E2E_239_文章W5-${TS}`,
+      slug: `e2e-239-article-w5-${TS}`,
       content: "E2E_239_测试文章内容",
     },
     backupWorkers: ["w1"],
@@ -148,8 +148,8 @@ export const tasks: Task[] = [
     requires: ["w5_create_article"],
     fn: editArticle,
     fnArgs: {
-      oldTitle: `E2E_239_文章-${TS}`,
-      newTitle: `E2E_239_文章-${TS}-edited`,
+      oldTitle: `E2E_239_文章W5-${TS}`,
+      newTitle: `E2E_239_文章W5-${TS}-edited`,
     },
     backupWorkers: ["w1"],
     coverage: {
@@ -163,7 +163,7 @@ export const tasks: Task[] = [
     name: "删除文章",
     requires: ["w5_edit_article"],
     fn: deleteArticle,
-    fnArgs: { title: `E2E_239_文章-${TS}-edited` },
+    fnArgs: { title: `E2E_239_文章W5-${TS}-edited` },
     backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/articles/list/detail/delete"],
