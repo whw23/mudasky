@@ -27,19 +27,21 @@ export default async function register(
     ])
   }
 
-  // 导航到首页，等待登录或退出按钮可交互（水合完成后才可点击）
+  // 导航到首页，等待水合稳定（SSR 渲染"登录"但水合后可能变"退出"）
   await page.goto("/")
   const loginBtn = page.getByRole("button", { name: /登录|注册/ })
   const logoutBtn = page.getByRole("button", { name: "退出" })
   await loginBtn.or(logoutBtn).first().waitFor({ timeout: 30_000 })
+  // 等待水合稳定（SSR 和 CSR 状态可能不同，等最后一次 DOM 更新）
+  await page.waitForTimeout(2000)
 
-  // 如果已登录（LAST_NOT_PASS 场景），先退出
+  // 如果已登录，先退出
   if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
     await loginBtn.waitFor({ timeout: 30_000 })
   }
 
-  // 点击登录按钮打开弹窗（SSR 按钮可能未水合或 detach，重试直到弹窗出现）
+  // 点击登录按钮打开弹窗（重试处理 detach）
   const dialog = page.getByRole("dialog")
   for (let i = 0; i < 15; i++) {
     try {
