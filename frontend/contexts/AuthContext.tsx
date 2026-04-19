@@ -55,16 +55,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setLoading(false))
   }, [fetchUser])
 
-  /** 浏览器前进/后退和页面可见时重新获取用户状态 */
+  /** 浏览器前进/后退、页面可见、bfcache 恢复时同步用户状态 */
   useEffect(() => {
     const onPopState = () => { fetchUser() }
     const onVisibility = () => {
       if (document.visibilityState === 'visible') fetchUser()
     }
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) window.location.reload()
+    }
     window.addEventListener('popstate', onPopState)
+    window.addEventListener('pageshow', onPageShow)
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
       window.removeEventListener('popstate', onPopState)
+      window.removeEventListener('pageshow', onPageShow)
       document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [fetchUser])
