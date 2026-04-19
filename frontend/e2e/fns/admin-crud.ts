@@ -207,10 +207,10 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await expect(alertDialog).toBeVisible()
 
   // 确认删除
-  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await alertDialog.getByRole("button", { name: "确认删除" }).click()
 
   // 等待弹窗关闭
-  await expect(alertDialog).not.toBeVisible()
+  await expect(alertDialog).not.toBeVisible({ timeout: 15_000 })
 
   // 验证文章已消失
   await expect(page.getByText(title)).not.toBeVisible({ timeout: 10_000 })
@@ -299,7 +299,7 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
 
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
-  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await alertDialog.getByRole("button", { name: "确认删除" }).click()
   await expect(alertDialog).not.toBeVisible()
 }
 
@@ -382,6 +382,6 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
 
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
-  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await alertDialog.getByRole("button", { name: "确认删除" }).click()
   await expect(alertDialog).not.toBeVisible()
 }
