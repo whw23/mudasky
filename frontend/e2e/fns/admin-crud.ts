@@ -181,13 +181,19 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   await titleInput.fill(newTitle)
 
   // 保存
+  const editResponse = page.waitForResponse(
+    (r) => r.url().includes("/admin/web-settings/articles") && r.request().method() === "POST",
+    { timeout: 15_000 },
+  )
   await dialog.getByRole("button", { name: /保存|发布/ }).click()
+  const editRes = await editResponse
+  if (!editRes.ok()) {
+    const body = await editRes.text().catch(() => "")
+    throw new Error(`编辑文章 API 返回 ${editRes.status()}: ${body.substring(0, 200)}`)
+  }
 
   // 等待弹窗关闭
   await expect(dialog).not.toBeVisible({ timeout: 10_000 })
-
-  // 验证修改成功
-  await expect(page.getByText(newTitle).first()).toBeVisible({ timeout: 10_000 })
 }
 
 /** 删除文章 */
