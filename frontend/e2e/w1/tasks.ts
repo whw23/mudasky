@@ -15,7 +15,8 @@
 
 import type { Task } from "../framework/types"
 import setCookie from "../fns/set-cookie"
-import login from "../fns/login"
+import register from "../fns/register"
+import reloadAuth from "../fns/reload-auth"
 import logout from "../fns/logout"
 import assignRole from "../fns/assign-role"
 import refreshToken from "../fns/refresh-token"
@@ -85,21 +86,34 @@ export const tasks: Task[] = [
     },
   },
   {
-    id: "w1_login",
+    id: "w1_register",
     worker: "w1",
-    name: "超级管理员登录",
+    name: "W1 注册 E2E 账号",
     requires: ["w1_set_cookie"],
-    fn: login,
+    fn: register,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME || "admin",
-      password: process.env.SEED_USER_E2E_PASSWORD || "Admin123!",
+      phone: PHONES.w1,
       worker: "w1",
     },
     coverage: {
       routes: ["/"],
-      api: ["/api/auth/login"],
-      components: ["LoginDialog", "LoginForm"],
-      security: ["account-password-login"],
+      api: ["/api/auth/sms-code", "/api/auth/register"],
+      components: ["RegisterForm"],
+      security: ["sms-registration"],
+    },
+  },
+  {
+    id: "w1_refresh_superuser",
+    worker: "w1",
+    name: "W1 刷新 token 获取 superuser 权限",
+    requires: ["w7_assign_superuser_w1"],
+    fn: reloadAuth,
+    fnArgs: { phone: PHONES.w1, worker: "w1" },
+    coverage: {
+      routes: [],
+      api: ["/api/auth/sms-code", "/api/auth/login"],
+      components: [],
+      security: ["role-upgrade-refresh"],
     },
   },
 
@@ -108,7 +122,7 @@ export const tasks: Task[] = [
     id: "w1_assign_role_w2",
     worker: "w1",
     name: "为 W2 分配 student 角色",
-    requires: ["w1_login", "w2_register"],
+    requires: ["w1_refresh_superuser", "w2_register"],
     fn: assignRole,
     fnArgs: {
       phone: PHONES.w2,
@@ -139,7 +153,7 @@ export const tasks: Task[] = [
     id: "w1_assign_role_w3",
     worker: "w1",
     name: "为 W3 分配 advisor 角色",
-    requires: ["w1_login", "w3_register"],
+    requires: ["w1_refresh_superuser", "w3_register"],
     fn: assignRole,
     fnArgs: {
       phone: PHONES.w3,
@@ -172,7 +186,7 @@ export const tasks: Task[] = [
     id: "w1_assign_w5",
     worker: "w1",
     name: "为 W5 分配 content_admin 角色",
-    requires: ["w1_login", "w5_register"],
+    requires: ["w1_refresh_superuser", "w5_register"],
     fn: assignRole,
     fnArgs: {
       phone: PHONES.w5,
@@ -205,7 +219,7 @@ export const tasks: Task[] = [
     id: "w1_assign_w6",
     worker: "w1",
     name: "为 W6 分配 support 角色",
-    requires: ["w1_login", "w6_register"],
+    requires: ["w1_refresh_superuser", "w6_register"],
     fn: assignRole,
     fnArgs: {
       phone: PHONES.w6,
@@ -238,14 +252,15 @@ export const tasks: Task[] = [
     id: "w1_crud_category_create",
     worker: "w1",
     name: "创建分类",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: createCategory,
     fnArgs: {
-      name: `E2E分类W1-${TS}`,
-      slug: `e2e-cat-w1-${TS}`,
-      description: "E2E测试分类",
+      name: `E2E_239_分类W1-${TS}`,
+      slug: `e2e-239-cat-w1-${TS}`,
+      description: "E2E_239_测试分类",
       sortOrder: 10,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/nav/list", "/admin/web-settings/nav/add-item"],
@@ -260,8 +275,9 @@ export const tasks: Task[] = [
     requires: ["w1_crud_category_create"],
     fn: deleteCategory,
     fnArgs: {
-      name: `E2E分类W1-${TS}`,
+      name: `E2E_239_分类W1-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/nav/remove-item"],
@@ -274,13 +290,14 @@ export const tasks: Task[] = [
     id: "w1_crud_article_create",
     worker: "w1",
     name: "创建文章",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: createArticle,
     fnArgs: {
-      title: `E2E文章-${TS}`,
-      slug: `e2e-article-${TS}`,
-      content: "E2E测试文章内容",
+      title: `E2E_239_文章-${TS}`,
+      slug: `e2e-239-article-${TS}`,
+      content: "E2E_239_测试文章内容",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list", "/admin/web-settings/articles/list/create"],
@@ -295,9 +312,10 @@ export const tasks: Task[] = [
     requires: ["w1_crud_article_create"],
     fn: editArticle,
     fnArgs: {
-      oldTitle: `E2E文章-${TS}`,
-      newTitle: `E2E文章-${TS}-edited`,
+      oldTitle: `E2E_239_文章-${TS}`,
+      newTitle: `E2E_239_文章-${TS}-edited`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list/detail/edit"],
@@ -312,8 +330,9 @@ export const tasks: Task[] = [
     requires: ["w1_crud_article_edit"],
     fn: deleteArticle,
     fnArgs: {
-      title: `E2E文章-${TS}-edited`,
+      title: `E2E_239_文章-${TS}-edited`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/articles/list/detail/delete"],
@@ -326,14 +345,15 @@ export const tasks: Task[] = [
     id: "w1_crud_case_create",
     worker: "w1",
     name: "创建案例",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: createCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
-      university: "E2E大学",
-      program: "E2E专业",
+      studentName: `E2E_239_学生-${TS}`,
+      university: "E2E_239_大学",
+      program: "E2E_239_专业",
       year: 2026,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list", "/admin/web-settings/cases/list/create"],
@@ -348,9 +368,10 @@ export const tasks: Task[] = [
     requires: ["w1_crud_case_create"],
     fn: editCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
-      newUniversity: "E2E大学-edited",
+      studentName: `E2E_239_学生-${TS}`,
+      newUniversity: "E2E_239_大学-edited",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/edit"],
@@ -365,8 +386,9 @@ export const tasks: Task[] = [
     requires: ["w1_crud_case_edit"],
     fn: deleteCase,
     fnArgs: {
-      studentName: `E2E学生-${TS}`,
+      studentName: `E2E_239_学生-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/cases/list/detail/delete"],
@@ -379,14 +401,15 @@ export const tasks: Task[] = [
     id: "w1_crud_university_create",
     worker: "w1",
     name: "创建院校",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: createUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
-      nameEn: `E2E-University-${TS}`,
-      country: "E2E国家",
-      city: "E2E城市",
+      name: `E2E_239_院校-${TS}`,
+      nameEn: `E2E_239_University-${TS}`,
+      country: "E2E_239_国家",
+      city: "E2E_239_城市",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list", "/admin/web-settings/universities/list/create"],
@@ -401,9 +424,10 @@ export const tasks: Task[] = [
     requires: ["w1_crud_university_create"],
     fn: editUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
-      newCity: "E2E城市-edited",
+      name: `E2E_239_院校-${TS}`,
+      newCity: "E2E_239_城市-edited",
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/edit"],
@@ -418,8 +442,9 @@ export const tasks: Task[] = [
     requires: ["w1_crud_university_edit"],
     fn: deleteUniversity,
     fnArgs: {
-      name: `E2E院校-${TS}`,
+      name: `E2E_239_院校-${TS}`,
     },
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/universities/list/detail/delete"],
@@ -433,7 +458,7 @@ export const tasks: Task[] = [
     id: "w1_role_list",
     worker: "w1",
     name: "验证角色列表",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: verifyRoleList,
     fnArgs: {},
     coverage: {
@@ -450,8 +475,8 @@ export const tasks: Task[] = [
     requires: ["w1_role_list"],
     fn: createRole,
     fnArgs: {
-      name: `E2E-role-${TS}`,
-      description: "E2E测试角色",
+      name: `E2E_239_role-${TS}`,
+      description: "E2E_239_测试角色",
       permissions: ["public/*"],
     },
     coverage: {
@@ -468,9 +493,9 @@ export const tasks: Task[] = [
     requires: ["w1_role_create"],
     fn: editRole,
     fnArgs: {
-      oldName: `E2E-role-${TS}`,
-      newName: `E2E-role-${TS}-edited`,
-      newDescription: "E2E测试角色-edited",
+      oldName: `E2E_239_role-${TS}`,
+      newName: `E2E_239_role-${TS}-edited`,
+      newDescription: "E2E_239_测试角色-edited",
     },
     coverage: {
       routes: ["/admin/roles"],
@@ -486,7 +511,7 @@ export const tasks: Task[] = [
     requires: ["w1_role_edit"],
     fn: deleteRole,
     fnArgs: {
-      name: `E2E-role-${TS}-edited`,
+      name: `E2E_239_role-${TS}-edited`,
       expectFail: false,
     },
     coverage: {
@@ -519,7 +544,7 @@ export const tasks: Task[] = [
     id: "w1_user_search",
     worker: "w1",
     name: "搜索用户",
-    requires: ["w1_login", "w2_register"],
+    requires: ["w1_refresh_superuser", "w2_register"],
     fn: searchUser,
     fnArgs: {
       keyword: "13900002002",
@@ -555,9 +580,10 @@ export const tasks: Task[] = [
     id: "w1_general_settings",
     worker: "w1",
     name: "验证通用配置",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: verifyGeneralSettings,
     fnArgs: {},
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/general-settings"],
       api: ["/admin/general-settings/list"],
@@ -569,9 +595,10 @@ export const tasks: Task[] = [
     id: "w1_web_settings",
     worker: "w1",
     name: "验证网页设置",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: verifyWebSettings,
     fnArgs: {},
+    backupWorkers: ["w5"],
     coverage: {
       routes: ["/admin/web-settings"],
       api: ["/admin/web-settings/list"],
@@ -585,7 +612,7 @@ export const tasks: Task[] = [
     id: "w1_security_csrf",
     worker: "w1",
     name: "CSRF 防护测试",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: testCsrf,
     fnArgs: {},
     coverage: {
@@ -599,7 +626,7 @@ export const tasks: Task[] = [
     id: "w1_security_xss",
     worker: "w1",
     name: "XSS 防护测试",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: testXss,
     fnArgs: {
       payload: '<script>alert("xss")</script>',
@@ -615,7 +642,7 @@ export const tasks: Task[] = [
     id: "w1_security_sql_injection",
     worker: "w1",
     name: "SQL 注入防护测试",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: testSqlInjection,
     fnArgs: {},
     coverage: {
@@ -629,7 +656,7 @@ export const tasks: Task[] = [
     id: "w1_security_input_validation",
     worker: "w1",
     name: "输入验证测试",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: testInputValidation,
     fnArgs: {},
     coverage: {
@@ -645,7 +672,7 @@ export const tasks: Task[] = [
     id: "w1_sidebar_verify",
     worker: "w1",
     name: "验证管理员侧边栏",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: verifyAdminSidebar,
     fnArgs: {
       role: "superuser",
@@ -679,7 +706,7 @@ export const tasks: Task[] = [
     id: "w1_dashboard_verify",
     worker: "w1",
     name: "验证仪表盘",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: verifyDashboard,
     fnArgs: {},
     coverage: {
@@ -712,7 +739,7 @@ export const tasks: Task[] = [
     id: "w1_disable_temp",
     worker: "w1",
     name: "禁用 W7 临时账号",
-    requires: ["w1_login", "w7_reg_disable"],
+    requires: ["w1_refresh_superuser", "w7_reg_disable"],
     fn: toggleUserStatus,
     fnArgs: { phone: PHONES.w7_disabled, disable: true },
     coverage: {
@@ -742,7 +769,7 @@ export const tasks: Task[] = [
     id: "w1_logout",
     worker: "w1",
     name: "超级管理员登出",
-    requires: ["w1_login"],
+    requires: ["w1_refresh_superuser"],
     fn: logout,
     fnArgs: {},
     coverage: {

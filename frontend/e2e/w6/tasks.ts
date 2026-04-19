@@ -77,6 +77,7 @@ export const tasks: Task[] = [
     name: "展开联系人详情",
     requires: ["w6_view_contacts"],
     fn: expandContact,
+    backupWorkers: ["w1", "w3"],
     coverage: {
       api: ["/api/admin/contacts/list/detail"],
       components: [
@@ -93,6 +94,7 @@ export const tasks: Task[] = [
     requires: ["w6_expand_contact"],
     fn: markContactStatus,
     fnArgs: { status: "contacted" },
+    backupWorkers: ["w1", "w3"],
     coverage: {
       api: ["/api/admin/contacts/list/detail/mark"],
       components: [["ContactPanel", "status-select"]],
@@ -105,6 +107,7 @@ export const tasks: Task[] = [
     requires: ["w6_expand_contact"],
     fn: addContactNote,
     fnArgs: { note: `E2E-support-note-${TS}` },
+    backupWorkers: ["w1", "w3"],
     coverage: {
       api: ["/api/admin/contacts/list/detail/note"],
       components: [["ContactPanel", "note-textarea"]],

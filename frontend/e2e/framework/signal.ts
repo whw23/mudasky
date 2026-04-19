@@ -1,72 +1,89 @@
 /**
- * 信号文件读写。
- * 使用 wx（O_CREAT | O_EXCL）原子创建，防止竞态。
+ * 跨 worker 信号协调（SQLite）。
  */
 
-import * as fs from "fs"
+import Database from "better-sqlite3"
 import * as path from "path"
+import * as fs from "fs"
 import type { Signal, SignalStatus } from "./types"
 
-const SIGNAL_DIR = process.env.E2E_SIGNAL_DIR || "/tmp/e2e-signals"
+const E2E_RUNTIME_DIR =
+  process.env.E2E_RUNTIME_DIR || path.join(process.cwd(), "test-results", "e2e-runtime")
 
-/** 确保信号目录存在。 */
-export function ensureSignalDir(): void {
-  fs.mkdirSync(SIGNAL_DIR, { recursive: true })
-}
+const DB_PATH = path.join(E2E_RUNTIME_DIR, "signals.db")
 
-/** 清理所有信号文件。 */
-export function cleanupSignals(): void {
-  if (fs.existsSync(SIGNAL_DIR)) {
-    fs.rmSync(SIGNAL_DIR, { recursive: true, force: true })
+let _db: Database.Database | null = null
+
+/** 获取数据库实例（单例）。 */
+function getDb(): Database.Database {
+  if (!_db) {
+    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
+    _db = new Database(DB_PATH)
+    _db.pragma("journal_mode = WAL")
+    _db.exec(`
+      CREATE TABLE IF NOT EXISTS signals (
+        task_id TEXT PRIMARY KEY,
+        worker TEXT NOT NULL,
+        status TEXT NOT NULL,
+        data TEXT,
+        error TEXT,
+        cause TEXT,
+        timestamp REAL NOT NULL DEFAULT (unixepoch('subsec'))
+      )
+    `)
   }
+  return _db
 }
 
-/** 信号文件路径。 */
-function signalPath(taskId: string): string {
-  return path.join(SIGNAL_DIR, `${taskId}.json`)
+/** 初始化信号数据库（清空所有信号）。 */
+export function initSignalDb(): void {
+  const db = getDb()
+  db.exec("DELETE FROM signals")
 }
 
 /**
- * 尝试抢占任务（原子创建信号文件）。
+ * 尝试抢占任务（原子插入）。
  * 返回 true 表示抢到，false 表示已被其他 worker 抢占。
  */
 export function claimTask(taskId: string, worker: string): boolean {
-  ensureSignalDir()
+  const db = getDb()
   try {
-    const signal: Signal = { status: "running", worker, timestamp: Date.now() }
-    fs.writeFileSync(signalPath(taskId), JSON.stringify(signal), { flag: "wx" })
+    db.prepare("INSERT INTO signals (task_id, worker, status) VALUES (?, ?, 'running')").run(
+      taskId,
+      worker,
+    )
     return true
   } catch {
     return false
   }
 }
 
-/** 写入任务结果（覆盖 running 状态）。 */
+/** 写入任务结果。 */
 export function writeSignal(
   taskId: string,
   status: SignalStatus,
   opts?: { data?: Record<string, unknown>; error?: string; cause?: string; worker?: string },
 ): void {
-  const signal: Signal = {
+  const db = getDb()
+  db.prepare(
+    `
+    INSERT INTO signals (task_id, worker, status, data, error, cause)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(task_id) DO UPDATE SET
+      status = excluded.status,
+      data = excluded.data,
+      error = excluded.error,
+      cause = excluded.cause,
+      timestamp = unixepoch('subsec')
+  `,
+  ).run(
+    taskId,
+    opts?.worker || "",
     status,
-    worker: opts?.worker,
-    data: opts?.data,
-    error: opts?.error,
-    cause: opts?.cause,
-    timestamp: Date.now(),
-  }
-  fs.writeFileSync(signalPath(taskId), JSON.stringify(signal))
-}
-
-/** 读取信号文件，不存在返回 null。 */
-export function readSignal(taskId: string): Signal | null {
-  const p = signalPath(taskId)
-  if (!fs.existsSync(p)) return null
-  try {
-    return JSON.parse(fs.readFileSync(p, "utf-8"))
-  } catch {
-    return null
-  }
+    opts?.data ? JSON.stringify(opts.data) : null,
+    opts?.error || null,
+    opts?.cause || null,
+  )
 }
 
 /**
@@ -79,28 +96,88 @@ export function checkRequires(requires: string[]): {
   data?: Record<string, Record<string, unknown>>
 } {
   if (requires.length === 0) return { result: "all_pass", data: {} }
-  const data: Record<string, Record<string, unknown>> = {}
-  for (const req of requires) {
-    const signal = readSignal(req)
+
+  const db = getDb()
+  const placeholders = requires.map(() => "?").join(",")
+  const rows = db
+    .prepare(`SELECT task_id, status, data FROM signals WHERE task_id IN (${placeholders})`)
+    .all(...requires) as { task_id: string; status: string; data: string | null }[]
+
+  const found = new Map(rows.map((r) => [r.task_id, r]))
+  const collectedData: Record<string, Record<string, unknown>> = {}
+
+  for (const reqId of requires) {
+    const signal = found.get(reqId)
     if (!signal) return { result: "not_ready" }
-    if (signal.status === "fail" || signal.status === "breaker" || signal.status === "timeout") {
-      return { result: "any_fail", failedCause: `前置任务 ${req} 失败` }
-    }
     if (signal.status === "running") return { result: "not_ready" }
-    if (signal.data) data[req] = signal.data
+    if (signal.status === "fail" || signal.status === "breaker" || signal.status === "timeout") {
+      return { result: "any_fail", failedCause: `前置任务 ${reqId} 失败` }
+    }
+    if (signal.data) {
+      collectedData[reqId] = JSON.parse(signal.data)
+    }
   }
-  return { result: "all_pass", data }
+
+  return { result: "all_pass", data: collectedData }
 }
 
-/** 获取所有信号文件，用于汇总结果。 */
+/** 读取单个信号，不存在返回 null。 */
+export function readSignal(taskId: string): Signal | null {
+  const db = getDb()
+  const row = db
+    .prepare("SELECT * FROM signals WHERE task_id = ?")
+    .get(taskId) as {
+    task_id: string
+    worker: string
+    status: string
+    data: string | null
+    error: string | null
+    cause: string | null
+    timestamp: number
+  } | undefined
+
+  if (!row) return null
+
+  return {
+    status: row.status as SignalStatus,
+    worker: row.worker,
+    data: row.data ? JSON.parse(row.data) : undefined,
+    error: row.error || undefined,
+    cause: row.cause || undefined,
+    timestamp: row.timestamp,
+  }
+}
+
+/** 获取所有信号，用于汇总结果。 */
 export function getAllSignals(): Record<string, Signal> {
-  if (!fs.existsSync(SIGNAL_DIR)) return {}
+  const db = getDb()
+  const rows = db.prepare("SELECT * FROM signals").all() as {
+    task_id: string
+    worker: string
+    status: string
+    data: string | null
+    error: string | null
+    cause: string | null
+    timestamp: number
+  }[]
   const result: Record<string, Signal> = {}
-  for (const file of fs.readdirSync(SIGNAL_DIR)) {
-    if (!file.endsWith(".json")) continue
-    const taskId = file.replace(".json", "")
-    const signal = readSignal(taskId)
-    if (signal) result[taskId] = signal
+  for (const row of rows) {
+    result[row.task_id] = {
+      status: row.status as SignalStatus,
+      worker: row.worker,
+      data: row.data ? JSON.parse(row.data) : undefined,
+      error: row.error || undefined,
+      cause: row.cause || undefined,
+      timestamp: row.timestamp,
+    }
   }
   return result
+}
+
+/** 关闭数据库连接。 */
+export function closeDb(): void {
+  if (_db) {
+    _db.close()
+    _db = null
+  }
 }

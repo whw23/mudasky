@@ -27,8 +27,8 @@ export const viewDocuments: TaskFn = async (page) => {
 
 /** 上传文档文件。 */
 export const uploadDocument: TaskFn = async (page, args) => {
-  const fileName = args?.fileName as string || `E2E-test-${Date.now()}.txt`
-  const content = args?.content as string || "E2E test content"
+  const fileName = args?.fileName as string || `E2E_239_test-${Date.now()}.txt`
+  const content = args?.content as string || "E2E_239_test content"
 
   await page.goto("/portal/documents")
 

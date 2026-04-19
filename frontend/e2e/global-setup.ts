@@ -6,8 +6,9 @@
 import * as fs from "fs"
 import * as path from "path"
 import { chromium } from "@playwright/test"
-import { cleanupSignals, ensureSignalDir, writeSignal } from "./framework/signal"
+import { initSignalDb, writeSignal } from "./framework/signal"
 import { E2E_RUNTIME_DIR, getAuthFile } from "./constants"
+import { cleanupE2EData } from "./framework/db-cleanup"
 
 /** 所有需要预热的页面路由 */
 const WARMUP_ROUTES = [
@@ -28,30 +29,16 @@ export default async function globalSetup(): Promise<void> {
   const tsFile = path.join(E2E_RUNTIME_DIR, "e2e-ts")
   fs.writeFileSync(tsFile, Date.now().toString().slice(-6))
 
-  // 1. 清理信号文件
-  cleanupSignals()
-  ensureSignalDir()
+  // 1. 初始化信号数据库
+  initSignalDb()
 
-  // 2. 清理 E2E 测试用户（通过 psql 直接删除，最可靠）
+  // 2. 清理 E2E 测试数据（通过 pg 直连）
   try {
-    const { execSync } = require("child_process")
-    const cwd = path.join(__dirname, "../..")
-    const psql = (sql: string) =>
-      execSync(`docker compose exec -T db psql -U mudasky -c "${sql}"`, { cwd, stdio: "pipe", timeout: 10_000 })
-
-    // 清理非种子用户（只保留有用户名且非 E2E 开头的种子用户）
-    psql("DELETE FROM \\\"user\\\" WHERE username IS NULL OR username = '' OR username LIKE 'E2E%';")
-    // 清理测试角色
-    psql("DELETE FROM role WHERE name LIKE 'E2E%' OR name LIKE '成功%';")
-    // 清理测试分类
-    psql("DELETE FROM category WHERE slug LIKE 'e2e-%';")
-    // 清理测试文章
-    psql("DELETE FROM article WHERE title LIKE 'E2E%';")
-    // 清理测试案例
-    psql("DELETE FROM success_case WHERE student_name LIKE 'E2E%';")
-    // 清理测试院校
-    psql("DELETE FROM university WHERE name LIKE 'E2E%';")
-  } catch { /* 清理失败不阻塞测试 */ }
+    await cleanupE2EData()
+    console.log("[Setup] E2E 数据清理完成（pg 直连）")
+  } catch (e) {
+    console.warn("[Setup] E2E 数据清理失败（继续执行）:", e)
+  }
 
   // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
   if (process.env.LAST_NOT_PASS === "1") {
@@ -106,8 +93,8 @@ export default async function globalSetup(): Promise<void> {
   // 4. 预热：W1 登录后遍历所有页面，让 Next.js 编译缓存 JS bundle
   const baseURL = process.env.BASE_URL || "http://localhost"
   const internalSecret = process.env.INTERNAL_SECRET || ""
-  const username = process.env.SEED_USER_E2E_USERNAME || "admin"
-  const password = process.env.SEED_USER_E2E_PASSWORD || "Admin123!"
+  const username = process.env.SEED_USER_1_USERNAME || "admin"
+  const password = process.env.SEED_USER_1_PASSWORD || "Admin123!"
 
   const browser = await chromium.launch({
     args: ["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"],
@@ -141,9 +128,6 @@ export default async function globalSetup(): Promise<void> {
     await page.getByPlaceholder("请输入密码").fill(password)
     await page.getByRole("button", { name: /^登录$/ }).click()
     await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
-
-    // 保存 W1 的 storageState
-    await context.storageState({ path: getAuthFile("w1") })
 
     // 遍历所有页面预热（不关心内容，只要 Next.js 编译缓存）
     for (const route of WARMUP_ROUTES) {

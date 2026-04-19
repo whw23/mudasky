@@ -103,6 +103,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/"],
       api: ["/api/public/config/site_info"],
@@ -119,6 +120,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/about",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/about"],
       api: [],
@@ -135,6 +137,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/news",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/news"],
       api: ["/api/public/content/articles/list"],
@@ -151,6 +154,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/cases",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/cases"],
       api: ["/api/public/cases/list"],
@@ -167,6 +171,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/universities",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/universities"],
       api: ["/api/public/universities/list"],
@@ -183,6 +188,7 @@ export const tasks: Task[] = [
     fnArgs: {
       path: "/about",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/about"],
       api: ["/api/public/config/contact_info"],
@@ -201,6 +207,7 @@ export const tasks: Task[] = [
     fnArgs: {
       articleId: `e2e-article-${TS}`,
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/news/:id"],
       api: ["/api/public/content/articles/list/detail"],
@@ -217,6 +224,7 @@ export const tasks: Task[] = [
     fnArgs: {
       caseId: "case-id-placeholder",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/cases/:id"],
       api: ["/api/public/cases/list/detail"],
@@ -233,6 +241,7 @@ export const tasks: Task[] = [
     fnArgs: {
       universityId: "university-id-placeholder",
     },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/universities/:id"],
       api: ["/api/public/universities/list/detail"],
@@ -279,6 +288,7 @@ export const tasks: Task[] = [
     requires: [],
     fn: testUniversitySearch,
     fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/universities"],
       api: [],
@@ -293,6 +303,7 @@ export const tasks: Task[] = [
     requires: [],
     fn: testCountryFilter,
     fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/universities"],
       api: [],
@@ -307,6 +318,7 @@ export const tasks: Task[] = [
     requires: ["w4_search_university"],
     fn: testResetFilter,
     fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/universities"],
       api: [],
@@ -321,6 +333,7 @@ export const tasks: Task[] = [
     requires: [],
     fn: testLocaleSwitcher,
     fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/", "/en"],
       api: [],
@@ -335,6 +348,7 @@ export const tasks: Task[] = [
     requires: [],
     fn: testConsultButton,
     fnArgs: {},
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
       routes: ["/"],
       api: [],
@@ -365,8 +379,8 @@ export const tasks: Task[] = [
     requires: ["w4_auth_login_dialog"],
     fn: testLoginSuccess,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME || "admin",
-      password: process.env.SEED_USER_E2E_PASSWORD || "Admin123!",
+      username: process.env.SEED_USER_1_USERNAME || "admin",
+      password: process.env.SEED_USER_1_PASSWORD || "Admin123!",
     },
     coverage: {
       routes: ["/"],
@@ -396,7 +410,7 @@ export const tasks: Task[] = [
     requires: ["w4_auth_logout"],
     fn: testWrongPassword,
     fnArgs: {
-      username: process.env.SEED_USER_E2E_USERNAME || "admin",
+      username: process.env.SEED_USER_1_USERNAME || "admin",
       password: "wrong-password-12345",
     },
     coverage: {

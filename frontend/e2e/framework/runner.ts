@@ -10,7 +10,7 @@ import { claimTask, writeSignal, checkRequires, readSignal } from "./signal"
 /** 总超时:10 分钟。 */
 const TOTAL_TIMEOUT = 10 * 60 * 1000
 /** 无任务可做时的等待间隔。 */
-const POLL_INTERVAL = 2000
+const POLL_INTERVAL = 200
 
 /** 加载所有 worker 的任务(用于备选 worker 偷取)。 */
 function loadAllTasks(): Task[] {

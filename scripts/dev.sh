@@ -36,7 +36,7 @@ case "${1:-}" in
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-gateway:latest ./gateway
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-api:latest -f backend/api/Dockerfile ./backend
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-frontend:latest ./frontend
-    docker compose -f docker-compose.yml up -d
+    DB_EXTERNAL_PORT=15432 docker compose -f docker-compose.yml up -d
     echo "生产容器已启动，可运行 ./scripts/test.sh e2e"
     ;;
   ""|--help|-h)
