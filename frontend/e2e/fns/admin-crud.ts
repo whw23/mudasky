@@ -134,6 +134,10 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
     await contentInput.fill(content)
   }
 
+  // 切换状态为"已发布"（默认是 draft，预览只显示 published）
+  await dialog.getByRole("combobox").click()
+  await page.getByRole("option", { name: "已发布" }).click()
+
   // 保存
   const saveResponse = page.waitForResponse(
     (r) => r.url().includes("/admin/web-settings/articles") && r.request().method() === "POST",
