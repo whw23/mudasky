@@ -6,15 +6,15 @@
 import type { Page } from "@playwright/test"
 
 export default async function logout(page: Page): Promise<void> {
-  // 导航到首页
+  // 导航到首页，等待按钮水合
   await page.goto("/")
-
-  // 检查是否已登录
+  const loginBtn = page.getByRole("button", { name: /登录|注册/ })
   const logoutBtn = page.getByRole("button", { name: "退出" })
-  if (await logoutBtn.isVisible().catch(() => false)) {
+  await loginBtn.or(logoutBtn).first().waitFor({ timeout: 30_000 })
+
+  // 已登录则退出，否则跳过
+  if (await logoutBtn.isVisible()) {
     await logoutBtn.click()
-    // 等待登录按钮重新出现
-    await page.getByRole("button", { name: /登录/ }).waitFor({ state: "visible" })
+    await loginBtn.waitFor({ timeout: 30_000 })
   }
-  // 已登出则跳过
 }
