@@ -59,7 +59,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
   // 验证导航栏中出现了新项
-  await expect(page.getByRole("button", { name })).toBeVisible()
+  await expect(page.getByRole("button", { name, exact: true })).toBeVisible()
 }
 
 /** 编辑分类（不适用于新 UI，跳过） */
