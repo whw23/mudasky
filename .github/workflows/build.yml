@@ -184,7 +184,7 @@ jobs:
   cleanup-registry:
     needs: [build-gateway, build-frontend, build-api, build-db]
     if: >-
-      always()
+      !cancelled()
       && (needs.build-gateway.result == 'success'
           || needs.build-frontend.result == 'success'
           || needs.build-api.result == 'success'
@@ -195,16 +195,24 @@ jobs:
 
     strategy:
       matrix:
-        package: [mudasky-gateway, mudasky-frontend, mudasky-api, mudasky-db]
+        include:
+          - package: mudasky-gateway
+            should_run: ${{ needs.build-gateway.result == 'success' }}
+          - package: mudasky-frontend
+            should_run: ${{ needs.build-frontend.result == 'success' }}
+          - package: mudasky-api
+            should_run: ${{ needs.build-api.result == 'success' }}
+          - package: mudasky-db
+            should_run: ${{ needs.build-db.result == 'success' }}
 
     steps:
       - name: 清理 ghcr.io 旧版本
+        if: matrix.should_run == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           PACKAGE: ${{ matrix.package }}
         run: |
-          # 获取所有版本（按创建时间降序），跳过最新 1 个，删除其余
           gh api \
             "users/${OWNER}/packages/container/${PACKAGE}/versions" \
             --paginate --jq '.[].id' \
@@ -216,9 +224,9 @@ jobs:
             done
 
   deploy:
-    needs: [detect-changes, build-gateway, build-frontend, build-api, build-db]
+    needs: [detect-changes, build-gateway, build-frontend, build-api, build-db, test-backend-unit, test-frontend-unit]
     if: >-
-      always()
+      !cancelled()
       && needs.detect-changes.outputs.any == 'true'
       && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
@@ -233,6 +241,7 @@ jobs:
       - name: 生成环境变量文件
         run: |
           mkdir -p env
+
           cat > env/backend.env << 'ENVEOF'
           DEBUG=false
           DB_HOST=db
@@ -256,8 +265,6 @@ jobs:
           SEED_USER_3_USERNAME=${{ secrets.SEED_USER_3_USERNAME }}
           SEED_USER_3_PASSWORD=${{ secrets.SEED_USER_3_PASSWORD }}
           SEED_USER_3_PHONE=${{ secrets.SEED_USER_3_PHONE }}
-          SEED_USER_E2E_USERNAME=${{ secrets.SEED_USER_E2E_USERNAME }}
-          SEED_USER_E2E_PASSWORD=${{ secrets.SEED_USER_E2E_PASSWORD }}
           CONTACT_ADDRESS=${{ vars.CONTACT_ADDRESS }}
           CONTACT_PHONE=${{ vars.CONTACT_PHONE }}
           CONTACT_EMAIL=${{ vars.CONTACT_EMAIL }}
@@ -286,9 +293,6 @@ jobs:
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
 
-          # 去除 heredoc 产生的前导空格
-          sed -i 's/^[[:space:]]*//' env/*.env
-
       - name: 配置 SSH
         run: |
           mkdir -p ~/.ssh
@@ -312,46 +316,63 @@ jobs:
           scp ${SSH_OPTS} env/*.env ${SSH_DEST}:~/mudasky/env/
 
       - name: 部署到服务器
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          BUILD_TAG: ${{ steps.version.outputs.tag }}
+          DB_EXTERNAL_PORT: ${{ secrets.DB_EXTERNAL_PORT }}
+          SSH_DEST: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+          SSH_PORT: ${{ secrets.SERVER_PORT }}
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} -i ~/.ssh/deploy_key \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} /bin/bash << EOF
+          ssh -p ${SSH_PORT} -i ~/.ssh/deploy_key ${SSH_DEST} \
+            "GHCR_PAT='${GHCR_PAT}' REPO_OWNER='${REPO_OWNER}' BUILD_TAG='${BUILD_TAG}' DB_EXTERNAL_PORT='${DB_EXTERNAL_PORT}'" \
+            /bin/bash << 'DEPLOY_EOF'
             set -e
             cd ~/mudasky
 
             # 登录 ghcr.io
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            echo "${GHCR_PAT}" | docker login ghcr.io -u "${REPO_OWNER}" --password-stdin
 
             # 拉取最新镜像（网络不稳定时最多重试 3 次）
             for i in 1 2 3; do
               docker compose -f docker-compose.yml pull && break
-              echo "拉取失败，第 \${i} 次重试..."
+              echo "拉取失败，第 ${i} 次重试..."
               sleep 10
             done
 
             # 持久化环境变量，重启后不丢失
-            DB_VER="${{ steps.version.outputs.tag }}"
             grep -q '^DB_VERSION=' .env 2>/dev/null \
-              && sed -i "s/^DB_VERSION=.*/DB_VERSION=\${DB_VER}/" .env \
-              || echo "DB_VERSION=\${DB_VER}" >> .env
+              && sed -i "s/^DB_VERSION=.*/DB_VERSION=${BUILD_TAG}/" .env \
+              || echo "DB_VERSION=${BUILD_TAG}" >> .env
 
-            DB_PORT="${{ secrets.DB_EXTERNAL_PORT }}"
-            if [ -n "\${DB_PORT}" ]; then
+            if [ -n "${DB_EXTERNAL_PORT}" ]; then
               grep -q '^DB_EXTERNAL_PORT=' .env 2>/dev/null \
-                && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=\${DB_PORT}/" .env \
-                || echo "DB_EXTERNAL_PORT=\${DB_PORT}" >> .env
+                && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=${DB_EXTERNAL_PORT}/" .env \
+                || echo "DB_EXTERNAL_PORT=${DB_EXTERNAL_PORT}" >> .env
             fi
 
             # 滚动更新
             docker compose -f docker-compose.yml up -d --remove-orphans
 
-            # 清理旧镜像
-            docker image prune -af --filter "until=1h"
+            # 清理 mudasky 旧镜像
+            docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' \
+              | grep "ghcr.io/${REPO_OWNER}/mudasky" \
+              | grep '<none>' \
+              | awk '{print $2}' \
+              | xargs -r docker rmi 2>/dev/null || true
 
-            # 健康检查
-            sleep 10
-            curl -sf http://localhost/api/health || exit 1
-            echo "部署成功"
-          EOF
+            # 健康检查（最多重试 6 次，间隔 10 秒）
+            for i in 1 2 3 4 5 6; do
+              if curl -sf http://localhost/api/health; then
+                echo "部署成功"
+                exit 0
+              fi
+              echo "健康检查第 ${i} 次失败，等待 10 秒..."
+              sleep 10
+            done
+            echo "健康检查超时"
+            exit 1
+          DEPLOY_EOF
 
   e2e-test:
     needs: deploy
@@ -386,7 +407,6 @@ jobs:
           DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           ENVEOF
-          sed -i 's/^[[:space:]]*//' env/production.env
       - name: 运行 E2E 测试
         run: |
           TEST_ENV=production pnpm --prefix frontend exec \
