@@ -127,9 +127,9 @@
 
 #### 信号机制
 
-任务完成后写信号文件（`/tmp/e2e-signals/{taskId}.json`），后续任务通过检查信号文件判断前置条件。
-- 使用 `wx`（O_CREAT | O_EXCL）原子创建，防止竞态
-- 信号文件 + API 验证双保险
+任务完成后写信号到 SQLite（`signals.db`，WAL 模式），后续任务通过查询信号判断前置条件。
+- 使用 `better-sqlite3` 同步 API，跨进程安全
+- 信号包含 status、data（拦截的 API 列表等）、error 信息
 
 #### 熔断机制
 
@@ -179,12 +179,13 @@
 #### 测试结果
 
 ```
-[Test Results] 184 pass / 0 fail / 0 breaker / 0 timeout (total: 184)
+[Test Results] 194 pass / 0 fail / 0 breaker / 0 timeout (total: 194)
 ```
 
 - 0 failed（含 breaker 和 timeout）为通过标准
 - 不重试，首次通过
-- 四维度覆盖率 100%（API 92/92, Route 22/22, Component 166/166, Security 77/77）
+- API 覆盖率 69/93 (74.2%)，Route 36/36 (100%)，Component ~99%，Security ~100%
+- 6 个 API 端点前端不调用（backend-only），4 个 SSR Only（Playwright 拦截不到）
 
 #### E2E 测试目录结构
 
@@ -193,8 +194,9 @@ frontend/e2e/
 ├── framework/
 │   ├── types.ts             # Task, Signal 类型定义
 │   ├── runner.ts            # 任务队列调度器
-│   ├── signal.ts            # 信号文件读写（原子写入）
-│   └── coverage.ts          # 覆盖率计算脚本
+│   ├── signal.ts            # SQLite 信号读写（better-sqlite3, WAL）
+│   ├── coverage.ts          # 覆盖率计算脚本
+│   └── scan-totals.ts       # 动态扫描 API 端点和前端路由
 ├── fns/                     # fn 实现，每个功能一个文件（多 worker 共用）
 ├── w1/tasks.ts              # superuser 任务声明
 ├── w2/tasks.ts              # student 任务声明
