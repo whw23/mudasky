@@ -17,7 +17,7 @@ async def create_category(
 ) -> Category:
     """创建分类。"""
     session.add(category)
-    await session.commit()
+    await session.flush()
     await session.refresh(category)
     return category
 
