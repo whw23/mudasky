@@ -50,12 +50,20 @@ export const expandStudent: TaskFn = async (page) => {
   const table = page.locator("table")
   await expect(table).toBeVisible()
 
+  // 取消"仅我的学生"筛选
+  const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
+  if (await checkbox.isChecked()) {
+    await checkbox.uncheck()
+    await page.waitForTimeout(1000)
+  }
+
   const firstRow = page.locator("tbody tr").first()
+  await firstRow.waitFor({ timeout: 15_000 })
   await firstRow.click()
 
   // 等待面板加载
   const basicInfoHeading = page.locator("h3").filter({ hasText: "基本信息" })
-  await basicInfoHeading.waitFor()
+  await basicInfoHeading.waitFor({ timeout: 15_000 })
   await expect(page.locator("h3").filter({ hasText: "编辑" })).toBeVisible()
   await expect(page.getByText("分配顾问").first()).toBeVisible()
   await expect(page.getByText("文件列表").first()).toBeVisible()
@@ -74,10 +82,18 @@ export const editStudentNote: TaskFn = async (page, args) => {
   const table = page.locator("table")
   await expect(table).toBeVisible()
 
+  // 取消"仅我的学生"筛选，确保能看到所有学生
+  const checkbox = page.getByRole("checkbox", { name: "仅我的学生" })
+  if (await checkbox.isChecked()) {
+    await checkbox.uncheck()
+    await page.waitForTimeout(1000)
+  }
+
   const firstRow = page.locator("tbody tr").first()
+  await firstRow.waitFor({ timeout: 15_000 })
   await firstRow.click()
 
-  await page.locator("h3").filter({ hasText: "基本信息" }).waitFor()
+  await page.locator("h3").filter({ hasText: "基本信息" }).waitFor({ timeout: 15_000 })
 
   // 填写备注
   const noteArea = page.locator("section").filter({ hasText: "编辑" }).locator("textarea")
