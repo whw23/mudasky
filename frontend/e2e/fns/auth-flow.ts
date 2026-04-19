@@ -23,9 +23,14 @@ async function openLoginDialog(page: Page): Promise<void> {
     await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
   }
 
-  await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
-  await loginBtn.click({ timeout: 30_000 })
-  await page.getByRole("dialog").waitFor({ state: "visible" })
+  // 点击登录按钮打开弹窗（SSR 按钮可能未水合，重试直到弹窗出现）
+  const dialog = page.getByRole("dialog")
+  for (let i = 0; i < 10; i++) {
+    await loginBtn.click()
+    if (await dialog.isVisible().catch(() => false)) break
+    await page.waitForTimeout(1000)
+  }
+  await dialog.waitFor({ state: "visible", timeout: 10_000 })
 }
 
 /**

@@ -121,8 +121,13 @@ export default async function globalSetup(): Promise<void> {
       await logoutBtn.click()
       await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
     }
-    await loginBtn.click()
-    await page.getByRole("dialog").waitFor({ state: "visible" })
+    const dialog = page.getByRole("dialog")
+    for (let i = 0; i < 10; i++) {
+      await loginBtn.click()
+      if (await dialog.isVisible().catch(() => false)) break
+      await page.waitForTimeout(1000)
+    }
+    await dialog.waitFor({ state: "visible", timeout: 10_000 })
     await page.getByRole("tab", { name: /账号|密码/ }).click()
     await page.getByPlaceholder("用户名或手机号").fill(username)
     await page.getByPlaceholder("请输入密码").fill(password)

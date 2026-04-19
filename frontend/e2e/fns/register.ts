@@ -39,18 +39,14 @@ export default async function register(
     await loginBtn.waitFor({ timeout: 30_000 })
   }
 
-  // 点击登录按钮（重试处理水合重渲染 detach）
-  for (let i = 0; i < 3; i++) {
-    try {
-      await loginBtn.click({ timeout: 5_000 })
-      break
-    } catch {
-      await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
-    }
+  // 点击登录按钮打开弹窗（SSR 按钮可能未水合，重试直到弹窗出现）
+  const dialog = page.getByRole("dialog")
+  for (let i = 0; i < 10; i++) {
+    await loginBtn.click()
+    if (await dialog.isVisible().catch(() => false)) break
+    await page.waitForTimeout(1000)
   }
-
-  // 等待弹窗出现
-  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await dialog.waitFor({ state: "visible", timeout: 10_000 })
 
   // 确保在 SMS 验证码 tab（默认就是，但明确点击确保）
   await page.getByRole("tab", { name: /手机|验证码/ }).click()
