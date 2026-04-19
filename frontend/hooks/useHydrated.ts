@@ -10,6 +10,13 @@ import { useState, useEffect } from "react"
 
 export function useHydrated(): boolean {
   const [hydrated, setHydrated] = useState(false)
-  useEffect(() => { setHydrated(true) }, [])
+  useEffect(() => {
+    setHydrated(true)
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) window.location.reload()
+    }
+    window.addEventListener("pageshow", onPageShow)
+    return () => window.removeEventListener("pageshow", onPageShow)
+  }, [])
   return hydrated
 }
