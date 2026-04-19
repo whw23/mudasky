@@ -26,8 +26,8 @@ export async function scanApiEndpoints(
   const routes: { method: string; path: string }[] = await res.json()
   return [...new Set(
     routes
-      .map((r) => r.path)
-      .filter((p) => !EXCLUDED_API_PATHS.has(p)),
+      .filter((r) => !EXCLUDED_API_PATHS.has(r.path))
+      .map((r) => `/api${r.path}`),
   )]
 }
 

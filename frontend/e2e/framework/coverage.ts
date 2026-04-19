@@ -62,8 +62,12 @@ export function calculateCoverage(): CoverageReport {
 
     const signal = signals[task.id]
     if (signal?.status === "pass") {
-      cov.api?.forEach((a) => coveredApi.add(a))
-      cov.routes?.forEach((r) => coveredRoutes.add(r))
+      cov.api?.forEach((a) => {
+        if (!scanTotals || totalApi.has(a)) coveredApi.add(a)
+      })
+      cov.routes?.forEach((r) => {
+        if (!scanTotals || totalRoutes.has(r)) coveredRoutes.add(r)
+      })
       cov.components?.forEach((c) => coveredComponents.push(c))
       cov.security?.forEach((s) => coveredSecurity.push(s))
     }
