@@ -90,15 +90,16 @@ export function saveScanTotals(
   api: string[],
   routes: string[],
   panelRoutes: Record<string, string[]>,
+  setupApis?: string[],
 ): void {
   const filePath = path.join(runtimeDir, "scan-totals.json")
-  fs.writeFileSync(filePath, JSON.stringify({ api, routes, panelRoutes }, null, 2))
+  fs.writeFileSync(filePath, JSON.stringify({ api, routes, panelRoutes, setupApis: setupApis || [] }, null, 2))
 }
 
 /** 加载扫描结果 */
 export function loadScanTotals(
   runtimeDir: string,
-): { api: string[]; routes: string[]; panelRoutes: Record<string, string[]> } | null {
+): { api: string[]; routes: string[]; panelRoutes: Record<string, string[]>; setupApis: string[] } | null {
   const filePath = path.join(runtimeDir, "scan-totals.json")
   if (!fs.existsSync(filePath)) return null
   return JSON.parse(fs.readFileSync(filePath, "utf-8"))

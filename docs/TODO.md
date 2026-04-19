@@ -19,54 +19,28 @@
 - [x] 所有原生 select 换 shadcn Select + confirm 换 AlertDialog
 - [x] 首页性能：config 请求合并（6→1）+ countryCodes/panelConfig 按需加载
 - [x] Token 即时撤销（X-Revoke-User + gateway 黑名单）
-- [ ] 网页设置所见即所得：E2E CRUD 选择器调试（11 个任务待修）
-- [ ] E2E 架构优化：W1 改为自注册账号 + 清理所有 worker 账号
-- [ ] E2E 架构优化：信号文件改 SQLite
-- [ ] E2E 架构优化：关键任务重试 + 级联熔断收窄
-- [ ] E2E 架构优化：W1 任务拆分到空闲 worker
+- [x] 网页设置所见即所得：E2E CRUD 选择器修复
+- [x] E2E 架构优化：W1 改为自注册账号 + 清理所有 worker 账号
+- [x] E2E 架构优化：信号文件改 SQLite
+- [x] E2E 架构优化：W1 任务拆分到空闲 worker（backupWorkers）
+- [x] E2E 覆盖率动态扫描（API 端点 + 前端路由）
+- [x] 登录状态丢失修复（ACCESS_TOKEN_MISSING 续签 + bfcache/popstate）
+- [x] CI/CD 构建并行化 + 单元测试 job + E2E 测试 job
+- [ ] E2E API 覆盖率补全（当前 57/94 = 60.6%）
 - [ ] 压力测试
 
 ---
 
-## 网页设置所见即所得：E2E CRUD 选择器调试
+## E2E API 覆盖率补全
 
-后端路由迁移 + 前端预览组件已完成，但 E2E 的 admin-crud.ts 中 11 个任务需要用 Playwright MCP 调试 DOM 选择器：
+当前 API 覆盖率 57/94（60.6%），37 个端点未被 E2E 测试触发。覆盖率基于 Playwright response 拦截实际 API 调用。
 
-- 分类创建/删除（NavEditor 的增删操作）
-- 文章创建/编辑/删除（ArticleListPreview 中操作）
-- 院校/案例编辑/删除（hover 后编辑按钮）
-
-设计文档：`docs/superpowers/specs/2026-04-18-wysiwyg-web-settings-design.md`
-
-## E2E 架构优化：W1 改为自注册账号 + 清理所有 worker 账号
-
-当前 W1 使用预设种子用户 `SEED_USER_E2E_USERNAME` 进行测试。改为：
-
-- W1 自行注册账号（`SEED_USER_1_USERNAME`）
-- W1 注册后，通过种子 superuser 给 `SEED_USER_1_USERNAME` 赋权 superuser
-- 不再创建 `SEED_USER_E2E_USERNAME`
-- W1-W7 所有 worker 账号在测试结束后统一清理
-- GitHub Actions 去掉 `SEED_USER_E2E_USERNAME` / `SEED_USER_E2E_PASSWORD` 相关的 secrets 和引用
-- 后端删除 `SEED_USER_E2E` 的初始化创建代码
-
-## E2E 架构优化：信号文件改 SQLite
-
-当前跨 worker 协调靠文件读写，7 worker 每 2 秒轮询。改为 SQLite：
-
-- 原子事务替代文件 `wx` flag
-- 前置条件检查从读 N 个文件变为一条 SQL
-- 轮询间隔可缩短到 200ms（WAL 模式并发读）
-
-## E2E 架构优化：关键任务重试 + 级联熔断收窄
-
-一个任务失败会级联 50+ breaker。优化：
-
-- 关键任务失败后自动重试 1 次
-- 熔断只传播直接依赖，不递归
-
-## E2E 架构优化：W1 任务拆分到空闲 worker
-
-W1 有 42 个任务，其他 worker 做完后在空转。CRUD 验证任务可拆给 W5。
+未覆盖端点分类：
+- auth: register, refresh-token-hash
+- public: config/{key}, content/article/{id}, cases, universities 相关
+- admin: users 管理操作、roles 详情/排序、settings 编辑、students 分配/降级/文档、contacts 升级
+- portal: profile meta/phone/delete、sessions revoke、2fa totp、documents 详情/下载
+- 基础设施: health, version, meta/routes
 
 ## 压力测试
 

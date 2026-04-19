@@ -113,6 +113,15 @@ export default async function globalSetup(): Promise<void> {
 
     const page = await context.newPage()
 
+    // 拦截 global-setup 中的 API 调用，计入覆盖率
+    const setupApis = new Set<string>()
+    page.on("response", (res) => {
+      const url = new URL(res.url())
+      if (url.pathname.startsWith("/api/")) {
+        setupApis.add(url.pathname)
+      }
+    })
+
     // W1 账号密码登录
     await page.goto("/", { timeout: 60_000 })
     const loginBtn = page.getByRole("button", { name: /登录|注册/ })
@@ -151,8 +160,8 @@ export default async function globalSetup(): Promise<void> {
         .join("; ")
       const apiEndpoints = await scanApiEndpoints(baseURL, cookies)
       const { routes: frontendRoutes, panelRoutes } = scanFrontendRoutes()
-      saveScanTotals(E2E_RUNTIME_DIR, apiEndpoints, frontendRoutes, panelRoutes)
-      console.log(`[Setup] 覆盖率基准扫描完成: API ${apiEndpoints.length} 个, Route ${frontendRoutes.length} 个`)
+      saveScanTotals(E2E_RUNTIME_DIR, apiEndpoints, frontendRoutes, panelRoutes, [...setupApis])
+      console.log(`[Setup] 覆盖率基准扫描完成: API ${apiEndpoints.length} 个, Route ${frontendRoutes.length} 个, Setup 调用 ${setupApis.size} 个`)
     } catch (err) {
       console.warn("[Setup] 覆盖率扫描失败:", (err as Error).message)
     }

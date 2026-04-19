@@ -42,7 +42,8 @@ export function calculateCoverage(): CoverageReport {
   const totalComponents: [string, string][] = []
   const totalSecurity: [string, string][] = []
 
-  const coveredApi = new Set<string>()
+  // global-setup 拦截的 API 直接计入 covered
+  const coveredApi = new Set<string>(scanTotals?.setupApis || [])
   const coveredRoutes = new Set<string>()
   const coveredComponents: [string, string][] = []
   const coveredSecurity: [string, string][] = []
