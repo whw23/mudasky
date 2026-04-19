@@ -168,7 +168,7 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 找到文章卡片（文章卡片用 .rounded-lg.border，不是 .group）
-  const card = page.locator(".rounded-lg.border").filter({ hasText: oldTitle }).first()
+  const card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: oldTitle }) })
   await card.locator("button:has(svg.lucide-pencil)").first().click()
 
   // 等待弹窗打开
@@ -205,7 +205,7 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 找到文章卡片
-  const card = page.locator(".rounded-lg.border").filter({ hasText: title }).first()
+  const card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: title }) })
   await card.locator("button:has(svg.lucide-trash-2)").first().click()
 
   // 等待删除确认弹窗
