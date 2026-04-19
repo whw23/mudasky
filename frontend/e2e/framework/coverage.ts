@@ -5,6 +5,7 @@
 
 import type { Task } from "./types"
 import { getAllSignals } from "./signal"
+import { loadScanTotals } from "./scan-totals"
 
 /** 加载所有 worker 的任务。 */
 function loadAllTasks(): Task[] {
@@ -31,9 +32,13 @@ export interface CoverageReport {
 export function calculateCoverage(): CoverageReport {
   const allTasks = loadAllTasks()
   const signals = getAllSignals()
+  const runtimeDir = process.env.E2E_RUNTIME_DIR
+    || require("path").join(process.cwd(), "test-results", "e2e-runtime")
+  const scanTotals = loadScanTotals(runtimeDir)
 
-  const totalApi = new Set<string>()
-  const totalRoutes = new Set<string>()
+  // API 和 Route 的 total 优先使用动态扫描结果
+  const totalApi = new Set<string>(scanTotals?.api || [])
+  const totalRoutes = new Set<string>(scanTotals?.routes || [])
   const totalComponents: [string, string][] = []
   const totalSecurity: [string, string][] = []
 
@@ -46,8 +51,12 @@ export function calculateCoverage(): CoverageReport {
     const cov = task.coverage
     if (!cov) continue
 
-    cov.api?.forEach((a) => totalApi.add(a))
-    cov.routes?.forEach((r) => totalRoutes.add(r))
+    // 无扫描结果时回退到静态声明
+    if (!scanTotals) {
+      cov.api?.forEach((a) => totalApi.add(a))
+      cov.routes?.forEach((r) => totalRoutes.add(r))
+    }
+
     cov.components?.forEach((c) => totalComponents.push(c))
     cov.security?.forEach((s) => totalSecurity.push(s))
 
