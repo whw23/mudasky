@@ -27,6 +27,12 @@ export const viewProfile: TaskFn = async (page) => {
 export const editUsername: TaskFn = async (page, args) => {
   const newName = args?.username as string || `E2E-renamed-${Date.now()}`
 
+  // 导航到个人资料页面
+  await page.goto("/portal/profile")
+  await page.locator("main").waitFor()
+  await expect(page.getByText("基本信息")).toBeVisible()
+  await expect(page.getByText("用户名")).toBeVisible()
+
   // 点击第一个"修改"按钮（用户名行）
   await page.getByRole("button", { name: "修改" }).first().click()
   await expect(page.getByRole("button", { name: "取消" }).first()).toBeVisible()
@@ -71,6 +77,11 @@ export const viewPasswordSection: TaskFn = async (page) => {
 export const changePassword: TaskFn = async (page, args) => {
   const phone = args?.phone as string
   const password = args?.password as string || "Test@12345"
+
+  // 导航到个人资料页面
+  await page.goto("/portal/profile")
+  await page.locator("main").waitFor()
+  await expect(page.getByText("修改密码")).toBeVisible()
 
   // 展开密码编辑
   const editBtns = page.getByRole("button", { name: "修改" })

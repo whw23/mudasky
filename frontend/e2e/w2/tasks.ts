@@ -18,7 +18,6 @@ import logout from "../fns/logout"
 import {
   viewProfile,
   editUsername,
-  viewPasswordSection,
   changePassword,
   viewPhoneSection,
   view2faSection,
@@ -128,24 +127,10 @@ export const tasks: Task[] = [
     },
   },
   {
-    id: "w2_profile_password_section",
-    worker: "w2",
-    name: "查看密码修改区域",
-    requires: ["w2_profile_view"],
-    fn: viewPasswordSection,
-    fnArgs: {},
-    coverage: {
-      routes: ["/portal/profile"],
-      api: [],
-      components: ["PasswordSection"],
-      security: [],
-    },
-  },
-  {
     id: "w2_profile_change_password",
     worker: "w2",
     name: "修改密码",
-    requires: ["w2_profile_password_section"],
+    requires: ["w2_profile_view"],
     fn: changePassword,
     fnArgs: {
       phone: W2_PHONE,

@@ -8,7 +8,7 @@ import register from "../fns/register"
 import { verifyPermissionAllowed, verifyPermissionDenied } from "../fns/permission"
 import { viewContactList, expandContact, markContactStatus, addContactNote } from "../fns/contacts"
 import { verifyAdminSidebar, verifyDashboard } from "../fns/sidebar-nav"
-import { viewProfile, editUsername } from "../fns/profile"
+import { editUsername } from "../fns/profile"
 
 import setCookie from "../fns/set-cookie"
 import reloadAuth from "../fns/reload-auth"
@@ -147,27 +147,16 @@ export const tasks: Task[] = [
 
   // ── 正向：Portal 资料 ──
   {
-    id: "w6_view_profile",
-    worker: "w6",
-    name: "查看个人资料",
-    requires: ["w6_reload_auth"],
-    fn: viewProfile,
-    coverage: {
-      routes: ["/portal/profile"],
-      api: ["/api/portal/profile"],
-      components: [["ProfilePage", "basic-info"]],
-    },
-  },
-  {
     id: "w6_edit_username",
     worker: "w6",
     name: "修改用户名",
-    requires: ["w6_view_profile"],
+    requires: ["w6_reload_auth"],
     fn: editUsername,
     fnArgs: { username: `E2E-Support-${TS}` },
     coverage: {
-      api: ["/api/portal/profile/edit"],
-      components: [["ProfilePage", "edit-button"]],
+      routes: ["/portal/profile"],
+      api: ["/api/portal/profile", "/api/portal/profile/edit"],
+      components: [["ProfilePage", "basic-info"], ["ProfilePage", "edit-button"]],
     },
   },
 

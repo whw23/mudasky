@@ -44,6 +44,12 @@ export const toggleMyStudentsFilter: TaskFn = async (page) => {
  * 展开学生面板。
  */
 export const expandStudent: TaskFn = async (page) => {
+  // 导航到学生管理页面
+  await page.goto("/admin/students")
+  await page.locator("main").waitFor()
+  const table = page.locator("table")
+  await expect(table).toBeVisible()
+
   const firstRow = page.locator("tbody tr").first()
   await firstRow.click()
 
@@ -61,6 +67,15 @@ export const expandStudent: TaskFn = async (page) => {
  */
 export const editStudentNote: TaskFn = async (page, args) => {
   const note = args?.note as string || `E2E-advisor-note-${Date.now()}`
+
+  // 导航到学生管理页面并展开学生面板
+  await page.goto("/admin/students")
+  await page.locator("main").waitFor()
+  const table = page.locator("table")
+  await expect(table).toBeVisible()
+
+  const firstRow = page.locator("tbody tr").first()
+  await firstRow.click()
 
   await page.locator("h3").filter({ hasText: "基本信息" }).waitFor()
 

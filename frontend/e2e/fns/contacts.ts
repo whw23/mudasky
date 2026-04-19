@@ -27,6 +27,10 @@ export const viewContactList: TaskFn = async (page) => {
  * 展开联系人面板。
  */
 export const expandContact: TaskFn = async (page) => {
+  // 导航到联系人管理页面
+  await page.goto("/admin/contacts")
+  await page.getByRole("heading", { name: "联系人管理" }).waitFor({ timeout: 20_000 })
+
   // 等待列表数据加载
   const rows = page.locator("tbody tr")
   await rows.first().waitFor({ timeout: 15_000 })

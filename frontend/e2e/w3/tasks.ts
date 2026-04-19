@@ -17,7 +17,6 @@ import logout from "../fns/logout"
 import {
   viewStudentList,
   toggleMyStudentsFilter,
-  expandStudent,
   editStudentNote,
 } from "../fns/students"
 import {
@@ -118,25 +117,10 @@ export const tasks: Task[] = [
     },
   },
   {
-    id: "w3_students_expand",
-    worker: "w3",
-    name: "展开学生面板",
-    requires: ["w3_students_view"],
-    fn: expandStudent,
-    fnArgs: {},
-    backupWorkers: ["w1"],
-    coverage: {
-      routes: ["/admin/students"],
-      api: ["/admin/students/list/detail"],
-      components: ["StudentDetailPanel"],
-      security: [],
-    },
-  },
-  {
     id: "w3_students_edit_note",
     worker: "w3",
     name: "编辑学生备注",
-    requires: ["w3_students_expand"],
+    requires: ["w3_students_view"],
     fn: editStudentNote,
     fnArgs: {
       note: `E2E-advisor-note-${TS}`,
@@ -144,7 +128,7 @@ export const tasks: Task[] = [
     backupWorkers: ["w1"],
     coverage: {
       routes: ["/admin/students"],
-      api: ["/admin/students/list/detail/edit"],
+      api: ["/admin/students/list/detail", "/admin/students/list/detail/edit"],
       components: ["StudentDetailPanel"],
       security: [],
     },

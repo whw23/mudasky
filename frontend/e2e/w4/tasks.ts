@@ -50,7 +50,6 @@ import {
   testDeleteOtherDoc,
 } from "../fns/idor"
 import {
-  testLoginDialog,
   testLoginSuccess,
   testLogoutFlow,
   testWrongPassword,
@@ -359,24 +358,10 @@ export const tasks: Task[] = [
 
   /* ── 认证流程测试 ── */
   {
-    id: "w4_auth_login_dialog",
-    worker: "w4",
-    name: "测试登录弹窗",
-    requires: ["w4_logout"],
-    fn: testLoginDialog,
-    fnArgs: {},
-    coverage: {
-      routes: ["/"],
-      api: [],
-      components: ["LoginDialog", "TabSwitch"],
-      security: [],
-    },
-  },
-  {
     id: "w4_auth_login_success",
     worker: "w4",
     name: "测试账号密码登录成功",
-    requires: ["w4_auth_login_dialog"],
+    requires: ["w4_logout"],
     fn: testLoginSuccess,
     fnArgs: {
       username: process.env.SEED_USER_1_USERNAME || "admin",
@@ -385,7 +370,7 @@ export const tasks: Task[] = [
     coverage: {
       routes: ["/"],
       api: ["/api/auth/login"],
-      components: ["LoginDialog", "LoginForm"],
+      components: ["LoginDialog", "LoginForm", "TabSwitch"],
       security: ["account-password-login"],
     },
   },

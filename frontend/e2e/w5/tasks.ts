@@ -10,10 +10,9 @@ import { createCategory, editCategory, deleteCategory } from "../fns/admin-crud"
 import { createArticle, editArticle, deleteArticle } from "../fns/admin-crud"
 import { createCase, editCase, deleteCase } from "../fns/admin-crud"
 import { createUniversity, editUniversity, deleteUniversity } from "../fns/admin-crud"
-import { verifyGeneralSettings, editGeneralSettings } from "../fns/settings"
-import { verifyWebSettings, editWebSettings } from "../fns/settings"
+import { editGeneralSettings, editWebSettings } from "../fns/settings"
 import { verifyAdminSidebar, testAdminNavigation, verifyDashboard } from "../fns/sidebar-nav"
-import { viewProfile, editUsername } from "../fns/profile"
+import { editUsername } from "../fns/profile"
 import setCookie from "../fns/set-cookie"
 import reloadAuth from "../fns/reload-auth"
 
@@ -281,23 +280,10 @@ export const tasks: Task[] = [
 
   // ── 正向：通用配置 ──
   {
-    id: "w5_verify_general_settings",
-    worker: "w5",
-    name: "查看通用配置",
-    requires: ["w5_reload_auth"],
-    fn: verifyGeneralSettings,
-    backupWorkers: ["w1"],
-    coverage: {
-      routes: ["/admin/general-settings"],
-      api: ["/api/admin/general-settings/list"],
-      components: [["GeneralSettingsPage", "config-section"]],
-    },
-  },
-  {
     id: "w5_edit_general_settings",
     worker: "w5",
     name: "编辑通用配置并回滚",
-    requires: ["w5_verify_general_settings"],
+    requires: ["w5_reload_auth"],
     fn: editGeneralSettings,
     fnArgs: {
       configKey: "site_info",
@@ -306,30 +292,18 @@ export const tasks: Task[] = [
     },
     backupWorkers: ["w1"],
     coverage: {
-      api: ["/api/admin/general-settings/list/detail/edit"],
-      components: [["EditableOverlay", "edit-button"]],
+      routes: ["/admin/general-settings"],
+      api: ["/api/admin/general-settings/list", "/api/admin/general-settings/list/detail/edit"],
+      components: [["GeneralSettingsPage", "config-section"], ["EditableOverlay", "edit-button"]],
     },
   },
 
   // ── 正向：网页设置 ──
   {
-    id: "w5_verify_web_settings",
-    worker: "w5",
-    name: "查看网页设置",
-    requires: ["w5_reload_auth"],
-    fn: verifyWebSettings,
-    backupWorkers: ["w1"],
-    coverage: {
-      routes: ["/admin/web-settings"],
-      api: ["/api/admin/web-settings/list"],
-      components: [["WebSettingsPage", "config-section"]],
-    },
-  },
-  {
     id: "w5_edit_web_settings",
     worker: "w5",
     name: "编辑网页设置并回滚",
-    requires: ["w5_verify_web_settings"],
+    requires: ["w5_reload_auth"],
     fn: editWebSettings,
     fnArgs: {
       configKey: "site_info",
@@ -338,34 +312,24 @@ export const tasks: Task[] = [
     },
     backupWorkers: ["w1"],
     coverage: {
-      api: ["/api/admin/web-settings/list/detail/edit"],
-      components: [["EditableOverlay", "save-button"]],
+      routes: ["/admin/web-settings"],
+      api: ["/api/admin/web-settings/list", "/api/admin/web-settings/list/detail/edit"],
+      components: [["WebSettingsPage", "config-section"], ["EditableOverlay", "save-button"]],
     },
   },
 
   // ── 正向：Portal 资料 ──
   {
-    id: "w5_view_profile",
-    worker: "w5",
-    name: "查看个人资料",
-    requires: ["w5_reload_auth"],
-    fn: viewProfile,
-    coverage: {
-      routes: ["/portal/profile"],
-      api: ["/api/portal/profile"],
-      components: [["ProfilePage", "basic-info"]],
-    },
-  },
-  {
     id: "w5_edit_username",
     worker: "w5",
     name: "修改用户名",
-    requires: ["w5_view_profile"],
+    requires: ["w5_reload_auth"],
     fn: editUsername,
     fnArgs: { username: `E2E-Content-${TS}` },
     coverage: {
-      api: ["/api/portal/profile/edit"],
-      components: [["ProfilePage", "edit-button"]],
+      routes: ["/portal/profile"],
+      api: ["/api/portal/profile", "/api/portal/profile/edit"],
+      components: [["ProfilePage", "basic-info"], ["ProfilePage", "edit-button"]],
     },
   },
 
