@@ -136,6 +136,7 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
 
   // 切换状态为"已发布"（默认是 draft，预览只显示 published）
   await dialog.getByRole("combobox").click()
+  await page.getByRole("option", { name: "已发布" }).waitFor({ timeout: 5_000 })
   await page.getByRole("option", { name: "已发布" }).click()
 
   // 保存

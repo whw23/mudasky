@@ -233,8 +233,8 @@ export const tasks: Task[] = [
     requires: ["w5_reload_auth"],
     fn: createUniversity,
     fnArgs: {
-      name: `E2E_239_院校-${TS}`,
-      nameEn: `E2E_239_University-${TS}`,
+      name: `E2E_239_院校W5-${TS}`,
+      nameEn: `E2E_239_UniversityW5-${TS}`,
       country: "中国",
       city: "北京",
     },
@@ -256,7 +256,7 @@ export const tasks: Task[] = [
     requires: ["w5_create_university"],
     fn: editUniversity,
     fnArgs: {
-      name: `E2E_239_院校-${TS}`,
+      name: `E2E_239_院校W5-${TS}`,
       newCity: "上海",
     },
     backupWorkers: ["w1"],
@@ -271,7 +271,7 @@ export const tasks: Task[] = [
     name: "删除院校",
     requires: ["w5_edit_university"],
     fn: deleteUniversity,
-    fnArgs: { name: `E2E_239_院校-${TS}` },
+    fnArgs: { name: `E2E_239_院校W5-${TS}` },
     backupWorkers: ["w1"],
     coverage: {
       api: ["/api/admin/web-settings/universities/list/detail/delete"],
