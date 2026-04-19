@@ -179,6 +179,74 @@ export const tasks: Task[] = [
     },
   },
   {
+    id: "w4_public_life",
+    worker: "w4",
+    name: "访问留学生活列表",
+    requires: [],
+    fn: verifyPublicPage,
+    fnArgs: {
+      path: "/life",
+    },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
+    coverage: {
+      routes: ["/life"],
+      api: ["/api/public/content/articles"],
+      components: ["LifePage"],
+      security: [],
+    },
+  },
+  {
+    id: "w4_public_requirements",
+    worker: "w4",
+    name: "访问申请条件列表",
+    requires: [],
+    fn: verifyPublicPage,
+    fnArgs: {
+      path: "/requirements",
+    },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
+    coverage: {
+      routes: ["/requirements"],
+      api: ["/api/public/content/articles"],
+      components: ["RequirementsPage"],
+      security: [],
+    },
+  },
+  {
+    id: "w4_public_study_abroad",
+    worker: "w4",
+    name: "访问出国留学列表",
+    requires: [],
+    fn: verifyPublicPage,
+    fnArgs: {
+      path: "/study-abroad",
+    },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
+    coverage: {
+      routes: ["/study-abroad"],
+      api: ["/api/public/content/articles"],
+      components: ["StudyAbroadPage"],
+      security: [],
+    },
+  },
+  {
+    id: "w4_public_visa",
+    worker: "w4",
+    name: "访问签证办理列表",
+    requires: [],
+    fn: verifyPublicPage,
+    fnArgs: {
+      path: "/visa",
+    },
+    backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
+    coverage: {
+      routes: ["/visa"],
+      api: ["/api/public/content/articles"],
+      components: ["VisaPage"],
+      security: [],
+    },
+  },
+  {
     id: "w4_public_contact",
     worker: "w4",
     name: "访问联系我们",
@@ -208,8 +276,8 @@ export const tasks: Task[] = [
     },
     backupWorkers: ["w1", "w2", "w3", "w5", "w6"],
     coverage: {
-      routes: ["/news/:id"],
-      api: ["/api/public/content/articles/list/detail"],
+      routes: ["/news/:id", "/life/:id", "/requirements/:id", "/study-abroad/:id", "/visa/:id"],
+      api: ["/api/public/content/article/{article_id}"],
       components: ["ArticleDetailPage"],
       security: [],
     },
@@ -430,10 +498,10 @@ export const tasks: Task[] = [
     requires: ["w4_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/admin/dashboard", "/admin/users", "/admin/web-settings"],
+      routes: ["/admin/dashboard", "/admin/users", "/admin/web-settings", "/admin/documents", "/admin/overview", "/admin/profile"],
     },
     coverage: {
-      routes: [],
+      routes: ["/admin/documents", "/admin/overview", "/admin/profile"],
       api: [],
       components: [],
       security: ["admin-denied"],
@@ -446,10 +514,10 @@ export const tasks: Task[] = [
     requires: ["w4_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/portal/profile", "/portal/documents"],
+      routes: ["/portal/profile", "/portal/documents", "/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/general-settings", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
     },
     coverage: {
-      routes: [],
+      routes: ["/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/general-settings", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
       api: [],
       components: [],
       security: ["portal-denied"],
