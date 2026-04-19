@@ -196,17 +196,3 @@ export const changePhoneAndRollback: TaskFn = async (page, args) => {
 
   await expect(page.getByText("手机号修改成功")).toBeVisible()
 }
-
-/** 触发 /api/portal/profile/meta 端点（前端不直接调用，通过 fetch 覆盖）。 */
-export const viewProfileMeta: TaskFn = async (page) => {
-  await page.goto("/portal/profile")
-  await page.locator("main").waitFor()
-  await expect(page.getByText("基本信息")).toBeVisible()
-
-  const metaResponse = page.waitForResponse(
-    (r) => r.url().includes("/api/portal/profile/meta") && !r.url().includes("/meta/list"),
-    { timeout: 15_000 },
-  )
-  await page.evaluate(() => fetch("/api/portal/profile/meta"))
-  await metaResponse
-}

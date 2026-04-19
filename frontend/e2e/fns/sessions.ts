@@ -39,9 +39,10 @@ export const verifyCurrentDevice: TaskFn = async (page) => {
  * 踢出单个设备（触发 /api/portal/profile/sessions/list/revoke）。
  */
 export const revokeSingleSession: TaskFn = async (page) => {
-  // 通过多次 refresh 创建额外 session（token 轮换会产生新 session 记录）
-  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
-  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
+  await Promise.all([
+    page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" })),
+    page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" })),
+  ])
 
   const sessionsResponse = page.waitForResponse(
     (r) => r.url().includes("/api/portal/profile/sessions/list") && r.request().method() === "GET",
@@ -69,8 +70,10 @@ export const revokeSingleSession: TaskFn = async (page) => {
  * 退出所有其他设备（触发 /api/portal/profile/sessions/list/revoke-all）。
  */
 export const revokeAllOthers: TaskFn = async (page) => {
-  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
-  await page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" }))
+  await Promise.all([
+    page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" })),
+    page.evaluate(() => fetch("/api/auth/refresh", { method: "POST" })),
+  ])
 
   const sessionsResponse = page.waitForResponse(
     (r) => r.url().includes("/api/portal/profile/sessions/list") && r.request().method() === "GET",

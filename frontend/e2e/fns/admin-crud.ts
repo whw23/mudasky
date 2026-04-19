@@ -204,13 +204,9 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await gotoWebSettingsPage(page, navLabel)
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
-  // 找到文章卡片（编辑后标题可能未更新，逐步重试）
-  let card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: title }) })
-  const found = await card.first().isVisible().catch(() => false)
-  if (!found) {
-    await page.reload()
-    await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
-    await page.locator("nav button").filter({ hasText: navLabel }).first().click()
+  const card = page.locator(".rounded-lg.border").filter({ has: page.locator("h4", { hasText: title }) })
+  if (!await card.first().isVisible().catch(() => false)) {
+    await gotoWebSettingsPage(page, navLabel)
     await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
     await card.first().waitFor({ timeout: 15_000 })
   }

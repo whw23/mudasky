@@ -19,10 +19,7 @@ export async function editGeneralSettings(page: Page): Promise<void> {
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
   await page.getByRole("button", { name: "保存" }).waitFor({ timeout: 15_000 })
 
-  const checkboxes = page.locator("main").getByRole("checkbox")
-  const secondCheckbox = checkboxes.nth(1)
-  const wasChecked = await secondCheckbox.isChecked()
-
+  const secondCheckbox = page.locator("main").getByRole("checkbox").nth(1)
   await secondCheckbox.click()
 
   const saveResponse = page.waitForResponse(

@@ -22,7 +22,6 @@ import {
   viewPhoneSection,
   view2faSection,
   changePhoneAndRollback,
-  viewProfileMeta,
 } from "../fns/profile"
 import {
   viewDocuments,
@@ -178,21 +177,6 @@ export const tasks: Task[] = [
     },
   },
 
-  /* ── 个人资料：高级操作 ── */
-  {
-    id: "w2_profile_meta",
-    worker: "w2",
-    name: "验证账号删除选项",
-    requires: ["w2_profile_view"],
-    fn: viewProfileMeta,
-    fnArgs: {},
-    coverage: {
-      routes: ["/portal/profile"],
-      api: ["/portal/profile/meta"],
-      components: ["DeleteAccountSection"],
-      security: [],
-    },
-  },
   /* ── 两步验证 ── */
   {
     id: "w2_2fa_enable",

@@ -61,11 +61,8 @@ import {
   fetchVersion,
 } from "../fns/health-meta"
 import {
-  expandStudent,
   assignAdvisor,
   downgradeStudent,
-  viewStudentDocumentDetail,
-  downloadStudentDocument,
 } from "../fns/students"
 import {
   testCsrf,
