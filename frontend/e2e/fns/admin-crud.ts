@@ -154,8 +154,11 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
   // 等待弹窗关闭
   await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
-  // 刷新页面重新加载文章列表（预览组件不自动刷新）
-  await gotoWebSettingsPage(page, navLabel)
+  // 预览组件不自动刷新，reload 页面重新加载数据
+  await page.reload()
+  await page.getByRole("heading", { name: "网页设置" }).waitFor({ timeout: 30_000 })
+  await page.locator("nav button").first().waitFor({ timeout: 30_000 })
+  await page.locator("nav button").filter({ hasText: navLabel }).first().click()
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
   // 验证文章出现在列表中
