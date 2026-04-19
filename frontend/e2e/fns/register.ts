@@ -27,8 +27,9 @@ export default async function register(
     ])
   }
 
-  // 导航到首页，处理已登录/未登录两种状态
+  // 导航到首页，等待 SSR 水合完成
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
   const loginBtn = page.getByRole("button", { name: /登录|注册/ })
   const logoutBtn = page.getByRole("button", { name: "退出" })
   await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 30_000 })

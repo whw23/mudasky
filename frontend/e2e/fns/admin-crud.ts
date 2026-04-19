@@ -59,7 +59,7 @@ export async function createCategory(page: Page, args?: Record<string, unknown>)
   await expect(dialog).not.toBeVisible({ timeout: 10_000 })
 
   // 验证导航栏中出现了新项
-  await expect(page.getByRole("button", { name })).toBeVisible()
+  await expect(page.getByRole("button", { name, exact: true })).toBeVisible()
 }
 
 /** 编辑分类（不适用于新 UI，跳过） */
@@ -89,7 +89,7 @@ export async function deleteCategory(page: Page, args?: Record<string, unknown>)
     (r) => r.url().includes("/admin/web-settings/nav/remove-item") && r.request().method() === "POST",
     { timeout: 15_000 },
   )
-  await alertDialog.getByRole("button", { name: /确认|删除/ }).click()
+  await alertDialog.getByRole("button", { name: "删除导航项及文章" }).click()
   await removeResponse
 
   // 验证导航项已消失
@@ -122,17 +122,22 @@ export async function createArticle(page: Page, args?: Record<string, unknown>):
 
   // 填写 slug
   if (slug) {
-    const slugInput = dialog.getByPlaceholder(/slug|标识/i)
+    const slugInput = dialog.locator("#article-slug")
     if (await slugInput.count() > 0) {
       await slugInput.fill(slug)
     }
   }
 
   // 填写内容
-  const contentInput = dialog.getByPlaceholder(/内容/)
+  const contentInput = dialog.locator("#article-content")
   if (await contentInput.count() > 0) {
     await contentInput.fill(content)
   }
+
+  // 切换状态为"已发布"（默认是 draft，预览只显示 published）
+  await dialog.getByRole("combobox").click()
+  await page.getByRole("option", { name: "已发布" }).waitFor({ timeout: 5_000 })
+  await page.getByRole("option", { name: "已发布" }).click()
 
   // 保存
   const saveResponse = page.waitForResponse(
@@ -162,9 +167,9 @@ export async function editArticle(page: Page, args?: Record<string, unknown>): P
   await gotoWebSettingsPage(page, navLabel)
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
-  // 找到文章卡片，点击编辑按钮
-  const card = page.locator("div").filter({ hasText: oldTitle }).first()
-  await card.getByRole("button").filter({ has: page.locator("svg.lucide-pencil, [data-lucide='pencil']") }).first().click()
+  // 找到文章卡片（文章卡片用 .rounded-lg.border，不是 .group）
+  const card = page.locator(".rounded-lg.border").filter({ hasText: oldTitle }).first()
+  await card.locator("button:has(svg.lucide-pencil)").first().click()
 
   // 等待弹窗打开
   const dialog = page.getByRole("dialog")
@@ -193,9 +198,9 @@ export async function deleteArticle(page: Page, args?: Record<string, unknown>):
   await gotoWebSettingsPage(page, navLabel)
   await page.getByRole("button", { name: "写文章" }).waitFor({ timeout: 30_000 })
 
-  // 找到文章卡片，点击删除按钮
-  const card = page.locator("div").filter({ hasText: title }).first()
-  await card.getByRole("button").filter({ has: page.locator("svg.lucide-trash-2, [data-lucide='trash-2']") }).first().click()
+  // 找到文章卡片
+  const card = page.locator(".rounded-lg.border").filter({ hasText: title }).first()
+  await card.locator("button:has(svg.lucide-trash-2)").first().click()
 
   // 等待删除确认弹窗
   const alertDialog = page.getByRole("alertdialog")
@@ -265,9 +270,9 @@ export async function editCase(page: Page, args?: Record<string, unknown>): Prom
   await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 30_000 })
 
   // 找到案例卡片，hover 触发编辑按钮
-  const card = page.locator("div").filter({ hasText: studentName }).first()
+  const card = page.locator(".group").filter({ hasText: studentName }).first()
   await card.hover()
-  await card.getByRole("button").first().click()
+  await card.locator("button:has(svg.lucide-pencil)").first().click()
 
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
@@ -288,10 +293,9 @@ export async function deleteCase(page: Page, args?: Record<string, unknown>): Pr
   await page.getByRole("button", { name: /添加案例/ }).waitFor({ timeout: 30_000 })
 
   // 找到案例卡片，hover 触发删除按钮
-  const card = page.locator("div").filter({ hasText: studentName }).first()
+  const card = page.locator(".group").filter({ hasText: studentName }).first()
   await card.hover()
-  // 删除按钮是第二个（pencil是第一个，trash是第二个）
-  await card.getByRole("button").nth(1).click()
+  await card.locator("button:has(svg.lucide-trash-2)").first().click()
 
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()
@@ -350,9 +354,9 @@ export async function editUniversity(page: Page, args?: Record<string, unknown>)
   await gotoWebSettingsPage(page, "院校选择")
   await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 30_000 })
 
-  const card = page.locator("div").filter({ hasText: name }).first()
+  const card = page.locator(".group").filter({ hasText: name }).first()
   await card.hover()
-  await card.getByRole("button").first().click()
+  await card.locator("button:has(svg.lucide-pencil)").first().click()
 
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
@@ -372,9 +376,9 @@ export async function deleteUniversity(page: Page, args?: Record<string, unknown
   await gotoWebSettingsPage(page, "院校选择")
   await page.getByRole("button", { name: /添加院校/ }).waitFor({ timeout: 30_000 })
 
-  const card = page.locator("div").filter({ hasText: name }).first()
+  const card = page.locator(".group").filter({ hasText: name }).first()
   await card.hover()
-  await card.getByRole("button").nth(1).click()
+  await card.locator("button:has(svg.lucide-trash-2)").first().click()
 
   const alertDialog = page.getByRole("alertdialog")
   await expect(alertDialog).toBeVisible()

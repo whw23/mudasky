@@ -166,3 +166,4 @@ class NavService:
                 nav.model_dump(),
                 "导航栏配置",
             )
+        await self.session.commit()

@@ -37,9 +37,11 @@ class CategoryService:
             sort_order=data.sort_order,
         )
         try:
-            return await repository.create_category(
+            category = await repository.create_category(
                 self.session, category
             )
+            await self.session.commit()
+            return category
         except IntegrityError:
             raise ConflictException(
                 message="分类标识已存在",

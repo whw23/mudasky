@@ -63,7 +63,7 @@ export function ArticleListPreview({ categorySlug }: ArticleListPreviewProps) {
       setCategoryId(cat.id)
 
       const artRes = await api.get("/admin/web-settings/articles/list", {
-        params: { page: 1, page_size: 200 },
+        params: { page: 1, page_size: 100 },
       })
       const allArticles: Article[] = artRes.data.items ?? []
       setArticles(allArticles.filter((a) => a.category_id === cat.id))
