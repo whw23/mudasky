@@ -9,7 +9,7 @@ import { ArrowLeft, ArrowRight, GraduationCap, Quote } from "lucide-react"
 async function fetchCase(id: string) {
   try {
     const baseUrl = process.env.INTERNAL_API_URL || "http://api:8000"
-    const res = await fetch(`${baseUrl}/api/public/case/detail/${id}`, {
+    const res = await fetch(`${baseUrl}/api/public/cases/detail/${id}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null

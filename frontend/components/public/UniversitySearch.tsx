@@ -51,12 +51,12 @@ export function UniversitySearch({
       return
     }
     api
-      .get<string[]>("/public/university/provinces", { params: { country } })
+      .get<string[]>("/public/universities/provinces", { params: { country } })
       .then(({ data }) => setProvinces(data))
       .catch(() => setProvinces([]))
     // 同时加载城市（不依赖省份）
     api
-      .get<string[]>("/public/university/cities", { params: { country } })
+      .get<string[]>("/public/universities/cities", { params: { country } })
       .then(({ data }) => setCities(data))
       .catch(() => setCities([]))
   }, [country])

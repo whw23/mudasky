@@ -16,7 +16,7 @@ async function fetchUniversity(id: string) {
   try {
     const baseUrl = process.env.INTERNAL_API_URL || "http://api:8000"
     const res = await fetch(
-      `${baseUrl}/api/public/university/detail/${id}`,
+      `${baseUrl}/api/public/universities/detail/${id}`,
       { next: { revalidate: 60 } },
     )
     if (!res.ok) return null

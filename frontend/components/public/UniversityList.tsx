@@ -43,7 +43,7 @@ export function UniversityList() {
   /** 获取国家列表 */
   useEffect(() => {
     api
-      .get<string[]>("/public/university/countries")
+      .get<string[]>("/public/universities/countries")
       .then(({ data }) => setCountries(data))
       .catch(() => setCountries([]))
   }, [])
@@ -61,7 +61,7 @@ export function UniversityList() {
       if (filters.city) params.city = filters.city
 
       const { data } = await api.get<PaginatedResponse<University>>(
-        "/public/university/list",
+        "/public/universities/list",
         { params },
       )
       setUniversities(data.items)
