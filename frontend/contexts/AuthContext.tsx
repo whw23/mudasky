@@ -55,6 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser().finally(() => setLoading(false))
   }, [fetchUser])
 
+  /** 浏览器前进/后退和页面可见时重新获取用户状态 */
+  useEffect(() => {
+    const onPopState = () => { fetchUser() }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchUser()
+    }
+    window.addEventListener('popstate', onPopState)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [fetchUser])
+
   /** 监听 session 过期事件，清除用户状态。仅 admin/portal 页面跳转首页。 */
   useEffect(() => {
     const handleExpired = () => {
