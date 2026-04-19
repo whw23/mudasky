@@ -142,11 +142,10 @@ table.insert(cookies, "access_token=" .. access_jwt
   .. "; Path=/; HttpOnly; SameSite=Strict"
   .. "; Max-Age=" .. access_expire)
 
+local refresh_max_age = keep and refresh_expire or 86400
 local refresh_cookie = "refresh_token=" .. refresh_jwt
   .. "; Path=/; HttpOnly; SameSite=Strict"
-if keep then
-  refresh_cookie = refresh_cookie .. "; Max-Age=" .. refresh_expire
-end
+  .. "; Max-Age=" .. refresh_max_age
 table.insert(cookies, refresh_cookie)
 
 ngx.header["Set-Cookie"] = cookies
