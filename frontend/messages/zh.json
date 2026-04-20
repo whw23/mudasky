@@ -603,7 +603,15 @@
     "location": "所在地",
     "programs": "开设专业",
     "about": "学校简介",
-    "visitWebsite": "访问官网"
+    "visitWebsite": "访问官网",
+    "website": "官方网站",
+    "disciplines": "开设学科",
+    "admissionRequirements": "申请要求",
+    "scholarships": "奖学金",
+    "rankings": "QS 世界排名",
+    "successCases": "相关成功案例",
+    "allDisciplineCategories": "全部学科大类",
+    "allDisciplines": "全部学科"
   },
   "Requirements": {
     "overviewTitle": "各国申请条件",

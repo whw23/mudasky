@@ -603,7 +603,15 @@
     "location": "Location",
     "programs": "Programs",
     "about": "About",
-    "visitWebsite": "Visit Website"
+    "visitWebsite": "Visit Website",
+    "website": "Official Website",
+    "disciplines": "Disciplines",
+    "admissionRequirements": "Admission Requirements",
+    "scholarships": "Scholarships",
+    "rankings": "QS World Rankings",
+    "successCases": "Related Success Cases",
+    "allDisciplineCategories": "All Categories",
+    "allDisciplines": "All Disciplines"
   },
   "Requirements": {
     "overviewTitle": "Application Requirements by Country",
