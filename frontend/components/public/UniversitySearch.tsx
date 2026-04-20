@@ -78,7 +78,7 @@ export function UniversitySearch({
     api
       .get<string[]>("/public/universities/cities", { params: { country } })
       .then(({ data }) => setCities(data))
-      .catch(() => setCities([]))</ }
+      .catch(() => setCities([]))
   }, [country])
 
   /** 学科大类变化时加载学科列表 */
