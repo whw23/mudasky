@@ -3,7 +3,7 @@
 提供文章的管理员 API 端点。
 """
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, UploadFile, status
 
 from api.core.dependencies import (
     CurrentUserId,
@@ -95,3 +95,18 @@ async def admin_delete_article(
     """管理员删除文章。"""
     svc = ArticleService(session)
     await svc.delete_article_admin(data.article_id)
+
+
+@router.post(
+    "/list/detail/upload-pdf",
+    summary="上传文章 PDF",
+)
+async def upload_pdf(
+    article_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传 PDF 文件并关联到文章。"""
+    svc = ArticleService(session)
+    file_id = await svc.upload_pdf(article_id, file)
+    return {"file_id": file_id}

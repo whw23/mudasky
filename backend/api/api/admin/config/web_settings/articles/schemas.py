@@ -13,9 +13,9 @@ class ArticleCreate(BaseModel):
 
     title: str = Field(..., max_length=200, description="标题")
     slug: str = Field(..., max_length=200, description="URL 标识")
-    content_type: str = Field("markdown", description="内容类型: markdown/file")
-    content: str = Field("", description="正文内容（markdown 时使用）")
-    file_url: str | None = Field(None, max_length=500, description="文件路径（file 类型时使用）")
+    content_type: str = Field("html", description="内容类型: html/file")
+    content: str = Field("", description="正文内容（html 时使用）")
+    file_id: str | None = Field(None, description="PDF 文件 ID")
     excerpt: str = Field("", max_length=500, description="摘要")
     cover_image: str | None = Field(
         None, max_length=500, description="封面图片路径"
@@ -42,7 +42,7 @@ class ArticleUpdate(BaseModel):
     )
     content_type: str | None = Field(None, description="内容类型")
     content: str | None = Field(None, description="正文内容")
-    file_url: str | None = Field(None, max_length=500, description="文件路径")
+    file_id: str | None = Field(None, description="PDF 文件 ID")
     excerpt: str | None = Field(
         None, max_length=500, description="摘要"
     )
@@ -62,9 +62,9 @@ class ArticleResponse(BaseModel):
     id: str
     title: str
     slug: str
-    content_type: str = "markdown"
+    content_type: str = "html"
     content: str
-    file_url: str | None = None
+    file_id: str | None = None
     excerpt: str
     cover_image: str | None = None
     category_id: str

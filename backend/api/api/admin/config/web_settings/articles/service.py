@@ -5,11 +5,14 @@
 
 from datetime import datetime, timezone
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import BadRequestException, NotFoundException
 from app.db.content import repository
 from app.db.content.models import Article
+from app.db.image import repository as image_repo
+from app.db.image.repository import MAX_IMAGE_SIZE
 from app.db.model_utils import apply_updates
 
 from .schemas import (
@@ -38,6 +41,8 @@ class ArticleService:
             title=data.title,
             slug=data.slug,
             content=data.content,
+            content_type=data.content_type,
+            file_id=data.file_id,
             excerpt=data.excerpt,
             cover_image=data.cover_image,
             category_id=data.category_id,
@@ -85,6 +90,33 @@ class ArticleService:
         return await repository.list_all_articles(
             self.session, offset, limit, status
         )
+
+    async def upload_pdf(
+        self, article_id: str, file: UploadFile
+    ) -> str:
+        """上传 PDF 文件，返回 file_id。"""
+        article = await self.get_article(article_id)
+        if file.content_type != "application/pdf":
+            raise BadRequestException(
+                message="仅支持 PDF 格式",
+                code="INVALID_FILE_TYPE",
+            )
+        file_data = await file.read()
+        if len(file_data) > MAX_IMAGE_SIZE:
+            raise BadRequestException(
+                message="文件大小不能超过 5MB",
+                code="FILE_TOO_LARGE",
+            )
+        image = await image_repo.create_image(
+            self.session,
+            file_data,
+            file.filename or "document.pdf",
+            file.content_type,
+        )
+        article.file_id = image.id
+        article.content_type = "file"
+        await repository.update_article(self.session, article)
+        return image.id
 
     def _apply_article_update(
         self, article: Article, data: ArticleUpdate
