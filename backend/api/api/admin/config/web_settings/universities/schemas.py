@@ -40,6 +40,11 @@ class UniversityCreate(BaseModel):
         False, description="是否推荐"
     )
     sort_order: int = Field(0, description="排序")
+    admission_requirements: str | None = Field(None, description="录取要求")
+    scholarship_info: str | None = Field(None, description="奖学金信息")
+    qs_rankings: list[dict] | None = Field(None, description="QS 排名")
+    latitude: float | None = Field(None, description="纬度")
+    longitude: float | None = Field(None, description="经度")
 
 
 class UniversityDeleteRequest(BaseModel):
@@ -85,6 +90,11 @@ class UniversityUpdate(BaseModel):
     sort_order: int | None = Field(
         None, description="排序"
     )
+    admission_requirements: str | None = Field(None, description="录取要求")
+    scholarship_info: str | None = Field(None, description="奖学金信息")
+    qs_rankings: list[dict] | None = Field(None, description="QS 排名")
+    latitude: float | None = Field(None, description="纬度")
+    longitude: float | None = Field(None, description="经度")
 
 
 class UniversityResponse(BaseModel):
@@ -102,7 +112,38 @@ class UniversityResponse(BaseModel):
     website: str | None = None
     is_featured: bool = False
     sort_order: int = 0
+    logo_image_id: str | None = None
+    admission_requirements: str | None = None
+    scholarship_info: str | None = None
+    qs_rankings: list[dict] | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     created_at: datetime
     updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class UniversityImageDeleteRequest(BaseModel):
+    """删除院校图片请求。"""
+
+    university_id: str = Field(..., description="院校 ID")
+    image_record_id: str = Field(..., description="图片记录 ID")
+
+
+class UniversityDisciplinesRequest(BaseModel):
+    """设置院校学科关联。"""
+
+    university_id: str = Field(..., description="院校 ID")
+    discipline_ids: list[str] = Field(..., description="学科 ID 列表")
+
+
+class ImageResponse(BaseModel):
+    """图片上传响应。"""
+
+    id: str
+    filename: str
+    mime_type: str
+    file_size: int
 
     model_config = {"from_attributes": True}
