@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ConsultButton } from "@/components/common/ConsultButton"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
@@ -57,7 +57,7 @@ export default async function CasesPage() {
 
   return (
     <>
-      <Banner title={p("cases")} subtitle={p("casesSubtitle")} />
+      <PageBanner pageKey="cases" title={p("cases")} subtitle={p("casesSubtitle")} />
 
       {/* 统计 */}
       <section className="border-b bg-white">

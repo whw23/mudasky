@@ -597,6 +597,7 @@
       "desc": "A top European technical university and IDEA League member, whose engineering graduates are highly sought by employers."
     },
     "searchPlaceholder": "Search university name, city...",
+    "searchButton": "Search",
     "countryFilter": "Filter by country",
     "allCountries": "All countries",
     "allProvinces": "All provinces",

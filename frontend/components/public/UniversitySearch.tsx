@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -42,6 +43,7 @@ export function UniversitySearch({
   onFilterChange,
 }: UniversitySearchProps) {
   const t = useTranslations("Universities")
+  const searchParams = useSearchParams()
 
   const [search, setSearch] = useState("")
   const [country, setCountry] = useState("")
@@ -54,6 +56,17 @@ export function UniversitySearch({
   const [disciplineCategories, setDisciplineCategories] = useState<DisciplineCategory[]>([])
   const [disciplines, setDisciplines] = useState<{ id: string; name: string }[]>([])
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** 从 URL 参数初始化筛选条件 */
+  useEffect(() => {
+    const urlSearch = searchParams.get("search")
+    const urlCountry = searchParams.get("country")
+    const urlCategoryId = searchParams.get("discipline_category_id")
+    if (urlSearch) setSearch(urlSearch)
+    if (urlCountry) setCountry(urlCountry)
+    if (urlCategoryId) setDisciplineCategoryId(urlCategoryId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /** 初始化加载学科分类树 */
   useEffect(() => {

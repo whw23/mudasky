@@ -39,14 +39,14 @@ interface ConfigEditDialogProps {
 }
 
 /**
- * 上传图片到文档接口。
- * @returns 图片的下载 URL
+ * 上传图片到 image 表。
+ * @returns 图片的 URL
  */
 async function uploadImage(file: File): Promise<string> {
   const formData = new FormData()
   formData.append("file", file)
-  const { data } = await api.post("/portal/documents/list/upload", formData)
-  return data.download_url || data.url
+  const { data } = await api.post("/admin/web-settings/images/upload", formData)
+  return data.url
 }
 
 /** 配置编辑弹窗 */

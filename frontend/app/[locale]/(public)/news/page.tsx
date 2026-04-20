@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { fetchCategories, fetchArticles } from "@/lib/content-api"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
@@ -60,7 +60,7 @@ export default async function NewsPage({
 
   return (
     <>
-      <Banner title={p("news")} subtitle={p("newsSubtitle")} />
+      <PageBanner pageKey="news" title={p("news")} subtitle={p("newsSubtitle")} />
 
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <div className="text-center">

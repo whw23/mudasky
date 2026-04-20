@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ArticleSection } from "@/components/content/ArticleSection"
 import { fetchArticlesByCategorySlug } from "@/lib/content-api"
 import { ConsultButton } from "@/components/common/ConsultButton"
@@ -29,7 +29,7 @@ export default async function RequirementsPage() {
 
   return (
     <>
-      <Banner title={p("requirements")} subtitle={p("requirementsSubtitle")} />
+      <PageBanner pageKey="requirements" title={p("requirements")} subtitle={p("requirementsSubtitle")} />
 
       {/* 申请条件总览 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

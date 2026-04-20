@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ConsultButton } from "@/components/common/ConsultButton"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
@@ -35,7 +35,7 @@ export default async function CaseDetailPage({
 
   return (
     <>
-      <Banner title={t("detailTitle")} subtitle={p("casesSubtitle")} />
+      <PageBanner pageKey="cases" title={t("detailTitle")} subtitle={p("casesSubtitle")} />
 
       <div className="mx-auto max-w-4xl px-4 py-10 md:py-16">
         {/* 返回链接 */}

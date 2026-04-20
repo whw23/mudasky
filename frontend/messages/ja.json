@@ -586,6 +586,7 @@
       "desc": "ヨーロッパトップクラスの工科大学、IDEAリーグメンバー、工学卒業生は企業から高い評価。"
     },
     "searchPlaceholder": "大学名、都市を検索...",
+    "searchButton": "検索",
     "countryFilter": "国で絞り込み",
     "allCountries": "すべての国",
     "allProvinces": "すべての州/県",
