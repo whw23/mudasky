@@ -1,9 +1,12 @@
 """学科分类管理接口。"""
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, UploadFile, status
+from fastapi.responses import Response
 
 from api.core.dependencies import DbSession
 
+from .export_service import DisciplineExportService
+from .import_service import DisciplineImportService
 from .schemas import (
     CategoryCreate,
     CategoryDeleteRequest,
@@ -11,6 +14,7 @@ from .schemas import (
     CategoryUpdate,
     DisciplineCreate,
     DisciplineDeleteRequest,
+    DisciplineImportConfirmRequest,
     DisciplineResponse,
     DisciplineUpdate,
 )
@@ -127,3 +131,62 @@ async def delete_discipline(
     """删除学科。"""
     svc = DisciplineService(session)
     await svc.delete_discipline(data.discipline_id)
+
+
+@router.get(
+    "/import/template",
+    summary="下载导入模板",
+)
+async def download_import_template(session: DbSession) -> Response:
+    """下载学科分类导入模板 Excel 文件。"""
+    svc = DisciplineImportService(session)
+    content = svc.generate_template()
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": "attachment; filename=discipline_import_template.xlsx"
+        },
+    )
+
+
+@router.post(
+    "/import/preview",
+    summary="预览导入",
+)
+async def preview_import(
+    file: UploadFile = File(...), session: DbSession = DbSession
+) -> dict:
+    """上传 Excel 文件并预览导入结果。"""
+    content = await file.read()
+    svc = DisciplineImportService(session)
+    return await svc.preview(content)
+
+
+@router.post(
+    "/import/confirm",
+    summary="确认导入",
+)
+async def confirm_import(
+    data: DisciplineImportConfirmRequest, session: DbSession
+) -> dict:
+    """确认导入学科分类数据。"""
+    svc = DisciplineImportService(session)
+    return await svc.confirm(data.items)
+
+
+@router.get(
+    "/export",
+    summary="导出学科分类",
+)
+async def export_disciplines(session: DbSession) -> Response:
+    """导出所有学科分类为 Excel 文件。"""
+    svc = DisciplineExportService(session)
+    content = await svc.export_excel()
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": "attachment; filename=disciplines_export.xlsx"
+        },
+    )
