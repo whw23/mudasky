@@ -45,25 +45,25 @@ export function Banner({ title, subtitle, imageIds = [], large = false, children
       {/* 弥漫渐变动画背景（无图片时） */}
       {!hasImages && (
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[#0a0a1a]" />
+          <div className="absolute inset-0 bg-[#0c0c20]" />
           <div
-            className="absolute -inset-[50%] animate-aurora opacity-60"
+            className="absolute -inset-[50%] animate-aurora"
             style={{
               background: `
-                radial-gradient(ellipse 80% 60% at 20% 40%, #1a1a4e 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 80% 20%, #0f3460 0%, transparent 50%),
-                radial-gradient(ellipse 70% 50% at 50% 80%, #16213e 0%, transparent 55%),
-                radial-gradient(ellipse 50% 70% at 70% 60%, #1a0a3e 0%, transparent 50%)
+                radial-gradient(ellipse 80% 60% at 20% 40%, rgba(60, 40, 140, 0.7) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 20%, rgba(15, 80, 160, 0.6) 0%, transparent 50%),
+                radial-gradient(ellipse 70% 50% at 50% 80%, rgba(20, 60, 120, 0.5) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 70% at 70% 60%, rgba(80, 30, 120, 0.5) 0%, transparent 50%)
               `,
             }}
           />
           <div
-            className="absolute -inset-[50%] animate-aurora-reverse opacity-40"
+            className="absolute -inset-[50%] animate-aurora-reverse"
             style={{
               background: `
-                radial-gradient(ellipse 60% 70% at 30% 70%, #0d1b3e 0%, transparent 55%),
-                radial-gradient(ellipse 80% 50% at 70% 30%, #1a1040 0%, transparent 50%),
-                radial-gradient(ellipse 50% 60% at 40% 20%, #0f2850 0%, transparent 60%)
+                radial-gradient(ellipse 60% 70% at 30% 70%, rgba(20, 50, 130, 0.5) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 50% at 70% 30%, rgba(60, 20, 100, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 60% at 40% 20%, rgba(15, 60, 140, 0.5) 0%, transparent 60%)
               `,
             }}
           />
