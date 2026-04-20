@@ -281,12 +281,12 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               />
               <div className="flex flex-col min-w-0">
                 <span
-                  className="font-extrabold tracking-wide whitespace-nowrap text-foreground"
+                  className={`font-extrabold tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
                   style={{ fontSize: 17 }}
                 >
                   {brandName}
                 </span>
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap truncate">
+                <span className={`text-[10px] whitespace-nowrap truncate ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                   {tagline}
                 </span>
               </div>
@@ -300,7 +300,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
             {hotline && (
               <a
                 href={`tel:${hotline}`}
-                className="p-2 rounded-full bg-primary/5 text-primary transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-amber-300" : "bg-primary/5 text-primary"}`}
                 aria-label="拨打热线"
               >
                 <Phone className="size-4" />
@@ -310,7 +310,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               <Link
                 href="/portal/overview"
                 onClick={closeMenu}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-white/80" : "bg-foreground/5 text-foreground/60"}`}
               >
                 <span className="size-4 flex items-center justify-center text-xs font-medium">
                   {(user.username || user.phone || "U").charAt(0).toUpperCase()}
@@ -319,7 +319,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
             ) : (
               <button
                 onClick={showLoginModal}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 hover:text-foreground transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-white/80 hover:text-white" : "bg-foreground/5 text-foreground/60 hover:text-foreground"}`}
                 aria-label={tHeader("loginOrRegister")}
               >
                 <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -329,7 +329,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               </button>
             )}
             <button
-              className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
+              className={`p-2 rounded-full transition-colors ${isTransparentNow ? "text-white/80 hover:text-white hover:bg-white/10" : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"}`}
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
