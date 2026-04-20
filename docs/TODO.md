@@ -26,43 +26,30 @@
 - [x] E2E 覆盖率动态扫描（API 端点 + 前端路由）
 - [x] 登录状态丢失修复（ACCESS_TOKEN_MISSING 续签 + bfcache/popstate）
 - [x] CI/CD 构建并行化 + 单元测试 job + E2E 测试 job
-- [ ] 图片上传按钮点不开（Dialog Portal 事件问题）
-- [ ] 首页 Hero 和 header 遮挡关系修复
-- [ ] Banner 编辑恢复 EditableOverlay 交互模式
-- [ ] 学科分类管理 UI 入口
+- [x] 图片上传按钮点不开（Dialog Portal 事件问题）
+- [x] 首页 Hero 和 header 遮挡关系修复
+- [x] Banner 编辑恢复 EditableOverlay 交互模式
+- [x] 学科分类管理 UI 入口
 - [ ] E2E API 覆盖率补全（当前 57/94 = 60.6%）
 - [ ] 压力测试
 
 ---
 
-## 图片上传按钮点不开
+## ~~图片上传按钮点不开~~
 
-[高优先级] Dialog Portal 内 hidden file input 的 `.click()` 失效，所有上传功能不可用。
+~~改用 `<label htmlFor>` 方式触发文件选择器，替代 `.click()` 方式。~~
 
-影响范围：
-- BannerImageEditor（Banner 背景图上传）
-- UniversityEditDialog（Logo 上传、院校图片上传）
-- CaseEditDialog（头像上传、录取通知书上传）
-- ConfigEditDialog（Logo/favicon/微信二维码上传）
+## ~~首页 Hero 和 header 遮挡关系修复~~
 
-根因：@base-ui/react Dialog 使用 Portal 渲染，hidden file input 在 Portal 内可能无法正确接收 `.click()` 事件。可能需要把 file input 移到 Portal 外部，或换用 `<label htmlFor>` 方式触发。
+~~Header 新增 `transparent` prop，首页使用 `fixed` 定位 + 透明背景，滚动后变不透明。Hero 从页面顶部开始占 100vh。~~
 
-## 首页 Hero 和 header 遮挡关系
+## ~~Banner 编辑恢复 EditableOverlay 交互模式~~
 
-[高优先级] header 应透明固定覆盖在 Hero 上方，Hero 从页面顶部开始占 100vh。当前 Hero 从 header 下方开始，导致底部超出视口。
+~~创建 BannerEditDialog，集成到 EditableOverlay 点击流程中，移除独立的 BannerImageEditor。~~
 
-修改点：
-- header 改为 `position: fixed` + 透明背景（滚动后变不透明）
-- Banner 组件 `large` 模式时从页面顶部开始（含 header 区域）
-- 内容区域加 `padding-top` 等于 header 高度
+## ~~学科分类管理 UI 入口~~
 
-## Banner 编辑恢复 EditableOverlay 交互模式
-
-[中优先级] 当前 BannerImageEditor 作为独立组件插在导航栏下方，与其他配置编辑方式不一致。应改为：点击 Banner 预览区域弹出编辑弹窗（和编辑 Hero 标题/副标题一样的 EditableOverlay 模式），弹窗内包含图片上传管理。
-
-## 学科分类管理 UI 入口
-
-[中优先级] 后端 API 已有（admin/web-settings/disciplines CRUD），需要在院校管理 tab 下添加学科分类管理的前端 UI。包括：大分类 CRUD + 学科 CRUD + 为院校关联学科。
+~~在院校管理 tab 下添加可折叠的学科分类管理区域，支持大分类和学科的 CRUD。~~
 
 ## E2E API 覆盖率补全
 
