@@ -4,6 +4,7 @@
 """
 
 from fastapi import APIRouter, File, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import (
     CurrentUserId,
@@ -15,6 +16,8 @@ from api.core.pagination import (
     build_paginated,
 )
 
+from .export_service import ArticleExportService
+from .import_service import ArticleImportService
 from .schemas import (
     ArticleCreate,
     ArticleDeleteRequest,
@@ -110,3 +113,78 @@ async def upload_pdf(
     svc = ArticleService(session)
     file_id = await svc.upload_pdf(article_id, file)
     return {"file_id": file_id}
+
+
+@router.get(
+    "/list/import/template",
+    summary="下载文章导入模板",
+)
+async def download_import_template(
+    session: DbSession,
+) -> StreamingResponse:
+    """下载 ZIP 导入模板（包含 Excel + content/ 示例）。"""
+    svc = ArticleImportService(session)
+    zip_data = svc.generate_template()
+    return StreamingResponse(
+        iter([zip_data]),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": "attachment; filename=articles_template.zip"
+        },
+    )
+
+
+@router.post(
+    "/list/import/preview",
+    summary="预览文章导入",
+)
+async def preview_import(
+    category_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """预览导入文件，返回解析结果。"""
+    content = await file.read()
+    filename = file.filename or ""
+    is_zip = filename.endswith(".zip")
+    svc = ArticleImportService(session)
+    return await svc.preview(content, category_id, is_zip)
+
+
+@router.post(
+    "/list/import/confirm",
+    summary="确认文章导入",
+)
+async def confirm_import(
+    category_id: str,
+    items: list[dict],
+    user_id: CurrentUserId,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """执行批量导入。"""
+    content = await file.read()
+    filename = file.filename or ""
+    is_zip = filename.endswith(".zip")
+    svc = ArticleImportService(session)
+    return await svc.confirm(items, user_id, content, is_zip)
+
+
+@router.get(
+    "/list/export",
+    summary="导出文章",
+)
+async def export_articles(
+    category_id: str,
+    session: DbSession,
+) -> StreamingResponse:
+    """导出指定分类下的所有文章为 ZIP（包含 Excel + content/）。"""
+    svc = ArticleExportService(session)
+    zip_data = await svc.export_zip(category_id)
+    return StreamingResponse(
+        iter([zip_data]),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": "attachment; filename=articles_export.zip"
+        },
+    )
