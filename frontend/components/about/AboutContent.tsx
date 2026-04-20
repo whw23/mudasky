@@ -16,6 +16,12 @@ interface EditableProps {
   onEdit?: () => void
 }
 
+interface MissionVisionProps {
+  editable?: boolean
+  onEditMission?: () => void
+  onEditVision?: () => void
+}
+
 /** 公司历史区块 */
 export function HistorySection({ editable, onEdit }: EditableProps) {
   const t = useTranslations('About')
@@ -39,7 +45,7 @@ export function HistorySection({ editable, onEdit }: EditableProps) {
 }
 
 /** 使命愿景区块 */
-export function MissionVisionSection({ editable, onEdit }: EditableProps) {
+export function MissionVisionSection({ editable, onEditMission, onEditVision }: MissionVisionProps) {
   const t = useTranslations('About')
   const { aboutInfo } = useLocalizedConfig()
 
@@ -66,12 +72,12 @@ export function MissionVisionSection({ editable, onEdit }: EditableProps) {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       {editable ? (
-        <EditableOverlay onClick={() => onEdit?.()} label="编辑使命与愿景">
+        <EditableOverlay onClick={() => onEditMission?.()} label="编辑使命">
           {missionContent}
         </EditableOverlay>
       ) : missionContent}
       {editable ? (
-        <EditableOverlay onClick={() => onEdit?.()} label="编辑使命与愿景">
+        <EditableOverlay onClick={() => onEditVision?.()} label="编辑愿景">
           {visionContent}
         </EditableOverlay>
       ) : visionContent}
