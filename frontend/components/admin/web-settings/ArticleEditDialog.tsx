@@ -171,11 +171,11 @@ export function ArticleEditDialog({
         if (!nextOpen && !saving) onOpenChange(false)
       }}
     >
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "编辑文章" : "写文章"}</DialogTitle>
         </DialogHeader>
-        <DialogBody className="space-y-4 max-h-[60vh] overflow-y-auto">
+        <DialogBody className="space-y-4 max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="article-title">标题</Label>

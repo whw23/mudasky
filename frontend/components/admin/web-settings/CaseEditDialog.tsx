@@ -218,11 +218,11 @@ export function CaseEditDialog({
         if (!nextOpen && !saving) onOpenChange(false)
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "编辑案例" : "添加案例"}</DialogTitle>
         </DialogHeader>
-        <DialogBody className="space-y-4 max-h-[60vh] overflow-y-auto">
+        <DialogBody className="space-y-4 max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="case-name">学生姓名</Label>
