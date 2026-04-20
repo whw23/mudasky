@@ -36,6 +36,7 @@ interface ConfigEditDialogProps {
   data: Record<string, any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave: (data: Record<string, any>) => Promise<void>
+  defaultValues?: Record<string, string>
 }
 
 /**
@@ -57,6 +58,7 @@ export function ConfigEditDialog({
   fields,
   data,
   onSave,
+  defaultValues,
 }: ConfigEditDialogProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<Record<string, any>>({})
@@ -67,9 +69,23 @@ export function ConfigEditDialog({
   /* 打开时复制数据到本地状态 */
   useEffect(() => {
     if (open) {
-      setFormData({ ...data })
+      const merged = { ...data }
+      if (defaultValues) {
+        for (const field of fields) {
+          if (field.localized && defaultValues[field.key]) {
+            const val = merged[field.key]
+            const zhValue = typeof val === "string" ? val : val?.zh
+            if (!zhValue?.trim()) {
+              merged[field.key] = typeof val === "object" && val !== null
+                ? { ...val, zh: defaultValues[field.key] }
+                : { zh: defaultValues[field.key], en: "", ja: "", de: "" }
+            }
+          }
+        }
+      }
+      setFormData(merged)
     }
-  }, [open, data])
+  }, [open, data, defaultValues, fields])
 
   /** 更新单个字段值 */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
