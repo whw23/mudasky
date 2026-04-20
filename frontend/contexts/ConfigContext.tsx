@@ -9,7 +9,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { useLocale } from 'next-intl'
 import api from '@/lib/api'
 import { getLocalizedValue } from '@/lib/i18n-config'
-import type { ContactInfo, SiteInfo, HomepageStat, AboutInfo } from '@/types/config'
+import type { ContactInfo, SiteInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 默认联系方式（兜底） */
 const DEFAULT_CONTACT_INFO: ContactInfo = {
@@ -79,6 +79,8 @@ interface ConfigContextType {
   aboutInfo: AboutInfo
   /** 导航栏配置 */
   navConfig: NavConfig
+  /** 页面 Banner 配置 */
+  pageBanners: PageBanners
 }
 
 const ConfigContext = createContext<ConfigContextType>({
@@ -87,6 +89,7 @@ const ConfigContext = createContext<ConfigContextType>({
   homepageStats: DEFAULT_HOMEPAGE_STATS,
   aboutInfo: DEFAULT_ABOUT_INFO,
   navConfig: DEFAULT_NAV_CONFIG,
+  pageBanners: {},
 })
 
 /** 系统配置 Provider */
@@ -96,6 +99,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [homepageStats, setHomepageStats] = useState<HomepageStat[]>(DEFAULT_HOMEPAGE_STATS)
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
   const [navConfig, setNavConfig] = useState<NavConfig>(DEFAULT_NAV_CONFIG)
+  const [pageBanners, setPageBanners] = useState<PageBanners>({})
 
   useEffect(() => {
     api.get('/public/config/all')
@@ -106,12 +110,13 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(data.homepage_stats)) setHomepageStats(data.homepage_stats)
         if (data.about_info) setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...data.about_info })
         if (data.nav_config) setNavConfig({ ...DEFAULT_NAV_CONFIG, ...data.nav_config })
+        if (data.page_banners) setPageBanners(data.page_banners)
       })
       .catch((err) => console.warn('[ConfigProvider] 配置加载失败:', err.message))
   }, [])
 
   return (
-    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig }}>
+    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners }}>
       {children}
     </ConfigContext>
   )
@@ -150,6 +155,7 @@ interface LocalizedConfigType {
     partnership: string
   }
   navConfig: NavConfig
+  pageBanners: PageBanners
 }
 
 /** 获取已解析为当前语言的配置（展示用） */
@@ -180,5 +186,6 @@ export function useLocalizedConfig(): LocalizedConfigType {
       partnership: getLocalizedValue(config.aboutInfo.partnership, locale),
     },
     navConfig: config.navConfig,
+    pageBanners: config.pageBanners,
   }
 }
