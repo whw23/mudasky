@@ -13,6 +13,7 @@ ALLOWED_MIME_TYPES = {
     "image/gif",
     "image/webp",
     "image/svg+xml",
+    "application/pdf",
 }
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
