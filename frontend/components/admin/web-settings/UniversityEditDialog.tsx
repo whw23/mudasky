@@ -5,7 +5,7 @@
  * 用于创建和编辑合作院校信息。
  */
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Plus, Trash2, Upload } from "lucide-react"
 
 interface UniversityData {
   id: string
@@ -31,6 +32,12 @@ interface UniversityData {
   description: string | null
   website: string | null
   is_featured: boolean
+  logo_image_id: string | null
+  latitude: number | null
+  longitude: number | null
+  admission_requirements: string | null
+  scholarship_info: string | null
+  qs_rankings: { year: number; ranking: number }[] | null
 }
 
 interface UniversityEditDialogProps {
@@ -56,7 +63,15 @@ export function UniversityEditDialog({
   const [city, setCity] = useState("")
   const [description, setDescription] = useState("")
   const [website, setWebsite] = useState("")
+  const [logoImageId, setLogoImageId] = useState<string | null>(null)
+  const [latitude, setLatitude] = useState("")
+  const [longitude, setLongitude] = useState("")
+  const [admissionReqs, setAdmissionReqs] = useState("")
+  const [scholarshipInfo, setScholarshipInfo] = useState("")
+  const [qsRankings, setQsRankings] = useState<{ year: number; ranking: number }[]>([])
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   /** 打开时初始化表单 */
   useEffect(() => {
@@ -68,6 +83,12 @@ export function UniversityEditDialog({
       setCity(university.city)
       setDescription(university.description ?? "")
       setWebsite(university.website ?? "")
+      setLogoImageId(university.logo_image_id)
+      setLatitude(university.latitude?.toString() ?? "")
+      setLongitude(university.longitude?.toString() ?? "")
+      setAdmissionReqs(university.admission_requirements ?? "")
+      setScholarshipInfo(university.scholarship_info ?? "")
+      setQsRankings(university.qs_rankings ?? [])
     } else if (open && !university) {
       setName("")
       setNameEn("")
@@ -76,8 +97,60 @@ export function UniversityEditDialog({
       setCity("")
       setDescription("")
       setWebsite("")
+      setLogoImageId(null)
+      setLatitude("")
+      setLongitude("")
+      setAdmissionReqs("")
+      setScholarshipInfo("")
+      setQsRankings([])
     }
   }, [open, university])
+
+  /** 上传 Logo */
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      if (isEdit) {
+        formData.append("university_id", university!.id)
+      }
+
+      const res = await api.post(
+        isEdit
+          ? "/admin/web-settings/universities/list/detail/upload-logo"
+          : "/admin/web-settings/universities/upload-logo-temp",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      )
+      setLogoImageId(res.data.logo_image_id)
+      toast.success("Logo 上传成功")
+    } catch {
+      toast.error("上传失败")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  /** 添加 QS 排名 */
+  function addRanking(): void {
+    setQsRankings([...qsRankings, { year: new Date().getFullYear(), ranking: 0 }])
+  }
+
+  /** 删除 QS 排名 */
+  function removeRanking(index: number): void {
+    setQsRankings(qsRankings.filter((_, i) => i !== index))
+  }
+
+  /** 更新 QS 排名 */
+  function updateRanking(index: number, field: "year" | "ranking", value: number): void {
+    const updated = [...qsRankings]
+    updated[index][field] = value
+    setQsRankings(updated)
+  }
 
   /** 提交表单 */
   async function handleSubmit(): Promise<void> {
@@ -99,6 +172,12 @@ export function UniversityEditDialog({
         city: trimmedCity,
         description: description.trim() || null,
         website: website.trim() || null,
+        logo_image_id: logoImageId,
+        latitude: latitude.trim() ? parseFloat(latitude) : null,
+        longitude: longitude.trim() ? parseFloat(longitude) : null,
+        admission_requirements: admissionReqs.trim() || null,
+        scholarship_info: scholarshipInfo.trim() || null,
+        qs_rankings: qsRankings.length > 0 ? qsRankings : null,
       }
 
       if (isEdit) {
@@ -191,6 +270,59 @@ export function UniversityEditDialog({
             />
           </div>
           <div className="space-y-1.5">
+            <Label>Logo</Label>
+            <div className="flex items-center gap-3">
+              {logoImageId && (
+                <img
+                  src={`/api/public/images/detail?id=${logoImageId}`}
+                  alt="Logo"
+                  className="h-12 w-12 rounded object-contain border"
+                />
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Upload className="mr-1 h-4 w-4" />
+                {uploading ? "上传中..." : logoImageId ? "更换 Logo" : "上传 Logo"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="uni-lat">纬度</Label>
+              <Input
+                id="uni-lat"
+                type="number"
+                step="0.000001"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+                placeholder="48.148598"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="uni-lon">经度</Label>
+              <Input
+                id="uni-lon"
+                type="number"
+                step="0.000001"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+                placeholder="11.567599"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
             <Label htmlFor="uni-desc">简介</Label>
             <Textarea
               id="uni-desc"
@@ -199,6 +331,62 @@ export function UniversityEditDialog({
               placeholder="院校简介"
               rows={3}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="uni-admission">录取要求</Label>
+            <Textarea
+              id="uni-admission"
+              value={admissionReqs}
+              onChange={(e) => setAdmissionReqs(e.target.value)}
+              placeholder="录取要求（可选）"
+              rows={3}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="uni-scholarship">奖学金信息</Label>
+            <Textarea
+              id="uni-scholarship"
+              value={scholarshipInfo}
+              onChange={(e) => setScholarshipInfo(e.target.value)}
+              placeholder="奖学金信息（可选）"
+              rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>QS 世界排名</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addRanking}>
+                <Plus className="mr-1 h-4 w-4" />
+                添加
+              </Button>
+            </div>
+            {qsRankings.map((rank, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={rank.year}
+                  onChange={(e) => updateRanking(idx, "year", parseInt(e.target.value))}
+                  placeholder="年份"
+                  className="w-24"
+                />
+                <Input
+                  type="number"
+                  value={rank.ranking}
+                  onChange={(e) => updateRanking(idx, "ranking", parseInt(e.target.value))}
+                  placeholder="排名"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeRanking(idx)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
           </div>
         </DialogBody>
         <DialogFooter>
