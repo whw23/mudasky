@@ -126,8 +126,8 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav, tr
         editable
           ? ""
           : transparent
-            ? `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/90 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
-            : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
+            ? `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
+            : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : ""}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
