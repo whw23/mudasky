@@ -15,8 +15,8 @@ from app.db.content.models import Article, Category  # noqa: F401
 from app.db.discipline.models import (  # noqa: F401
     Discipline,
     DisciplineCategory,
-    UniversityDiscipline,
 )
+from app.db.university.program_models import UniversityProgram  # noqa: F401
 from app.db.document.models import Document  # noqa: F401
 from app.db.image.models import Image  # noqa: F401
 from app.db.rbac.models import Role  # noqa: F401

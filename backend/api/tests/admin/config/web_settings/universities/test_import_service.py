@@ -15,6 +15,7 @@ from app.db.university.models import University
 
 DISC_REPO = "api.admin.config.web_settings.universities.import_service.disc_repo"
 UNI_REPO = "api.admin.config.web_settings.universities.import_service.uni_repo"
+PROG_REPO = "api.admin.config.web_settings.universities.import_service.prog_repo"
 
 
 def _make_category(category_id: str = "cat-1", name: str = "工学") -> MagicMock:
@@ -356,10 +357,11 @@ async def test_preview_multiple_files_in_zip(mock_disc_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(PROG_REPO)
 @patch(UNI_REPO)
 @patch(DISC_REPO)
 async def test_confirm_import_success(
-    mock_disc_repo, mock_uni_repo, service
+    mock_disc_repo, mock_uni_repo, mock_prog_repo, service
 ):
     """确认导入创建院校成功。"""
     row = {
@@ -376,7 +378,7 @@ async def test_confirm_import_success(
 
     mock_disc_repo.get_category_by_name = AsyncMock(return_value=cat)
     mock_disc_repo.get_discipline_by_name = AsyncMock(return_value=disc)
-    mock_disc_repo.set_university_disciplines = AsyncMock()
+    mock_prog_repo.replace_programs = AsyncMock()
     mock_uni_repo.create_university = AsyncMock(return_value=uni)
 
     result = await service.confirm([row], [])
@@ -384,6 +386,7 @@ async def test_confirm_import_success(
     assert result["imported"] == 1
     assert result["skipped"] == 0
     mock_uni_repo.create_university.assert_awaited_once()
+    mock_prog_repo.replace_programs.assert_awaited_once()
 
 
 @pytest.mark.asyncio

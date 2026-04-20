@@ -80,20 +80,3 @@ class Discipline(Base):
         onupdate=func.now(),
         nullable=True,
     )
-
-
-class UniversityDiscipline(Base):
-    """院校-学科多对多关联。"""
-
-    __tablename__ = "university_discipline"
-
-    university_id: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("university.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    discipline_id: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("discipline.id", ondelete="CASCADE"),
-        primary_key=True,
-    )

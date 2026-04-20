@@ -20,7 +20,6 @@ def _make_university(**kwargs) -> MagicMock:
     u.city = kwargs.get("city", "北京")
     u.logo_url = kwargs.get("logo_url", None)
     u.description = kwargs.get("description", "简介")
-    u.programs = kwargs.get("programs", ["计算机"])
     u.website = kwargs.get("website", None)
     u.is_featured = kwargs.get("is_featured", False)
     u.sort_order = kwargs.get("sort_order", 0)
@@ -35,6 +34,34 @@ def _make_university(**kwargs) -> MagicMock:
     )
     u.updated_at = kwargs.get("updated_at", None)
     return u
+
+
+def _make_university_dict(**kwargs) -> dict:
+    """创建院校字典（list_universities 返回格式）。"""
+    return {
+        "id": kwargs.get("id", "uni-001"),
+        "name": kwargs.get("name", "北京大学"),
+        "name_en": kwargs.get("name_en", "Peking University"),
+        "country": kwargs.get("country", "中国"),
+        "province": kwargs.get("province", "北京"),
+        "city": kwargs.get("city", "北京"),
+        "logo_url": kwargs.get("logo_url", None),
+        "description": kwargs.get("description", "简介"),
+        "website": kwargs.get("website", None),
+        "is_featured": kwargs.get("is_featured", False),
+        "sort_order": kwargs.get("sort_order", 0),
+        "logo_image_id": kwargs.get("logo_image_id", None),
+        "admission_requirements": kwargs.get("admission_requirements", None),
+        "scholarship_info": kwargs.get("scholarship_info", None),
+        "qs_rankings": kwargs.get("qs_rankings", None),
+        "latitude": kwargs.get("latitude", None),
+        "longitude": kwargs.get("longitude", None),
+        "created_at": kwargs.get(
+            "created_at", datetime.now(timezone.utc)
+        ),
+        "updated_at": kwargs.get("updated_at", None),
+        "programs": kwargs.get("programs", []),
+    }
 
 
 class TestAdminListUniversities:
@@ -55,7 +82,7 @@ class TestAdminListUniversities:
     ):
         """管理员查询院校列表返回 200。"""
         self.mock_svc.list_universities.return_value = (
-            [_make_university()],
+            [_make_university_dict()],
             1,
         )
         resp = await client.get(

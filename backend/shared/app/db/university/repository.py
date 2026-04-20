@@ -61,15 +61,7 @@ async def list_universities(
                 University.description.ilike(pattern),
             )
         )
-    if program:
-        conditions.append(
-            University.programs.op("@>")(
-                func.cast(
-                    f'["{program}"]',
-                    University.programs.type,
-                )
-            )
-        )
+    # Note: program filter removed - now handled via UniversityProgram join
 
     base_filter = True  # noqa: E712
     if conditions:

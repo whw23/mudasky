@@ -16,10 +16,12 @@ from app.db.image import repository as image_repo
 from app.db.image.repository import ALLOWED_MIME_TYPES, MAX_IMAGE_SIZE
 from app.db.model_utils import apply_updates
 from app.db.university import repository
+from app.db.university import program_repository as prog_repo
 from app.db.university.image_models import UniversityImage
 from app.db.university.models import University
 
 from .schemas import (
+    ProgramItem,
     UniversityCreate,
     UniversityUpdate,
 )
@@ -44,7 +46,6 @@ class UniversityService:
             city=data.city,
             logo_url=data.logo_url,
             description=data.description,
-            programs=data.programs,
             website=data.website,
             is_featured=data.is_featured,
             sort_order=data.sort_order,
@@ -101,9 +102,9 @@ class UniversityService:
         is_featured: bool | None = None,
         search: str | None = None,
         program: str | None = None,
-    ) -> tuple[list[University], int]:
-        """分页查询院校列表。"""
-        return await repository.list_universities(
+    ) -> tuple[list[dict], int]:
+        """分页查询院校列表，包含专业信息。"""
+        universities, total = await repository.list_universities(
             self.session,
             offset,
             limit,
@@ -113,6 +114,36 @@ class UniversityService:
             search,
             program,
         )
+
+        # Enrich with programs
+        result = []
+        for uni in universities:
+            programs = await prog_repo.list_programs(self.session, uni.id)
+            uni_dict = {
+                "id": uni.id,
+                "name": uni.name,
+                "name_en": uni.name_en,
+                "country": uni.country,
+                "province": uni.province,
+                "city": uni.city,
+                "logo_url": uni.logo_url,
+                "description": uni.description,
+                "website": uni.website,
+                "is_featured": uni.is_featured,
+                "sort_order": uni.sort_order,
+                "logo_image_id": uni.logo_image_id,
+                "admission_requirements": uni.admission_requirements,
+                "scholarship_info": uni.scholarship_info,
+                "qs_rankings": uni.qs_rankings,
+                "latitude": uni.latitude,
+                "longitude": uni.longitude,
+                "created_at": uni.created_at,
+                "updated_at": uni.updated_at,
+                "programs": programs,
+            }
+            result.append(uni_dict)
+
+        return result, total
 
     async def upload_logo(self, university_id: str, file: UploadFile) -> str:
         """上传院校校徽，返回 image_id。"""
@@ -150,17 +181,21 @@ class UniversityService:
             )
         await repository.delete_university_image(self.session, record)
 
-    async def set_disciplines(self, university_id: str, discipline_ids: list[str]) -> None:
-        """设置院校学科关联（全量覆盖）。"""
+    async def set_programs(self, university_id: str, programs: list[ProgramItem]) -> None:
+        """设置院校专业（全量覆盖）。"""
         await self.get_university(university_id)
-        for did in discipline_ids:
-            d = await disc_repo.get_discipline_by_id(self.session, did)
+        # Validate all disciplines exist
+        for prog in programs:
+            d = await disc_repo.get_discipline_by_id(self.session, prog.discipline_id)
             if not d:
                 raise NotFoundException(
-                    message=f"学科 {did} 不存在",
+                    message=f"学科 {prog.discipline_id} 不存在",
                     code="DISCIPLINE_NOT_FOUND",
                 )
-        await disc_repo.set_university_disciplines(self.session, university_id, discipline_ids)
+        # Replace programs
+        programs_data = [{"name": p.name, "discipline_id": p.discipline_id} for p in programs]
+        await prog_repo.replace_programs(self.session, university_id, programs_data)
+        await self.session.commit()
 
     async def _save_image(self, file: UploadFile):
         """校验并保存图片到 image 表。"""

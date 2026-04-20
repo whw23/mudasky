@@ -11,6 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from api.admin.config.web_settings.universities.schemas import (
+    ProgramItem,
     UniversityCreate,
     UniversityUpdate,
 )
@@ -25,6 +26,7 @@ from app.db.university.image_models import UniversityImage
 from app.db.university.models import University
 
 REPO = "api.admin.config.web_settings.universities.service.repository"
+PROG_REPO = "api.admin.config.web_settings.universities.service.prog_repo"
 DISC_REPO = "api.admin.config.web_settings.universities.service.disc_repo"
 IMAGE_REPO = "api.admin.config.web_settings.universities.service.image_repo"
 
@@ -41,7 +43,6 @@ def _make_university(university_id: str = "uni-1") -> MagicMock:
     u.logo_url = None
     u.logo_image_id = None
     u.description = "综合性大学"
-    u.programs = "本科,硕士,博士"
     u.website = "https://tsinghua.edu.cn"
     u.is_featured = False
     u.sort_order = 0
@@ -282,10 +283,11 @@ async def test_delete_image_university_not_found(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(PROG_REPO)
 @patch(DISC_REPO)
 @patch(REPO)
-async def test_set_disciplines_success(mock_repo, mock_disc_repo, service):
-    """设置院校学科关联成功。"""
+async def test_set_programs_success(mock_repo, mock_disc_repo, mock_prog_repo, service):
+    """设置院校专业成功。"""
     university = _make_university()
     mock_repo.get_university_by_id = AsyncMock(return_value=university)
 
@@ -294,53 +296,63 @@ async def test_set_disciplines_success(mock_repo, mock_disc_repo, service):
     mock_disc_repo.get_discipline_by_id = AsyncMock(
         side_effect=[disc1, disc2]
     )
-    mock_disc_repo.set_university_disciplines = AsyncMock()
+    mock_prog_repo.replace_programs = AsyncMock()
 
-    await service.set_disciplines("uni-1", ["disc-1", "disc-2"])
+    programs = [
+        ProgramItem(name="计算机科学", discipline_id="disc-1"),
+        ProgramItem(name="金融学", discipline_id="disc-2"),
+    ]
+    await service.set_programs("uni-1", programs)
 
     assert mock_disc_repo.get_discipline_by_id.await_count == 2
-    mock_disc_repo.set_university_disciplines.assert_awaited_once_with(
-        service.session, "uni-1", ["disc-1", "disc-2"]
-    )
+    mock_prog_repo.replace_programs.assert_awaited_once()
+    call_args = mock_prog_repo.replace_programs.call_args
+    assert call_args[0][0] == service.session
+    assert call_args[0][1] == "uni-1"
+    assert len(call_args[0][2]) == 2
+    assert call_args[0][2][0]["name"] == "计算机科学"
+    assert call_args[0][2][0]["discipline_id"] == "disc-1"
 
 
 @pytest.mark.asyncio
 @patch(DISC_REPO)
 @patch(REPO)
-async def test_set_disciplines_not_found(mock_repo, mock_disc_repo, service):
-    """设置学科时学科不存在抛出 NotFoundException。"""
+async def test_set_programs_discipline_not_found(mock_repo, mock_disc_repo, service):
+    """设置专业时学科不存在抛出 NotFoundException。"""
     university = _make_university()
     mock_repo.get_university_by_id = AsyncMock(return_value=university)
 
     mock_disc_repo.get_discipline_by_id = AsyncMock(return_value=None)
 
+    programs = [ProgramItem(name="计算机科学", discipline_id="disc-1")]
     with pytest.raises(NotFoundException) as exc_info:
-        await service.set_disciplines("uni-1", ["disc-1"])
+        await service.set_programs("uni-1", programs)
 
     assert exc_info.value.code == "DISCIPLINE_NOT_FOUND"
 
 
 @pytest.mark.asyncio
 @patch(REPO)
-async def test_set_disciplines_university_not_found(mock_repo, service):
-    """设置学科时院校不存在抛出 NotFoundException。"""
+async def test_set_programs_university_not_found(mock_repo, service):
+    """设置专业时院校不存在抛出 NotFoundException。"""
     mock_repo.get_university_by_id = AsyncMock(return_value=None)
 
+    programs = [ProgramItem(name="计算机科学", discipline_id="disc-1")]
     with pytest.raises(NotFoundException):
-        await service.set_disciplines("nonexistent", ["disc-1"])
+        await service.set_programs("nonexistent", programs)
 
 
 @pytest.mark.asyncio
-@patch(DISC_REPO)
+@patch(PROG_REPO)
 @patch(REPO)
-async def test_set_disciplines_empty_list(mock_repo, mock_disc_repo, service):
-    """设置空学科列表（清空关联）成功。"""
+async def test_set_programs_empty_list(mock_repo, mock_prog_repo, service):
+    """设置空专业列表（清空专业）成功。"""
     university = _make_university()
     mock_repo.get_university_by_id = AsyncMock(return_value=university)
-    mock_disc_repo.set_university_disciplines = AsyncMock()
+    mock_prog_repo.replace_programs = AsyncMock()
 
-    await service.set_disciplines("uni-1", [])
+    await service.set_programs("uni-1", [])
 
-    mock_disc_repo.set_university_disciplines.assert_awaited_once_with(
+    mock_prog_repo.replace_programs.assert_awaited_once_with(
         service.session, "uni-1", []
     )

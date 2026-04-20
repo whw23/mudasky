@@ -13,6 +13,7 @@ from app.db.discipline.models import (
     DisciplineCategory,
 )
 from app.db.university import repository as uni_repo
+from app.db.university import program_repository as prog_repo
 from app.db.university.models import University
 
 
@@ -197,7 +198,8 @@ class ImportService:
         )
         university = await uni_repo.create_university(self.session, university)
 
-        disc_ids = []
+        # Create programs from disciplines
+        programs = []
         for path in row.get("disciplines", []):
             parts = path.split("/", 1)
             if len(parts) != 2:
@@ -206,8 +208,11 @@ class ImportService:
             if cat:
                 disc = await disc_repo.get_discipline_by_name(self.session, cat.id, parts[1])
                 if disc:
-                    disc_ids.append(disc.id)
-        if disc_ids:
-            await disc_repo.set_university_disciplines(self.session, university.id, disc_ids)
+                    programs.append({
+                        "name": disc.name,
+                        "discipline_id": disc.id,
+                    })
+        if programs:
+            await prog_repo.replace_programs(self.session, university.id, programs)
 
         return university

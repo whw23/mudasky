@@ -18,9 +18,9 @@ from app.db.image import repository as image_repo
 from .import_service import ImportService
 from .schemas import (
     ImageResponse,
+    SetProgramsRequest,
     UniversityCreate,
     UniversityDeleteRequest,
-    UniversityDisciplinesRequest,
     UniversityImageDeleteRequest,
     UniversityResponse,
     UniversityUpdate,
@@ -46,7 +46,7 @@ async def admin_list_universities(
     svc = UniversityService(session)
     universities, total = await svc.list_universities(0, page_size)
     return PaginatedResponse(
-        items=[UniversityResponse.model_validate(u) for u in universities],
+        items=[UniversityResponse(**u) for u in universities],
         total=total,
         page=1,
         page_size=page_size,
@@ -151,17 +151,17 @@ async def delete_image(
 
 
 @router.post(
-    "/list/detail/disciplines",
+    "/list/detail/programs",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="设置院校学科关联",
+    summary="设置院校专业",
 )
-async def set_disciplines(
-    data: UniversityDisciplinesRequest,
+async def set_programs(
+    data: SetProgramsRequest,
     session: DbSession,
 ) -> None:
-    """设置院校关联学科（全量覆盖）。"""
+    """设置院校专业（全量覆盖）。"""
     svc = UniversityService(session)
-    await svc.set_disciplines(data.university_id, data.discipline_ids)
+    await svc.set_programs(data.university_id, data.programs)
 
 
 @router.post(
