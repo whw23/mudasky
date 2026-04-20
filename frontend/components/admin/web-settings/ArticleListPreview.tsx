@@ -8,12 +8,15 @@
 import { useEffect, useState, useCallback } from "react"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
+import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
+import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
 
 interface Category {
   id: string
@@ -53,6 +56,10 @@ export function ArticleListPreview({ categorySlug, onBannerEdit }: ArticleListPr
   /* 删除弹窗状态 */
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Article | null>(null)
+
+  /* 导入预览状态 */
+  const [articlePreviewData, setArticlePreviewData] = useState<any>(null)
+  const [importFile, setImportFile] = useState<File | null>(null)
 
   /** 加载分类和文章数据 */
   const fetchData = useCallback(async () => {
@@ -102,6 +109,21 @@ export function ArticleListPreview({ categorySlug, onBannerEdit }: ArticleListPr
     setDeleteOpen(true)
   }
 
+  /** 确认导入文章 */
+  async function handleArticleConfirm(items: any[]) {
+    if (!importFile) {
+      toast.error("未找到导入文件")
+      return
+    }
+    const formData = new FormData()
+    formData.append("file", importFile)
+    formData.append("items", JSON.stringify(items))
+    await api.post("/admin/web-settings/articles/list/import/confirm", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    fetchData()
+  }
+
   /** 状态标签样式 */
   function statusBadge(status: string): string {
     return status === "published"
@@ -119,10 +141,23 @@ export function ArticleListPreview({ categorySlug, onBannerEdit }: ArticleListPr
           {/* 顶部操作栏 */}
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-semibold">文章管理</h3>
-            <Button size="sm" onClick={handleCreate} disabled={!categoryId}>
-              <Plus className="mr-1 size-4" />
-              写文章
-            </Button>
+            <div className="flex items-center gap-2">
+              {categoryId && (
+                <ImportExportToolbar
+                  templateUrl="/admin/web-settings/articles/list/import/template"
+                  importUrl={`/admin/web-settings/articles/list/import/preview?category_id=${categoryId}`}
+                  exportUrl={`/admin/web-settings/articles/list/export?category_id=${categoryId}`}
+                  onImportPreview={setArticlePreviewData}
+                  onFileSelect={setImportFile}
+                  templateFilename="articles_template.zip"
+                  exportFilename="articles.zip"
+                />
+              )}
+              <Button size="sm" onClick={handleCreate} disabled={!categoryId}>
+                <Plus className="mr-1 size-4" />
+                写文章
+              </Button>
+            </div>
           </div>
 
         {/* 文章列表 */}
@@ -193,6 +228,19 @@ export function ArticleListPreview({ categorySlug, onBannerEdit }: ArticleListPr
             })
           }
           onSuccess={fetchData}
+        />
+
+        {/* 文章导入预览弹窗 */}
+        <ImportPreviewDialog
+          open={!!articlePreviewData}
+          onOpenChange={(open) => !open && setArticlePreviewData(null)}
+          data={articlePreviewData}
+          onConfirm={handleArticleConfirm}
+          columns={[
+            { key: "title", label: "标题" },
+            { key: "slug", label: "URL 标识" },
+            { key: "status", label: "状态" },
+          ]}
         />
       </div>
     </>
