@@ -11,7 +11,6 @@ import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Plus, Trash2, Upload } from "lucide-react"
+import { TiptapEditor } from "@/components/editor/TiptapEditor"
 
 interface UniversityData {
   id: string
@@ -324,32 +324,26 @@ export function UniversityEditDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="uni-desc">简介</Label>
-            <Textarea
-              id="uni-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+            <TiptapEditor
+              content={description}
+              onChange={(html) => setDescription(html)}
               placeholder="院校简介"
-              rows={3}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="uni-admission">录取要求</Label>
-            <Textarea
-              id="uni-admission"
-              value={admissionReqs}
-              onChange={(e) => setAdmissionReqs(e.target.value)}
+            <TiptapEditor
+              content={admissionReqs}
+              onChange={(html) => setAdmissionReqs(html)}
               placeholder="录取要求（可选）"
-              rows={3}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="uni-scholarship">奖学金信息</Label>
-            <Textarea
-              id="uni-scholarship"
-              value={scholarshipInfo}
-              onChange={(e) => setScholarshipInfo(e.target.value)}
+            <TiptapEditor
+              content={scholarshipInfo}
+              onChange={(html) => setScholarshipInfo(html)}
               placeholder="奖学金信息（可选）"
-              rows={3}
             />
           </div>
           <div className="space-y-2">

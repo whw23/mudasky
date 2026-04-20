@@ -132,7 +132,7 @@ export function UniversityDetail({ universityId }: Props) {
       {data.description && (
         <section>
           <h2 className="text-xl font-bold">{t("about")}</h2>
-          <p className="mt-3 leading-relaxed text-muted-foreground">{data.description}</p>
+          <SafeHtml html={data.description} className="prose mt-3 max-w-none" />
         </section>
       )}
 
