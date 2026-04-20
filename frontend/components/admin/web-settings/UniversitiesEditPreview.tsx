@@ -6,10 +6,12 @@
  */
 
 import { useEffect, useState, useCallback } from "react"
-import { Plus, Pencil, Trash2, MapPin, Award } from "lucide-react"
+import { Plus, Pencil, Trash2, MapPin, Award, ChevronDown, ChevronRight, Save, X } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { UniversityEditDialog } from "./UniversityEditDialog"
@@ -29,6 +31,19 @@ interface University {
   qs_rankings: { year: number; ranking: number }[] | null
 }
 
+interface DisciplineCategory {
+  id: string
+  name: string
+  display_order: number
+}
+
+interface Discipline {
+  id: string
+  category_id: string
+  name: string
+  display_order: number
+}
+
 interface UniversitiesEditPreviewProps {
   onBannerEdit: (pageKey: string) => void
 }
@@ -38,6 +53,19 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
   const t = useTranslations("Pages")
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
+
+  /* 学科管理状态 */
+  const [disciplinesExpanded, setDisciplinesExpanded] = useState(false)
+  const [categories, setCategories] = useState<DisciplineCategory[]>([])
+  const [disciplines, setDisciplines] = useState<Record<string, Discipline[]>>({})
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+  const [editingCategoryName, setEditingCategoryName] = useState("")
+  const [editingDisciplineId, setEditingDisciplineId] = useState<string | null>(null)
+  const [editingDisciplineName, setEditingDisciplineName] = useState("")
+  const [addingDisciplineToCategoryId, setAddingDisciplineToCategoryId] = useState<string | null>(null)
+  const [newDisciplineName, setNewDisciplineName] = useState("")
+  const [addingCategory, setAddingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState("")
 
   /* 编辑弹窗状态 */
   const [editOpen, setEditOpen] = useState(false)
@@ -62,7 +90,34 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
     }
   }, [])
 
+  /** 加载学科分类 */
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await api.get("/admin/web-settings/disciplines/categories/list")
+      setCategories(res.data ?? [])
+    } catch {
+      setCategories([])
+    }
+  }, [])
+
+  /** 加载某个分类下的学科 */
+  const fetchDisciplines = useCallback(async (categoryId: string) => {
+    try {
+      const res = await api.get("/admin/web-settings/disciplines/list", {
+        params: { category_id: categoryId },
+      })
+      setDisciplines((prev) => ({ ...prev, [categoryId]: res.data ?? [] }))
+    } catch {
+      setDisciplines((prev) => ({ ...prev, [categoryId]: [] }))
+    }
+  }, [])
+
   useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => {
+    if (disciplinesExpanded) {
+      fetchCategories()
+    }
+  }, [disciplinesExpanded, fetchCategories])
 
   /** 打开新建弹窗 */
   function handleCreate(): void {
@@ -82,6 +137,99 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
     setDeleteOpen(true)
   }
 
+  /** 创建分类 */
+  async function handleCreateCategory() {
+    if (!newCategoryName.trim()) return
+    try {
+      await api.post("/admin/web-settings/disciplines/categories/list/create", {
+        name: newCategoryName,
+      })
+      toast.success("分类已创建")
+      setNewCategoryName("")
+      setAddingCategory(false)
+      fetchCategories()
+    } catch {
+      toast.error("创建失败")
+    }
+  }
+
+  /** 更新分类 */
+  async function handleUpdateCategory(categoryId: string) {
+    if (!editingCategoryName.trim()) return
+    try {
+      await api.post("/admin/web-settings/disciplines/categories/list/detail/edit", {
+        category_id: categoryId,
+        name: editingCategoryName,
+      })
+      toast.success("分类已更新")
+      setEditingCategoryId(null)
+      fetchCategories()
+    } catch {
+      toast.error("更新失败")
+    }
+  }
+
+  /** 删除分类 */
+  async function handleDeleteCategory(categoryId: string) {
+    if (!confirm("确认删除该分类？")) return
+    try {
+      await api.post("/admin/web-settings/disciplines/categories/list/detail/delete", {
+        category_id: categoryId,
+      })
+      toast.success("分类已删除")
+      fetchCategories()
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  /** 创建学科 */
+  async function handleCreateDiscipline(categoryId: string) {
+    if (!newDisciplineName.trim()) return
+    try {
+      await api.post("/admin/web-settings/disciplines/list/create", {
+        category_id: categoryId,
+        name: newDisciplineName,
+      })
+      toast.success("学科已创建")
+      setNewDisciplineName("")
+      setAddingDisciplineToCategoryId(null)
+      fetchDisciplines(categoryId)
+    } catch {
+      toast.error("创建失败")
+    }
+  }
+
+  /** 更新学科 */
+  async function handleUpdateDiscipline(disciplineId: string, categoryId: string) {
+    if (!editingDisciplineName.trim()) return
+    try {
+      await api.post("/admin/web-settings/disciplines/list/detail/edit", {
+        discipline_id: disciplineId,
+        name: editingDisciplineName,
+      })
+      toast.success("学科已更新")
+      setEditingDisciplineId(null)
+      fetchDisciplines(categoryId)
+    } catch {
+      toast.error("更新失败")
+    }
+  }
+
+  /** 删除学科 */
+  async function handleDeleteDiscipline(disciplineId: string, categoryId: string) {
+    if (!confirm("确认删除该学科？")) return
+    try {
+      await api.post("/admin/web-settings/disciplines/list/detail/delete", {
+        discipline_id: disciplineId,
+      })
+      toast.success("学科已删除")
+      fetchDisciplines(categoryId)
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("universities")} label="编辑 Banner">
@@ -89,6 +237,215 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
       </EditableOverlay>
       <div className="px-6 py-8">
         <div className="mx-auto max-w-5xl">
+          {/* 学科分类管理 */}
+          <div className="mb-8 rounded-lg border bg-white p-4">
+            <button
+              onClick={() => setDisciplinesExpanded(!disciplinesExpanded)}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <h3 className="text-lg font-semibold">学科分类管理</h3>
+              {disciplinesExpanded ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
+            </button>
+
+            {disciplinesExpanded && (
+              <div className="mt-4 space-y-4">
+                {/* 添加分类按钮 */}
+                <div className="flex items-center gap-2">
+                  {addingCategory ? (
+                    <>
+                      <Input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="分类名称"
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleCreateCategory()
+                          if (e.key === "Escape") {
+                            setAddingCategory(false)
+                            setNewCategoryName("")
+                          }
+                        }}
+                      />
+                      <Button size="sm" onClick={handleCreateCategory}>
+                        <Save className="size-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setAddingCategory(false)
+                          setNewCategoryName("")
+                        }}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <Button size="sm" onClick={() => setAddingCategory(true)}>
+                      <Plus className="mr-1 size-4" />
+                      添加大分类
+                    </Button>
+                  )}
+                </div>
+
+                {/* 分类列表 */}
+                {categories.map((cat) => {
+                  const catDisciplines = disciplines[cat.id] ?? []
+                  const expanded = !!disciplines[cat.id]
+                  return (
+                    <div key={cat.id} className="rounded border bg-gray-50 p-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            if (expanded) {
+                              setDisciplines((prev) => {
+                                const next = { ...prev }
+                                delete next[cat.id]
+                                return next
+                              })
+                            } else {
+                              fetchDisciplines(cat.id)
+                            }
+                          }}
+                          className="text-muted-foreground"
+                        >
+                          {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                        </button>
+                        {editingCategoryId === cat.id ? (
+                          <>
+                            <Input
+                              value={editingCategoryName}
+                              onChange={(e) => setEditingCategoryName(e.target.value)}
+                              className="flex-1"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleUpdateCategory(cat.id)
+                                if (e.key === "Escape") setEditingCategoryId(null)
+                              }}
+                            />
+                            <Button size="sm" onClick={() => handleUpdateCategory(cat.id)}>
+                              <Save className="size-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setEditingCategoryId(null)}>
+                              <X className="size-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex-1 font-medium">{cat.name}</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingCategoryId(cat.id)
+                                setEditingCategoryName(cat.name)
+                              }}
+                            >
+                              <Pencil className="size-3.5" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteCategory(cat.id)}
+                            >
+                              <Trash2 className="size-3.5 text-destructive" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setAddingDisciplineToCategoryId(cat.id)}
+                            >
+                              <Plus className="mr-1 size-4" />
+                              添加学科
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* 学科列表 */}
+                      {expanded && (
+                        <div className="mt-3 ml-6 space-y-2">
+                          {addingDisciplineToCategoryId === cat.id && (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={newDisciplineName}
+                                onChange={(e) => setNewDisciplineName(e.target.value)}
+                                placeholder="学科名称"
+                                className="flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleCreateDiscipline(cat.id)
+                                  if (e.key === "Escape") {
+                                    setAddingDisciplineToCategoryId(null)
+                                    setNewDisciplineName("")
+                                  }
+                                }}
+                              />
+                              <Button size="sm" onClick={() => handleCreateDiscipline(cat.id)}>
+                                <Save className="size-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setAddingDisciplineToCategoryId(null)
+                                  setNewDisciplineName("")
+                                }}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
+                          )}
+                          {catDisciplines.map((disc) => (
+                            <div key={disc.id} className="flex items-center gap-2 rounded border bg-white p-2">
+                              {editingDisciplineId === disc.id ? (
+                                <>
+                                  <Input
+                                    value={editingDisciplineName}
+                                    onChange={(e) => setEditingDisciplineName(e.target.value)}
+                                    className="flex-1"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") handleUpdateDiscipline(disc.id, cat.id)
+                                      if (e.key === "Escape") setEditingDisciplineId(null)
+                                    }}
+                                  />
+                                  <Button size="sm" onClick={() => handleUpdateDiscipline(disc.id, cat.id)}>
+                                    <Save className="size-4" />
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => setEditingDisciplineId(null)}>
+                                    <X className="size-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="flex-1">{disc.name}</span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setEditingDisciplineId(disc.id)
+                                      setEditingDisciplineName(disc.name)
+                                    }}
+                                  >
+                                    <Pencil className="size-3.5" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteDiscipline(disc.id, cat.id)}
+                                  >
+                                    <Trash2 className="size-3.5 text-destructive" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           {/* 顶部操作栏 */}
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-semibold">院校管理</h3>
