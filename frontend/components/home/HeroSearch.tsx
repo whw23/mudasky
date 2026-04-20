@@ -44,38 +44,43 @@ export function HeroSearch() {
   }
 
   return (
-    <div className="mt-8 w-full max-w-3xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-3 rounded-xl bg-white/10 backdrop-blur-sm p-4">
+    <div className="mt-6 md:mt-8 w-full max-w-3xl mx-auto px-4">
+      <div className="rounded-xl bg-white/10 backdrop-blur-sm p-3 md:p-4 space-y-2 md:space-y-0 md:flex md:gap-3">
+        {/* 搜索框 */}
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           placeholder={t("searchPlaceholder")}
-          className="flex-1 bg-white/90 text-foreground"
+          className="bg-white/90 text-foreground h-10 md:flex-1"
         />
-        <Select value={country || undefined} onValueChange={(v) => setCountry(v === ALL ? "" : v)}>
-          <SelectTrigger className="w-full md:w-36 bg-white/90 text-foreground">
-            <SelectValue placeholder={t("allCountries")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>{t("allCountries")}</SelectItem>
-            {countries.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={categoryId || undefined} onValueChange={(v) => setCategoryId(v === ALL ? "" : v)}>
-          <SelectTrigger className="w-full md:w-36 bg-white/90 text-foreground">
-            <SelectValue placeholder={t("allDisciplineCategories")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>{t("allDisciplineCategories")}</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleSearch} className="bg-primary hover:bg-primary/90 text-white">
+        {/* 筛选下拉（移动端并排） */}
+        <div className="flex gap-2 md:contents">
+          <Select value={country || undefined} onValueChange={(v) => setCountry(v === ALL ? "" : v)}>
+            <SelectTrigger className="flex-1 md:w-32 bg-white/90 text-foreground h-10">
+              <SelectValue placeholder={t("allCountries")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t("allCountries")}</SelectItem>
+              {countries.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={categoryId || undefined} onValueChange={(v) => setCategoryId(v === ALL ? "" : v)}>
+            <SelectTrigger className="flex-1 md:w-32 bg-white/90 text-foreground h-10">
+              <SelectValue placeholder={t("allDisciplineCategories")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t("allDisciplineCategories")}</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* 搜索按钮 */}
+        <Button onClick={handleSearch} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white h-10">
           <Search className="size-4 mr-2" />
           {t("searchButton")}
         </Button>
