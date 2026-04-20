@@ -81,10 +81,9 @@ export async function ArticleDetailPage({
 
         {/* 文章正文 */}
         <ArticleContent
-          contentType={article.content_type ?? "markdown"}
+          contentType={article.content_type ?? "html"}
           content={article.content}
-          fileUrl={article.file_url ?? null}
-          title={article.title}
+          fileId={article.file_id ?? null}
         />
 
         {/* 底部返回 */}
