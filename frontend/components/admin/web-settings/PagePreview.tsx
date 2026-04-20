@@ -27,26 +27,27 @@ import { ArticleListPreview } from "./ArticleListPreview"
 interface PagePreviewProps {
   activePage: string
   onEditConfig: (section: string) => void
+  onBannerEdit: (pageKey: string) => void
 }
 
 /** 页面预览路由 */
-export function PagePreview({ activePage, onEditConfig }: PagePreviewProps) {
+export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePreviewProps) {
   switch (activePage) {
     case "home":
-      return <HomePreview onEditConfig={onEditConfig} />
+      return <HomePreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     case "universities":
-      return <UniversitiesEditPreview />
+      return <UniversitiesEditPreview onBannerEdit={onBannerEdit} />
     case "cases":
-      return <CasesEditPreview />
+      return <CasesEditPreview onBannerEdit={onBannerEdit} />
     case "about":
-      return <AboutPreview onEditConfig={onEditConfig} />
+      return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:
-      return <ArticleListPreview categorySlug={activePage} />
+      return <ArticleListPreview categorySlug={activePage} onBannerEdit={onBannerEdit} />
   }
 }
 
 /** 首页预览 — 复用真实首页组件 */
-function HomePreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
+function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
   const t = useTranslations("Home")
 
   const services = [
@@ -64,9 +65,22 @@ function HomePreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
 
   return (
     <>
-      <EditableOverlay onClick={() => onEditConfig("hero")} label="编辑 Hero">
-        <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
-      </EditableOverlay>
+      <div className="relative">
+        <EditableOverlay onClick={() => onBannerEdit("home")} label="编辑 Banner">
+          <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
+        </EditableOverlay>
+        <div className="absolute top-2 right-2 z-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onEditConfig("hero")
+            }}
+            className="rounded bg-green-500 px-2 py-1 text-xs text-white shadow hover:bg-green-600"
+          >
+            编辑文字
+          </button>
+        </div>
+      </div>
 
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <StatsSection />
@@ -126,11 +140,13 @@ function HomePreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
 }
 
 /** 关于我们预览 */
-function AboutPreview({ onEditConfig }: { onEditConfig: (s: string) => void }) {
+function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
   const t = useTranslations("Pages")
   return (
     <>
-      <Banner title={t("about")} subtitle={t("aboutSubtitle")} />
+      <EditableOverlay onClick={() => onBannerEdit("about")} label="编辑 Banner">
+        <Banner title={t("about")} subtitle={t("aboutSubtitle")} />
+      </EditableOverlay>
       <EditableOverlay onClick={() => onEditConfig("about_history")} label="编辑历史">
         <HistorySection />
       </EditableOverlay>

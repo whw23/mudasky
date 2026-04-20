@@ -7,8 +7,11 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Plus, Pencil, Trash2, GraduationCap } from "lucide-react"
+import { useTranslations } from "next-intl"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { Banner } from "@/components/layout/Banner"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { CaseEditDialog } from "./CaseEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
 
@@ -23,8 +26,13 @@ interface CaseItem {
   avatar_image_id: string | null
 }
 
+interface CasesEditPreviewProps {
+  onBannerEdit: (pageKey: string) => void
+}
+
 /** 案例列表编辑预览 */
-export function CasesEditPreview() {
+export function CasesEditPreview({ onBannerEdit }: CasesEditPreviewProps) {
+  const t = useTranslations("Pages")
   const [cases, setCases] = useState<CaseItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -72,16 +80,20 @@ export function CasesEditPreview() {
   }
 
   return (
-    <div className="px-6 py-8">
-      <div className="mx-auto max-w-5xl">
-        {/* 顶部操作栏 */}
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">案例管理</h3>
-          <Button size="sm" onClick={handleCreate}>
-            <Plus className="mr-1 size-4" />
-            添加案例
-          </Button>
-        </div>
+    <>
+      <EditableOverlay onClick={() => onBannerEdit("cases")} label="编辑 Banner">
+        <Banner title={t("cases")} subtitle={t("casesSubtitle")} />
+      </EditableOverlay>
+      <div className="px-6 py-8">
+        <div className="mx-auto max-w-5xl">
+          {/* 顶部操作栏 */}
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-semibold">案例管理</h3>
+            <Button size="sm" onClick={handleCreate}>
+              <Plus className="mr-1 size-4" />
+              添加案例
+            </Button>
+          </div>
 
         {/* 案例列表 */}
         {loading ? (
@@ -143,29 +155,30 @@ export function CasesEditPreview() {
             ))}
           </div>
         )}
+        </div>
+
+        {/* 编辑弹窗 */}
+        <CaseEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          caseItem={editItem}
+          onSuccess={fetchData}
+        />
+
+        {/* 删除确认弹窗 */}
+        <DeleteConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={`删除案例「${deleteTarget?.student_name ?? ""}」`}
+          description="此操作不可撤销，案例信息将被永久删除。"
+          onConfirm={() =>
+            api.post("/admin/web-settings/cases/list/detail/delete", {
+              case_id: deleteTarget!.id,
+            })
+          }
+          onSuccess={fetchData}
+        />
       </div>
-
-      {/* 编辑弹窗 */}
-      <CaseEditDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        caseItem={editItem}
-        onSuccess={fetchData}
-      />
-
-      {/* 删除确认弹窗 */}
-      <DeleteConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title={`删除案例「${deleteTarget?.student_name ?? ""}」`}
-        description="此操作不可撤销，案例信息将被永久删除。"
-        onConfirm={() =>
-          api.post("/admin/web-settings/cases/list/detail/delete", {
-            case_id: deleteTarget!.id,
-          })
-        }
-        onSuccess={fetchData}
-      />
-    </div>
+    </>
   )
 }

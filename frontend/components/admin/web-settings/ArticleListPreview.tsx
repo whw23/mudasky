@@ -7,8 +7,11 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Plus, Pencil, Trash2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { Banner } from "@/components/layout/Banner"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
 
@@ -32,12 +35,15 @@ interface Article {
 
 interface ArticleListPreviewProps {
   categorySlug: string
+  onBannerEdit: (pageKey: string) => void
 }
 
 /** 文章列表预览 */
-export function ArticleListPreview({ categorySlug }: ArticleListPreviewProps) {
+export function ArticleListPreview({ categorySlug, onBannerEdit }: ArticleListPreviewProps) {
+  const t = useTranslations("Pages")
   const [articles, setArticles] = useState<Article[]>([])
   const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [categoryName, setCategoryName] = useState<string>("")
   const [loading, setLoading] = useState(true)
 
   /* 编辑弹窗状态 */
@@ -57,10 +63,12 @@ export function ArticleListPreview({ categorySlug }: ArticleListPreviewProps) {
       const cat = categories.find((c) => c.slug === categorySlug)
       if (!cat) {
         setCategoryId(null)
+        setCategoryName("")
         setArticles([])
         return
       }
       setCategoryId(cat.id)
+      setCategoryName(cat.name)
 
       const artRes = await api.get("/admin/web-settings/articles/list", {
         params: { page: 1, page_size: 100 },
@@ -102,16 +110,20 @@ export function ArticleListPreview({ categorySlug }: ArticleListPreviewProps) {
   }
 
   return (
-    <div className="px-6 py-8">
-      <div className="mx-auto max-w-4xl">
-        {/* 顶部操作栏 */}
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">文章管理</h3>
-          <Button size="sm" onClick={handleCreate} disabled={!categoryId}>
-            <Plus className="mr-1 size-4" />
-            写文章
-          </Button>
-        </div>
+    <>
+      <EditableOverlay onClick={() => onBannerEdit(categorySlug)} label="编辑 Banner">
+        <Banner title={categoryName || categorySlug} subtitle="" />
+      </EditableOverlay>
+      <div className="px-6 py-8">
+        <div className="mx-auto max-w-4xl">
+          {/* 顶部操作栏 */}
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-semibold">文章管理</h3>
+            <Button size="sm" onClick={handleCreate} disabled={!categoryId}>
+              <Plus className="mr-1 size-4" />
+              写文章
+            </Button>
+          </div>
 
         {/* 文章列表 */}
         {loading ? (
@@ -156,32 +168,33 @@ export function ArticleListPreview({ categorySlug }: ArticleListPreviewProps) {
             ))}
           </div>
         )}
-      </div>
+        </div>
 
-      {/* 编辑弹窗 */}
-      {categoryId && (
-        <ArticleEditDialog
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          article={editArticle}
-          categoryId={categoryId}
+        {/* 编辑弹窗 */}
+        {categoryId && (
+          <ArticleEditDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            article={editArticle}
+            categoryId={categoryId}
+            onSuccess={fetchData}
+          />
+        )}
+
+        {/* 删除确认弹窗 */}
+        <DeleteConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={`删除文章「${deleteTarget?.title ?? ""}」`}
+          description="此操作不可撤销，文章将被永久删除。"
+          onConfirm={() =>
+            api.post("/admin/web-settings/articles/list/detail/delete", {
+              article_id: deleteTarget!.id,
+            })
+          }
           onSuccess={fetchData}
         />
-      )}
-
-      {/* 删除确认弹窗 */}
-      <DeleteConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title={`删除文章「${deleteTarget?.title ?? ""}」`}
-        description="此操作不可撤销，文章将被永久删除。"
-        onConfirm={() =>
-          api.post("/admin/web-settings/articles/list/detail/delete", {
-            article_id: deleteTarget!.id,
-          })
-        }
-        onSuccess={fetchData}
-      />
-    </div>
+      </div>
+    </>
   )
 }

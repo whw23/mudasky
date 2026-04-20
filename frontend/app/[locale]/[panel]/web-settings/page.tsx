@@ -12,8 +12,8 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
-import { BannerImageEditor } from '@/components/admin/web-settings/BannerImageEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
+import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 统计项编辑字段定义 */
@@ -52,6 +52,12 @@ interface DialogState {
   customSave?: (data: Record<string, any>) => Promise<void>
 }
 
+/** Banner 编辑弹窗状态 */
+interface BannerDialogState {
+  open: boolean
+  pageKey: string
+}
+
 /** 原始配置数据类型 */
 interface RawConfig {
   siteInfo: SiteInfo
@@ -81,6 +87,7 @@ export default function WebSettingsPage() {
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
+  const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
   const [loading, setLoading] = useState(true)
 
   /** 获取所有配置 */
@@ -235,6 +242,14 @@ export default function WebSettingsPage() {
     }
   }
 
+  /** 打开 Banner 编辑弹窗 */
+  function handleBannerEdit(pageKey: string): void {
+    setBannerDialogState({
+      open: true,
+      pageKey,
+    })
+  }
+
   /** 处理页面预览中的配置编辑 */
   function handleEditConfig(section: string): void {
     switch (section) {
@@ -242,7 +257,7 @@ export default function WebSettingsPage() {
         setDialogState({
           open: true,
           title: '编辑 Hero 区域',
-          fields: HERO_FIELDS,
+          fields: HERO_FIELDS.filter(f => f.key !== 'hero_image'), // 移除 hero_image，改用 BannerEditDialog
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
@@ -309,13 +324,8 @@ export default function WebSettingsPage() {
           onEdit={handleHeaderEdit}
         />
         <NavEditor activePage={activePage} onPageChange={setActivePage} />
-        <BannerImageEditor
-          pageKey={activePage}
-          imageIds={rawConfig.pageBanners[activePage]?.image_ids || []}
-          onUpdate={fetchAllConfigs}
-        />
         <div className="max-h-[60vh] overflow-y-auto">
-          <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
+          <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
         </div>
         <Footer editable onEdit={handleFooterEdit} />
       </div>
@@ -329,6 +339,17 @@ export default function WebSettingsPage() {
           fields={dialogState.fields}
           data={dialogState.data}
           onSave={handleSave}
+        />
+      )}
+
+      {/* Banner 编辑弹窗 */}
+      {bannerDialogState && (
+        <BannerEditDialog
+          open={bannerDialogState.open}
+          onOpenChange={(open) => { if (!open) setBannerDialogState(null) }}
+          pageKey={bannerDialogState.pageKey}
+          imageIds={rawConfig.pageBanners[bannerDialogState.pageKey]?.image_ids || []}
+          onUpdate={fetchAllConfigs}
         />
       )}
     </div>

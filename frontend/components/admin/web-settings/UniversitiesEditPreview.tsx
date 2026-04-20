@@ -7,8 +7,11 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { Plus, Pencil, Trash2, MapPin, Award } from "lucide-react"
+import { useTranslations } from "next-intl"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { Banner } from "@/components/layout/Banner"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { UniversityEditDialog } from "./UniversityEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
 
@@ -26,8 +29,13 @@ interface University {
   qs_rankings: { year: number; ranking: number }[] | null
 }
 
+interface UniversitiesEditPreviewProps {
+  onBannerEdit: (pageKey: string) => void
+}
+
 /** 院校列表编辑预览 */
-export function UniversitiesEditPreview() {
+export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPreviewProps) {
+  const t = useTranslations("Pages")
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -75,16 +83,20 @@ export function UniversitiesEditPreview() {
   }
 
   return (
-    <div className="px-6 py-8">
-      <div className="mx-auto max-w-5xl">
-        {/* 顶部操作栏 */}
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">院校管理</h3>
-          <Button size="sm" onClick={handleCreate}>
-            <Plus className="mr-1 size-4" />
-            添加院校
-          </Button>
-        </div>
+    <>
+      <EditableOverlay onClick={() => onBannerEdit("universities")} label="编辑 Banner">
+        <Banner title={t("universities")} subtitle={t("universitiesSubtitle")} />
+      </EditableOverlay>
+      <div className="px-6 py-8">
+        <div className="mx-auto max-w-5xl">
+          {/* 顶部操作栏 */}
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-semibold">院校管理</h3>
+            <Button size="sm" onClick={handleCreate}>
+              <Plus className="mr-1 size-4" />
+              添加院校
+            </Button>
+          </div>
 
         {/* 院校网格 */}
         {loading ? (
@@ -159,29 +171,30 @@ export function UniversitiesEditPreview() {
             })}
           </div>
         )}
+        </div>
+
+        {/* 编辑弹窗 */}
+        <UniversityEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          university={editItem}
+          onSuccess={fetchData}
+        />
+
+        {/* 删除确认弹窗 */}
+        <DeleteConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={`删除院校「${deleteTarget?.name ?? ""}」`}
+          description="此操作不可撤销，院校信息将被永久删除。"
+          onConfirm={() =>
+            api.post("/admin/web-settings/universities/list/detail/delete", {
+              university_id: deleteTarget!.id,
+            })
+          }
+          onSuccess={fetchData}
+        />
       </div>
-
-      {/* 编辑弹窗 */}
-      <UniversityEditDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        university={editItem}
-        onSuccess={fetchData}
-      />
-
-      {/* 删除确认弹窗 */}
-      <DeleteConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title={`删除院校「${deleteTarget?.name ?? ""}」`}
-        description="此操作不可撤销，院校信息将被永久删除。"
-        onConfirm={() =>
-          api.post("/admin/web-settings/universities/list/detail/delete", {
-            university_id: deleteTarget!.id,
-          })
-        }
-        onSuccess={fetchData}
-      />
-    </div>
+    </>
   )
 }
