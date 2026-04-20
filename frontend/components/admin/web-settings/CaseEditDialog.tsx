@@ -254,23 +254,22 @@ export function CaseEditDialog({
                   className="h-12 w-12 rounded-full object-cover border"
                 />
               )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={uploadingAvatar}
-              >
-                <Upload className="mr-1 h-4 w-4" />
-                {uploadingAvatar ? "上传中..." : avatarImageId ? "更换头像" : "上传头像"}
-              </Button>
               <input
                 ref={avatarInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleAvatarUpload}
                 className="hidden"
+                id="case-avatar-upload"
+                disabled={uploadingAvatar}
               />
+              <label
+                htmlFor="case-avatar-upload"
+                className={`inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${uploadingAvatar ? "pointer-events-none opacity-50" : ""}`}
+              >
+                <Upload className="size-4" />
+                {uploadingAvatar ? "上传中..." : avatarImageId ? "更换头像" : "上传头像"}
+              </label>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -319,23 +318,22 @@ export function CaseEditDialog({
                   className="h-12 w-16 rounded object-cover border"
                 />
               )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => offerInputRef.current?.click()}
-                disabled={uploadingOffer}
-              >
-                <Upload className="mr-1 h-4 w-4" />
-                {uploadingOffer ? "上传中..." : offerImageId ? "更换通知书" : "上传通知书"}
-              </Button>
               <input
                 ref={offerInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleOfferUpload}
                 className="hidden"
+                id="case-offer-upload"
+                disabled={uploadingOffer}
               />
+              <label
+                htmlFor="case-offer-upload"
+                className={`inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${uploadingOffer ? "pointer-events-none opacity-50" : ""}`}
+              >
+                <Upload className="size-4" />
+                {uploadingOffer ? "上传中..." : offerImageId ? "更换通知书" : "上传通知书"}
+              </label>
             </div>
           </div>
           <div className="space-y-1.5">

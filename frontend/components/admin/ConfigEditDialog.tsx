@@ -156,20 +156,19 @@ export function ConfigEditDialog({
               type="file"
               accept="image/*"
               className="hidden"
+              id={`config-img-${field.key}`}
+              disabled={isFieldUploading}
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) handleImageUpload(field.key, file)
               }}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isFieldUploading}
-              onClick={() => fileInputRefs.current[field.key]?.click()}
+            <label
+              htmlFor={`config-img-${field.key}`}
+              className={`inline-flex items-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${isFieldUploading ? "pointer-events-none opacity-50" : ""}`}
             >
               {isFieldUploading ? "上传中..." : "上传"}
-            </Button>
+            </label>
             {value && (
               <Button
                 type="button"

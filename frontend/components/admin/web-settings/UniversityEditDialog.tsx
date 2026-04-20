@@ -279,23 +279,22 @@ export function UniversityEditDialog({
                   className="h-12 w-12 rounded object-contain border"
                 />
               )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                <Upload className="mr-1 h-4 w-4" />
-                {uploading ? "上传中..." : logoImageId ? "更换 Logo" : "上传 Logo"}
-              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleLogoUpload}
                 className="hidden"
+                id="uni-logo-upload"
+                disabled={uploading}
               />
+              <label
+                htmlFor="uni-logo-upload"
+                className={`inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${uploading ? "pointer-events-none opacity-50" : ""}`}
+              >
+                <Upload className="size-4" />
+                {uploading ? "上传中..." : logoImageId ? "更换 Logo" : "上传 Logo"}
+              </label>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

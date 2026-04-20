@@ -64,17 +64,15 @@ export function BannerImageEditor({ pageKey, imageIds, onUpdate }: BannerImageEd
           onChange={handleUpload}
           className="hidden"
           id={`banner-upload-${pageKey}`}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
           disabled={uploading}
-          onClick={() => document.getElementById(`banner-upload-${pageKey}`)?.click()}
+        />
+        <label
+          htmlFor={`banner-upload-${pageKey}`}
+          className={`inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${uploading ? "pointer-events-none opacity-50" : ""}`}
         >
-          <Plus className="size-4 mr-1" />
+          <Plus className="size-4" />
           {uploading ? "上传中..." : "添加图片"}
-        </Button>
+        </label>
       </div>
       {imageIds.length > 0 ? (
         <div className="flex flex-wrap gap-2">
