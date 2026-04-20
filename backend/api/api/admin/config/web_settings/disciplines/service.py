@@ -29,8 +29,12 @@ class DisciplineService:
             raise ConflictException(
                 message="分类名称已存在", code="DISCIPLINE_CATEGORY_EXISTS"
             )
+        category = DisciplineCategory(
+            name=data.name,
+            sort_order=data.sort_order,
+        )
         return await repository.create_category(
-            self.session, name=data.name, sort_order=data.sort_order
+            self.session, category
         )
 
     async def get_category(self, category_id: str) -> DisciplineCategory:
@@ -83,11 +87,13 @@ class DisciplineService:
                 message="学科名称已存在", code="DISCIPLINE_EXISTS"
             )
 
-        return await repository.create_discipline(
-            self.session,
+        discipline = Discipline(
             category_id=data.category_id,
             name=data.name,
             sort_order=data.sort_order,
+        )
+        return await repository.create_discipline(
+            self.session, discipline
         )
 
     async def get_discipline(self, discipline_id: str) -> Discipline:
