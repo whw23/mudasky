@@ -15,6 +15,7 @@ from api.core.pagination import (
 )
 from app.db.image import repository as image_repo
 
+from .export_service import ExportService
 from .import_service import ImportService
 from .schemas import (
     ImageResponse,
@@ -182,15 +183,22 @@ async def import_preview(
     summary="确认批量导入",
 )
 async def import_confirm(
-    data: dict,
     session: DbSession,
+    file: UploadFile = File(...),
+    items: str = "",
+    discipline_actions: str = "",
 ) -> dict:
-    """确认并执行批量导入。"""
+    """确认并执行批量导入。
+
+    前端需要重新上传原始文件 + 传递 items 和 discipline_actions JSON 字符串。
+    """
+    import json
+
+    items_list = json.loads(items) if items else []
+    actions_list = json.loads(discipline_actions) if discipline_actions else []
+
     svc = ImportService(session)
-    return await svc.confirm(
-        data.get("rows", []),
-        data.get("discipline_mappings", []),
-    )
+    return await svc.confirm(file, items_list, actions_list)
 
 
 @router.get(
@@ -200,13 +208,32 @@ async def import_confirm(
 async def download_template(
     session: DbSession,
 ) -> StreamingResponse:
-    """下载 Excel 导入模板。"""
+    """下载导入模板（ZIP 格式）。"""
     svc = ImportService(session)
     content = svc.generate_template()
     return StreamingResponse(
         io.BytesIO(content),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type="application/zip",
         headers={
-            "Content-Disposition": 'attachment; filename="university_template.xlsx"'
+            "Content-Disposition": 'attachment; filename="university_template.zip"'
+        },
+    )
+
+
+@router.get(
+    "/list/export",
+    summary="导出所有院校",
+)
+async def export_universities(
+    session: DbSession,
+) -> StreamingResponse:
+    """导出所有院校为 ZIP（包含 Excel + 图片）。"""
+    svc = ExportService(session)
+    content = await svc.export()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="universities_export.zip"'
         },
     )
