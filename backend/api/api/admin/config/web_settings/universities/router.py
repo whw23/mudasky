@@ -3,7 +3,10 @@
 提供院校的管理员 API 端点。
 """
 
+import io
+
 from fastapi import APIRouter, File, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import DbSession
 from api.core.pagination import (
@@ -12,6 +15,7 @@ from api.core.pagination import (
 )
 from app.db.image import repository as image_repo
 
+from .import_service import ImportService
 from .schemas import (
     ImageResponse,
     UniversityCreate,
@@ -158,3 +162,51 @@ async def set_disciplines(
     """设置院校关联学科（全量覆盖）。"""
     svc = UniversityService(session)
     await svc.set_disciplines(data.university_id, data.discipline_ids)
+
+
+@router.post(
+    "/list/import/preview",
+    summary="批量导入预览",
+)
+async def import_preview(
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传 Excel/zip，解析校验并返回预览。"""
+    svc = ImportService(session)
+    return await svc.preview(file)
+
+
+@router.post(
+    "/list/import/confirm",
+    summary="确认批量导入",
+)
+async def import_confirm(
+    data: dict,
+    session: DbSession,
+) -> dict:
+    """确认并执行批量导入。"""
+    svc = ImportService(session)
+    return await svc.confirm(
+        data.get("rows", []),
+        data.get("discipline_mappings", []),
+    )
+
+
+@router.get(
+    "/list/import/template",
+    summary="下载导入模板",
+)
+async def download_template(
+    session: DbSession,
+) -> StreamingResponse:
+    """下载 Excel 导入模板。"""
+    svc = ImportService(session)
+    content = svc.generate_template()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": 'attachment; filename="university_template.xlsx"'
+        },
+    )

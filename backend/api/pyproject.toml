@@ -11,6 +11,7 @@ dependencies = [
     "mudasky-backend",
     "uvicorn[standard]>=0.34",
     "alembic>=1.15",
+    "openpyxl>=3.1.5",
 ]
 
 [project.optional-dependencies]
