@@ -44,14 +44,14 @@ export function Banner({ title, subtitle, imageIds = [], large = false, children
     >
       {/* 弥漫渐变动画背景（无图片时） */}
       {!hasImages && (
-        <div className="absolute inset-0 overflow-hidden bg-[#4a7cf7]">
+        <div className="absolute inset-0 overflow-hidden bg-[#ff3c83]">
           {/* 弥散渐变色块 */}
           <div className="absolute inset-0 blur-[120px]">
-            <div className="absolute h-[60%] w-[50%] rounded-full bg-[#6c5ce7] animate-blob-1" style={{ top: "10%", left: "15%" }} />
-            <div className="absolute h-[50%] w-[45%] rounded-full bg-[#e056a0] animate-blob-2" style={{ top: "30%", left: "55%" }} />
-            <div className="absolute h-[55%] w-[40%] rounded-full bg-[#00b4d8] animate-blob-3" style={{ top: "50%", left: "25%" }} />
-            <div className="absolute h-[45%] w-[50%] rounded-full bg-[#a855f7] animate-blob-4" style={{ top: "5%", left: "60%" }} />
-            <div className="absolute h-[40%] w-[35%] rounded-full bg-[#38bdf8] animate-blob-5" style={{ top: "60%", left: "65%" }} />
+            <div className="absolute h-[60%] w-[50%] rounded-full bg-[#ff1a6d] animate-blob-1" style={{ top: "10%", left: "5%" }} />
+            <div className="absolute h-[55%] w-[50%] rounded-full bg-[#8b5cf6] animate-blob-2" style={{ top: "15%", left: "45%" }} />
+            <div className="absolute h-[50%] w-[45%] rounded-full bg-[#fbbf24] animate-blob-3" style={{ top: "55%", left: "0%" }} />
+            <div className="absolute h-[50%] w-[50%] rounded-full bg-[#f472b6] animate-blob-4" style={{ top: "40%", left: "50%" }} />
+            <div className="absolute h-[45%] w-[40%] rounded-full bg-[#fbbf24] animate-blob-5" style={{ top: "60%", left: "60%" }} />
           </div>
         </div>
       )}
