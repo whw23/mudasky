@@ -21,6 +21,12 @@ def _uni_obj(**overrides) -> SimpleNamespace:
         logo_url=None, description="描述",
         programs=["计算机"], website=None,
         is_featured=False, sort_order=0,
+        logo_image_id=None,
+        admission_requirements=None,
+        scholarship_info=None,
+        qs_rankings=None,
+        latitude=None,
+        longitude=None,
         created_at=datetime.now(timezone.utc),
         updated_at=None,
     )
@@ -43,7 +49,7 @@ class TestListUniversities:
 
     async def test_list_universities_success(self, client):
         """分页查询院校列表返回 200。"""
-        self.mock_svc.list_universities.return_value = (
+        self.mock_svc.filter_universities_by_discipline.return_value = (
             [_uni_obj()],
             1,
         )
@@ -55,7 +61,7 @@ class TestListUniversities:
 
     async def test_list_universities_with_filters(self, client):
         """带筛选参数查询院校列表。"""
-        self.mock_svc.list_universities.return_value = ([], 0)
+        self.mock_svc.filter_universities_by_discipline.return_value = ([], 0)
         resp = await client.get(
             "/public/universities/list",
             params={
@@ -73,7 +79,7 @@ class TestListUniversities:
 
     async def test_list_universities_etag_match(self, client):
         """ETag 匹配时返回 304。"""
-        self.mock_svc.list_universities.return_value = ([], 0)
+        self.mock_svc.filter_universities_by_discipline.return_value = ([], 0)
         resp1 = await client.get("/public/universities/list")
         etag = resp1.headers.get("ETag")
         assert etag is not None
@@ -86,7 +92,7 @@ class TestListUniversities:
 
     async def test_list_universities_empty(self, client):
         """查询结果为空时返回空列表。"""
-        self.mock_svc.list_universities.return_value = ([], 0)
+        self.mock_svc.filter_universities_by_discipline.return_value = ([], 0)
         resp = await client.get("/public/universities/list")
         assert resp.status_code == 200
         data = resp.json()
@@ -271,7 +277,12 @@ class TestGetUniversity:
         uni = _uni_obj(
             updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
         )
-        self.mock_svc.get_university.return_value = uni
+        self.mock_svc.get_university_detail.return_value = {
+            "university": uni,
+            "disciplines": [],
+            "image_ids": [],
+            "related_cases": [],
+        }
         resp = await client.get(
             "/public/universities/detail/uni-001"
         )
@@ -287,7 +298,12 @@ class TestGetUniversity:
                 2026, 1, 1, tzinfo=timezone.utc
             ),
         )
-        self.mock_svc.get_university.return_value = uni
+        self.mock_svc.get_university_detail.return_value = {
+            "university": uni,
+            "disciplines": [],
+            "image_ids": [],
+            "related_cases": [],
+        }
         resp1 = await client.get(
             "/public/universities/detail/uni-001"
         )
@@ -302,7 +318,7 @@ class TestGetUniversity:
 
     async def test_get_university_not_found(self, client):
         """院校不存在返回 404。"""
-        self.mock_svc.get_university.side_effect = (
+        self.mock_svc.get_university_detail.side_effect = (
             NotFoundException(
                 message="院校不存在", code="UNIVERSITY_NOT_FOUND"
             )
@@ -320,7 +336,12 @@ class TestGetUniversity:
             province=None, city="纽约",
             description=None, programs=[],
         )
-        self.mock_svc.get_university.return_value = uni
+        self.mock_svc.get_university_detail.return_value = {
+            "university": uni,
+            "disciplines": [],
+            "image_ids": [],
+            "related_cases": [],
+        }
         resp = await client.get(
             "/public/universities/detail/uni-002"
         )

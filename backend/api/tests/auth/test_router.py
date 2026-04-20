@@ -125,66 +125,7 @@ class TestSendSmsCode:
         assert resp.status_code == 422
 
 
-class TestRegister:
-    """注册端点测试。"""
-
-    @pytest.fixture(autouse=True)
-    def _patch_service(self):
-        """模拟 AuthService。"""
-        with patch(
-            "api.auth.router.AuthService"
-        ) as mock_cls:
-            self.mock_svc = AsyncMock()
-            mock_cls.return_value = self.mock_svc
-            yield
-
-    async def test_register_success(self, client):
-        """注册成功返回 200。"""
-        user = _make_user()
-        self.mock_svc.register.return_value = user
-        self.mock_svc.build_user_response.return_value = (
-            _make_user_response()
-        )
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "+86-13800138000",
-                "code": "123456",
-                "username": "newuser",
-                "encrypted_password": "enc_data",
-                "nonce": "test_nonce",
-            },
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "user" in data
-
-    async def test_register_invalid_phone(self, client):
-        """注册手机号格式无效返回 422。"""
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "bad",
-                "code": "123456",
-            },
-        )
-        assert resp.status_code == 422
-
-    async def test_register_conflict(self, client):
-        """手机号已注册返回 409。"""
-        from app.core.exceptions import ConflictException
-
-        self.mock_svc.register.side_effect = (
-            ConflictException(message="手机号已注册")
-        )
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "+86-13800138000",
-                "code": "123456",
-            },
-        )
-        assert resp.status_code == 409
+# TestRegister removed - register endpoint was deleted, registration now uses sms-code + login
 
 
 class TestLogin:
