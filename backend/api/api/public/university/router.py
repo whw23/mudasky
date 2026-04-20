@@ -55,7 +55,7 @@ async def list_universities(
     )
     result = build_paginated(universities, total, params, UniversityResponse)
     seed = f"uni:list:{page}:{page_size}:{country}:{city}:{is_featured}:{search}:{program}:{discipline_category_id}:{discipline_id}:{total}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, 0, if_none_match):
         return response  # type: ignore[return-value]
     return result
 

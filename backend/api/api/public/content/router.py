@@ -52,7 +52,7 @@ async def list_published_articles(
         articles, total, params, ArticleResponse
     )
     seed = f"article:list:{page}:{page_size}:{category_id}:{total}"
-    if set_cache_headers(response, seed, 600, if_none_match):
+    if set_cache_headers(response, seed, 0, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
