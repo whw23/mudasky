@@ -332,7 +332,7 @@ async def test_upload_avatar_invalid_type(mock_repo, service):
     case = _make_case()
     mock_repo.get_case_by_id = AsyncMock(return_value=case)
 
-    file = _make_upload_file(content_type="application/pdf")
+    file = _make_upload_file(content_type="text/plain")
     with pytest.raises(BadRequestException) as exc_info:
         await service.upload_avatar("case-1", file)
 

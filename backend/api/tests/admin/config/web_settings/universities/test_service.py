@@ -140,7 +140,7 @@ async def test_upload_logo_invalid_type(mock_repo, service):
     university = _make_university()
     mock_repo.get_university_by_id = AsyncMock(return_value=university)
 
-    file = _make_upload_file(content_type="application/pdf")
+    file = _make_upload_file(content_type="text/plain")
     with pytest.raises(BadRequestException) as exc_info:
         await service.upload_logo("uni-1", file)
 

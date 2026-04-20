@@ -17,7 +17,7 @@ from api.admin.config.web_settings.articles.schemas import (
 from api.admin.config.web_settings.articles.service import (
     ArticleService,
 )
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import BadRequestException, NotFoundException
 
 
 REPO = "api.admin.config.web_settings.articles.service.repository"
@@ -33,9 +33,9 @@ def _make_article(
     a.id = article_id
     a.title = "测试文章"
     a.slug = "test-article"
-    a.content_type = "markdown"
+    a.content_type = "html"
     a.content = "正文内容"
-    a.file_url = None
+    a.file_id = None
     a.excerpt = "摘要"
     a.cover_image = None
     a.category_id = "cat-1"
@@ -315,3 +315,110 @@ async def test_delete_own_article_forbidden(
 
     with pytest.raises(NotFoundException):
         await service.delete_article_admin("nonexistent")
+
+
+# ---- upload_pdf ----
+
+IMAGE_REPO = (
+    "api.admin.config.web_settings.articles.service"
+    ".image_repo"
+)
+
+
+def _make_image(image_id: str = "img-1"):
+    """创建模拟 Image 对象。"""
+    img = MagicMock()
+    img.id = image_id
+    img.filename = "document.pdf"
+    img.content_type = "application/pdf"
+    img.size = 1024
+    return img
+
+
+def _make_upload_file(
+    content: bytes = b"fake pdf data",
+    filename: str = "document.pdf",
+    content_type: str = "application/pdf",
+) -> MagicMock:
+    """创建模拟 UploadFile 对象。"""
+    file = MagicMock()
+    file.filename = filename
+    file.content_type = content_type
+    file.read = AsyncMock(return_value=content)
+    return file
+
+
+@pytest.mark.asyncio
+@patch(IMAGE_REPO)
+@patch(REPO)
+async def test_upload_pdf_success(
+    mock_repo, mock_image_repo, service
+):
+    """上传 PDF 成功。"""
+    article = _make_article()
+    mock_repo.get_article_by_id = AsyncMock(
+        return_value=article
+    )
+
+    image = _make_image()
+    mock_image_repo.create_image = AsyncMock(
+        return_value=image
+    )
+    mock_repo.update_article = AsyncMock(
+        return_value=article
+    )
+
+    file = _make_upload_file()
+    result = await service.upload_pdf("art-1", file)
+
+    assert result == "img-1"
+    assert article.file_id == "img-1"
+    assert article.content_type == "file"
+    mock_repo.update_article.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_pdf_invalid_type(mock_repo, service):
+    """上传非 PDF 文件抛出 BadRequestException。"""
+    article = _make_article()
+    mock_repo.get_article_by_id = AsyncMock(
+        return_value=article
+    )
+
+    file = _make_upload_file(content_type="image/jpeg")
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_pdf("art-1", file)
+
+    assert exc_info.value.code == "INVALID_FILE_TYPE"
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_pdf_not_found(mock_repo, service):
+    """上传 PDF 时文章不存在抛出 NotFoundException。"""
+    mock_repo.get_article_by_id = AsyncMock(return_value=None)
+
+    file = _make_upload_file()
+    with pytest.raises(NotFoundException) as exc_info:
+        await service.upload_pdf("nonexistent", file)
+
+    assert exc_info.value.code == "ARTICLE_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_pdf_too_large(mock_repo, service):
+    """上传超过 5MB 的 PDF 抛出 BadRequestException。"""
+    article = _make_article()
+    mock_repo.get_article_by_id = AsyncMock(
+        return_value=article
+    )
+
+    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    file = _make_upload_file(content=large_content)
+
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_pdf("art-1", file)
+
+    assert exc_info.value.code == "FILE_TOO_LARGE"
