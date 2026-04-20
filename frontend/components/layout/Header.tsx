@@ -57,9 +57,10 @@ interface HeaderProps {
   onPageChange?: (key: string) => void
   activePage?: string
   hideNav?: boolean
+  transparent?: boolean
 }
 
-export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage, hideNav, transparent }: HeaderProps) {
   const pathname = usePathname()
   const locale = useLocale()
   const { user, logout, showLoginModal } = useAuth()
@@ -116,12 +117,17 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
     setMenuOpen(false)
   }
 
+  /** 是否当前处于透明状态 */
+  const isTransparentNow = transparent && !scrolled
+
   return (
     <header
       className={`overflow-x-hidden transition-all duration-300 ${
         editable
           ? ""
-          : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
+          : transparent
+            ? `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/90 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
+            : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
@@ -139,12 +145,12 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                 />
                 <div className="flex flex-col">
                   <span
-                    className="font-[800] tracking-wide whitespace-nowrap text-foreground"
+                    className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white" : "text-foreground"}`}
                     style={{ fontSize: 22 }}
                   >
                     {brandName}
                   </span>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/80" : "text-muted-foreground"}`}>
                     {brandNameEn}
                   </span>
                 </div>
@@ -153,7 +159,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               "编辑品牌名称"
             )}
             {wrapEditable(
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/80" : "text-muted-foreground"}`}>
                 {tagline}
               </span>,
               "tagline",
@@ -162,10 +168,10 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
           </div>
 
           {/* 右侧：热线 + 用户信息 */}
-          <div className="flex items-center gap-4 text-xs text-foreground/60">
+          <div className={`flex items-center gap-4 text-xs ${isTransparentNow ? "text-white/80" : "text-foreground/60"}`}>
             {wrapEditable(
               hotline ? (
-                <span className="flex items-center gap-1.5 font-semibold text-primary">
+                <span className={`flex items-center gap-1.5 font-semibold ${isTransparentNow ? "text-white" : "text-primary"}`}>
                   <Phone className="size-3.5" />
                   {hotline}
                   {hotlineContact && (
@@ -186,21 +192,21 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                 <div className="flex items-center gap-3">
                   <Link
                     href="/portal/overview"
-                    className="text-foreground/70 hover:text-foreground transition-colors"
+                    className={`transition-colors ${isTransparentNow ? "text-white/90 hover:text-white" : "text-foreground/70 hover:text-foreground"}`}
                   >
                     {user.username || user.phone}
                   </Link>
                   {isAdmin && (
                     <Link
                       href="/admin/dashboard"
-                      className="text-foreground/60 hover:text-foreground transition-colors"
+                      className={`transition-colors ${isTransparentNow ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"}`}
                     >
                       {tHeader("adminPanel")}
                     </Link>
                   )}
                   <button
                     onClick={logout}
-                    className="text-foreground/60 hover:text-foreground transition-colors"
+                    className={`transition-colors ${isTransparentNow ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"}`}
                   >
                     {tHeader("logout")}
                   </button>
@@ -208,7 +214,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               ) : (
                 <button
                   onClick={showLoginModal}
-                  className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
+                  className={`rounded-full border px-4 py-1 transition-colors ${isTransparentNow ? "border-white/40 text-white hover:border-white" : "border-foreground/20 text-foreground/70 hover:text-foreground hover:border-foreground/40"}`}
                 >
                   {tHeader("loginOrRegister")}
                 </button>
@@ -220,7 +226,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
 
       {/* === 桌面导航栏 Row 2 === */}
       {!hideNav && (
-        <nav className="hidden md:block border-t border-black/[0.04]">
+        <nav className={`hidden md:block border-t ${isTransparentNow ? "border-white/20" : "border-black/[0.04]"}`}>
           <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
             <ul className="flex flex-1 items-center justify-evenly">
               {navItems.map((item) => {
@@ -235,7 +241,9 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                         className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
                           active
                             ? "text-primary border-b-2 border-primary"
-                            : "text-foreground/60 hover:text-foreground"
+                            : isTransparentNow
+                              ? "text-white/90 hover:text-white"
+                              : "text-foreground/60 hover:text-foreground"
                         }`}
                       >
                         {item.label}
@@ -246,7 +254,9 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                         className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
                           active
                             ? "text-primary border-b-2 border-primary"
-                            : "text-foreground/60 hover:text-foreground"
+                            : isTransparentNow
+                              ? "text-white/90 hover:text-white"
+                              : "text-foreground/60 hover:text-foreground"
                         }`}
                       >
                         {item.label}
