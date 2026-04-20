@@ -57,10 +57,9 @@ interface HeaderProps {
   onPageChange?: (key: string) => void
   activePage?: string
   hideNav?: boolean
-  transparent?: boolean
 }
 
-export function Header({ editable, onEdit, onPageChange, activePage, hideNav, transparent }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: HeaderProps) {
   const pathname = usePathname()
   const locale = useLocale()
   const { user, logout, showLoginModal } = useAuth()
@@ -118,16 +117,14 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav, tr
   }
 
   /** 是否当前处于透明状态 */
-  const isTransparentNow = transparent && !scrolled
+  const isTransparentNow = !editable && !scrolled
 
   return (
     <header
       className={`overflow-x-hidden transition-all duration-300 ${
         editable
           ? ""
-          : transparent
-            ? `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
-            : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : ""}`
+          : `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
