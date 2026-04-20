@@ -9,6 +9,8 @@ from datetime import datetime
 from sqlalchemy import (
     Boolean,
     DateTime,
+    Float,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -62,6 +64,26 @@ class University(Base):
     )
     sort_order: Mapped[int] = mapped_column(
         Integer, default=0, nullable=False
+    )
+    logo_image_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("image.id"),
+        nullable=True,
+    )
+    admission_requirements: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    scholarship_info: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    qs_rankings: Mapped[list | None] = mapped_column(
+        JSONB, nullable=True
+    )
+    latitude: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
+    longitude: Mapped[float | None] = mapped_column(
+        Float, nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
