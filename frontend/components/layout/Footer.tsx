@@ -54,28 +54,38 @@ export function Footer({ editable, onEdit }: FooterProps) {
       {/* 主体四栏 */}
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         {/* 栏 1：品牌简介 + 联系方式 */}
-        {wrapEditable(
-          <div className="sm:col-span-2 lg:col-span-1">
+        <div className="sm:col-span-2 lg:col-span-1">
+          {wrapEditable(
             <h3 className="mb-3 text-lg font-bold tracking-wide text-foreground">
               {siteInfo.brand_name || t("brandName")}
-            </h3>
-            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-              {t("description")}
-            </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Phone className="size-4 shrink-0 text-primary" />
-                <span>{contactInfo.phone || t("phone")}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="size-4 shrink-0 text-primary" />
-                <span>{contactInfo.email || t("email")}</span>
-              </li>
-            </ul>
-          </div>,
-          "contact",
-          "编辑联系方式"
-        )}
+            </h3>,
+            "brand_name",
+            "编辑品牌名称"
+          )}
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            {t("description")}
+          </p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Phone className="size-4 shrink-0 text-primary" />
+              {wrapEditable(
+                <span>{contactInfo.phone || t("phone")}</span>,
+                "phone",
+                "编辑电话",
+                true
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="size-4 shrink-0 text-primary" />
+              {wrapEditable(
+                <span>{contactInfo.email || t("email")}</span>,
+                "email",
+                "编辑邮箱",
+                true
+              )}
+            </li>
+          </ul>
+        </div>
 
         {/* 栏 2：快速链接 */}
         <div>

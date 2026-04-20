@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import api from '@/lib/api'
 import { Header } from '@/components/layout/Header'
@@ -20,18 +21,6 @@ import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from
 const STAT_FIELDS = [
   { key: 'value', label: '数值', type: 'text' as const, localized: false },
   { key: 'label', label: '标签', type: 'text' as const, localized: true },
-]
-
-/** Hero 区域字段定义 */
-const HERO_FIELDS = [
-  { key: 'hero_title', label: '标题', type: 'text' as const, localized: true },
-  { key: 'hero_subtitle', label: '副标题', type: 'text' as const, localized: true },
-  { key: 'hero_image', label: 'Banner 背景图', type: 'image' as const, localized: false },
-]
-
-/** 服务区域字段定义 */
-const SERVICES_FIELDS = [
-  { key: 'services_title', label: '服务标题', type: 'text' as const, localized: true },
 ]
 
 /** 弹窗状态类型 */
@@ -50,6 +39,7 @@ interface DialogState {
   data: Record<string, any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   customSave?: (data: Record<string, any>) => Promise<void>
+  defaultValues?: Record<string, string>
 }
 
 /** Banner 编辑弹窗状态 */
@@ -84,6 +74,10 @@ const DEFAULT_RAW: RawConfig = {
 }
 
 export default function WebSettingsPage() {
+  const tHeader = useTranslations("Header")
+  const tHome = useTranslations("Home")
+  const tContact = useTranslations("Contact")
+  const tAbout = useTranslations("About")
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
@@ -130,19 +124,6 @@ export default function WebSettingsPage() {
     await fetchAllConfigs()
   }
 
-  /** 打开关于我们编辑弹窗（指定字段） */
-  function openAboutDialog(field: keyof AboutInfo, title: string): void {
-    setDialogState({
-      open: true,
-      title,
-      fields: [
-        { key: field, label: title, type: 'textarea' as const, localized: true, rows: 5 },
-      ],
-      configKey: 'about_info',
-      data: rawConfig.aboutInfo,
-    })
-  }
-
   /** 处理 Header 编辑区域点击 */
   function handleHeaderEdit(section: string): void {
     switch (section) {
@@ -156,6 +137,7 @@ export default function WebSettingsPage() {
           ],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
+          defaultValues: { brand_name: tHeader("brandName") },
         })
         break
       case 'tagline':
@@ -167,6 +149,7 @@ export default function WebSettingsPage() {
           ],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
+          defaultValues: { tagline: tHeader("tagline") },
         })
         break
       case 'hotline':
@@ -189,17 +172,30 @@ export default function WebSettingsPage() {
   /** 处理 Footer 编辑区域点击 */
   function handleFooterEdit(section: string): void {
     switch (section) {
-      case 'contact':
+      case 'brand_name':
         setDialogState({
           open: true,
-          title: '编辑联系方式',
-          fields: [
-            { key: 'address', label: '地址', type: 'text' as const, localized: true },
-            { key: 'phone', label: '电话', type: 'text' as const, localized: false },
-            { key: 'email', label: '邮箱', type: 'text' as const, localized: false },
-            { key: 'wechat', label: '微信号', type: 'text' as const, localized: false },
-            { key: 'registered_address', label: '办公时间', type: 'text' as const, localized: true },
-          ],
+          title: '编辑品牌名称',
+          fields: [{ key: 'brand_name', label: '品牌名称', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+          defaultValues: { brand_name: tHeader("brandName") },
+        })
+        break
+      case 'phone':
+        setDialogState({
+          open: true,
+          title: '编辑电话',
+          fields: [{ key: 'phone', label: '电话', type: 'text' as const, localized: false }],
+          configKey: 'contact_info',
+          data: rawConfig.contactInfo,
+        })
+        break
+      case 'email':
+        setDialogState({
+          open: true,
+          title: '编辑邮箱',
+          fields: [{ key: 'email', label: '邮箱', type: 'text' as const, localized: false }],
           configKey: 'contact_info',
           data: rawConfig.contactInfo,
         })
@@ -208,9 +204,7 @@ export default function WebSettingsPage() {
         setDialogState({
           open: true,
           title: '编辑微信二维码',
-          fields: [
-            { key: 'wechat_qr_url', label: '微信二维码', type: 'image' as const, localized: false },
-          ],
+          fields: [{ key: 'wechat_qr_url', label: '微信二维码', type: 'image' as const, localized: false }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
@@ -219,9 +213,7 @@ export default function WebSettingsPage() {
         setDialogState({
           open: true,
           title: '编辑公司名称',
-          fields: [
-            { key: 'company_name', label: '公司名称', type: 'text' as const, localized: false },
-          ],
+          fields: [{ key: 'company_name', label: '公司名称', type: 'text' as const, localized: false }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
@@ -230,9 +222,7 @@ export default function WebSettingsPage() {
         setDialogState({
           open: true,
           title: '编辑 ICP 备案',
-          fields: [
-            { key: 'icp_filing', label: 'ICP备案号', type: 'text' as const, localized: false },
-          ],
+          fields: [{ key: 'icp_filing', label: 'ICP备案号', type: 'text' as const, localized: false }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
@@ -253,13 +243,24 @@ export default function WebSettingsPage() {
   /** 处理页面预览中的配置编辑 */
   function handleEditConfig(section: string): void {
     switch (section) {
-      case 'hero':
+      case 'hero_title':
         setDialogState({
           open: true,
-          title: '编辑 Hero 区域',
-          fields: HERO_FIELDS.filter(f => f.key !== 'hero_image'), // 移除 hero_image，改用 BannerEditDialog
+          title: '编辑 Banner 标题',
+          fields: [{ key: 'hero_title', label: '标题', type: 'text' as const, localized: true }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
+          defaultValues: { hero_title: tHome("heroTitle") },
+        })
+        break
+      case 'hero_subtitle':
+        setDialogState({
+          open: true,
+          title: '编辑 Banner 副标题',
+          fields: [{ key: 'hero_subtitle', label: '副标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+          defaultValues: { hero_subtitle: tHome("heroSubtitle") },
         })
         break
       case 'stats':
@@ -271,39 +272,89 @@ export default function WebSettingsPage() {
           data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
         })
         break
-      case 'services':
+      case 'services_title':
         setDialogState({
           open: true,
-          title: '编辑服务区域',
-          fields: SERVICES_FIELDS,
+          title: '编辑服务标题',
+          fields: [{ key: 'services_title', label: '服务标题', type: 'text' as const, localized: true }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
+          defaultValues: { services_title: tHome("servicesTitle") },
         })
         break
-      case 'contact':
-        handleFooterEdit('contact')
-        break
-      case 'about_history':
-        openAboutDialog('history', '编辑公司历史')
-        break
-      case 'about_mission':
-        openAboutDialog('mission', '编辑使命与愿景')
-        break
-      case 'about_partnership':
-        openAboutDialog('partnership', '编辑合作介绍')
-        break
-      case 'destinations':
+      case 'destinations_title':
         setDialogState({
           open: true,
-          title: '编辑热门留学国家',
-          fields: [
-            { key: 'destinations_title', label: '板块标题', type: 'text' as const, localized: true },
-          ],
+          title: '编辑热门留学国家标题',
+          fields: [{ key: 'destinations_title', label: '板块标题', type: 'text' as const, localized: true }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
+          defaultValues: { destinations_title: tHome("destinationsTitle") },
+        })
+        break
+      case 'about_history':
+        setDialogState({
+          open: true,
+          title: '编辑公司历史',
+          fields: [{ key: 'history', label: '公司历史', type: 'textarea' as const, localized: true, rows: 5 }],
+          configKey: 'about_info',
+          data: rawConfig.aboutInfo,
+          defaultValues: { history: tAbout("historyContent") },
+        })
+        break
+      case 'about_mission':
+        setDialogState({
+          open: true,
+          title: '编辑使命',
+          fields: [{ key: 'mission', label: '使命', type: 'textarea' as const, localized: true, rows: 5 }],
+          configKey: 'about_info',
+          data: rawConfig.aboutInfo,
+          defaultValues: { mission: tAbout("missionContent") },
+        })
+        break
+      case 'about_vision':
+        setDialogState({
+          open: true,
+          title: '编辑愿景',
+          fields: [{ key: 'vision', label: '愿景', type: 'textarea' as const, localized: true, rows: 5 }],
+          configKey: 'about_info',
+          data: rawConfig.aboutInfo,
+          defaultValues: { vision: tAbout("visionContent") },
+        })
+        break
+      case 'about_partnership':
+        setDialogState({
+          open: true,
+          title: '编辑合作介绍',
+          fields: [{ key: 'partnership', label: '合作介绍', type: 'textarea' as const, localized: true, rows: 5 }],
+          configKey: 'about_info',
+          data: rawConfig.aboutInfo,
+          defaultValues: { partnership: tAbout("partnershipContent") },
         })
         break
       default:
+        // contact_* prefix handles individual contact fields
+        if (section.startsWith('contact_')) {
+          const field = section.replace('contact_', '')
+          const fieldDefs: Record<string, { label: string; localized: boolean; defaultKey?: string }> = {
+            address: { label: '办公地址', localized: true, defaultKey: 'address' },
+            phone: { label: '咨询热线', localized: false, defaultKey: 'phone' },
+            email: { label: '电子邮箱', localized: false, defaultKey: 'email' },
+            wechat: { label: '微信咨询', localized: false, defaultKey: 'wechat' },
+            registered_address: { label: '注册地址', localized: true, defaultKey: 'registeredAddress' },
+          }
+          const def = fieldDefs[field]
+          if (def) {
+            setDialogState({
+              open: true,
+              title: `编辑${def.label}`,
+              fields: [{ key: field, label: def.label, type: 'text' as const, localized: def.localized }],
+              configKey: 'contact_info',
+              data: rawConfig.contactInfo,
+              defaultValues: def.defaultKey ? { [field]: tContact(def.defaultKey) } : undefined,
+            })
+          }
+        }
         break
     }
   }
@@ -339,6 +390,7 @@ export default function WebSettingsPage() {
           fields={dialogState.fields}
           data={dialogState.data}
           onSave={handleSave}
+          defaultValues={dialogState.defaultValues}
         />
       )}
 

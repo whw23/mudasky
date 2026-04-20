@@ -2,6 +2,7 @@ import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
+import { SectionTitle } from "@/components/home/SectionTitle"
 import {
   GraduationCap,
   Globe,
@@ -73,7 +74,7 @@ export default async function HomePage() {
             <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
               {t("servicesTag")}
             </h2>
-            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("servicesTitle")}</h3>
+            <SectionTitle configKey="services_title" fallback={t("servicesTitle")} className="mt-2 text-2xl md:text-3xl font-bold" />
             <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">

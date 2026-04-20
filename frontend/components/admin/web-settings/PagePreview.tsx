@@ -66,19 +66,20 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
   return (
     <>
       <div className="relative">
-        <EditableOverlay onClick={() => onBannerEdit("home")} label="编辑 Banner">
+        <EditableOverlay onClick={() => onBannerEdit("home")} label="编辑 Banner 背景">
           <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
         </EditableOverlay>
-        <div className="absolute top-2 right-2 z-10">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onEditConfig("hero")
-            }}
-            className="rounded bg-green-500 px-2 py-1 text-xs text-white shadow hover:bg-green-600"
-          >
-            编辑文字
-          </button>
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
+          <EditableOverlay onClick={() => onEditConfig("hero_title")} label="编辑标题" inline>
+            <span className="pointer-events-auto text-2xl md:text-5xl font-bold tracking-wide text-transparent select-none">
+              【{t("heroTitle")}】
+            </span>
+          </EditableOverlay>
+          <EditableOverlay onClick={() => onEditConfig("hero_subtitle")} label="编辑副标题" inline>
+            <span className="pointer-events-auto text-xs md:text-sm tracking-[0.3em] text-transparent select-none">
+              {t("heroSubtitle")}
+            </span>
+          </EditableOverlay>
         </div>
       </div>
 
@@ -86,52 +87,52 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
         <StatsSection />
       </EditableOverlay>
 
-      <EditableOverlay onClick={() => onEditConfig("services")} label="编辑服务">
-        <section className="bg-gray-50 py-10 md:py-16">
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="text-center">
-              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {t("servicesTag")}
-              </h2>
-              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("servicesTitle")}</h3>
-              <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-            </div>
-            <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-              {services.map((s) => (
-                <div key={s.title} className="rounded-lg border bg-white p-6 shadow-sm">
-                  <span className="text-3xl">{s.icon}</span>
-                  <h4 className="mt-4 text-lg font-bold">{s.title}</h4>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </EditableOverlay>
-
-      {/* 热门留学国家 */}
-      <EditableOverlay onClick={() => onEditConfig("destinations")} label="编辑留学国家">
-        <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+      <section className="bg-gray-50 py-10 md:py-16">
+        <div className="mx-auto max-w-7xl px-4">
           <div className="text-center">
             <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {t("destinationsTag")}
+              {t("servicesTag")}
             </h2>
-            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("destinationsTitle")}</h3>
+            <EditableOverlay onClick={() => onEditConfig("services_title")} label="编辑服务标题" inline>
+              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("servicesTitle")}</h3>
+            </EditableOverlay>
             <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
           </div>
-          <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
-            {countries.map((c) => (
-              <div key={c.key} className="group relative overflow-hidden rounded-lg" style={{ backgroundImage: "linear-gradient(135deg, #374151 0%, #1f2937 100%)" }}>
-                <div className="flex h-48 items-center justify-center">
-                  <div className="text-center text-white">
-                    <h4 className="text-2xl font-bold">{c.name}</h4>
-                  </div>
-                </div>
+          <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {services.map((s) => (
+              <div key={s.title} className="rounded-lg border bg-white p-6 shadow-sm">
+                <span className="text-3xl">{s.icon}</span>
+                <h4 className="mt-4 text-lg font-bold">{s.title}</h4>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
               </div>
             ))}
           </div>
-        </section>
-      </EditableOverlay>
+        </div>
+      </section>
+
+      {/* 热门留学国家 */}
+      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+        <div className="text-center">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+            {t("destinationsTag")}
+          </h2>
+          <EditableOverlay onClick={() => onEditConfig("destinations_title")} label="编辑留学国家标题" inline>
+            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("destinationsTitle")}</h3>
+          </EditableOverlay>
+          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
+        </div>
+        <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
+          {countries.map((c) => (
+            <div key={c.key} className="group relative overflow-hidden rounded-lg" style={{ backgroundImage: "linear-gradient(135deg, #374151 0%, #1f2937 100%)" }}>
+              <div className="flex h-48 items-center justify-center">
+                <div className="text-center text-white">
+                  <h4 className="text-2xl font-bold">{c.name}</h4>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* 最新资讯（只读预览） */}
       <NewsPreview />
@@ -150,18 +151,21 @@ function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string
       <EditableOverlay onClick={() => onEditConfig("about_history")} label="编辑历史">
         <HistorySection />
       </EditableOverlay>
-      <EditableOverlay onClick={() => onEditConfig("about_mission")} label="编辑使命愿景">
-        <MissionVisionSection />
-      </EditableOverlay>
+      <MissionVisionSection
+        editable
+        onEditMission={() => onEditConfig("about_mission")}
+        onEditVision={() => onEditConfig("about_vision")}
+      />
       <EditableOverlay onClick={() => onEditConfig("about_partnership")} label="编辑合作">
         <PartnershipSection />
       </EditableOverlay>
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <AboutStatsSection />
       </EditableOverlay>
-      <EditableOverlay onClick={() => onEditConfig("contact")} label="编辑联系方式">
-        <ContactInfoSection />
-      </EditableOverlay>
+      <ContactInfoSection
+        editable
+        onEditField={(field) => onEditConfig(`contact_${field}`)}
+      />
     </>
   )
 }
