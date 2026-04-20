@@ -117,7 +117,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
   }
 
   /** 是否当前处于透明状态 */
-  const isTransparentNow = false
+  const isTransparentNow = !editable && !scrolled
 
   return (
     <header
