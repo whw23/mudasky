@@ -62,10 +62,16 @@ if not access_token then
   return redirect_to(home)
 end
 
--- 验证 JWT
+-- 验证 JWT（过期时放行，让前端 JS 通过 API 触发 refresh）
 local jwt_secret = config.get_jwt_secret()
 local jwt_obj = jwt:verify(jwt_secret, access_token)
 if not jwt_obj.verified then
+  local reason = jwt_obj.reason or ""
+  if string.find(reason, "expired") then
+    -- token 过期：放行页面，前端 JS 会检测到并自动 refresh
+    return
+  end
+  -- token 无效（篡改等）：重定向登录
   return redirect_to(home)
 end
 
