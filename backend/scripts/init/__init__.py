@@ -12,8 +12,15 @@ from app.db.case.models import SuccessCase  # noqa: F401
 from app.db.config.models import SystemConfig  # noqa: F401
 from app.db.contact.models import ContactRecord  # noqa: F401
 from app.db.content.models import Article, Category  # noqa: F401
+from app.db.discipline.models import (  # noqa: F401
+    Discipline,
+    DisciplineCategory,
+    UniversityDiscipline,
+)
 from app.db.document.models import Document  # noqa: F401
+from app.db.image.models import Image  # noqa: F401
 from app.db.rbac.models import Role  # noqa: F401
+from app.db.university.image_models import UniversityImage  # noqa: F401
 from app.db.university.models import University  # noqa: F401
 from app.db.user.models import User  # noqa: F401
 from app.db.worker.models import Task  # noqa: F401
