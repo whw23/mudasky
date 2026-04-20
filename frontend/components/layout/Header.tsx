@@ -124,7 +124,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
       className={`overflow-x-hidden transition-all duration-300 ${
         editable
           ? ""
-          : `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-transparent"}`
+          : `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-white/10 backdrop-blur-sm"}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
