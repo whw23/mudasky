@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
 
-from app.db.base import Base
+from app.db import Base
 
 
 class UniversityProgram(Base):
