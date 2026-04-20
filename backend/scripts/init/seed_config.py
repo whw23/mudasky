@@ -84,6 +84,21 @@ CONFIGS = [
         },
     ),
     (
+        "page_banners",
+        "页面 Banner 配置",
+        lambda: {
+            "home": {"image_ids": []},
+            "universities": {"image_ids": []},
+            "cases": {"image_ids": []},
+            "study-abroad": {"image_ids": []},
+            "requirements": {"image_ids": []},
+            "visa": {"image_ids": []},
+            "life": {"image_ids": []},
+            "news": {"image_ids": []},
+            "about": {"image_ids": []},
+        },
+    ),
+    (
         "contact_info",
         "联系方式",
         lambda: {

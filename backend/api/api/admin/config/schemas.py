@@ -112,6 +112,18 @@ class AboutInfoValue(BaseModel):
     partnership: str = Field("", description="合作介绍")
 
 
+class PageBannerItem(BaseModel):
+    """单个页面的 Banner 配置。"""
+
+    image_ids: list[str] = Field(default_factory=list, description="图片 ID 列表")
+
+
+class PageBannersValue(BaseModel):
+    """页面 Banner 配置验证。"""
+
+    model_config = {"extra": "allow"}
+
+
 # 配置键 → 验证器映射
 CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "phone_country_codes": PhoneCountryCodesValue,
@@ -119,6 +131,7 @@ CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "site_info": SiteInfoValue,
     "homepage_stats": HomepageStatsValue,
     "about_info": AboutInfoValue,
+    "page_banners": PageBannersValue,
 }
 
 
