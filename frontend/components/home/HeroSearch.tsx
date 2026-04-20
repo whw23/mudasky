@@ -53,7 +53,7 @@ export function HeroSearch() {
           placeholder={t("searchPlaceholder")}
           className="flex-1 bg-white/90 text-foreground"
         />
-        <Select value={country || ALL} onValueChange={(v) => setCountry(v === ALL ? "" : v)}>
+        <Select value={country || undefined} onValueChange={(v) => setCountry(v === ALL ? "" : v)}>
           <SelectTrigger className="w-full md:w-36 bg-white/90 text-foreground">
             <SelectValue placeholder={t("allCountries")} />
           </SelectTrigger>
@@ -64,7 +64,7 @@ export function HeroSearch() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={categoryId || ALL} onValueChange={(v) => setCategoryId(v === ALL ? "" : v)}>
+        <Select value={categoryId || undefined} onValueChange={(v) => setCategoryId(v === ALL ? "" : v)}>
           <SelectTrigger className="w-full md:w-36 bg-white/90 text-foreground">
             <SelectValue placeholder={t("allDisciplineCategories")} />
           </SelectTrigger>
