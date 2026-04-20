@@ -5,40 +5,22 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
-vi.mock("react-markdown", () => ({
-  default: ({ children }: { children: string }) => <div data-testid="markdown">{children}</div>,
-}))
-
-vi.mock("remark-gfm", () => ({
-  default: {},
+vi.mock("dompurify", () => ({
+  default: { sanitize: (html: string) => html },
 }))
 
 import { ArticleContent } from "@/components/content/ArticleContent"
 
 describe("ArticleContent", () => {
-  it("Markdown 类型渲染 Markdown 内容", () => {
-    render(
+  it("HTML 类型渲染富文本内容", () => {
+    const { container } = render(
       <ArticleContent
-        contentType="markdown"
-        content="# Hello"
-        fileUrl={null}
-        title="测试"
+        contentType="html"
+        content="<p>Hello World</p>"
       />,
     )
-    expect(screen.getByTestId("markdown")).toBeTruthy()
-    expect(screen.getByText("# Hello")).toBeTruthy()
-  })
-
-  it("文件类型渲染下载按钮", () => {
-    render(
-      <ArticleContent
-        contentType="file"
-        content=""
-        fileUrl="/test.pdf"
-        title="测试文件"
-      />,
-    )
-    expect(screen.getByText("下载文件")).toBeTruthy()
+    expect(container.querySelector("p")).toBeTruthy()
+    expect(screen.getByText("Hello World")).toBeTruthy()
   })
 
   it("PDF 文件渲染 iframe", () => {
@@ -46,24 +28,36 @@ describe("ArticleContent", () => {
       <ArticleContent
         contentType="file"
         content=""
-        fileUrl="/test.pdf"
-        title="PDF 测试"
+        fileId="pdf-123"
       />,
     )
     const iframe = container.querySelector("iframe")
     expect(iframe).toBeTruthy()
-    expect(iframe?.getAttribute("src")).toBe("/test.pdf")
+    expect(iframe?.getAttribute("src")).toBe(
+      "/api/public/images/detail?id=pdf-123",
+    )
   })
 
-  it("Office 文件显示下载提示", () => {
+  it("PDF 文件显示下载链接", () => {
     render(
       <ArticleContent
         contentType="file"
         content=""
-        fileUrl="/test.docx"
-        title="Word 测试"
+        fileId="pdf-123"
       />,
     )
-    expect(screen.getByText("此文件需要下载后查看")).toBeTruthy()
+    expect(screen.getByText("下载 PDF")).toBeTruthy()
+  })
+
+  it("无 fileId 时 file 类型回退为空", () => {
+    const { container } = render(
+      <ArticleContent
+        contentType="file"
+        content=""
+        fileId={null}
+      />,
+    )
+    const iframe = container.querySelector("iframe")
+    expect(iframe).toBeNull()
   })
 })
