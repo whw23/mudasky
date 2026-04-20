@@ -39,7 +39,7 @@ export function Banner({ title, subtitle, imageIds = [], large = false, children
   return (
     <div
       className={`relative flex flex-col items-center justify-center overflow-hidden ${
-        large ? "min-h-screen" : "min-h-[160px] md:min-h-[240px]"
+        large ? "min-h-screen" : "min-h-[240px] md:min-h-[340px] pt-[100px]"
       }`}
     >
       {/* 弥漫渐变动画背景（无图片时） */}
