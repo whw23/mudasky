@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { getTranslations } from "next-intl/server"
 import { UniversityDetail } from "@/components/public/UniversityDetail"
 
@@ -13,7 +13,7 @@ export default async function UniversityDetailPage({ params }: Props) {
 
   return (
     <>
-      <Banner title={p("universities")} subtitle={p("universitiesSubtitle")} />
+      <PageBanner pageKey="universities" title={p("universities")} subtitle={p("universitiesSubtitle")} />
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <UniversityDetail universityId={id} />
       </section>

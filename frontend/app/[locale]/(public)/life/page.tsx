@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ArticleSection } from "@/components/content/ArticleSection"
 import { fetchArticlesByCategorySlug } from "@/lib/content-api"
 import { ConsultButton } from "@/components/common/ConsultButton"
@@ -63,7 +63,7 @@ export default async function LifePage() {
 
   return (
     <>
-      <Banner title={p("life")} subtitle={p("lifeSubtitle")} />
+      <PageBanner pageKey="life" title={p("life")} subtitle={p("lifeSubtitle")} />
 
       {/* 生活指南 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

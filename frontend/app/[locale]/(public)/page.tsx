@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
@@ -47,7 +47,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero Banner */}
-      <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
+      <HomeBanner />
 
       {/* 数据统计 */}
       <StatsSection />
