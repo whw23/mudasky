@@ -200,7 +200,7 @@ export function UniversityList() {
                 {/* 简介 */}
                 {uni.description && (
                   <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {uni.description}
+                    {uni.description.replace(/<[^>]*>/g, "")}
                   </p>
                 )}
               </Link>
