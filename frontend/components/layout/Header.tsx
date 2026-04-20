@@ -142,12 +142,12 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                 />
                 <div className="flex flex-col">
                   <span
-                    className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white" : "text-foreground"}`}
+                    className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
                     style={{ fontSize: 22 }}
                   >
                     {brandName}
                   </span>
-                  <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/80" : "text-muted-foreground"}`}>
+                  <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                     {brandNameEn}
                   </span>
                 </div>
@@ -156,7 +156,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
               "编辑品牌名称"
             )}
             {wrapEditable(
-              <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/80" : "text-muted-foreground"}`}>
+              <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                 {tagline}
               </span>,
               "tagline",
@@ -165,11 +165,11 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
           </div>
 
           {/* 右侧：热线 + 用户信息 */}
-          <div className={`flex items-center gap-4 text-xs ${isTransparentNow ? "text-white/80" : "text-foreground/60"}`}>
+          <div className={`flex items-center gap-4 text-xs ${isTransparentNow ? "text-white/70" : "text-foreground/60"}`}>
             {wrapEditable(
               hotline ? (
-                <span className={`flex items-center gap-1.5 font-semibold ${isTransparentNow ? "text-white" : "text-primary"}`}>
-                  <Phone className="size-3.5" />
+                <span className={`flex items-center gap-1.5 font-bold text-sm ${isTransparentNow ? "text-white" : "text-primary"}`}>
+                  <Phone className="size-4" />
                   {hotline}
                   {hotlineContact && (
                     <span>{hotlineContact}</span>
