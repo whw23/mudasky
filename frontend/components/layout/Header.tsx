@@ -168,7 +168,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
           <div className={`flex items-center gap-4 text-xs ${isTransparentNow ? "text-white/70" : "text-foreground/60"}`}>
             {wrapEditable(
               hotline ? (
-                <span className={`flex items-center gap-1.5 font-bold text-sm ${isTransparentNow ? "text-amber-300" : "text-primary"}`}>
+                <span className={`flex items-center gap-1.5 font-bold text-sm whitespace-nowrap ${isTransparentNow ? "text-amber-300" : "text-primary"}`}>
                   <Phone className="size-4" />
                   {hotline}
                   {hotlineContact && (
