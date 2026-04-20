@@ -44,29 +44,15 @@ export function Banner({ title, subtitle, imageIds = [], large = false, children
     >
       {/* 弥漫渐变动画背景（无图片时） */}
       {!hasImages && (
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[#0c0c20]" />
-          <div
-            className="absolute -inset-[50%] animate-aurora"
-            style={{
-              background: `
-                radial-gradient(ellipse 80% 60% at 20% 40%, rgba(60, 40, 140, 0.7) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 80% 20%, rgba(15, 80, 160, 0.6) 0%, transparent 50%),
-                radial-gradient(ellipse 70% 50% at 50% 80%, rgba(20, 60, 120, 0.5) 0%, transparent 55%),
-                radial-gradient(ellipse 50% 70% at 70% 60%, rgba(80, 30, 120, 0.5) 0%, transparent 50%)
-              `,
-            }}
-          />
-          <div
-            className="absolute -inset-[50%] animate-aurora-reverse"
-            style={{
-              background: `
-                radial-gradient(ellipse 60% 70% at 30% 70%, rgba(20, 50, 130, 0.5) 0%, transparent 55%),
-                radial-gradient(ellipse 80% 50% at 70% 30%, rgba(60, 20, 100, 0.4) 0%, transparent 50%),
-                radial-gradient(ellipse 50% 60% at 40% 20%, rgba(15, 60, 140, 0.5) 0%, transparent 60%)
-              `,
-            }}
-          />
+        <div className="absolute inset-0 overflow-hidden bg-[#0a0a1e]">
+          {/* 弥散渐变色块 */}
+          <div className="absolute inset-0 blur-[120px]">
+            <div className="absolute h-[60%] w-[50%] rounded-full bg-[#2d1b69] opacity-80 animate-blob-1" style={{ top: "10%", left: "15%" }} />
+            <div className="absolute h-[50%] w-[45%] rounded-full bg-[#0f3d8c] opacity-70 animate-blob-2" style={{ top: "30%", left: "55%" }} />
+            <div className="absolute h-[55%] w-[40%] rounded-full bg-[#1a5276] opacity-60 animate-blob-3" style={{ top: "50%", left: "25%" }} />
+            <div className="absolute h-[45%] w-[50%] rounded-full bg-[#4a1942] opacity-50 animate-blob-4" style={{ top: "5%", left: "60%" }} />
+            <div className="absolute h-[40%] w-[35%] rounded-full bg-[#1b2a5e] opacity-70 animate-blob-5" style={{ top: "60%", left: "65%" }} />
+          </div>
         </div>
       )}
 
