@@ -2,9 +2,10 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NotFoundException
 from app.db.case import repository
 from app.db.case.models import SuccessCase
-from app.core.exceptions import NotFoundException
+from app.db.university import repository as university_repo
 
 
 class CaseService:

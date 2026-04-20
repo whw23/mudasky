@@ -3,7 +3,7 @@
 提供成功案例的管理员 API 端点。
 """
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, UploadFile, status
 
 from api.core.dependencies import DbSession
 from api.core.pagination import PaginatedResponse, PaginationParams
@@ -86,3 +86,33 @@ async def admin_delete_case(
     """管理员删除成功案例。"""
     svc = CaseService(session)
     await svc.delete_case(data.case_id)
+
+
+@router.post(
+    "/list/detail/upload-avatar",
+    summary="上传学生照片",
+)
+async def upload_avatar(
+    case_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传或替换学生照片。"""
+    svc = CaseService(session)
+    image_id = await svc.upload_avatar(case_id, file)
+    return {"image_id": image_id}
+
+
+@router.post(
+    "/list/detail/upload-offer",
+    summary="上传录取通知书",
+)
+async def upload_offer(
+    case_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传或替换录取通知书图片。"""
+    svc = CaseService(session)
+    image_id = await svc.upload_offer(case_id, file)
+    return {"image_id": image_id}
