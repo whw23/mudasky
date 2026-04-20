@@ -30,6 +30,9 @@ def _make_case(**kwargs) -> MagicMock:
     case.avatar_url = kwargs.get("avatar_url", None)
     case.is_featured = kwargs.get("is_featured", False)
     case.sort_order = kwargs.get("sort_order", 0)
+    case.university_id = kwargs.get("university_id", None)
+    case.avatar_image_id = kwargs.get("avatar_image_id", None)
+    case.offer_image_id = kwargs.get("offer_image_id", None)
     case.created_at = kwargs.get(
         "created_at", datetime.now(timezone.utc)
     )
@@ -245,4 +248,166 @@ class TestAdminDeleteCase:
             json={},
             headers=superuser_headers,
         )
+        assert resp.status_code == 422
+
+
+class TestAdminUploadAvatar:
+    """POST /cases/list/detail/upload-avatar 端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 CaseService。"""
+        with patch(SVC_PATH) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_upload_avatar_success(
+        self, client, superuser_headers
+    ):
+        """上传学生照片成功返回 200。"""
+        self.mock_svc.upload_avatar.return_value = "img-123"
+
+        files = {
+            "file": ("avatar.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-avatar"
+            "?case_id=case-001",
+            files=files,
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["image_id"] == "img-123"
+
+    async def test_upload_avatar_not_found(
+        self, client, superuser_headers
+    ):
+        """案例不存在返回 404。"""
+        self.mock_svc.upload_avatar.side_effect = (
+            NotFoundException(
+                message="案例不存在", code="CASE_NOT_FOUND"
+            )
+        )
+
+        files = {
+            "file": ("avatar.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-avatar"
+            "?case_id=nonexistent",
+            files=files,
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 404
+
+    async def test_upload_avatar_missing_file(
+        self, client, superuser_headers
+    ):
+        """缺少文件参数返回 422。"""
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-avatar"
+            "?case_id=case-001",
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 422
+
+    async def test_upload_avatar_missing_case_id(
+        self, client, superuser_headers
+    ):
+        """缺少 case_id 参数返回 422。"""
+        files = {
+            "file": ("avatar.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-avatar",
+            files=files,
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 422
+
+
+class TestAdminUploadOffer:
+    """POST /cases/list/detail/upload-offer 端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 CaseService。"""
+        with patch(SVC_PATH) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_upload_offer_success(
+        self, client, superuser_headers
+    ):
+        """上传录取通知书成功返回 200。"""
+        self.mock_svc.upload_offer.return_value = "img-456"
+
+        files = {
+            "file": ("offer.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-offer"
+            "?case_id=case-001",
+            files=files,
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["image_id"] == "img-456"
+
+    async def test_upload_offer_not_found(
+        self, client, superuser_headers
+    ):
+        """案例不存在返回 404。"""
+        self.mock_svc.upload_offer.side_effect = (
+            NotFoundException(
+                message="案例不存在", code="CASE_NOT_FOUND"
+            )
+        )
+
+        files = {
+            "file": ("offer.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-offer"
+            "?case_id=nonexistent",
+            files=files,
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 404
+
+    async def test_upload_offer_missing_file(
+        self, client, superuser_headers
+    ):
+        """缺少文件参数返回 422。"""
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-offer"
+            "?case_id=case-001",
+            headers=superuser_headers,
+        )
+
+        assert resp.status_code == 422
+
+    async def test_upload_offer_missing_case_id(
+        self, client, superuser_headers
+    ):
+        """缺少 case_id 参数返回 422。"""
+        files = {
+            "file": ("offer.jpg", b"fake image", "image/jpeg")
+        }
+        resp = await client.post(
+            "/admin/web-settings/cases/list/detail/upload-offer",
+            files=files,
+            headers=superuser_headers,
+        )
+
         assert resp.status_code == 422

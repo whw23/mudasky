@@ -17,7 +17,7 @@ from api.admin.config.web_settings.cases.schemas import (
 from api.admin.config.web_settings.cases.service import (
     CaseService,
 )
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import BadRequestException, NotFoundException
 
 REPO = (
     "api.admin.config.web_settings.cases.service.repository"
@@ -40,6 +40,9 @@ def _make_case(case_id: str = "case-1") -> MagicMock:
     c.avatar_url = None
     c.is_featured = False
     c.sort_order = 0
+    c.university_id = None
+    c.avatar_image_id = None
+    c.offer_image_id = None
     c.created_at = datetime.now(timezone.utc)
     c.updated_at = None
     return c
@@ -252,3 +255,177 @@ async def test_delete_case_not_found(mock_repo, service):
 
     with pytest.raises(NotFoundException):
         await service.delete_case("nonexistent")
+
+
+# ---- upload_avatar ----
+
+IMAGE_REPO = (
+    "api.admin.config.web_settings.cases.service"
+    ".image_repo"
+)
+
+
+def _make_image(image_id: str = "img-1"):
+    """创建模拟 Image 对象。"""
+    img = MagicMock()
+    img.id = image_id
+    img.filename = "avatar.jpg"
+    img.content_type = "image/jpeg"
+    img.size = 1024
+    return img
+
+
+def _make_upload_file(
+    content: bytes = b"fake image data",
+    filename: str = "test.jpg",
+    content_type: str = "image/jpeg",
+):
+    """创建模拟 UploadFile 对象。"""
+    file = MagicMock()
+    file.filename = filename
+    file.content_type = content_type
+    file.read = AsyncMock(return_value=content)
+    return file
+
+
+@pytest.mark.asyncio
+@patch(IMAGE_REPO)
+@patch(REPO)
+async def test_upload_avatar_success(
+    mock_repo, mock_image_repo, service
+):
+    """上传学生照片成功。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    image = _make_image()
+    mock_image_repo.create_image = AsyncMock(
+        return_value=image
+    )
+    mock_repo.update_case = AsyncMock(return_value=case)
+
+    file = _make_upload_file()
+    result = await service.upload_avatar("case-1", file)
+
+    assert result == "img-1"
+    assert case.avatar_image_id == "img-1"
+    mock_repo.update_case.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_avatar_not_found(mock_repo, service):
+    """上传照片时案例不存在抛出 NotFoundException。"""
+    mock_repo.get_case_by_id = AsyncMock(return_value=None)
+
+    file = _make_upload_file()
+    with pytest.raises(NotFoundException) as exc_info:
+        await service.upload_avatar("nonexistent", file)
+
+    assert exc_info.value.code == "CASE_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_avatar_invalid_type(mock_repo, service):
+    """上传不支持的文件格式抛出 BadRequestException。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    file = _make_upload_file(content_type="application/pdf")
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_avatar("case-1", file)
+
+    assert exc_info.value.code == "INVALID_IMAGE_TYPE"
+
+
+@pytest.mark.asyncio
+@patch(IMAGE_REPO)
+@patch(REPO)
+async def test_upload_avatar_too_large(
+    mock_repo, mock_image_repo, service
+):
+    """上传超过 5MB 的图片抛出 BadRequestException。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    file = _make_upload_file(content=large_content)
+
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_avatar("case-1", file)
+
+    assert exc_info.value.code == "IMAGE_TOO_LARGE"
+
+
+# ---- upload_offer ----
+
+
+@pytest.mark.asyncio
+@patch(IMAGE_REPO)
+@patch(REPO)
+async def test_upload_offer_success(
+    mock_repo, mock_image_repo, service
+):
+    """上传录取通知书成功。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    image = _make_image("img-2")
+    mock_image_repo.create_image = AsyncMock(
+        return_value=image
+    )
+    mock_repo.update_case = AsyncMock(return_value=case)
+
+    file = _make_upload_file()
+    result = await service.upload_offer("case-1", file)
+
+    assert result == "img-2"
+    assert case.offer_image_id == "img-2"
+    mock_repo.update_case.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_offer_not_found(mock_repo, service):
+    """上传通知书时案例不存在抛出 NotFoundException。"""
+    mock_repo.get_case_by_id = AsyncMock(return_value=None)
+
+    file = _make_upload_file()
+    with pytest.raises(NotFoundException) as exc_info:
+        await service.upload_offer("nonexistent", file)
+
+    assert exc_info.value.code == "CASE_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_upload_offer_invalid_type(mock_repo, service):
+    """上传不支持的文件格式抛出 BadRequestException。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    file = _make_upload_file(content_type="text/plain")
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_offer("case-1", file)
+
+    assert exc_info.value.code == "INVALID_IMAGE_TYPE"
+
+
+@pytest.mark.asyncio
+@patch(IMAGE_REPO)
+@patch(REPO)
+async def test_upload_offer_too_large(
+    mock_repo, mock_image_repo, service
+):
+    """上传超过 5MB 的图片抛出 BadRequestException。"""
+    case = _make_case()
+    mock_repo.get_case_by_id = AsyncMock(return_value=case)
+
+    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    file = _make_upload_file(content=large_content)
+
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.upload_offer("case-1", file)
+
+    assert exc_info.value.code == "IMAGE_TOO_LARGE"
