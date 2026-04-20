@@ -186,7 +186,7 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
 
             <div className={editable ? "pointer-events-none" : ""}>
               {user ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 whitespace-nowrap">
                   <Link
                     href="/portal/overview"
                     className={`transition-colors ${isTransparentNow ? "text-white/90 hover:text-white" : "text-foreground/70 hover:text-foreground"}`}
