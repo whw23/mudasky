@@ -12,8 +12,9 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
+import { BannerImageEditor } from '@/components/admin/web-settings/BannerImageEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
-import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo } from '@/types/config'
+import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 统计项编辑字段定义 */
 const STAT_FIELDS = [
@@ -57,6 +58,7 @@ interface RawConfig {
   contactInfo: ContactInfo
   homepageStats: HomepageStat[]
   aboutInfo: AboutInfo
+  pageBanners: PageBanners
 }
 
 /** 默认原始配置 */
@@ -72,6 +74,7 @@ const DEFAULT_RAW: RawConfig = {
   aboutInfo: {
     history: '', mission: '', vision: '', partnership: '',
   },
+  pageBanners: {},
 }
 
 export default function WebSettingsPage() {
@@ -94,6 +97,7 @@ export default function WebSettingsPage() {
         contactInfo: findValue('contact_info') ?? DEFAULT_RAW.contactInfo,
         homepageStats: findValue('homepage_stats') ?? DEFAULT_RAW.homepageStats,
         aboutInfo: findValue('about_info') ?? DEFAULT_RAW.aboutInfo,
+        pageBanners: findValue('page_banners') ?? DEFAULT_RAW.pageBanners,
       })
     } catch {
       toast.error('获取配置失败')
@@ -305,6 +309,11 @@ export default function WebSettingsPage() {
           onEdit={handleHeaderEdit}
         />
         <NavEditor activePage={activePage} onPageChange={setActivePage} />
+        <BannerImageEditor
+          pageKey={activePage}
+          imageIds={rawConfig.pageBanners[activePage]?.image_ids || []}
+          onUpdate={fetchAllConfigs}
+        />
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} />
         </div>
