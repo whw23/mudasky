@@ -31,6 +31,7 @@ class CaseCreate(BaseModel):
         False, description="是否推荐"
     )
     sort_order: int = Field(0, description="排序序号")
+    university_id: str | None = Field(None, description="关联院校 ID")
 
 
 class CaseDeleteRequest(BaseModel):
@@ -65,6 +66,7 @@ class CaseUpdate(BaseModel):
     sort_order: int | None = Field(
         None, description="排序序号"
     )
+    university_id: str | None = Field(None, description="关联院校 ID")
 
 
 class CaseResponse(BaseModel):
@@ -79,6 +81,9 @@ class CaseResponse(BaseModel):
     avatar_url: str | None = None
     is_featured: bool = False
     sort_order: int = 0
+    university_id: str | None = None
+    avatar_image_id: str | None = None
+    offer_image_id: str | None = None
     created_at: datetime
     updated_at: datetime | None = None
 

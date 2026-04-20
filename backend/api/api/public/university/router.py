@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Header, Response
 
-from .schemas import UniversityResponse
+from .schemas import CaseBrief, DisciplineItem, UniversityResponse
 from .service import UniversityService
 from api.core.cache import set_cache_headers
 from api.core.dependencies import DbSession
@@ -31,18 +31,22 @@ async def list_universities(
     is_featured: bool | None = None,
     search: str | None = None,
     program: str | None = None,
+    discipline_category_id: str | None = None,
+    discipline_id: str | None = None,
 ) -> PaginatedResponse[UniversityResponse]:
     """分页查询合作院校列表。
 
-    支持按国家、城市、关键词和专业过滤。
+    支持按国家、城市、关键词、专业和学科过滤。
     """
     params = PaginationParams(
         page=page, page_size=page_size
     )
     svc = UniversityService(session)
-    universities, total = await svc.list_universities(
+    universities, total = await svc.filter_universities_by_discipline(
         params.offset,
         params.page_size,
+        discipline_category_id,
+        discipline_id,
         country,
         city,
         is_featured,
@@ -50,8 +54,8 @@ async def list_universities(
         program,
     )
     result = build_paginated(universities, total, params, UniversityResponse)
-    seed = f"uni:list:{page}:{page_size}:{country}:{city}:{is_featured}:{search}:{program}:{total}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    seed = f"uni:list:{page}:{page_size}:{country}:{city}:{is_featured}:{search}:{program}:{discipline_category_id}:{discipline_id}:{total}"
+    if set_cache_headers(response, seed, 0, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
@@ -126,11 +130,47 @@ async def get_university(
     response: Response,
     if_none_match: str | None = Header(None),
 ) -> UniversityResponse:
-    """获取院校详情。"""
+    """获取院校详情，包含学科、图片集、关联案例。"""
     svc = UniversityService(session)
-    university = await svc.get_university(university_id)
-    result = UniversityResponse.model_validate(university)
-    ts = university.updated_at.isoformat() if university.updated_at else ""
+    detail = await svc.get_university_detail(university_id)
+    uni = detail["university"]
+    result = UniversityResponse(
+        id=uni.id,
+        name=uni.name,
+        name_en=uni.name_en,
+        country=uni.country,
+        province=uni.province,
+        city=uni.city,
+        logo_url=uni.logo_url,
+        description=uni.description,
+        programs=uni.programs or [],
+        website=uni.website,
+        is_featured=uni.is_featured,
+        sort_order=uni.sort_order,
+        created_at=uni.created_at,
+        updated_at=uni.updated_at,
+        logo_image_id=uni.logo_image_id,
+        admission_requirements=uni.admission_requirements,
+        scholarship_info=uni.scholarship_info,
+        qs_rankings=uni.qs_rankings,
+        latitude=uni.latitude,
+        longitude=uni.longitude,
+        image_ids=detail["image_ids"],
+        disciplines=[
+            DisciplineItem(**d) for d in detail["disciplines"]
+        ],
+        related_cases=[
+            CaseBrief(
+                id=c.id,
+                student_name=c.student_name,
+                program=c.program,
+                year=c.year,
+                avatar_image_id=getattr(c, "avatar_image_id", None),
+            )
+            for c in detail["related_cases"]
+        ],
+    )
+    ts = uni.updated_at.isoformat() if uni.updated_at else ""
     seed = f"uni:{university_id}:{ts}"
     if set_cache_headers(response, seed, 3600, if_none_match):
         return response  # type: ignore[return-value]

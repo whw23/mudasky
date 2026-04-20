@@ -1,5 +1,7 @@
 import { Banner } from "@/components/layout/Banner"
 import { StatsSection } from "@/components/home/StatsSection"
+import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
+import { FeaturedCases } from "@/components/home/FeaturedCases"
 import {
   GraduationCap,
   Globe,
@@ -40,12 +42,6 @@ export default async function HomePage() {
       desc: t("service.casesDesc"),
       href: "/cases" as const,
     },
-  ]
-
-  const countries = [
-    { key: "germany", name: t("germany") },
-    { key: "japan", name: t("japan") },
-    { key: "singapore", name: t("singapore") },
   ]
 
   return (
@@ -103,36 +99,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 热门留学国家 */}
+      {/* 精选院校和成功案例 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {t("destinationsTag")}
-          </h2>
-          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("destinationsTitle")}</h3>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
-          {countries.map((country) => (
-            <div
-              key={country.key}
-              className="group relative overflow-hidden rounded-lg cursor-pointer"
-              style={{
-                backgroundImage:
-                  "linear-gradient(135deg, #374151 0%, #1f2937 100%)",
-              }}
-            >
-              <div className="flex h-48 items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                <div className="text-center text-white">
-                  <h4 className="text-2xl font-bold">{country.name}</h4>
-                  <p className="mt-2 text-sm text-white/70 transition-colors group-hover:text-white">
-                    {t("viewProgram", { country: country.name })}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <FeaturedUniversities />
+        <FeaturedCases />
       </section>
 
       {/* 最新资讯 */}

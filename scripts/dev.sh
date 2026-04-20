@@ -11,7 +11,7 @@ case "${1:-}" in
   start)
     echo "构建并启动开发环境..."
     docker compose down
-    docker compose build --pull
+    docker compose build
     docker image prune -f
     docker compose up
     ;;
@@ -19,7 +19,7 @@ case "${1:-}" in
     echo "停止容器并清理数据卷..."
     docker compose down -v
     echo "重新构建并启动..."
-    docker compose build --pull
+    docker compose build
     docker image prune -f
     docker compose up
     ;;

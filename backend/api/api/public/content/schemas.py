@@ -25,9 +25,9 @@ class ArticleResponse(BaseModel):
     id: str
     title: str
     slug: str
-    content_type: str = "markdown"
+    content_type: str = "html"
     content: str
-    file_url: str | None = None
+    file_id: str | None = None
     excerpt: str
     cover_image: str | None = None
     category_id: str

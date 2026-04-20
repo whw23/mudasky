@@ -20,6 +20,7 @@ interface CaseItem {
   year: number
   testimonial: string | null
   is_featured: boolean
+  avatar_image_id: string | null
 }
 
 /** 案例列表编辑预览 */
@@ -95,9 +96,17 @@ export function CasesEditPreview() {
                 className="group relative rounded-lg border bg-white p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <GraduationCap className="h-5 w-5 text-primary" />
-                  </div>
+                  {c.avatar_image_id ? (
+                    <img
+                      src={`/api/public/images/detail?id=${c.avatar_image_id}`}
+                      alt={c.student_name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <GraduationCap className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <h4 className="truncate font-medium">{c.student_name}</h4>
                     <p className="text-xs text-muted-foreground">{c.year}</p>

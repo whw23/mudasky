@@ -32,6 +32,9 @@ def set_cache_headers(
         response.status_code = 304
         return True
 
-    response.headers["Cache-Control"] = f"public, max-age={max_age}"
+    if max_age > 0:
+        response.headers["Cache-Control"] = f"public, max-age={max_age}"
+    else:
+        response.headers["Cache-Control"] = "no-cache"
     response.headers["ETag"] = etag
     return False

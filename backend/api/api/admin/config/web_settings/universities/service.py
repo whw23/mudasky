@@ -3,11 +3,20 @@
 处理院校的增删改查业务。
 """
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import (
+    BadRequestException,
+    ConflictException,
+    NotFoundException,
+)
+from app.db.discipline import repository as disc_repo
+from app.db.image import repository as image_repo
+from app.db.image.repository import ALLOWED_MIME_TYPES, MAX_IMAGE_SIZE
 from app.db.model_utils import apply_updates
 from app.db.university import repository
+from app.db.university.image_models import UniversityImage
 from app.db.university.models import University
 
 from .schemas import (
@@ -39,6 +48,11 @@ class UniversityService:
             website=data.website,
             is_featured=data.is_featured,
             sort_order=data.sort_order,
+            admission_requirements=data.admission_requirements,
+            scholarship_info=data.scholarship_info,
+            qs_rankings=data.qs_rankings,
+            latitude=data.latitude,
+            longitude=data.longitude,
         )
         return await repository.create_university(
             self.session, university
@@ -98,4 +112,69 @@ class UniversityService:
             is_featured,
             search,
             program,
+        )
+
+    async def upload_logo(self, university_id: str, file: UploadFile) -> str:
+        """上传院校校徽，返回 image_id。"""
+        university = await self.get_university(university_id)
+        image = await self._save_image(file)
+        university.logo_image_id = image.id
+        await repository.update_university(self.session, university)
+        return image.id
+
+    async def upload_image(self, university_id: str, file: UploadFile) -> UniversityImage:
+        """上传院校图片（最多 5 张）。"""
+        await self.get_university(university_id)
+        count = await repository.count_university_images(self.session, university_id)
+        if count >= 5:
+            raise ConflictException(
+                message="院校图片最多 5 张",
+                code="UNIVERSITY_IMAGE_LIMIT",
+            )
+        image = await self._save_image(file)
+        uni_image = UniversityImage(
+            university_id=university_id,
+            image_id=image.id,
+            sort_order=count,
+        )
+        return await repository.add_university_image(self.session, uni_image)
+
+    async def delete_image(self, university_id: str, image_record_id: str) -> None:
+        """删除院校图片。"""
+        await self.get_university(university_id)
+        record = await repository.get_university_image_by_id(self.session, image_record_id)
+        if not record or record.university_id != university_id:
+            raise NotFoundException(
+                message="图片记录不存在",
+                code="UNIVERSITY_IMAGE_NOT_FOUND",
+            )
+        await repository.delete_university_image(self.session, record)
+
+    async def set_disciplines(self, university_id: str, discipline_ids: list[str]) -> None:
+        """设置院校学科关联（全量覆盖）。"""
+        await self.get_university(university_id)
+        for did in discipline_ids:
+            d = await disc_repo.get_discipline_by_id(self.session, did)
+            if not d:
+                raise NotFoundException(
+                    message=f"学科 {did} 不存在",
+                    code="DISCIPLINE_NOT_FOUND",
+                )
+        await disc_repo.set_university_disciplines(self.session, university_id, discipline_ids)
+
+    async def _save_image(self, file: UploadFile):
+        """校验并保存图片到 image 表。"""
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise BadRequestException(
+                message="不支持的图片格式",
+                code="INVALID_IMAGE_TYPE",
+            )
+        file_data = await file.read()
+        if len(file_data) > MAX_IMAGE_SIZE:
+            raise BadRequestException(
+                message="图片大小不能超过 5MB",
+                code="IMAGE_TOO_LARGE",
+            )
+        return await image_repo.create_image(
+            self.session, file_data, file.filename or "image", file.content_type,
         )

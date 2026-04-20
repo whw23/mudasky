@@ -87,3 +87,19 @@ async def list_cases(
     cases = list(result.scalars().all())
 
     return cases, total
+
+
+async def list_cases_by_university(
+    session: AsyncSession,
+    university_id: str,
+    limit: int = 10,
+) -> list[SuccessCase]:
+    """查询关联某院校的成功案例。"""
+    stmt = (
+        select(SuccessCase)
+        .where(SuccessCase.university_id == university_id)
+        .order_by(SuccessCase.year.desc())
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())

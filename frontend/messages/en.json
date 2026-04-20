@@ -53,6 +53,9 @@
     "servicesTag": "Our Services",
     "servicesTitle": "Featured Services",
     "learnMore": "Learn More",
+    "featuredUniversities": "Partner Universities",
+    "featuredCases": "Success Stories",
+    "viewMore": "View More",
     "service": {
       "studyAbroad": "Study Abroad",
       "studyAbroadDesc": "Multi-country study abroad programs including Germany, Japan, and Singapore with comprehensive consulting services",
@@ -549,6 +552,14 @@
   "Universities": {
     "title": "Selected Partner Universities",
     "intro": "We have established deep partnerships with numerous prestigious German universities, providing students with more convenient application channels and higher admission success rates. Below are some of our partner institutions, covering comprehensive universities, technical universities, and universities of applied sciences.",
+    "about": "About",
+    "website": "Official Website",
+    "disciplines": "Disciplines",
+    "admissionRequirements": "Admission Requirements",
+    "scholarships": "Scholarships",
+    "rankings": "QS World Rankings",
+    "location": "Location",
+    "successCases": "Success Cases",
     "uni1": {
       "name": "LMU Munich",
       "location": "Munich, Bavaria",
@@ -603,7 +614,15 @@
     "location": "Location",
     "programs": "Programs",
     "about": "About",
-    "visitWebsite": "Visit Website"
+    "visitWebsite": "Visit Website",
+    "website": "Official Website",
+    "disciplines": "Disciplines",
+    "admissionRequirements": "Admission Requirements",
+    "scholarships": "Scholarships",
+    "rankings": "QS World Rankings",
+    "successCases": "Related Success Cases",
+    "allDisciplineCategories": "All Categories",
+    "allDisciplines": "All Disciplines"
   },
   "Requirements": {
     "overviewTitle": "Application Requirements by Country",

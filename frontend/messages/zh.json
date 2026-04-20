@@ -53,6 +53,9 @@
     "servicesTag": "Our Services",
     "servicesTitle": "精选服务",
     "learnMore": "了解更多",
+    "featuredUniversities": "合作院校",
+    "featuredCases": "成功案例",
+    "viewMore": "查看更多",
     "service": {
       "studyAbroad": "出国留学",
       "studyAbroadDesc": "德国、日本、新加坡等多国留学项目，提供全方位留学咨询服务",
@@ -549,6 +552,14 @@
   "Universities": {
     "title": "精选合作院校",
     "intro": "我们与德国多所知名大学建立了深度合作关系，为学生提供更便捷的申请通道和更高的录取成功率。以下是部分合作院校，涵盖综合性大学、理工大学和应用科学大学。",
+    "about": "院校简介",
+    "website": "官方网站",
+    "disciplines": "学科设置",
+    "admissionRequirements": "录取要求",
+    "scholarships": "奖学金信息",
+    "rankings": "QS 世界排名",
+    "location": "地理位置",
+    "successCases": "录取案例",
     "uni1": {
       "name": "慕尼黑大学",
       "location": "慕尼黑，巴伐利亚州",
@@ -603,7 +614,15 @@
     "location": "所在地",
     "programs": "开设专业",
     "about": "学校简介",
-    "visitWebsite": "访问官网"
+    "visitWebsite": "访问官网",
+    "website": "官方网站",
+    "disciplines": "开设学科",
+    "admissionRequirements": "申请要求",
+    "scholarships": "奖学金",
+    "rankings": "QS 世界排名",
+    "successCases": "相关成功案例",
+    "allDisciplineCategories": "全部学科大类",
+    "allDisciplines": "全部学科"
   },
   "Requirements": {
     "overviewTitle": "各国申请条件",

@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react"
-import { Plus, Pencil, Trash2, MapPin } from "lucide-react"
+import { Plus, Pencil, Trash2, MapPin, Award } from "lucide-react"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { UniversityEditDialog } from "./UniversityEditDialog"
@@ -22,6 +22,8 @@ interface University {
   description: string | null
   website: string | null
   is_featured: boolean
+  logo_image_id: string | null
+  qs_rankings: { year: number; ranking: number }[] | null
 }
 
 /** 院校列表编辑预览 */
@@ -91,46 +93,70 @@ export function UniversitiesEditPreview() {
           <p className="text-center text-muted-foreground py-12">暂无院校</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {universities.map((uni) => (
-              <div
-                key={uni.id}
-                className="group relative rounded-lg border bg-white p-4"
-              >
-                <h4 className="font-medium">{uni.name}</h4>
-                {uni.name_en && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {uni.name_en}
-                  </p>
-                )}
-                <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="size-3" />
-                  <span>
-                    {uni.country}
-                    {uni.province ? ` · ${uni.province}` : ""}
-                    {` · ${uni.city}`}
-                  </span>
+            {universities.map((uni) => {
+              const latest = uni.qs_rankings?.sort((a, b) => b.year - a.year)[0]
+              return (
+                <div
+                  key={uni.id}
+                  className="group relative rounded-lg border bg-white p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    {uni.logo_image_id ? (
+                      <img
+                        src={`/api/public/images/detail?id=${uni.logo_image_id}`}
+                        alt={uni.name}
+                        className="h-10 w-10 rounded object-contain border"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded bg-gray-100 text-sm font-bold text-gray-400">
+                        {uni.name[0]}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h4 className="truncate font-medium">{uni.name}</h4>
+                      {uni.name_en && (
+                        <p className="truncate text-xs text-muted-foreground">
+                          {uni.name_en}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="size-3" />
+                    <span>
+                      {uni.country}
+                      {uni.province ? ` · ${uni.province}` : ""}
+                      {` · ${uni.city}`}
+                    </span>
+                  </div>
+                  {latest && (
+                    <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+                      <Award className="size-3" />
+                      QS {latest.year} #{latest.ranking}
+                    </div>
+                  )}
+                  {/* 操作按钮 */}
+                  <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleEdit(uni)}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleDelete(uni)}
+                    >
+                      <Trash2 className="size-3.5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-                {/* 操作按钮 */}
-                <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => handleEdit(uni)}
-                  >
-                    <Pencil className="size-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => handleDelete(uni)}
-                  >
-                    <Trash2 className="size-3.5 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

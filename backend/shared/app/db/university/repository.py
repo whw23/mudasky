@@ -7,6 +7,7 @@ from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.university.models import University
+from app.db.university.image_models import UniversityImage
 
 
 async def create_university(
@@ -159,3 +160,54 @@ async def delete_university(
     """删除院校。"""
     await session.delete(university)
     await session.commit()
+
+
+async def list_university_images(
+    session: AsyncSession, university_id: str
+) -> list[UniversityImage]:
+    """获取院校图片集。"""
+    stmt = (
+        select(UniversityImage)
+        .where(UniversityImage.university_id == university_id)
+        .order_by(UniversityImage.sort_order.asc())
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def count_university_images(
+    session: AsyncSession, university_id: str
+) -> int:
+    """统计院校图片数量。"""
+    stmt = (
+        select(func.count())
+        .select_from(UniversityImage)
+        .where(UniversityImage.university_id == university_id)
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one()
+
+
+async def add_university_image(
+    session: AsyncSession, uni_image: UniversityImage
+) -> UniversityImage:
+    """添加院校图片。"""
+    session.add(uni_image)
+    await session.commit()
+    await session.refresh(uni_image)
+    return uni_image
+
+
+async def delete_university_image(
+    session: AsyncSession, uni_image: UniversityImage
+) -> None:
+    """删除院校图片。"""
+    await session.delete(uni_image)
+    await session.commit()
+
+
+async def get_university_image_by_id(
+    session: AsyncSession, image_record_id: str
+) -> UniversityImage | None:
+    """根据 ID 查询院校图片记录。"""
+    return await session.get(UniversityImage, image_record_id)

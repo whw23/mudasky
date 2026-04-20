@@ -13,6 +13,7 @@ import {
   Building2,
   Loader2,
   SearchX,
+  Award,
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import { Pagination } from "@/components/common/Pagination"
@@ -38,6 +39,8 @@ export function UniversityList() {
     country: "",
     province: "",
     city: "",
+    disciplineCategoryId: "",
+    disciplineId: "",
   })
 
   /** 获取国家列表 */
@@ -59,6 +62,8 @@ export function UniversityList() {
       if (filters.search) params.search = filters.search
       if (filters.country) params.country = filters.country
       if (filters.city) params.city = filters.city
+      if (filters.disciplineCategoryId) params.discipline_category_id = filters.disciplineCategoryId
+      if (filters.disciplineId) params.discipline_id = filters.disciplineId
 
       const { data } = await api.get<PaginatedResponse<University>>(
         "/public/universities/list",
@@ -86,6 +91,8 @@ export function UniversityList() {
     country: string
     province: string
     city: string
+    disciplineCategoryId: string
+    disciplineId: string
   }) => {
     setFilters(newFilters)
     setPage(1)
@@ -126,54 +133,79 @@ export function UniversityList() {
       ) : (
         /* 院校卡片网格 */
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {universities.map((uni) => (
-            <Link
-              key={uni.id}
-              href={`/universities/${uni.id}`}
-              className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
-            >
-              {/* Logo */}
-              <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
-                {uni.logo_url ? (
-                  <img
-                    src={uni.logo_url}
-                    alt={uni.name}
-                    className="size-12 object-contain"
-                  />
-                ) : (
-                  <Building2 className="size-8 text-gray-400 transition-colors group-hover:text-primary" />
-                )}
-              </div>
-              <h4 className="mt-4 text-lg font-bold transition-colors group-hover:text-primary">
-                {uni.name}
-              </h4>
-              {uni.name_en && (
-                <p className="text-xs text-muted-foreground">{uni.name_en}</p>
-              )}
-              <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="size-4" />
-                {uni.city}, {uni.country}
-              </div>
-              {uni.programs.length > 0 && (
-                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                  <GraduationCap className="size-4" />
-                  {uni.programs.join(", ")}
+          {universities.map((uni) => {
+            const latestRanking = uni.qs_rankings?.sort((a: any, b: any) => b.year - a.year)[0]
+            const displayDisciplines = (uni.disciplines || []).slice(0, 3)
+
+            return (
+              <Link
+                key={uni.id}
+                href={`/universities/${uni.id}`}
+                className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
+              >
+                {/* Logo */}
+                <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
+                  {uni.logo_image_id ? (
+                    <img
+                      src={`/api/public/images/detail?id=${uni.logo_image_id}`}
+                      alt={uni.name}
+                      className="size-12 object-contain"
+                    />
+                  ) : (
+                    <Building2 className="size-8 text-gray-400 transition-colors group-hover:text-primary" />
+                  )}
                 </div>
-              )}
-              {uni.description && (
-                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                  {uni.description}
-                </p>
-              )}
-              {uni.website && (
-                <span
-                  className="mt-2 inline-block text-xs text-primary hover:underline"
-                >
-                  {uni.website}
-                </span>
-              )}
-            </Link>
-          ))}
+
+                {/* 院校名称 */}
+                <h4 className="mt-4 text-lg font-bold transition-colors group-hover:text-primary">
+                  {uni.name}
+                </h4>
+                {uni.name_en && (
+                  <p className="text-xs text-muted-foreground">{uni.name_en}</p>
+                )}
+
+                {/* 地理位置 */}
+                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                  <MapPin className="size-4" />
+                  {uni.city}, {uni.country}
+                </div>
+
+                {/* QS排名徽章 */}
+                {latestRanking && (
+                  <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                    <Award className="size-3" />
+                    QS {latestRanking.year} #{latestRanking.ranking}
+                  </div>
+                )}
+
+                {/* 学科标签 */}
+                {displayDisciplines.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {displayDisciplines.map((d: any) => (
+                      <span
+                        key={d.id}
+                        className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground"
+                      >
+                        {d.name}
+                      </span>
+                    ))}
+                    {(uni.disciplines || []).length > 3 && (
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground">
+                        +{(uni.disciplines || []).length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* 简介 */}
+                {uni.description && (
+                  <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    {uni.description.replace(/<[^>]*>/g, "")}
+                  </p>
+                )}
+              </Link>
+            )
+          })}
         </div>
       )}
 

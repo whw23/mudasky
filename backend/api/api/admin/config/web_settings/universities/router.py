@@ -3,17 +3,25 @@
 提供院校的管理员 API 端点。
 """
 
-from fastapi import APIRouter, status
+import io
+
+from fastapi import APIRouter, File, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import DbSession
 from api.core.pagination import (
     PaginatedResponse,
     PaginationParams,
 )
+from app.db.image import repository as image_repo
 
+from .import_service import ImportService
 from .schemas import (
+    ImageResponse,
     UniversityCreate,
     UniversityDeleteRequest,
+    UniversityDisciplinesRequest,
+    UniversityImageDeleteRequest,
     UniversityResponse,
     UniversityUpdate,
 )
@@ -89,3 +97,116 @@ async def admin_delete_university(
     """管理员删除院校。"""
     svc = UniversityService(session)
     await svc.delete_university(data.university_id)
+
+
+@router.post(
+    "/list/detail/upload-logo",
+    response_model=ImageResponse,
+    summary="上传院校校徽",
+)
+async def upload_logo(
+    university_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> ImageResponse:
+    """上传或替换院校校徽。"""
+    svc = UniversityService(session)
+    image_id = await svc.upload_logo(university_id, file)
+    image = await image_repo.get_by_id(session, image_id)
+    return ImageResponse.model_validate(image)
+
+
+@router.post(
+    "/list/detail/upload-image",
+    status_code=status.HTTP_201_CREATED,
+    summary="上传院校图片",
+)
+async def upload_image(
+    university_id: str,
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传院校图片（最多 5 张）。"""
+    svc = UniversityService(session)
+    uni_image = await svc.upload_image(university_id, file)
+    return {
+        "id": uni_image.id,
+        "image_id": uni_image.image_id,
+        "sort_order": uni_image.sort_order,
+    }
+
+
+@router.post(
+    "/list/detail/delete-image",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="删除院校图片",
+)
+async def delete_image(
+    data: UniversityImageDeleteRequest,
+    session: DbSession,
+) -> None:
+    """删除院校图片。"""
+    svc = UniversityService(session)
+    await svc.delete_image(data.university_id, data.image_record_id)
+
+
+@router.post(
+    "/list/detail/disciplines",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="设置院校学科关联",
+)
+async def set_disciplines(
+    data: UniversityDisciplinesRequest,
+    session: DbSession,
+) -> None:
+    """设置院校关联学科（全量覆盖）。"""
+    svc = UniversityService(session)
+    await svc.set_disciplines(data.university_id, data.discipline_ids)
+
+
+@router.post(
+    "/list/import/preview",
+    summary="批量导入预览",
+)
+async def import_preview(
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传 Excel/zip，解析校验并返回预览。"""
+    svc = ImportService(session)
+    return await svc.preview(file)
+
+
+@router.post(
+    "/list/import/confirm",
+    summary="确认批量导入",
+)
+async def import_confirm(
+    data: dict,
+    session: DbSession,
+) -> dict:
+    """确认并执行批量导入。"""
+    svc = ImportService(session)
+    return await svc.confirm(
+        data.get("rows", []),
+        data.get("discipline_mappings", []),
+    )
+
+
+@router.get(
+    "/list/import/template",
+    summary="下载导入模板",
+)
+async def download_template(
+    session: DbSession,
+) -> StreamingResponse:
+    """下载 Excel 导入模板。"""
+    svc = ImportService(session)
+    content = svc.generate_template()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": 'attachment; filename="university_template.xlsx"'
+        },
+    )

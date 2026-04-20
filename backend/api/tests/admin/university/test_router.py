@@ -24,6 +24,12 @@ def _make_university(**kwargs) -> MagicMock:
     u.website = kwargs.get("website", None)
     u.is_featured = kwargs.get("is_featured", False)
     u.sort_order = kwargs.get("sort_order", 0)
+    u.logo_image_id = kwargs.get("logo_image_id", None)
+    u.admission_requirements = kwargs.get("admission_requirements", None)
+    u.scholarship_info = kwargs.get("scholarship_info", None)
+    u.qs_rankings = kwargs.get("qs_rankings", None)
+    u.latitude = kwargs.get("latitude", None)
+    u.longitude = kwargs.get("longitude", None)
     u.created_at = kwargs.get(
         "created_at", datetime.now(timezone.utc)
     )
