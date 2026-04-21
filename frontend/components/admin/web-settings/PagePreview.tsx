@@ -52,8 +52,8 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
   const t = useTranslations("Home")
   const { siteInfo } = useLocalizedConfig()
 
-  const heroTitle = siteInfo.hero_title || t("heroTitle")
-  const heroSubtitle = siteInfo.hero_subtitle || t("heroSubtitle")
+  const heroTitle = siteInfo.brand_name || t("heroTitle")
+  const heroSubtitle = siteInfo.tagline || t("heroSubtitle")
   const servicesTitle = siteInfo.services_title || t("servicesTitle")
   const destinationsTitle = siteInfo.destinations_title || t("destinationsTitle")
 
@@ -77,12 +77,12 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
           <Banner title={heroTitle} subtitle={heroSubtitle} large />
         </EditableOverlay>
         <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
-          <EditableOverlay onClick={() => onEditConfig("hero_title")} label="编辑标题" inline>
+          <EditableOverlay onClick={() => onEditConfig("brand_name")} label="编辑品牌名称" inline>
             <span className="pointer-events-auto text-2xl md:text-5xl font-bold tracking-wide text-transparent select-none">
               【{heroTitle}】
             </span>
           </EditableOverlay>
-          <EditableOverlay onClick={() => onEditConfig("hero_subtitle")} label="编辑副标题" inline>
+          <EditableOverlay onClick={() => onEditConfig("tagline")} label="编辑标语" inline>
             <span className="pointer-events-auto text-xs md:text-sm tracking-[0.3em] text-transparent select-none">
               {heroSubtitle}
             </span>

@@ -307,24 +307,22 @@ export default function WebSettingsPage() {
   /** 处理页面预览中的配置编辑 */
   function handleEditConfig(section: string): void {
     switch (section) {
-      case 'hero_title':
+      case 'brand_name':
         setDialogState({
           open: true,
-          title: '编辑 Banner 标题',
-          fields: [{ key: 'hero_title', label: '标题', type: 'text' as const, localized: true }],
+          title: '编辑品牌名称',
+          fields: [{ key: 'brand_name', label: '品牌名称', type: 'text' as const, localized: true }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
-          defaultValues: { hero_title: tHome("heroTitle") },
         })
         break
-      case 'hero_subtitle':
+      case 'tagline':
         setDialogState({
           open: true,
-          title: '编辑 Banner 副标题',
-          fields: [{ key: 'hero_subtitle', label: '副标题', type: 'text' as const, localized: true }],
+          title: '编辑标语',
+          fields: [{ key: 'tagline', label: '标语', type: 'text' as const, localized: true }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
-          defaultValues: { hero_subtitle: tHome("heroSubtitle") },
         })
         break
       case 'stats':
