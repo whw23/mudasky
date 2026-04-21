@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 interface HeaderLogoProps {
   logoUrl?: string
   brandName: string
@@ -14,12 +12,11 @@ interface HeaderLogoProps {
 export function HeaderLogo({ logoUrl, brandName, size, className }: HeaderLogoProps) {
   if (logoUrl) {
     return (
-      <Image
+      <img
         src={logoUrl}
         alt={brandName}
-        width={size}
-        height={size}
         className={className}
+        style={{ width: size, height: size, objectFit: "contain" }}
       />
     )
   }
