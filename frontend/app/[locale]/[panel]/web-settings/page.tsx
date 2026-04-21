@@ -466,7 +466,7 @@ export default function WebSettingsPage() {
                     <Upload className="size-2.5 text-muted-foreground/60" />
                   )}
                 </div>
-                {faviconUrl && editable && (
+                {faviconUrl && (
                   <button type="button" onClick={(e) => { e.stopPropagation(); handleFaviconClear() }} title="清除图标"
                     className="absolute -top-1.5 -right-1.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-white opacity-0 transition-opacity group-hover:opacity-100">
                     <Trash2 className="size-2" />
