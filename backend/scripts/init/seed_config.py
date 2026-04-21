@@ -18,10 +18,25 @@ CONFIGS = [
         "site_info",
         "网站基本信息",
         lambda: {
-            "brand_name": "慕大国际教育",
-            "tagline": "专注国际教育 · 专注出国服务",
+            "brand_name": {
+                "zh": "慕大国际教育",
+                "en": "Mudasky International Education",
+                "ja": "慕大国際教育",
+                "de": "Mudasky Internationale Bildung",
+            },
+            "tagline": {
+                "zh": "专注国际教育 · 专注出国服务",
+                "en": "Focused on International Education",
+                "ja": "国際教育に専念 · 留学サービスに専念",
+                "de": "Fokus auf internationale Bildung",
+            },
             "hotline": "189-1268-6656",
-            "hotline_contact": "苏老师",
+            "hotline_contact": {
+                "zh": "苏老师",
+                "en": "Ms. Su",
+                "ja": "蘇先生",
+                "de": "Frau Su",
+            },
             "company_name": "浩然学行(苏州)文化传播有限公司",
             "icp_filing": "苏ICP备2022046719号-1",
         },
