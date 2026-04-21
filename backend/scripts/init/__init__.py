@@ -27,6 +27,7 @@ from app.db.worker.models import Task  # noqa: F401
 
 from .seed_config import init_system_config
 from .seed_content import init_categories
+from .seed_images import init_seed_images
 from .seed_rbac import init_roles
 from .seed_user import init_superuser
 
@@ -48,6 +49,8 @@ async def main() -> None:
         await init_superuser(session)
         print("初始化系统配置...")
         await init_system_config(session)
+        print("初始化种子图片...")
+        await init_seed_images(session)
         print("初始化内容分类...")
         await init_categories(session)
         await session.commit()
