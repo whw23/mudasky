@@ -20,7 +20,7 @@ CONFIGS = [
         lambda: {
             "brand_name": {
                 "zh": "慕大国际教育",
-                "en": "Mudasky International Education",
+                "en": "MUTU International Education",
                 "ja": "慕大国際教育",
                 "de": "Mudasky Internationale Bildung",
             },
