@@ -20,42 +20,10 @@ from .web_settings.universities import router as ws_universities_router
 
 router = APIRouter(tags=["admin-settings"])
 
-general_settings_router = APIRouter(
-    prefix="/general-settings", tags=["admin-settings"]
-)
-general_settings_router.label = "通用配置"
-
 web_settings_router = APIRouter(
     prefix="/web-settings", tags=["admin-settings"]
 )
 web_settings_router.label = "网站设置"
-
-
-@general_settings_router.get(
-    "/list",
-    response_model=list[ConfigDetailResponse],
-    summary="获取所有通用配置",
-)
-async def list_general_configs(
-    session: DbSession,
-) -> list[ConfigDetailResponse]:
-    """获取所有通用配置。"""
-    svc = ConfigService(session)
-    return await svc.list_all()
-
-
-@general_settings_router.post(
-    "/list/edit",
-    response_model=ConfigResponse,
-    summary="更新通用配置值",
-)
-async def update_general_config(
-    data: ConfigUpdateRequest,
-    session: DbSession,
-) -> ConfigResponse:
-    """更新通用配置值。"""
-    svc = ConfigService(session)
-    return await svc.update_value(data.key, data.value)
 
 
 @web_settings_router.get(
@@ -96,5 +64,4 @@ web_settings_router.include_router(ws_banners_router)
 web_settings_router.include_router(ws_images_router)
 
 # 挂载子路由到主路由
-router.include_router(general_settings_router)
 router.include_router(web_settings_router)

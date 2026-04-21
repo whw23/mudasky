@@ -14,7 +14,6 @@ ROLES = [
     ("content_admin", "内容运营", [
         "admin/dashboard",
         "admin/web-settings/*",
-        "admin/general-settings/*",
         "portal/profile/*",
     ], 1),
     ("advisor", "留学顾问", [
