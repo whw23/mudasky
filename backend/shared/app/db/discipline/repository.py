@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.discipline.models import (
     Discipline,
     DisciplineCategory,
-    UniversityDiscipline,
 )
 
 
@@ -149,45 +148,13 @@ async def delete_discipline(
 async def discipline_has_universities(
     session: AsyncSession, discipline_id: str
 ) -> bool:
-    """检查学科是否有院校关联。"""
+    """检查学科是否有院校专业关联。"""
+    from app.db.university.program_models import UniversityProgram
+
     stmt = (
         select(func.count())
-        .select_from(UniversityDiscipline)
-        .where(UniversityDiscipline.discipline_id == discipline_id)
+        .select_from(UniversityProgram)
+        .where(UniversityProgram.discipline_id == discipline_id)
     )
     result = await session.execute(stmt)
     return result.scalar_one() > 0
-
-
-# === UniversityDiscipline ===
-
-async def set_university_disciplines(
-    session: AsyncSession,
-    university_id: str,
-    discipline_ids: list[str],
-) -> None:
-    """设置院校的学科关联（全量覆盖）。"""
-    await session.execute(
-        delete(UniversityDiscipline).where(
-            UniversityDiscipline.university_id == university_id
-        )
-    )
-    for discipline_id in discipline_ids:
-        session.add(
-            UniversityDiscipline(
-                university_id=university_id,
-                discipline_id=discipline_id,
-            )
-        )
-    await session.commit()
-
-
-async def get_university_discipline_ids(
-    session: AsyncSession, university_id: str
-) -> list[str]:
-    """获取院校关联的学科 ID 列表。"""
-    stmt = select(UniversityDiscipline.discipline_id).where(
-        UniversityDiscipline.university_id == university_id
-    )
-    result = await session.execute(stmt)
-    return list(result.scalars().all())

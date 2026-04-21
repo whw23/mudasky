@@ -30,9 +30,6 @@ class UniversityCreate(BaseModel):
     description: str | None = Field(
         None, description="简介"
     )
-    programs: list[str] = Field(
-        default_factory=list, description="开设项目"
-    )
     website: str | None = Field(
         None, max_length=500, description="官网"
     )
@@ -78,9 +75,6 @@ class UniversityUpdate(BaseModel):
     description: str | None = Field(
         None, description="简介"
     )
-    programs: list[str] | None = Field(
-        None, description="开设项目"
-    )
     website: str | None = Field(
         None, max_length=500, description="官网"
     )
@@ -97,6 +91,31 @@ class UniversityUpdate(BaseModel):
     longitude: float | None = Field(None, description="经度")
 
 
+class ProgramResponse(BaseModel):
+    """专业响应。"""
+
+    id: str
+    name: str
+    discipline_id: str
+    sort_order: int
+
+    model_config = {"from_attributes": True}
+
+
+class ProgramItem(BaseModel):
+    """专业条目。"""
+
+    name: str
+    discipline_id: str
+
+
+class SetProgramsRequest(BaseModel):
+    """设置专业请求。"""
+
+    university_id: str = Field(..., description="院校 ID")
+    programs: list[ProgramItem] = Field(..., description="专业列表")
+
+
 class UniversityResponse(BaseModel):
     """院校信息响应。"""
 
@@ -108,7 +127,7 @@ class UniversityResponse(BaseModel):
     city: str
     logo_url: str | None = None
     description: str | None = None
-    programs: list[str] = []
+    programs: list[ProgramResponse] = []
     website: str | None = None
     is_featured: bool = False
     sort_order: int = 0
@@ -129,13 +148,6 @@ class UniversityImageDeleteRequest(BaseModel):
 
     university_id: str = Field(..., description="院校 ID")
     image_record_id: str = Field(..., description="图片记录 ID")
-
-
-class UniversityDisciplinesRequest(BaseModel):
-    """设置院校学科关联。"""
-
-    university_id: str = Field(..., description="院校 ID")
-    discipline_ids: list[str] = Field(..., description="学科 ID 列表")
 
 
 class ImageResponse(BaseModel):

@@ -103,3 +103,19 @@ async def list_cases_by_university(
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def find_case(
+    session: AsyncSession,
+    student_name: str,
+    university: str,
+    year: int,
+) -> SuccessCase | None:
+    """按唯一键查找案例。"""
+    stmt = select(SuccessCase).where(
+        SuccessCase.student_name == student_name,
+        SuccessCase.university == university,
+        SuccessCase.year == year,
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()

@@ -15,12 +15,13 @@ from api.core.pagination import (
 )
 from app.db.image import repository as image_repo
 
+from .export_service import ExportService
 from .import_service import ImportService
 from .schemas import (
     ImageResponse,
+    SetProgramsRequest,
     UniversityCreate,
     UniversityDeleteRequest,
-    UniversityDisciplinesRequest,
     UniversityImageDeleteRequest,
     UniversityResponse,
     UniversityUpdate,
@@ -46,7 +47,7 @@ async def admin_list_universities(
     svc = UniversityService(session)
     universities, total = await svc.list_universities(0, page_size)
     return PaginatedResponse(
-        items=[UniversityResponse.model_validate(u) for u in universities],
+        items=[UniversityResponse(**u) for u in universities],
         total=total,
         page=1,
         page_size=page_size,
@@ -151,17 +152,17 @@ async def delete_image(
 
 
 @router.post(
-    "/list/detail/disciplines",
+    "/list/detail/programs",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="设置院校学科关联",
+    summary="设置院校专业",
 )
-async def set_disciplines(
-    data: UniversityDisciplinesRequest,
+async def set_programs(
+    data: SetProgramsRequest,
     session: DbSession,
 ) -> None:
-    """设置院校关联学科（全量覆盖）。"""
+    """设置院校专业（全量覆盖）。"""
     svc = UniversityService(session)
-    await svc.set_disciplines(data.university_id, data.discipline_ids)
+    await svc.set_programs(data.university_id, data.programs)
 
 
 @router.post(
@@ -182,15 +183,22 @@ async def import_preview(
     summary="确认批量导入",
 )
 async def import_confirm(
-    data: dict,
     session: DbSession,
+    file: UploadFile = File(...),
+    items: str = "",
+    discipline_actions: str = "",
 ) -> dict:
-    """确认并执行批量导入。"""
+    """确认并执行批量导入。
+
+    前端需要重新上传原始文件 + 传递 items 和 discipline_actions JSON 字符串。
+    """
+    import json
+
+    items_list = json.loads(items) if items else []
+    actions_list = json.loads(discipline_actions) if discipline_actions else []
+
     svc = ImportService(session)
-    return await svc.confirm(
-        data.get("rows", []),
-        data.get("discipline_mappings", []),
-    )
+    return await svc.confirm(file, items_list, actions_list)
 
 
 @router.get(
@@ -200,13 +208,32 @@ async def import_confirm(
 async def download_template(
     session: DbSession,
 ) -> StreamingResponse:
-    """下载 Excel 导入模板。"""
+    """下载导入模板（ZIP 格式）。"""
     svc = ImportService(session)
     content = svc.generate_template()
     return StreamingResponse(
         io.BytesIO(content),
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type="application/zip",
         headers={
-            "Content-Disposition": 'attachment; filename="university_template.xlsx"'
+            "Content-Disposition": 'attachment; filename="university_template.zip"'
+        },
+    )
+
+
+@router.get(
+    "/list/export",
+    summary="导出所有院校",
+)
+async def export_universities(
+    session: DbSession,
+) -> StreamingResponse:
+    """导出所有院校为 ZIP（包含 Excel + 图片）。"""
+    svc = ExportService(session)
+    content = await svc.export()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="universities_export.zip"'
         },
     )

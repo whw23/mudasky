@@ -26,7 +26,6 @@ def _make_university(**kwargs) -> MagicMock:
     u.city = kwargs.get("city", "北京")
     u.logo_url = kwargs.get("logo_url", None)
     u.description = kwargs.get("description", "描述")
-    u.programs = kwargs.get("programs", ["计算机"])
     u.website = kwargs.get("website", None)
     u.is_featured = kwargs.get("is_featured", False)
     u.sort_order = kwargs.get("sort_order", 0)

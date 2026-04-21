@@ -69,3 +69,9 @@ class DisciplineResponse(BaseModel):
     created_at: datetime
     updated_at: datetime | None = None
     model_config = {"from_attributes": True}
+
+
+class DisciplineImportConfirmRequest(BaseModel):
+    """学科导入确认请求。"""
+
+    items: list[dict]

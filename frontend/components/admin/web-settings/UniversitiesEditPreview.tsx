@@ -16,6 +16,8 @@ import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { UniversityEditDialog } from "./UniversityEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
+import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
+import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
 
 interface University {
   id: string
@@ -74,6 +76,11 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
   /* 删除弹窗状态 */
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<University | null>(null)
+
+  /* 导入预览状态 */
+  const [discPreviewData, setDiscPreviewData] = useState<any>(null)
+  const [uniPreviewData, setUniPreviewData] = useState<any>(null)
+  const [importFile, setImportFile] = useState<File | null>(null)
 
   /** 加载院校数据 */
   const fetchData = useCallback(async () => {
@@ -230,6 +237,27 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
     }
   }
 
+  /** 确认导入学科 */
+  async function handleDiscConfirm(items: any[]) {
+    await api.post("/admin/web-settings/disciplines/import/confirm", { items })
+    fetchCategories()
+  }
+
+  /** 确认导入院校 */
+  async function handleUniConfirm(items: any[]) {
+    if (!importFile) {
+      toast.error("未找到导入文件")
+      return
+    }
+    const formData = new FormData()
+    formData.append("file", importFile)
+    formData.append("items", JSON.stringify(items))
+    await api.post("/admin/web-settings/universities/list/import/confirm", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    fetchData()
+  }
+
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("universities")} label="编辑 Banner">
@@ -239,13 +267,26 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
         <div className="mx-auto max-w-5xl">
           {/* 学科分类管理 */}
           <div className="mb-8 rounded-lg border bg-white p-4">
-            <button
-              onClick={() => setDisciplinesExpanded(!disciplinesExpanded)}
-              className="flex w-full items-center justify-between text-left"
-            >
-              <h3 className="text-lg font-semibold">学科分类管理</h3>
-              {disciplinesExpanded ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setDisciplinesExpanded(!disciplinesExpanded)}
+                className="flex items-center gap-2 text-left"
+              >
+                <h3 className="text-lg font-semibold">学科分类管理</h3>
+                {disciplinesExpanded ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
+              </button>
+              {disciplinesExpanded && (
+                <ImportExportToolbar
+                  templateUrl="/admin/web-settings/disciplines/import/template"
+                  importUrl="/admin/web-settings/disciplines/import/preview"
+                  exportUrl="/admin/web-settings/disciplines/export"
+                  onImportPreview={setDiscPreviewData}
+                  templateFilename="disciplines_template.xlsx"
+                  exportFilename="disciplines.xlsx"
+                  acceptZip={false}
+                />
+              )}
+            </div>
 
             {disciplinesExpanded && (
               <div className="mt-4 space-y-4">
@@ -449,10 +490,21 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
           {/* 顶部操作栏 */}
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-semibold">院校管理</h3>
-            <Button size="sm" onClick={handleCreate}>
-              <Plus className="mr-1 size-4" />
-              添加院校
-            </Button>
+            <div className="flex items-center gap-2">
+              <ImportExportToolbar
+                templateUrl="/admin/web-settings/universities/list/import/template"
+                importUrl="/admin/web-settings/universities/list/import/preview"
+                exportUrl="/admin/web-settings/universities/list/export"
+                onImportPreview={setUniPreviewData}
+                onFileSelect={setImportFile}
+                templateFilename="universities_template.zip"
+                exportFilename="universities.zip"
+              />
+              <Button size="sm" onClick={handleCreate}>
+                <Plus className="mr-1 size-4" />
+                添加院校
+              </Button>
+            </div>
           </div>
 
         {/* 院校网格 */}
@@ -550,6 +602,31 @@ export function UniversitiesEditPreview({ onBannerEdit }: UniversitiesEditPrevie
             })
           }
           onSuccess={fetchData}
+        />
+
+        {/* 学科导入预览弹窗 */}
+        <ImportPreviewDialog
+          open={!!discPreviewData}
+          onOpenChange={(open) => !open && setDiscPreviewData(null)}
+          data={discPreviewData}
+          onConfirm={handleDiscConfirm}
+          columns={[
+            { key: "category_name", label: "分类名称" },
+            { key: "name", label: "学科名称" },
+          ]}
+        />
+
+        {/* 院校导入预览弹窗 */}
+        <ImportPreviewDialog
+          open={!!uniPreviewData}
+          onOpenChange={(open) => !open && setUniPreviewData(null)}
+          data={uniPreviewData}
+          onConfirm={handleUniConfirm}
+          columns={[
+            { key: "name", label: "院校名称" },
+            { key: "country", label: "国家" },
+            { key: "city", label: "城市" },
+          ]}
         />
       </div>
     </>

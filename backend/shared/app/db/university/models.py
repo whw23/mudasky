@@ -53,9 +53,6 @@ class University(Base):
     description: Mapped[str | None] = mapped_column(
         Text, nullable=True
     )
-    programs: Mapped[list] = mapped_column(
-        JSONB, default=list, nullable=False
-    )
     website: Mapped[str | None] = mapped_column(
         String(500), nullable=True
     )

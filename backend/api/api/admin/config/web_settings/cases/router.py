@@ -3,11 +3,16 @@
 提供成功案例的管理员 API 端点。
 """
 
+import io
+
 from fastapi import APIRouter, File, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import DbSession
 from api.core.pagination import PaginatedResponse, PaginationParams
 
+from .export_service import ExportService
+from .import_service import ImportService
 from .schemas import (
     CaseCreate,
     CaseDeleteRequest,
@@ -116,3 +121,75 @@ async def upload_offer(
     svc = CaseService(session)
     image_id = await svc.upload_offer(case_id, file)
     return {"image_id": image_id}
+
+
+@router.post(
+    "/list/import/preview",
+    summary="批量导入预览",
+)
+async def import_preview(
+    session: DbSession,
+    file: UploadFile = File(...),
+) -> dict:
+    """上传 Excel/ZIP，解析校验并返回预览。"""
+    svc = ImportService(session)
+    return await svc.preview(file)
+
+
+@router.post(
+    "/list/import/confirm",
+    summary="确认批量导入",
+)
+async def import_confirm(
+    session: DbSession,
+    file: UploadFile = File(...),
+    items: str = "",
+) -> dict:
+    """确认并执行批量导入。
+
+    前端需要重新上传原始文件 + 传递 items JSON 字符串。
+    """
+    import json
+
+    items_list = json.loads(items) if items else []
+
+    svc = ImportService(session)
+    return await svc.confirm(file, items_list)
+
+
+@router.get(
+    "/list/import/template",
+    summary="下载导入模板",
+)
+async def download_template(
+    session: DbSession,
+) -> StreamingResponse:
+    """下载导入模板（ZIP 格式）。"""
+    svc = ImportService(session)
+    content = svc.generate_template()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="case_template.zip"'
+        },
+    )
+
+
+@router.get(
+    "/list/export",
+    summary="导出所有成功案例",
+)
+async def export_cases(
+    session: DbSession,
+) -> StreamingResponse:
+    """导出所有成功案例为 ZIP（包含 Excel + 图片）。"""
+    svc = ExportService(session)
+    content = await svc.export()
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="cases_export.zip"'
+        },
+    )

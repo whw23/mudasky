@@ -34,7 +34,6 @@ def _make_university(
     u.city = "北京"
     u.logo_url = None
     u.description = "简介"
-    u.programs = ["计算机"]
     u.website = None
     u.is_featured = False
     u.sort_order = 0

@@ -14,6 +14,8 @@ import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { CaseEditDialog } from "./CaseEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
+import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
+import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
 
 interface CaseItem {
   id: string
@@ -43,6 +45,10 @@ export function CasesEditPreview({ onBannerEdit }: CasesEditPreviewProps) {
   /* 删除弹窗状态 */
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<CaseItem | null>(null)
+
+  /* 导入预览状态 */
+  const [casePreviewData, setCasePreviewData] = useState<any>(null)
+  const [importFile, setImportFile] = useState<File | null>(null)
 
   /** 加载案例数据 */
   const fetchData = useCallback(async () => {
@@ -79,6 +85,21 @@ export function CasesEditPreview({ onBannerEdit }: CasesEditPreviewProps) {
     setDeleteOpen(true)
   }
 
+  /** 确认导入案例 */
+  async function handleCaseConfirm(items: any[]) {
+    if (!importFile) {
+      toast.error("未找到导入文件")
+      return
+    }
+    const formData = new FormData()
+    formData.append("file", importFile)
+    formData.append("items", JSON.stringify(items))
+    await api.post("/admin/web-settings/cases/list/import/confirm", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    fetchData()
+  }
+
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("cases")} label="编辑 Banner">
@@ -89,10 +110,21 @@ export function CasesEditPreview({ onBannerEdit }: CasesEditPreviewProps) {
           {/* 顶部操作栏 */}
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-semibold">案例管理</h3>
-            <Button size="sm" onClick={handleCreate}>
-              <Plus className="mr-1 size-4" />
-              添加案例
-            </Button>
+            <div className="flex items-center gap-2">
+              <ImportExportToolbar
+                templateUrl="/admin/web-settings/cases/list/import/template"
+                importUrl="/admin/web-settings/cases/list/import/preview"
+                exportUrl="/admin/web-settings/cases/list/export"
+                onImportPreview={setCasePreviewData}
+                onFileSelect={setImportFile}
+                templateFilename="cases_template.zip"
+                exportFilename="cases.zip"
+              />
+              <Button size="sm" onClick={handleCreate}>
+                <Plus className="mr-1 size-4" />
+                添加案例
+              </Button>
+            </div>
           </div>
 
         {/* 案例列表 */}
@@ -177,6 +209,20 @@ export function CasesEditPreview({ onBannerEdit }: CasesEditPreviewProps) {
             })
           }
           onSuccess={fetchData}
+        />
+
+        {/* 案例导入预览弹窗 */}
+        <ImportPreviewDialog
+          open={!!casePreviewData}
+          onOpenChange={(open) => !open && setCasePreviewData(null)}
+          data={casePreviewData}
+          onConfirm={handleCaseConfirm}
+          columns={[
+            { key: "student_name", label: "学生姓名" },
+            { key: "university", label: "录取院校" },
+            { key: "program", label: "录取专业" },
+            { key: "year", label: "年份" },
+          ]}
         />
       </div>
     </>

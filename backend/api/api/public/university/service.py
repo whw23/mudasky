@@ -4,9 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.university import repository
+from app.db.university import program_repository as prog_repo
 from app.db.university.models import University
 from app.db.discipline import repository as disc_repo
-from app.db.discipline.models import UniversityDiscipline
 from app.db.case.models import SuccessCase
 from app.core.exceptions import NotFoundException
 
@@ -76,16 +76,14 @@ class UniversityService:
         )
 
     async def get_university_detail(self, university_id: str) -> dict:
-        """获取院校详情，包含学科、图片集、关联案例。"""
+        """获取院校详情，包含专业、学科、图片集、关联案例。"""
         university = await self.get_university(university_id)
 
-        # 学科
-        disc_ids = await disc_repo.get_university_discipline_ids(
-            self.session, university_id
-        )
+        # 专业（含学科信息）
+        programs = await prog_repo.list_programs(self.session, university_id)
         disciplines = []
-        for did in disc_ids:
-            d = await disc_repo.get_discipline_by_id(self.session, did)
+        for prog in programs:
+            d = await disc_repo.get_discipline_by_id(self.session, prog.discipline_id)
             if d:
                 cat = await disc_repo.get_category_by_id(
                     self.session, d.category_id
@@ -94,6 +92,7 @@ class UniversityService:
                     "id": d.id,
                     "name": d.name,
                     "category_name": cat.name if cat else "",
+                    "program_name": prog.name,
                 })
 
         # 图片集
@@ -136,12 +135,14 @@ class UniversityService:
         program: str | None = None,
     ) -> tuple[list[University], int]:
         """分页查询院校列表，支持学科筛选。"""
+        from app.db.university.program_models import UniversityProgram
+
         # 如果有学科筛选条件，先获取符合条件的院校 ID 列表
         university_ids = None
         if discipline_id:
             # 直接按学科 ID 筛选
-            stmt = select(UniversityDiscipline.university_id).where(
-                UniversityDiscipline.discipline_id == discipline_id
+            stmt = select(UniversityProgram.university_id).where(
+                UniversityProgram.discipline_id == discipline_id
             )
             result = await self.session.execute(stmt)
             university_ids = set(result.scalars().all())
@@ -152,8 +153,8 @@ class UniversityService:
             )
             if disciplines:
                 discipline_ids = [d.id for d in disciplines]
-                stmt = select(UniversityDiscipline.university_id).where(
-                    UniversityDiscipline.discipline_id.in_(discipline_ids)
+                stmt = select(UniversityProgram.university_id).where(
+                    UniversityProgram.discipline_id.in_(discipline_ids)
                 )
                 result = await self.session.execute(stmt)
                 university_ids = set(result.scalars().all())

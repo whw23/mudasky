@@ -225,3 +225,28 @@ async def delete_article(
     """删除文章。"""
     await session.delete(article)
     await session.commit()
+
+
+async def get_article_by_slug(
+    session: AsyncSession, slug: str
+) -> Article | None:
+    """根据 slug 查询文章。"""
+    stmt = select(Article).where(Article.slug == slug)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+async def list_articles_by_category(
+    session: AsyncSession, category_id: str
+) -> list[Article]:
+    """查询指定分类下的所有文章。"""
+    stmt = (
+        select(Article)
+        .where(Article.category_id == category_id)
+        .order_by(
+            Article.is_pinned.desc(),
+            Article.created_at.desc(),
+        )
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
