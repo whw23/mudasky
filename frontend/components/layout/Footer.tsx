@@ -7,7 +7,7 @@
 
 "use client"
 
-import { useRef } from "react"
+import { useRef, useCallback } from "react"
 import { Phone, Mail, Upload, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
@@ -31,24 +31,33 @@ const SERVICE_LINKS = [
 ] as const
 
 /** 二维码槽位 */
-function QrSlot({ url, label, placeholder, editable, alwaysShow, inputRef, onUpload, onClear }: {
+function QrSlot({ url, label, placeholder, editable, alwaysShow, onUpload, onClear }: {
   url: string; label: string; placeholder: string
   editable?: boolean; alwaysShow?: boolean
-  inputRef: React.RefObject<HTMLInputElement | null>
   onUpload?: (file: File) => Promise<void>
   onClear?: () => Promise<void>
 }) {
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) onUpload?.(f)
+    if (fileRef.current) fileRef.current.value = ""
+  }, [onUpload])
+
   if (!url && !editable && !alwaysShow) return null
 
   return (
     <div className="group relative">
-      <input ref={inputRef} type="file" accept="image/*" className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload?.(f); if (inputRef.current) inputRef.current.value = "" }} />
+      {editable && (
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      )}
       {url ? (
-        <div className="relative">
+        <div className="relative cursor-pointer" onClick={() => editable && fileRef.current?.click()}>
           <img src={url} alt={label} className="h-28 w-28 rounded-lg border border-border bg-background object-contain" />
           {editable && (
-            <button type="button" onClick={() => onClear?.()}
+            <button type="button"
+              onClick={(e) => { e.stopPropagation(); onClear?.() }}
               className="absolute -top-2 -right-2 rounded-full bg-destructive p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Trash2 className="size-3" />
             </button>
@@ -59,7 +68,7 @@ function QrSlot({ url, label, placeholder, editable, alwaysShow, inputRef, onUpl
           className={`flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border bg-background text-xs text-muted-foreground ${
             editable ? "cursor-pointer border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5" : "border-border"
           }`}
-          onClick={() => editable && inputRef.current?.click()}
+          onClick={() => editable && fileRef.current?.click()}
         >
           {editable ? <Upload className="size-5 text-muted-foreground" /> : null}
           {placeholder}
@@ -81,8 +90,6 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
   const { contactInfo, siteInfo } = useLocalizedConfig()
-  const serviceQrRef = useRef<HTMLInputElement>(null)
-  const officialQrRef = useRef<HTMLInputElement>(null)
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string, inline?: boolean) {
@@ -182,7 +189,6 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
               placeholder={t("qrPlaceholder")}
               editable={editable}
               alwaysShow
-              inputRef={serviceQrRef}
               onUpload={(file) => onImageUpload?.("wechat_service_qr_url", file)}
               onClear={() => onImageClear?.("wechat_service_qr_url")}
             />
@@ -191,7 +197,6 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
               label={t("wechatOfficial")}
               placeholder={t("qrPlaceholder")}
               editable={editable}
-              inputRef={officialQrRef}
               onUpload={(file) => onImageUpload?.("wechat_official_qr_url", file)}
               onClear={() => onImageClear?.("wechat_official_qr_url")}
             />
