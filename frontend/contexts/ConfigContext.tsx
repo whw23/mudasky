@@ -5,7 +5,7 @@
  * 应用启动时获取配置并缓存，提供 useConfig hook。
  */
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useLocale } from 'next-intl'
 import api from '@/lib/api'
 import { getLocalizedValue } from '@/lib/i18n-config'
@@ -86,6 +86,8 @@ interface ConfigContextType {
   navConfig: NavConfig
   /** 页面 Banner 配置 */
   pageBanners: PageBanners
+  /** 刷新配置 */
+  refreshConfig: () => void
 }
 
 const ConfigContext = createContext<ConfigContextType>({
@@ -95,6 +97,7 @@ const ConfigContext = createContext<ConfigContextType>({
   aboutInfo: DEFAULT_ABOUT_INFO,
   navConfig: DEFAULT_NAV_CONFIG,
   pageBanners: {},
+  refreshConfig: () => {},
 })
 
 /** 系统配置 Provider */
@@ -106,7 +109,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [navConfig, setNavConfig] = useState<NavConfig>(DEFAULT_NAV_CONFIG)
   const [pageBanners, setPageBanners] = useState<PageBanners>({})
 
-  useEffect(() => {
+  const fetchConfig = useCallback(() => {
     api.get('/public/config/all')
       .then((res) => {
         const data = res.data
@@ -120,8 +123,10 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       .catch((err) => console.warn('[ConfigProvider] 配置加载失败:', err.message))
   }, [])
 
+  useEffect(() => { fetchConfig() }, [fetchConfig])
+
   return (
-    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners }}>
+    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, refreshConfig: fetchConfig }}>
       {children}
     </ConfigContext>
   )

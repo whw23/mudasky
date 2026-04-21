@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { useConfig } from '@/contexts/ConfigContext'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
@@ -74,6 +75,7 @@ const DEFAULT_RAW: RawConfig = {
 }
 
 export default function WebSettingsPage() {
+  const { refreshConfig } = useConfig()
   const tHeader = useTranslations("Header")
   const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
@@ -178,6 +180,7 @@ export default function WebSettingsPage() {
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
       await fetchAllConfigs()
+      refreshConfig()
       toast.success("上传成功")
     } catch {
       toast.error("上传失败")
@@ -190,6 +193,7 @@ export default function WebSettingsPage() {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
       await fetchAllConfigs()
+      refreshConfig()
       toast.success("已清除")
     } catch {
       toast.error("清除失败")
