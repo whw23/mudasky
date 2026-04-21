@@ -48,8 +48,11 @@ jobs:
               - 'db/init.sql'
 
   build-gateway:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.gateway == 'true'
+    needs: [detect-changes, test-backend-unit, test-frontend-unit]
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.gateway == 'true'
+      && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -75,8 +78,11 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
 
   build-frontend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+    needs: [detect-changes, test-frontend-unit]
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.frontend == 'true'
+      && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -102,8 +108,11 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
 
   build-api:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.api == 'true'
+    needs: [detect-changes, test-backend-unit]
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.api == 'true'
+      && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
     permissions:
       contents: read
