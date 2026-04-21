@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Upload, Trash2 } from 'lucide-react'
 import api from '@/lib/api'
-import { useConfig } from '@/contexts/ConfigContext'
+import { useConfig, useLocalizedConfig } from '@/contexts/ConfigContext'
 import { Header } from '@/components/layout/Header'
 import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
 import { Footer } from '@/components/layout/Footer'
@@ -78,6 +78,7 @@ const DEFAULT_RAW: RawConfig = {
 
 export default function WebSettingsPage() {
   const { refreshConfig } = useConfig()
+  const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
   const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
@@ -474,7 +475,7 @@ export default function WebSettingsPage() {
                 )}
               </div>
               <span className="text-[11px] text-muted-foreground truncate flex-1">
-                {rawConfig.siteInfo.brand_name || '网站标题'}
+                {localizedSiteInfo.brand_name || '网站标题'}
               </span>
             </div>
           </div>
