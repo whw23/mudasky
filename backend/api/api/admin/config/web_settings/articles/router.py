@@ -29,6 +29,7 @@ from .service import ArticleService
 router = APIRouter(
     prefix="/articles", tags=["admin-articles"]
 )
+router.label = "文章管理"
 
 
 @router.get(

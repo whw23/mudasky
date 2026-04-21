@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import type { Role } from "@/types"
-import { PermissionTree, collectAllLeaves } from "./PermissionTree"
+import { PermissionTree, expandWildcards, collapseToWildcards } from "./PermissionTree"
 
 interface RoleDialogProps {
   role: Role | null
@@ -41,42 +41,31 @@ export function RoleDialog({
   const [description, setDescription] = useState("")
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [permTree, setPermTree] = useState<Record<string, unknown> | null>(null)
 
   /**
    * 将角色的通配符权限展开为 PermissionTree 使用的 code 集合。
-   * 从 permission_tree API 获取所有叶子路径，匹配通配符。
+   * 从 permission_tree API 获取权限树，使用 expandWildcards 展开通配符，并缓存 tree。
    */
   const expandToCodeSet = useCallback(
     async (rolePerms: string[]): Promise<Set<string>> => {
-      const codes = new Set<string>()
-      let leafCodes: string[] = []
       try {
         const { data } = await api.get<{ permission_tree: Record<string, unknown> }>("/admin/roles/meta")
-        leafCodes = collectAllLeaves(data.permission_tree as Parameters<typeof collectAllLeaves>[0])
+        setPermTree(data.permission_tree)
+        const tree = data.permission_tree as Parameters<typeof expandWildcards>[1]
+        return expandWildcards(new Set(rolePerms), tree)
       } catch {
-        return codes
+        return new Set<string>()
       }
-
-      for (const perm of rolePerms) {
-        if (perm === "*") {
-          for (const lc of leafCodes) codes.add(lc)
-        } else if (perm.endsWith("/*")) {
-          const prefix = perm.slice(0, -1)
-          for (const lc of leafCodes) {
-            if (lc.startsWith(prefix)) codes.add(lc)
-          }
-        } else {
-          codes.add(perm)
-        }
-      }
-      return codes
     },
     [],
   )
 
-  /** 将已选中的 code 集合转换为权限路径列表。 */
+  /** 将已选中的 code 集合转换为权限路径列表，使用 collapseToWildcards 压缩。 */
   const codesToPermissions = (): string[] => {
-    return [...selectedCodes]
+    if (!permTree) return [...selectedCodes]
+    const tree = permTree as Parameters<typeof collapseToWildcards>[1]
+    return [...collapseToWildcards(selectedCodes, tree)]
   }
 
   /** 打开对话框时初始化表单 */

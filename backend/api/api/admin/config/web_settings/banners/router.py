@@ -8,6 +8,7 @@ from .schemas import BannerRemoveRequest, BannerReorderRequest
 from .service import BannerService
 
 router = APIRouter(prefix="/banners", tags=["admin-banners"])
+router.label = "Banner 管理"
 
 
 @router.get("/list", summary="获取所有 Banner 配置")

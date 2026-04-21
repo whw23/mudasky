@@ -11,6 +11,7 @@ from .user import router as user_router
 description = "管理后台"
 
 router = APIRouter(prefix="/admin")
+router.label = "管理后台"
 router.include_router(user_router)
 router.include_router(rbac_router)
 router.include_router(config_router)

@@ -18,6 +18,7 @@ from .schemas import (
 from .service import RbacService
 
 router = APIRouter(prefix="/roles", tags=["rbac"])
+router.label = "角色管理"
 
 
 class MessageResponse(BaseModel):

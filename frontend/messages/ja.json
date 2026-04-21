@@ -454,7 +454,9 @@
     "searchPermissions": "権限を検索...",
     "selectAll": "全選択",
     "noSearchResults": "結果なし",
-    "noApis": "APIなし"
+    "noApis": "APIなし",
+    "panels": "パネル",
+    "toggleAll": "全選択切替"
   },
   "AdminGeneral": {
     "title": "一般設定",

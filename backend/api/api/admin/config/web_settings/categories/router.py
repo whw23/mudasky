@@ -18,6 +18,7 @@ from .service import CategoryService
 router = APIRouter(
     prefix="/categories", tags=["admin-category"]
 )
+router.label = "分类管理"
 
 
 async def _category_list_with_counts(

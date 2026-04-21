@@ -32,6 +32,7 @@ router = APIRouter(
     prefix="/universities",
     tags=["admin-universities"],
 )
+router.label = "院校管理"
 
 
 @router.get(

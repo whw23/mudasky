@@ -23,6 +23,7 @@ router = APIRouter(
     prefix="/users",
     tags=["admin"],
 )
+router.label = "用户管理"
 
 
 @router.get(

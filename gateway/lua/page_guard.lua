@@ -44,6 +44,63 @@ local function has_panel_access(perms, panel)
   return false
 end
 
+--- 从 URI 中提取 module 名（面板下的第一级子路由）。
+-- /zh/admin/users → "users"
+-- /zh/admin/users/detail → "users"
+-- /zh/portal/profile → "profile"
+local function extract_module(uri, locale, panel)
+  local pattern = "^/" .. locale .. "/" .. panel .. "/([^/]+)"
+  local module = string.match(uri, pattern)
+  if not module then
+    -- 无 locale 的情况
+    pattern = "^/" .. panel .. "/([^/]+)"
+    module = string.match(uri, pattern)
+  end
+  return module
+end
+
+--- 检查用户是否拥有指定权限。
+-- 支持通配符（path/*）和精确匹配，两者都包含祖先路径。
+local function has_permission(user_perms, required)
+  for _, p in ipairs(user_perms) do
+    -- 全部权限
+    if p == "*" then return true end
+
+    if string.sub(p, -2) == "/*" then
+      -- 通配符：path/* 格式
+      local prefix = string.sub(p, 1, -2)  -- 去掉 *，保留 /
+
+      -- 子路径匹配：required 在权限前缀之下
+      if string.find(required, prefix, 1, true) == 1 then
+        return true
+      end
+
+      -- 祖先匹配：权限前缀在 required 之下（required 是祖先）
+      if string.find(prefix, required .. "/", 1, true) == 1 then
+        return true
+      end
+
+    else
+      -- 精确匹配（去掉可能的尾部斜杠）
+      local target = p
+      if string.sub(target, -1) == "/" then
+        target = string.sub(target, 1, -2)
+      end
+
+      -- 精确匹配当前节点
+      if required == target then
+        return true
+      end
+
+      -- 祖先匹配：target 路径在 required 之下（required 是祖先）
+      if string.find(target, required .. "/", 1, true) == 1 then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 --- 302 重定向。
 local function redirect_to(path)
   ngx.redirect(path, 302)
@@ -86,8 +143,35 @@ if not payload.is_active then
   return redirect_to(home)
 end
 
--- 权限检查
+-- 面板级权限检查
 local perms = payload.permissions or {}
 if not has_panel_access(perms, panel) then
-  return redirect_to("/" .. locale .. "/portal/overview")
+  return redirect_to(home)
+end
+
+-- module 级权限检查
+local module = extract_module(uri, locale, panel)
+if module then
+  local required_perm = panel .. "/" .. module
+  if not has_permission(perms, required_perm) then
+    -- 无权限访问该 module，尝试重定向到默认页
+    local default_path
+    if panel == "admin" then
+      default_path = "/" .. locale .. "/admin/dashboard"
+    elseif panel == "portal" then
+      default_path = "/" .. locale .. "/portal/profile"
+    end
+
+    if default_path then
+      -- 检查用户是否有默认页权限
+      local default_module = (panel == "admin") and "dashboard" or "profile"
+      local default_perm = panel .. "/" .. default_module
+      if has_permission(perms, default_perm) then
+        return redirect_to(default_path)
+      end
+    end
+
+    -- 默认页也无权限，重定向首页
+    return redirect_to(home)
+  end
 end
