@@ -28,7 +28,8 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   hotline_contact: '苏老师',
   logo_url: '',
   favicon_url: '',
-  wechat_qr_url: '',
+  wechat_service_qr_url: '',
+  wechat_official_qr_url: '',
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
   hero_title: '',
@@ -140,7 +141,8 @@ interface LocalizedConfigType {
     hotline_contact: string
     logo_url: string
     favicon_url: string
-    wechat_qr_url: string
+    wechat_service_qr_url: string
+    wechat_official_qr_url: string
     company_name: string
     icp_filing: string
     hero_title: string

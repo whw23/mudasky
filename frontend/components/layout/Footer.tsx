@@ -125,30 +125,50 @@ export function Footer({ editable, onEdit }: FooterProps) {
           </ul>
         </div>
 
-        {/* 栏 4：微信公众号二维码 */}
-        {wrapEditable(
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
-              {t("followUs")}
-            </h3>
-            {siteInfo.wechat_qr_url ? (
-              <img
-                src={siteInfo.wechat_qr_url}
-                alt={t("wechatQr")}
-                className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
-              />
-            ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
-                {t("qrPlaceholder")}
-              </div>
+        {/* 栏 4：微信二维码 */}
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+            {t("followUs")}
+          </h3>
+          <div className="flex gap-4">
+            {/* 客服微信（必展示） */}
+            {wrapEditable(
+              <div>
+                {siteInfo.wechat_service_qr_url ? (
+                  <img
+                    src={siteInfo.wechat_service_qr_url}
+                    alt={t("wechatService")}
+                    className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
+                  />
+                ) : (
+                  <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
+                    {t("qrPlaceholder")}
+                  </div>
+                )}
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  {t("wechatService")}
+                </p>
+              </div>,
+              "wechat_service_qr",
+              "编辑客服微信二维码"
             )}
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t("wechatQr")}
-            </p>
-          </div>,
-          "wechat_qr",
-          "编辑微信二维码"
-        )}
+            {/* 公众号（有值才展示） */}
+            {siteInfo.wechat_official_qr_url && wrapEditable(
+              <div>
+                <img
+                  src={siteInfo.wechat_official_qr_url}
+                  alt={t("wechatOfficial")}
+                  className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
+                />
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  {t("wechatOfficial")}
+                </p>
+              </div>,
+              "wechat_official_qr",
+              "编辑公众号二维码"
+            )}
+          </div>
+        </div>
       </div>
 
       {/* 底部版权栏 */}
