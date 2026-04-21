@@ -454,7 +454,9 @@
     "searchPermissions": "Berechtigungen suchen...",
     "selectAll": "Alle auswählen",
     "noSearchResults": "Keine Ergebnisse",
-    "noApis": "Keine APIs"
+    "noApis": "Keine APIs",
+    "panels": "Panels",
+    "toggleAll": "Alle umschalten"
   },
   "AdminGeneral": {
     "title": "Allgemeine Einstellungen",

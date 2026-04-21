@@ -457,7 +457,9 @@
     "searchPermissions": "搜索权限...",
     "selectAll": "全选",
     "noSearchResults": "无匹配结果",
-    "noApis": "无 API 接口"
+    "noApis": "无 API 接口",
+    "panels": "面板",
+    "toggleAll": "全选/取消"
   },
   "About": {
     "historyTitle": "15年专注国际教育",
