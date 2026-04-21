@@ -13,6 +13,7 @@ from .schemas import (
 from .service import NavService
 
 router = APIRouter(prefix="/nav", tags=["admin-nav"])
+router.label = "导航栏配置"
 
 
 @router.get(

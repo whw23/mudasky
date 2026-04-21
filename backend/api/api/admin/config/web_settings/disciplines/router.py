@@ -21,6 +21,7 @@ from .schemas import (
 from .service import DisciplineService
 
 router = APIRouter(prefix="/disciplines", tags=["disciplines"])
+router.label = "学科分类管理"
 
 
 @router.get(

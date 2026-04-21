@@ -24,6 +24,7 @@ from .service import CaseService
 router = APIRouter(
     prefix="/cases", tags=["admin-cases"]
 )
+router.label = "案例管理"
 
 
 @router.get(

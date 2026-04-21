@@ -20,6 +20,7 @@ from .schemas import (
 from .service import StudentService
 
 router = APIRouter(prefix="/students", tags=["admin-students"])
+router.label = "学生管理"
 
 
 @router.get(

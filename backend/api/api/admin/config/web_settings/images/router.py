@@ -8,6 +8,7 @@ from app.db.image import repository as image_repo
 from app.db.image.repository import ALLOWED_MIME_TYPES, MAX_IMAGE_SIZE
 
 router = APIRouter(prefix="/images", tags=["admin-images"])
+router.label = "图片上传"
 
 
 @router.post("/upload", summary="上传图片")

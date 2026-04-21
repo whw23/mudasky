@@ -23,10 +23,12 @@ router = APIRouter(tags=["admin-settings"])
 general_settings_router = APIRouter(
     prefix="/general-settings", tags=["admin-settings"]
 )
+general_settings_router.label = "通用配置"
 
 web_settings_router = APIRouter(
     prefix="/web-settings", tags=["admin-settings"]
 )
+web_settings_router.label = "网站设置"
 
 
 @general_settings_router.get(
