@@ -72,7 +72,13 @@ function LogoUploadSlot({ logoUrl, brandName, onUpload, onClear }: {
   return (
     <div className="group/logo relative shrink-0 cursor-pointer" onClick={() => ref.current?.click()}>
       <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleChange} />
-      <HeaderLogo logoUrl={displayUrl} brandName={brandName} size={36} className="rounded-lg" />
+      {displayUrl ? (
+        <img src={displayUrl} alt={brandName} className="size-9 rounded-lg object-contain" />
+      ) : (
+        <span className="inline-flex size-9 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg">
+          {brandName.charAt(0)}
+        </span>
+      )}
       {displayUrl && (
         <button type="button"
           onClick={(e) => { e.stopPropagation(); onClear?.(); setLocalUrl("") }}
