@@ -73,7 +73,8 @@ class SiteInfoValue(BaseModel):
     hotline_contact: str | dict = Field("", description="热线联系人（str 或多语言 dict）")
     logo_url: str = Field("", description="Logo 图片地址")
     favicon_url: str = Field("", description="Favicon 地址")
-    wechat_qr_url: str = Field("", description="微信二维码图片地址")
+    wechat_service_qr_url: str = Field("", description="客服微信二维码图片地址")
+    wechat_official_qr_url: str = Field("", description="公众号二维码图片地址")
     company_name: str = Field("", description="公司名称")
     icp_filing: str = Field("", description="ICP 备案号")
 

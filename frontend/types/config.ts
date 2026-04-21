@@ -30,7 +30,8 @@ export interface SiteInfo {
   hotline_contact: LocalizedField
   logo_url: string
   favicon_url: string
-  wechat_qr_url: string
+  wechat_service_qr_url: string
+  wechat_official_qr_url: string
   company_name: string
   icp_filing: string
   hero_title: LocalizedField

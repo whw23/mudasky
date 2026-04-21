@@ -61,7 +61,7 @@ interface RawConfig {
 const DEFAULT_RAW: RawConfig = {
   siteInfo: {
     brand_name: '', tagline: '', hotline: '', hotline_contact: '',
-    logo_url: '', favicon_url: '', wechat_qr_url: '', company_name: '', icp_filing: '',
+    logo_url: '', favicon_url: '', wechat_service_qr_url: '', wechat_official_qr_url: '', company_name: '', icp_filing: '',
   },
   contactInfo: {
     address: '', phone: '', email: '', wechat: '', registered_address: '',
@@ -200,11 +200,20 @@ export default function WebSettingsPage() {
           data: rawConfig.contactInfo,
         })
         break
-      case 'wechat_qr':
+      case 'wechat_service_qr':
         setDialogState({
           open: true,
-          title: '编辑微信二维码',
-          fields: [{ key: 'wechat_qr_url', label: '微信二维码', type: 'image' as const, localized: false }],
+          title: '编辑客服微信二维码',
+          fields: [{ key: 'wechat_service_qr_url', label: '客服微信二维码', type: 'image' as const, localized: false }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'wechat_official_qr':
+        setDialogState({
+          open: true,
+          title: '编辑公众号二维码',
+          fields: [{ key: 'wechat_official_qr_url', label: '公众号二维码', type: 'image' as const, localized: false }],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
