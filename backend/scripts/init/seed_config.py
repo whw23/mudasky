@@ -34,7 +34,7 @@ CONFIGS = [
             "hotline_contact": {
                 "zh": "苏老师",
                 "en": "Ms. Su",
-                "ja": "蘇先生",
+                "ja": "蘇さん",
                 "de": "Frau Su",
             },
             "company_name": "浩然学行(苏州)文化传播有限公司",
