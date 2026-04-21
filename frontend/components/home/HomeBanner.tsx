@@ -18,8 +18,8 @@ export function HomeBanner() {
 
   return (
     <Banner
-      title={siteInfo.hero_title || t("heroTitle")}
-      subtitle={siteInfo.hero_subtitle || t("heroSubtitle")}
+      title={siteInfo.brand_name || t("heroTitle")}
+      subtitle={siteInfo.tagline || t("heroSubtitle")}
       imageIds={imageIds}
       large
     >
