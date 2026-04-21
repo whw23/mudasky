@@ -10,6 +10,7 @@ from api.core.pagination import (
 )
 
 from .schemas import (
+    AdvisorOption,
     AssignAdvisor,
     MessageResponse,
     StudentDowngrade,
@@ -19,6 +20,21 @@ from .schemas import (
 from .service import StudentService
 
 router = APIRouter(prefix="/students", tags=["admin-students"])
+router.label = "学生管理"
+
+
+@router.get(
+    "/meta/advisors",
+    response_model=list[AdvisorOption],
+    summary="可选顾问列表",
+)
+async def list_advisors(
+    session: DbSession,
+) -> list[AdvisorOption]:
+    """查询所有顾问角色用户，用于分配顾问下拉选择。"""
+    svc = StudentService(session)
+    advisors = await svc.list_advisors()
+    return [AdvisorOption.model_validate(a) for a in advisors]
 
 
 @router.get(

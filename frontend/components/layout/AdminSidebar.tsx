@@ -2,7 +2,7 @@
 
 /**
  * 后台管理侧边栏
- * 包含仪表盘、用户管理、角色管理、文章管理、分类管理等导航
+ * 包含仪表盘、用户管理、角色管理、设置管理等导航
  * 根据用户权限过滤菜单项
  */
 
@@ -12,13 +12,8 @@ import {
   LayoutDashboard,
   Users,
   Shield,
-  Wrench,
   Settings,
   ArrowLeft,
-  FileText,
-  FolderOpen,
-  GraduationCap,
-  Trophy,
   BookUser,
   Contact,
 } from "lucide-react"
@@ -37,11 +32,6 @@ const MENU_KEYS: MenuItem[] = [
   { key: "dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { key: "userManagement", href: "/admin/users", icon: Users, permissions: ["admin/users/*"] },
   { key: "roleManagement", href: "/admin/roles", icon: Shield, permissions: ["admin/roles/*"] },
-  { key: "articleManagement", href: "/admin/articles", icon: FileText, permissions: ["admin/articles/*"] },
-  { key: "categoryManagement", href: "/admin/categories", icon: FolderOpen, permissions: ["admin/categories/*"] },
-  { key: "universityManagement", href: "/admin/universities", icon: GraduationCap, permissions: ["admin/universities/*"] },
-  { key: "caseManagement", href: "/admin/cases", icon: Trophy, permissions: ["admin/cases/*"] },
-  { key: "generalSettings", href: "/admin/general-settings", icon: Wrench, permissions: ["admin/general-settings/*"] },
   { key: "webSettings", href: "/admin/web-settings", icon: Settings, permissions: ["admin/web-settings/*"] },
   { key: "studentManagement", href: "/admin/students", icon: BookUser, permissions: ["admin/students/*"] },
   { key: "contactManagement", href: "/admin/contacts", icon: Contact, permissions: ["admin/contacts/*"] },

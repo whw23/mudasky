@@ -32,7 +32,8 @@
     "quickLinks": "Quick Links",
     "services": "Services",
     "followUs": "Follow Us",
-    "wechatQr": "WeChat Official Account",
+    "wechatService": "Customer Service",
+    "wechatOfficial": "Official Account",
     "qrPlaceholder": "QR Code",
     "allRightsReserved": "版权所有",
     "icp": "苏ICP备2022046719号-1",
@@ -53,6 +54,9 @@
     "servicesTag": "Our Services",
     "servicesTitle": "Featured Services",
     "learnMore": "Learn More",
+    "featuredUniversities": "Partner Universities",
+    "featuredCases": "Success Stories",
+    "viewMore": "View More",
     "service": {
       "studyAbroad": "Study Abroad",
       "studyAbroadDesc": "Multi-country study abroad programs including Germany, Japan, and Singapore with comprehensive consulting services",
@@ -454,16 +458,25 @@
     "searchPermissions": "Search permissions...",
     "selectAll": "Select all",
     "noSearchResults": "No results",
-    "noApis": "No APIs"
+    "noApis": "No APIs",
+    "panels": "Panels",
+    "toggleAll": "Toggle all"
   },
   "AdminGeneral": {
     "title": "General Settings",
     "faviconTitle": "Favicon",
-    "faviconDesc": "Icon displayed in the browser tab",
+    "faviconDesc": "Small icon displayed in the browser tab, recommended size 32x32 or 64x64 pixels",
     "countryCodeTitle": "Country Codes",
     "countryCodeDesc": "Phone country codes available for login and registration",
     "saveSuccess": "Saved successfully",
-    "saveError": "Save failed"
+    "saveError": "Save failed",
+    "uploadBtn": "Upload",
+    "uploading": "Uploading...",
+    "uploadError": "Upload failed",
+    "replace": "Replace",
+    "clear": "Clear",
+    "currentIcon": "Current icon",
+    "noIcon": "No icon set"
   },
   "About": {
     "historyTitle": "15 Years of International Education",
@@ -549,6 +562,14 @@
   "Universities": {
     "title": "Selected Partner Universities",
     "intro": "We have established deep partnerships with numerous prestigious German universities, providing students with more convenient application channels and higher admission success rates. Below are some of our partner institutions, covering comprehensive universities, technical universities, and universities of applied sciences.",
+    "about": "About",
+    "website": "Official Website",
+    "disciplines": "Disciplines",
+    "admissionRequirements": "Admission Requirements",
+    "scholarships": "Scholarships",
+    "rankings": "QS World Rankings",
+    "location": "Location",
+    "successCases": "Success Cases",
     "uni1": {
       "name": "LMU Munich",
       "location": "Munich, Bavaria",
@@ -586,6 +607,7 @@
       "desc": "A top European technical university and IDEA League member, whose engineering graduates are highly sought by employers."
     },
     "searchPlaceholder": "Search university name, city...",
+    "searchButton": "Search",
     "countryFilter": "Filter by country",
     "allCountries": "All countries",
     "allProvinces": "All provinces",
@@ -603,7 +625,15 @@
     "location": "Location",
     "programs": "Programs",
     "about": "About",
-    "visitWebsite": "Visit Website"
+    "visitWebsite": "Visit Website",
+    "website": "Official Website",
+    "disciplines": "Disciplines",
+    "admissionRequirements": "Admission Requirements",
+    "scholarships": "Scholarships",
+    "rankings": "QS World Rankings",
+    "successCases": "Related Success Cases",
+    "allDisciplineCategories": "All Categories",
+    "allDisciplines": "All Disciplines"
   },
   "Requirements": {
     "overviewTitle": "Application Requirements by Country",
@@ -882,8 +912,8 @@
     "email": "haoranxuexing@163.com",
     "wechatLabel": "WeChat",
     "wechat": "Add WeChat: 18912686656",
-    "hoursLabel": "Office Hours",
-    "hours": "Mon-Fri 9:00-18:00 / Sat 9:00-12:00",
+    "registeredAddressLabel": "Registered Address",
+    "registeredAddress": "Room 5112, 5th Floor, Taiping Financial Building, No. 398 Suzhou Avenue East, Suzhou Industrial Park, China (Jiangsu) Pilot Free Trade Zone",
     "mapPlaceholder": "Map loading area",
     "formTitle": "Send Us a Message",
     "formDesc": "Fill out the form below and we'll get back to you as soon as possible.",
@@ -920,6 +950,8 @@
     "fetchError": "Failed to fetch config",
     "noData": "No country codes",
     "deleteConfirm": "Delete {code}?",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete",
     "siteInfo": "Brand Info",
     "siteInfoDesc": "Manage brand name, tagline, logo, etc.",
     "brandName": "Brand Name (Chinese)",
@@ -1183,7 +1215,10 @@
     "fileSize": "Size",
     "uploadDate": "Upload date",
     "actions": "Actions",
-    "allCategories": "All"
+    "allCategories": "All",
+    "cancel": "Cancel",
+    "acceptedTypes": "Supported: PDF, Word, Excel, PPT, Images (PNG/JPG), TXT",
+    "invalidFileType": "Unsupported file type. Please upload PDF, Word, Excel, PPT, image or TXT files"
   },
   "AdminUniversities": {
     "createUniversity": "Add University",
@@ -1245,6 +1280,7 @@
     "col_createdAt": "Created At",
     "filterMyStudents": "My students only",
     "advisorIdPlaceholder": "Advisor ID",
+    "noAdvisor": "No Advisor",
     "loading": "Loading...",
     "noData": "No data",
     "statusActive": "Active",
@@ -1352,6 +1388,7 @@
     "FILE_SIZE_EXCEEDED": "File size exceeds limit",
     "STORAGE_QUOTA_EXCEEDED": "Storage quota exceeded",
     "SUPERUSER_CANNOT_BE_DELETED": "Superuser cannot be deleted",
-    "CANNOT_DELETE_SELF": "Cannot delete your own account"
+    "CANNOT_DELETE_SELF": "Cannot delete your own account",
+    "INVALID_FILE_TYPE": "Unsupported file type"
   }
 }

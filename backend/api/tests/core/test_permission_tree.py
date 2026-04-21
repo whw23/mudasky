@@ -1,277 +1,371 @@
 """权限树生成模块单元测试。
 
-覆盖 _build_folder_tree、_insert_endpoint、build_permission_tree。
+覆盖 _get_panel、_collect_panel_routes、_find_labeled_routers、
+_build_label_map、_find_deepest_prefix、_build_tree_from_routes、
+build_permission_tree。
 """
 
 from types import ModuleType
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi import APIRouter
+from fastapi.routing import APIRoute
 
 from api.core.permission_tree import (
-    _build_folder_tree,
-    _insert_endpoint,
+    _build_label_map,
+    _build_tree_from_routes,
+    _collect_panel_routes,
+    _find_deepest_prefix,
+    _find_labeled_routers,
+    _get_panel,
     build_permission_tree,
 )
 
 
-# ---- _build_folder_tree ----
+# ---- _get_panel ----
 
 
-class TestBuildFolderTree:
-    """_build_folder_tree 递归扫描测试。"""
+class TestGetPanel:
+    """_get_panel 面板提取测试。"""
 
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_empty_package(self, mock_importlib, mock_pkgutil):
-        """空包返回空字典。"""
-        pkg = ModuleType("api.admin")
-        pkg.__path__ = ["/fake/path"]
-        mock_importlib.import_module.return_value = pkg
-        mock_pkgutil.iter_modules.return_value = []
+    def test_admin_panel(self):
+        """识别 admin 面板。"""
+        assert _get_panel("/admin/users/list") == "admin"
 
-        result = _build_folder_tree("api.admin")
+    def test_portal_panel(self):
+        """识别 portal 面板。"""
+        assert _get_panel("/portal/profile/meta") == "portal"
 
-        assert result == {}
+    def test_auth_returns_none(self):
+        """auth 路径返回 None。"""
+        assert _get_panel("/auth/login") is None
 
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_import_error(self, mock_importlib, mock_pkgutil):
-        """ImportError 时返回空字典。"""
-        mock_importlib.import_module.side_effect = ImportError
+    def test_public_returns_none(self):
+        """public 路径返回 None。"""
+        assert _get_panel("/public/config") is None
 
-        result = _build_folder_tree("api.nonexistent")
+    def test_health_returns_none(self):
+        """非面板路径返回 None。"""
+        assert _get_panel("/health") is None
 
-        assert result == {}
+    def test_empty_path(self):
+        """空路径返回 None。"""
+        assert _get_panel("/") is None
 
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_skips_non_packages(self, mock_importlib, mock_pkgutil):
-        """非包（is_pkg=False）应被跳过。"""
-        pkg = ModuleType("api.admin")
-        pkg.__path__ = ["/fake/path"]
-        mock_importlib.import_module.return_value = pkg
-        mock_pkgutil.iter_modules.return_value = [
-            (None, "router", False),
-            (None, "schemas", False),
+
+# ---- _collect_panel_routes ----
+
+
+class TestCollectPanelRoutes:
+    """_collect_panel_routes 路由收集测试。"""
+
+    def _make_route(self, path, summary, module):
+        """创建模拟 APIRoute。"""
+        endpoint = MagicMock()
+        endpoint.__module__ = module
+        route = MagicMock(spec=APIRoute)
+        route.path = path
+        route.summary = summary
+        route.endpoint = endpoint
+        return route
+
+    def test_groups_by_module(self):
+        """按 endpoint 模块分组路由。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route(
+                "/admin/users/list",
+                "用户列表",
+                "api.admin.user.router",
+            ),
+            self._make_route(
+                "/admin/roles/meta",
+                "前置数据",
+                "api.admin.rbac.router",
+            ),
         ]
+        result = _collect_panel_routes(app)
+        assert "api.admin.user.router" in result
+        assert "api.admin.rbac.router" in result
+        assert len(result["api.admin.user.router"]) == 1
 
-        result = _build_folder_tree("api.admin")
-
+    def test_skips_non_panel_routes(self):
+        """跳过非面板路由。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route(
+                "/auth/login", "登录", "api.auth.router"
+            ),
+            self._make_route(
+                "/public/config", "配置", "api.public.router"
+            ),
+        ]
+        result = _collect_panel_routes(app)
         assert result == {}
 
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_single_subpackage_with_description(
-        self, mock_importlib, mock_pkgutil
-    ):
-        """单个子包，带 description 属性。"""
-        pkg = ModuleType("api.admin")
-        pkg.__path__ = ["/fake/path"]
-
-        sub_pkg = ModuleType("api.admin.user")
-        sub_pkg.description = "用户管理"
-        sub_pkg.__path__ = ["/fake/path/user"]
-
-        def import_side_effect(name):
-            """按包名返回对应模块。"""
-            if name == "api.admin":
-                return pkg
-            if name == "api.admin.user":
-                return sub_pkg
-            raise ImportError
-
-        mock_importlib.import_module.side_effect = (
-            import_side_effect
+    def test_summary_defaults_to_empty(self):
+        """summary 为 None 时使用空字符串。"""
+        app = MagicMock()
+        route = self._make_route(
+            "/admin/users/list",
+            None,
+            "api.admin.user.router",
         )
+        route.summary = None
+        app.routes = [route]
+        result = _collect_panel_routes(app)
+        assert result["api.admin.user.router"][0][1] == ""
 
-        # 顶层有一个子包 user，user 下无子包
-        call_count = 0
+    def test_skips_non_api_route(self):
+        """跳过非 APIRoute 对象。"""
+        app = MagicMock()
+        non_route = MagicMock()
+        non_route.__class__ = type("Mount", (), {})
+        app.routes = [non_route]
+        result = _collect_panel_routes(app)
+        assert result == {}
 
-        def iter_modules_side_effect(path):
-            """第一次返回子包列表，第二次返回空。"""
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return [(None, "user", True)]
-            return []
 
-        mock_pkgutil.iter_modules.side_effect = (
-            iter_modules_side_effect
+# ---- _find_labeled_routers ----
+
+
+class TestFindLabeledRouters:
+    """_find_labeled_routers 标签路由查找测试。"""
+
+    def test_finds_labeled_router(self):
+        """找到带 label 和 prefix 的 router。"""
+        mod = ModuleType("test_mod")
+        r = APIRouter(prefix="/users")
+        r.label = "用户管理"
+        mod.router = r
+        result = _find_labeled_routers(mod)
+        assert len(result) == 1
+        assert result[0].label == "用户管理"
+
+    def test_skips_no_label(self):
+        """跳过无 label 的 router。"""
+        mod = ModuleType("test_mod")
+        mod.router = APIRouter(prefix="/config")
+        result = _find_labeled_routers(mod)
+        assert result == []
+
+    def test_skips_no_prefix(self):
+        """跳过无 prefix 的 router。"""
+        mod = ModuleType("test_mod")
+        r = APIRouter()
+        r.label = "系统设置"
+        mod.router = r
+        result = _find_labeled_routers(mod)
+        assert result == []
+
+    def test_multiple_routers(self):
+        """找到模块中多个带标签的 router。"""
+        mod = ModuleType("test_mod")
+        r1 = APIRouter(prefix="/web-settings/general")
+        r1.label = "通用配置"
+        r2 = APIRouter(prefix="/web-settings")
+        r2.label = "网站设置"
+        mod.general_router = r1
+        mod.web_router = r2
+        result = _find_labeled_routers(mod)
+        assert len(result) == 2
+
+    def test_deduplicates_same_object(self):
+        """同一 router 对象多个属性名不重复。"""
+        mod = ModuleType("test_mod")
+        r = APIRouter(prefix="/users")
+        r.label = "用户管理"
+        mod.router = r
+        mod.user_router = r  # 同一对象
+        result = _find_labeled_routers(mod)
+        assert len(result) == 1
+
+
+# ---- _find_deepest_prefix ----
+
+
+class TestFindDeepestPrefix:
+    """_find_deepest_prefix 最深前缀匹配测试。"""
+
+    def test_exact_match(self):
+        """精确匹配前缀。"""
+        lm = {"/admin/users": "用户管理"}
+        prefix, remaining = _find_deepest_prefix(
+            "/admin/users/list", lm
         )
+        assert prefix == "/admin/users"
+        assert remaining == "list"
 
-        result = _build_folder_tree("api.admin")
-
-        assert "user" in result
-        assert result["user"]["description"] == "用户管理"
-        assert "children" not in result["user"]
-
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_subpackage_without_description_uses_name(
-        self, mock_importlib, mock_pkgutil
-    ):
-        """子包没有 description 属性时使用模块名作为描述。"""
-        pkg = ModuleType("api.admin")
-        pkg.__path__ = ["/fake/path"]
-
-        sub_pkg = ModuleType("api.admin.config")
-        sub_pkg.__path__ = ["/fake/path/config"]
-        # 不设置 description
-
-        def import_side_effect(name):
-            """按包名返回对应模块。"""
-            if name == "api.admin":
-                return pkg
-            if name == "api.admin.config":
-                return sub_pkg
-            raise ImportError
-
-        mock_importlib.import_module.side_effect = (
-            import_side_effect
-        )
-
-        call_count = 0
-
-        def iter_modules_side_effect(path):
-            """仅顶层返回子包。"""
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return [(None, "config", True)]
-            return []
-
-        mock_pkgutil.iter_modules.side_effect = (
-            iter_modules_side_effect
-        )
-
-        result = _build_folder_tree("api.admin")
-
-        assert result["config"]["description"] == "config"
-
-    @patch("api.core.permission_tree.pkgutil")
-    @patch("api.core.permission_tree.importlib")
-    def test_nested_subpackages(
-        self, mock_importlib, mock_pkgutil
-    ):
-        """嵌套子包生成 children 层级。"""
-        pkg = ModuleType("api.portal")
-        pkg.__path__ = ["/fake/portal"]
-
-        profile = ModuleType("api.portal.profile")
-        profile.description = "个人资料"
-        profile.__path__ = ["/fake/portal/profile"]
-
-        sessions = ModuleType("api.portal.profile.sessions")
-        sessions.description = "会话管理"
-        sessions.__path__ = ["/fake/portal/profile/sessions"]
-
-        modules = {
-            "api.portal": pkg,
-            "api.portal.profile": profile,
-            "api.portal.profile.sessions": sessions,
+    def test_deepest_wins(self):
+        """最深前缀优先。"""
+        lm = {
+            "/admin/web-settings": "网站设置",
+            "/admin/web-settings/articles": "文章管理",
         }
-
-        mock_importlib.import_module.side_effect = (
-            lambda name: modules[name]
+        prefix, remaining = _find_deepest_prefix(
+            "/admin/web-settings/articles/list", lm
         )
+        assert prefix == "/admin/web-settings/articles"
+        assert remaining == "list"
 
-        call_count = 0
-
-        def iter_modules_side_effect(path):
-            """按层级返回子包。"""
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return [(None, "profile", True)]
-            if call_count == 2:
-                return [(None, "sessions", True)]
-            return []
-
-        mock_pkgutil.iter_modules.side_effect = (
-            iter_modules_side_effect
+    def test_no_match(self):
+        """无匹配时返回空前缀。"""
+        lm = {"/admin/users": "用户管理"}
+        prefix, remaining = _find_deepest_prefix(
+            "/admin/roles/meta", lm
         )
+        assert prefix == ""
+        assert remaining == "admin/roles/meta"
 
-        result = _build_folder_tree("api.portal")
+    def test_multi_segment_remaining(self):
+        """剩余路径包含多个段。"""
+        lm = {"/admin/users": "用户管理"}
+        prefix, remaining = _find_deepest_prefix(
+            "/admin/users/list/detail/edit", lm
+        )
+        assert prefix == "/admin/users"
+        assert remaining == "list/detail/edit"
 
-        assert result["profile"]["description"] == "个人资料"
-        assert "children" in result["profile"]
-        children = result["profile"]["children"]
-        assert children["sessions"]["description"] == "会话管理"
+
+# ---- _build_label_map ----
 
 
-# ---- _insert_endpoint ----
+class TestBuildLabelMap:
+    """_build_label_map 标签映射构建测试。"""
 
+    def _make_module_with_router(
+        self, prefix, label, route_path, mod_name
+    ):
+        """创建带路由的模拟模块。"""
+        router = APIRouter(prefix=prefix)
+        router.label = label
 
-class TestInsertEndpoint:
-    """_insert_endpoint 端点插入测试。"""
+        endpoint = MagicMock()
+        endpoint.__module__ = mod_name
 
-    def test_empty_segments(self):
-        """空路径段不做任何操作。"""
-        tree = {}
-        _insert_endpoint(tree, [], "操作")
-        assert tree == {}
+        @router.get(route_path, summary="测试")
+        async def test_endpoint():
+            """测试端点。"""
 
-    def test_single_segment_new_node(self):
-        """单段路径创建新叶子节点。"""
-        tree = {}
-        _insert_endpoint(tree, ["list"], "查看列表")
-        assert tree == {"list": {"description": "查看列表"}}
+        # 修正 endpoint 的 module
+        for r in router.routes:
+            if isinstance(r, APIRoute):
+                r.endpoint.__module__ = mod_name
 
-    def test_single_segment_existing_node(self):
-        """单段路径更新已有节点的描述。"""
-        tree = {"list": {"description": "旧描述"}}
-        _insert_endpoint(tree, ["list"], "新描述")
-        assert tree["list"]["description"] == "新描述"
+        return router
 
-    def test_multi_segment_creates_hierarchy(self):
-        """多段路径创建层级结构。"""
-        tree = {}
-        _insert_endpoint(tree, ["user", "list"], "用户列表")
+    @patch("api.core.permission_tree.importlib")
+    def test_basic_label_map(self, mock_importlib):
+        """基本标签映射构建。"""
+        mod = ModuleType("api.admin.user.router")
+        router = self._make_module_with_router(
+            "/users", "用户管理", "/list", "api.admin.user.router"
+        )
+        mod.router = router
+        mock_importlib.import_module.return_value = mod
 
-        assert "user" in tree
-        assert tree["user"]["description"] == "user"
-        assert "children" in tree["user"]
-        assert tree["user"]["children"]["list"][
-            "description"
-        ] == "用户列表"
-
-    def test_multi_segment_existing_parent(self):
-        """已有父节点时在 children 下插入。"""
-        tree = {
-            "user": {
-                "description": "用户管理",
-                "children": {},
-            }
+        module_routes = {
+            "api.admin.user.router": [
+                ("/admin/users/list", "用户列表"),
+            ],
         }
-        _insert_endpoint(tree, ["user", "create"], "创建用户")
+        result = _build_label_map(module_routes)
+        assert result["/admin/users"] == "用户管理"
 
-        assert tree["user"]["children"]["create"][
-            "description"
-        ] == "创建用户"
+    @patch("api.core.permission_tree.importlib")
+    def test_skips_no_prefix_router(self, mock_importlib):
+        """跳过无 prefix 的 router。"""
+        mod = ModuleType("api.admin.config.router")
+        router = APIRouter()
+        router.label = "系统设置"
+        mod.router = router
+        mock_importlib.import_module.return_value = mod
 
-    def test_multi_segment_parent_without_children(self):
-        """父节点没有 children 时自动创建。"""
-        tree = {"user": {"description": "用户管理"}}
-        _insert_endpoint(tree, ["user", "delete"], "删除用户")
+        module_routes = {
+            "api.admin.config.router": [
+                ("/admin/web-settings/list", "配置列表"),
+            ],
+        }
+        result = _build_label_map(module_routes)
+        assert "/admin" not in result
 
-        assert "children" in tree["user"]
-        assert tree["user"]["children"]["delete"][
-            "description"
-        ] == "删除用户"
 
-    def test_three_level_depth(self):
-        """三级深度路径正确嵌套。"""
-        tree = {}
-        _insert_endpoint(
-            tree,
-            ["profile", "sessions", "revoke"],
-            "撤销会话",
+# ---- _build_tree_from_routes ----
+
+
+class TestBuildTreeFromRoutes:
+    """_build_tree_from_routes 树构建测试。"""
+
+    def _make_route(self, path, summary):
+        """创建模拟 APIRoute。"""
+        endpoint = MagicMock()
+        endpoint.__module__ = "test"
+        route = MagicMock(spec=APIRoute)
+        route.path = path
+        route.summary = summary
+        route.endpoint = endpoint
+        return route
+
+    def test_basic_tree(self):
+        """基本树结构：面板 + 分支 + 叶子。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route("/admin/users/list", "用户列表"),
+            self._make_route(
+                "/admin/users/list/detail", "用户详情"
+            ),
+        ]
+        label_map = {
+            "/admin": "管理后台",
+            "/portal": "用户面板",
+            "/admin/users": "用户管理",
+        }
+        result = _build_tree_from_routes(app, label_map)
+        admin = result["admin"]
+        assert admin["description"] == "管理后台"
+        assert "users" in admin["children"]
+        users = admin["children"]["users"]
+        assert users["description"] == "用户管理"
+        assert users["children"]["list"]["description"] == "用户列表"
+        assert (
+            users["children"]["list/detail"]["description"]
+            == "用户详情"
         )
 
-        assert tree["profile"]["children"]["sessions"][
-            "children"
-        ]["revoke"]["description"] == "撤销会话"
+    def test_nested_branch(self):
+        """嵌套分支节点（如 web-settings/articles）。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route(
+                "/admin/web-settings/articles/list", "文章列表"
+            ),
+        ]
+        label_map = {
+            "/admin": "管理后台",
+            "/portal": "用户面板",
+            "/admin/web-settings": "网站设置",
+            "/admin/web-settings/articles": "文章管理",
+        }
+        result = _build_tree_from_routes(app, label_map)
+        children = result["admin"]["children"]
+        assert "web-settings/articles" in children
+        articles = children["web-settings/articles"]
+        assert articles["description"] == "文章管理"
+        assert articles["children"]["list"]["description"] == "文章列表"
+
+    def test_skips_non_panel_routes(self):
+        """跳过非面板路由。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route("/auth/login", "登录"),
+        ]
+        label_map = {
+            "/admin": "管理后台",
+            "/portal": "用户面板",
+        }
+        result = _build_tree_from_routes(app, label_map)
+        assert result["admin"]["children"] == {}
 
 
 # ---- build_permission_tree ----
@@ -280,191 +374,81 @@ class TestInsertEndpoint:
 class TestBuildPermissionTree:
     """build_permission_tree 完整权限树生成测试。"""
 
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_basic_tree_structure(
-        self, mock_importlib, mock_folder_tree
+    @patch("api.core.permission_tree._build_tree_from_routes")
+    @patch("api.core.permission_tree._add_panel_labels")
+    @patch("api.core.permission_tree._build_label_map")
+    @patch("api.core.permission_tree._collect_panel_routes")
+    def test_calls_pipeline(
+        self, mock_collect, mock_label, mock_panels, mock_tree
     ):
-        """生成包含 admin 和 portal 的基本树结构。"""
-        mock_folder_tree.return_value = {}
+        """验证构建流水线调用顺序。"""
+        mock_collect.return_value = {}
+        mock_label.return_value = {}
+        mock_tree.return_value = {"admin": {}, "portal": {}}
 
+        app = MagicMock()
+        result = build_permission_tree(app)
+
+        mock_collect.assert_called_once_with(app)
+        mock_label.assert_called_once()
+        mock_panels.assert_called_once()
+        mock_tree.assert_called_once()
+        assert "admin" in result
+
+    @patch("api.core.permission_tree.importlib")
+    def test_integration_with_mock_app(self, mock_importlib):
+        """使用模拟应用测试完整权限树生成。"""
+        # 构造模拟模块
         admin_mod = MagicMock()
         admin_mod.description = "管理后台"
         portal_mod = MagicMock()
-        portal_mod.description = "用户中心"
+        portal_mod.description = "用户面板"
+        user_mod = ModuleType("api.admin.user.router")
+        router = APIRouter(prefix="/users")
+        router.label = "用户管理"
 
-        def import_side_effect(name):
-            """按面板名返回模块。"""
+        endpoint1 = MagicMock()
+        endpoint1.__module__ = "api.admin.user.router"
+
+        @router.get("/list", summary="用户列表")
+        async def list_users():
+            """测试。"""
+
+        for r in router.routes:
+            if isinstance(r, APIRoute):
+                r.endpoint.__module__ = "api.admin.user.router"
+
+        user_mod.router = router
+
+        def import_side(name):
+            """按模块名返回模拟模块。"""
             if name == "api.admin":
                 return admin_mod
             if name == "api.portal":
                 return portal_mod
+            if name == "api.admin.user.router":
+                return user_mod
+            if name == "api.admin.user":
+                return user_mod
             raise ImportError
 
-        mock_importlib.import_module.side_effect = (
-            import_side_effect
-        )
+        mock_importlib.import_module.side_effect = import_side
 
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {"paths": {}}
+        # 构造模拟 app
+        route = MagicMock(spec=APIRoute)
+        route.path = "/admin/users/list"
+        route.summary = "用户列表"
+        route.endpoint = MagicMock()
+        route.endpoint.__module__ = "api.admin.user.router"
 
-        result = build_permission_tree(mock_app)
+        app = MagicMock()
+        app.routes = [route]
 
-        assert "admin" in result
-        assert "portal" in result
+        result = build_permission_tree(app)
+
         assert result["admin"]["description"] == "管理后台"
-        assert result["portal"]["description"] == "用户中心"
-
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_openapi_endpoints_inserted(
-        self, mock_importlib, mock_folder_tree
-    ):
-        """OpenAPI 端点正确插入到权限树中。"""
-        mock_folder_tree.return_value = {}
-
-        admin_mod = MagicMock()
-        admin_mod.description = "管理后台"
-        portal_mod = MagicMock()
-        portal_mod.description = "用户中心"
-
-        mock_importlib.import_module.side_effect = (
-            lambda name: admin_mod
-            if name == "api.admin"
-            else portal_mod
-        )
-
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {
-            "paths": {
-                "/api/admin/user/list": {
-                    "get": {"summary": "用户列表"}
-                },
-                "/api/portal/profile/update": {
-                    "post": {"summary": "更新个人资料"}
-                },
-            }
-        }
-
-        result = build_permission_tree(mock_app)
-
-        admin_children = result["admin"]["children"]
-        assert "user" in admin_children
-        assert (
-            admin_children["user"]["children"]["list"][
-                "description"
-            ]
-            == "用户列表"
-        )
-
-        portal_children = result["portal"]["children"]
-        assert "profile" in portal_children
-
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_non_admin_portal_paths_skipped(
-        self, mock_importlib, mock_folder_tree
-    ):
-        """非 admin/portal 路径被跳过。"""
-        mock_folder_tree.return_value = {}
-        mod = MagicMock()
-        mod.description = "面板"
-        mock_importlib.import_module.return_value = mod
-
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {
-            "paths": {
-                "/api/auth/login": {
-                    "post": {"summary": "登录"}
-                },
-                "/api/public/config": {
-                    "get": {"summary": "公开配置"}
-                },
-                "/health": {"get": {"summary": "健康检查"}},
-            }
-        }
-
-        result = build_permission_tree(mock_app)
-
-        # auth/public/health 路径不应出现在树中
-        admin_children = result["admin"]["children"]
-        portal_children = result["portal"]["children"]
-        assert "auth" not in admin_children
-        assert "public" not in admin_children
-        assert "auth" not in portal_children
-        assert "health" not in portal_children
-
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_single_segment_path_skipped(
-        self, mock_importlib, mock_folder_tree
-    ):
-        """只有一个路径段的端点被跳过（len < 2）。"""
-        mock_folder_tree.return_value = {}
-        mod = MagicMock()
-        mod.description = "面板"
-        mock_importlib.import_module.return_value = mod
-
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {
-            "paths": {
-                "/api/admin": {
-                    "get": {"summary": "管理面板首页"}
-                },
-            }
-        }
-
-        result = build_permission_tree(mock_app)
-
-        # 单段路径不应插入 children
-        assert result["admin"]["children"] == {}
-
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_no_paths_in_openapi(
-        self, mock_importlib, mock_folder_tree
-    ):
-        """OpenAPI 无 paths 时仍正常返回树结构。"""
-        mock_folder_tree.return_value = {"user": {"description": "用户"}}
-        mod = MagicMock()
-        mod.description = "面板"
-        mock_importlib.import_module.return_value = mod
-
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {}
-
-        result = build_permission_tree(mock_app)
-
-        assert "admin" in result
-        assert "portal" in result
-        assert result["admin"]["children"]["user"]["description"] == "用户"
-
-    @patch("api.core.permission_tree._build_folder_tree")
-    @patch("api.core.permission_tree.importlib")
-    def test_endpoint_without_summary(
-        self, mock_importlib, mock_folder_tree
-    ):
-        """端点没有 summary 时使用空字符串。"""
-        mock_folder_tree.return_value = {}
-        mod = MagicMock()
-        mod.description = "面板"
-        mock_importlib.import_module.return_value = mod
-
-        mock_app = MagicMock()
-        mock_app.openapi.return_value = {
-            "paths": {
-                "/api/admin/user/list": {
-                    "get": {}
-                },
-            }
-        }
-
-        result = build_permission_tree(mock_app)
-
-        admin_children = result["admin"]["children"]
-        assert (
-            admin_children["user"]["children"]["list"][
-                "description"
-            ]
-            == ""
-        )
+        assert result["portal"]["description"] == "用户面板"
+        assert "users" in result["admin"]["children"]
+        users = result["admin"]["children"]["users"]
+        assert users["description"] == "用户管理"
+        assert users["children"]["list"]["description"] == "用户列表"

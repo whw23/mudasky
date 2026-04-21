@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import api from "@/lib/api"
 import { getApiError } from "@/lib/api-error"
 import type { User, ContactRecord } from "@/types"
@@ -194,17 +195,23 @@ export function ContactExpandPanel({ userId, onUpdate }: ContactExpandPanelProps
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
             {t("markStatus")}
           </h3>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {CONTACT_STATUS_VALUES.map((value) => (
-              <option key={value} value={value}>
-                {t(`status${STATUS_KEY_MAP[value]}`)}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedStatus} onValueChange={(v) => setSelectedStatus(v ?? "new")}>
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                {(value: string | null) => {
+                  const key = STATUS_KEY_MAP[value ?? "new"] ?? "New"
+                  return t(`status${key}`)
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {CONTACT_STATUS_VALUES.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {t(`status${STATUS_KEY_MAP[value]}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" disabled={saving} onClick={handleMarkStatus}>
             {t("save")}
           </Button>

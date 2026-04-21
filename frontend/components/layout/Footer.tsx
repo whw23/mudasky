@@ -7,7 +7,8 @@
 
 "use client"
 
-import { Phone, Mail } from "lucide-react"
+import { useRef, useCallback, useState, useEffect } from "react"
+import { Phone, Mail, Upload, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
@@ -29,12 +30,75 @@ const SERVICE_LINKS = [
   { key: "news", href: "/news" },
 ] as const
 
+/** 二维码槽位 */
+function QrSlot({ url, label, placeholder, editable, alwaysShow, onUpload, onClear }: {
+  url: string; label: string; placeholder: string
+  editable?: boolean; alwaysShow?: boolean
+  onUpload?: (file: File) => Promise<string | void>
+  onClear?: () => Promise<void>
+}) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [localUrl, setLocalUrl] = useState<string | null>(null)
+  const displayUrl = localUrl ?? url
+
+  useEffect(() => { setLocalUrl(null) }, [url])
+
+  const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) {
+      const result = await onUpload?.(f)
+      if (result) setLocalUrl(result)
+    }
+    if (fileRef.current) fileRef.current.value = ""
+  }, [onUpload])
+
+  const handleClear = useCallback(async () => {
+    await onClear?.()
+    setLocalUrl("")
+  }, [onClear])
+
+  if (!displayUrl && !editable && !alwaysShow) return null
+
+  return (
+    <div className="group relative">
+      {editable && (
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      )}
+      {displayUrl ? (
+        <div className="relative cursor-pointer" onClick={() => editable && fileRef.current?.click()}>
+          <img src={displayUrl} alt={label} className="h-28 w-28 rounded-lg border border-border bg-background object-contain" />
+          {editable && (
+            <button type="button"
+              onClick={(e) => { e.stopPropagation(); handleClear() }}
+              className="absolute -top-2 -right-2 rounded-full bg-destructive p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Trash2 className="size-3" />
+            </button>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border bg-background text-xs text-muted-foreground ${
+            editable ? "cursor-pointer border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5" : "border-border"
+          }`}
+          onClick={() => editable && fileRef.current?.click()}
+        >
+          {editable ? <Upload className="size-5 text-muted-foreground" /> : null}
+          {placeholder}
+        </div>
+      )}
+      <p className="mt-2 text-center text-xs text-muted-foreground">{label}</p>
+    </div>
+  )
+}
+
 interface FooterProps {
   editable?: boolean
   onEdit?: (section: string) => void
+  onImageUpload?: (field: string, file: File) => Promise<string | void>
+  onImageClear?: (field: string) => Promise<void>
 }
 
-export function Footer({ editable, onEdit }: FooterProps) {
+export function Footer({ editable, onEdit, onImageUpload, onImageClear }: FooterProps) {
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
   const { contactInfo, siteInfo } = useLocalizedConfig()
@@ -54,28 +118,38 @@ export function Footer({ editable, onEdit }: FooterProps) {
       {/* 主体四栏 */}
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         {/* 栏 1：品牌简介 + 联系方式 */}
-        {wrapEditable(
-          <div className="sm:col-span-2 lg:col-span-1">
+        <div className="sm:col-span-2 lg:col-span-1">
+          {wrapEditable(
             <h3 className="mb-3 text-lg font-bold tracking-wide text-foreground">
               {siteInfo.brand_name || t("brandName")}
-            </h3>
-            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-              {t("description")}
-            </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Phone className="size-4 shrink-0 text-primary" />
-                <span>{contactInfo.phone || t("phone")}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="size-4 shrink-0 text-primary" />
-                <span>{contactInfo.email || t("email")}</span>
-              </li>
-            </ul>
-          </div>,
-          "contact",
-          "编辑联系方式"
-        )}
+            </h3>,
+            "brand_name",
+            "编辑品牌名称"
+          )}
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            {t("description")}
+          </p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Phone className="size-4 shrink-0 text-primary" />
+              {wrapEditable(
+                <span>{contactInfo.phone || t("phone")}</span>,
+                "phone",
+                "编辑电话",
+                true
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="size-4 shrink-0 text-primary" />
+              {wrapEditable(
+                <span>{contactInfo.email || t("email")}</span>,
+                "email",
+                "编辑邮箱",
+                true
+              )}
+            </li>
+          </ul>
+        </div>
 
         {/* 栏 2：快速链接 */}
         <div>
@@ -115,30 +189,31 @@ export function Footer({ editable, onEdit }: FooterProps) {
           </ul>
         </div>
 
-        {/* 栏 4：微信公众号二维码 */}
-        {wrapEditable(
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
-              {t("followUs")}
-            </h3>
-            {siteInfo.wechat_qr_url ? (
-              <img
-                src={siteInfo.wechat_qr_url}
-                alt={t("wechatQr")}
-                className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
-              />
-            ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
-                {t("qrPlaceholder")}
-              </div>
-            )}
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t("wechatQr")}
-            </p>
-          </div>,
-          "wechat_qr",
-          "编辑微信二维码"
-        )}
+        {/* 栏 4：微信二维码 */}
+        <div>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+            {t("followUs")}
+          </h3>
+          <div className="flex gap-4">
+            <QrSlot
+              url={siteInfo.wechat_service_qr_url}
+              label={t("wechatService")}
+              placeholder={t("qrPlaceholder")}
+              editable={editable}
+              alwaysShow
+              onUpload={(file) => onImageUpload?.("wechat_service_qr_url", file)}
+              onClear={() => onImageClear?.("wechat_service_qr_url")}
+            />
+            <QrSlot
+              url={siteInfo.wechat_official_qr_url}
+              label={t("wechatOfficial")}
+              placeholder={t("qrPlaceholder")}
+              editable={editable}
+              onUpload={(file) => onImageUpload?.("wechat_official_qr_url", file)}
+              onClear={() => onImageClear?.("wechat_official_qr_url")}
+            />
+          </div>
+        </div>
       </div>
 
       {/* 底部版权栏 */}
@@ -178,6 +253,17 @@ export function Footer({ editable, onEdit }: FooterProps) {
             "编辑ICP备案",
             true
           )}
+        </p>
+        <p className="mt-1 opacity-40">
+          Licensed under{" "}
+          <a
+            href="https://polyformproject.org/licenses/noncommercial/1.0.0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors underline"
+          >
+            PolyForm Noncommercial 1.0.0
+          </a>
         </p>
       </div>
     </footer>

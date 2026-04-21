@@ -22,8 +22,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import api from "@/lib/api"
 import type { DocumentCategory } from "@/types"
+
+const ACCEPTED_TYPES = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt"
 
 /** 所有文档分类 */
 const CATEGORIES: DocumentCategory[] = [
@@ -58,13 +61,26 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     setDragOver(false)
   }, [])
 
+  /** 校验文件扩展名 */
+  const isFileAccepted = useCallback((f: File) => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? ""
+    const allowedExts = ACCEPTED_TYPES.split(",").map((t) => t.replace(".", ""))
+    return allowedExts.includes(ext)
+  }, [])
+
   /** 处理文件选择 */
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selected = e.target.files?.[0]
-      if (selected) setFile(selected)
+      if (!selected) return
+      if (!isFileAccepted(selected)) {
+        toast.error(t("invalidFileType"))
+        e.target.value = ""
+        return
+      }
+      setFile(selected)
     },
-    [],
+    [isFileAccepted, t],
   )
 
   /** 处理拖拽放置 */
@@ -72,8 +88,13 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     e.preventDefault()
     setDragOver(false)
     const dropped = e.dataTransfer.files[0]
-    if (dropped) setFile(dropped)
-  }, [])
+    if (!dropped) return
+    if (!isFileAccepted(dropped)) {
+      toast.error(t("invalidFileType"))
+      return
+    }
+    setFile(dropped)
+  }, [isFileAccepted, t])
 
   /** 处理拖拽进入 */
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -95,9 +116,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("category", category)
-      await api.post("/portal/documents/list/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+      await api.post("/portal/documents/list/upload", formData)
       toast.success(t("uploadSuccess"))
       resetForm()
       setOpen(false)
@@ -153,11 +172,15 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t("dragDrop")}
                 </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("acceptedTypes")}
+                </p>
               </>
             )}
             <Input
               ref={fileInputRef}
               type="file"
+              accept={ACCEPTED_TYPES}
               className="hidden"
               onChange={handleFileChange}
             />
@@ -166,19 +189,20 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           {/* 分类选择 */}
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("category")}</Label>
-            <select
-              value={category}
-              onChange={(e) =>
-                setCategory(e.target.value as DocumentCategory)
-              }
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {t(cat)}
-                </option>
-              ))}
-            </select>
+            <Select value={category} onValueChange={(v) => setCategory((v ?? "other") as DocumentCategory)}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {(value: string | null) => t(value ?? "other")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {t(cat)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </DialogBody>
 

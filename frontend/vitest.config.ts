@@ -18,7 +18,7 @@ export default defineConfig({
       include: ['components/**', 'lib/**', 'hooks/**', 'contexts/**'],
       exclude: ['**/*.test.*', '**/*.spec.*', 'e2e/**'],
       reporter: ['text', 'html'],
-      reportsDirectory: './coverage',
+      reportsDirectory: process.env.VITEST_COVERAGE_DIR || '../test-results/vitest-coverage',
     },
   },
   resolve: {

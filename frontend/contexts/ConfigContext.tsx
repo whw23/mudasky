@@ -5,35 +5,11 @@
  * 应用启动时获取配置并缓存，提供 useConfig hook。
  */
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useLocale } from 'next-intl'
 import api from '@/lib/api'
 import { getLocalizedValue } from '@/lib/i18n-config'
-import type { CountryCode, ContactInfo, SiteInfo, HomepageStat, AboutInfo } from '@/types/config'
-
-/** 面板页面配置项 */
-interface PanelPage {
-  key: string
-  icon: string
-  permissions?: string[]
-}
-
-/** 面板配置 */
-interface PanelConfig {
-  admin: PanelPage[]
-  portal: PanelPage[]
-}
-
-/** 默认面板配置（兜底） */
-const DEFAULT_PANEL_CONFIG: PanelConfig = {
-  admin: [],
-  portal: [],
-}
-
-/** 默认国家码（兜底） */
-const DEFAULT_COUNTRY_CODES: CountryCode[] = [
-  { code: '+86', country: '\u{1F1E8}\u{1F1F3}', label: '中国', digits: 11, enabled: true },
-]
+import type { ContactInfo, SiteInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 默认联系方式（兜底） */
 const DEFAULT_CONTACT_INFO: ContactInfo = {
@@ -52,9 +28,12 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   hotline_contact: '苏老师',
   logo_url: '',
   favicon_url: '',
-  wechat_qr_url: '',
+  wechat_service_qr_url: '',
+  wechat_official_qr_url: '',
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
+  services_title: '',
+  destinations_title: '',
 }
 
 /** 默认首页统计（兜底） */
@@ -73,9 +52,26 @@ const DEFAULT_ABOUT_INFO: AboutInfo = {
   partnership: '',
 }
 
+/** 导航栏自定义项 */
+interface NavCustomItem {
+  slug: string
+  name: string | Record<string, string>
+  category_id: string
+}
+
+/** 导航栏配置 */
+interface NavConfig {
+  order: string[]
+  custom_items: NavCustomItem[]
+}
+
+/** 默认导航配置（兜底） */
+const DEFAULT_NAV_CONFIG: NavConfig = {
+  order: ['home', 'universities', 'study-abroad', 'requirements', 'cases', 'visa', 'life', 'news', 'about'],
+  custom_items: [],
+}
+
 interface ConfigContextType {
-  /** 启用的手机号国家码列表 */
-  countryCodes: CountryCode[]
   /** 联系方式配置 */
   contactInfo: ContactInfo
   /** 品牌信息配置 */
@@ -84,78 +80,51 @@ interface ConfigContextType {
   homepageStats: HomepageStat[]
   /** 关于我们页面内容 */
   aboutInfo: AboutInfo
-  /** 面板页面配置 */
-  panelConfig: PanelConfig
+  /** 导航栏配置 */
+  navConfig: NavConfig
+  /** 页面 Banner 配置 */
+  pageBanners: PageBanners
+  /** 刷新配置 */
+  refreshConfig: () => void
 }
 
 const ConfigContext = createContext<ConfigContextType>({
-  countryCodes: DEFAULT_COUNTRY_CODES,
   contactInfo: DEFAULT_CONTACT_INFO,
   siteInfo: DEFAULT_SITE_INFO,
   homepageStats: DEFAULT_HOMEPAGE_STATS,
   aboutInfo: DEFAULT_ABOUT_INFO,
-  panelConfig: DEFAULT_PANEL_CONFIG,
+  navConfig: DEFAULT_NAV_CONFIG,
+  pageBanners: {},
+  refreshConfig: () => {},
 })
 
 /** 系统配置 Provider */
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [countryCodes, setCountryCodes] = useState<CountryCode[]>(DEFAULT_COUNTRY_CODES)
   const [contactInfo, setContactInfo] = useState<ContactInfo>(DEFAULT_CONTACT_INFO)
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO)
   const [homepageStats, setHomepageStats] = useState<HomepageStat[]>(DEFAULT_HOMEPAGE_STATS)
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
-  const [panelConfig, setPanelConfig] = useState<PanelConfig>(DEFAULT_PANEL_CONFIG)
+  const [navConfig, setNavConfig] = useState<NavConfig>(DEFAULT_NAV_CONFIG)
+  const [pageBanners, setPageBanners] = useState<PageBanners>({})
 
-  useEffect(() => {
-    api.get('/public/config/phone_country_codes')
+  const fetchConfig = useCallback((bustCache = false) => {
+    api.get('/public/config/all', bustCache ? { headers: { 'Cache-Control': 'no-cache' } } : {})
       .then((res) => {
-        if (Array.isArray(res.data.value)) {
-          const enabled = res.data.value.filter((c: CountryCode) => c.enabled)
-          setCountryCodes(enabled.length > 0 ? enabled : DEFAULT_COUNTRY_CODES)
-        }
+        const data = res.data
+        if (data.contact_info) setContactInfo({ ...DEFAULT_CONTACT_INFO, ...data.contact_info })
+        if (data.site_info) setSiteInfo({ ...DEFAULT_SITE_INFO, ...data.site_info })
+        if (Array.isArray(data.homepage_stats)) setHomepageStats(data.homepage_stats)
+        if (data.about_info) setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...data.about_info })
+        if (data.nav_config) setNavConfig({ ...DEFAULT_NAV_CONFIG, ...data.nav_config })
+        if (data.page_banners) setPageBanners(data.page_banners)
       })
-      .catch((err) => {
-        // 请求失败时使用默认值，不阻塞渲染
-        console.warn('[ConfigProvider] phone_country_codes 加载失败:', err.message)
-      })
-
-    api.get('/public/config/contact_info')
-      .then((res) => {
-        if (res.data.value) {
-          setContactInfo({ ...DEFAULT_CONTACT_INFO, ...res.data.value })
-        }
-      })
-      .catch((err) => console.warn('[ConfigProvider] contact_info 加载失败:', err.message))
-
-    api.get('/public/config/site_info')
-      .then((res) => {
-        if (res.data.value) {
-          setSiteInfo({ ...DEFAULT_SITE_INFO, ...res.data.value })
-        }
-      })
-      .catch((err) => console.warn('[ConfigProvider] site_info 加载失败:', err.message))
-
-    api.get('/public/config/homepage_stats')
-      .then((res) => {
-        if (Array.isArray(res.data.value)) {
-          setHomepageStats(res.data.value)
-        }
-      })
-      .catch((err) => console.warn('[ConfigProvider] homepage_stats 加载失败:', err.message))
-
-    api.get('/public/config/about_info')
-      .then((res) => {
-        if (res.data.value) {
-          setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...res.data.value })
-        }
-      })
-      .catch((err) => console.warn('[ConfigProvider] about_info 加载失败:', err.message))
-
-    api.get('/public/panel-config').then(res => setPanelConfig({ ...DEFAULT_PANEL_CONFIG, ...res.data.value })).catch(() => {})
+      .catch((err) => console.warn('[ConfigProvider] 配置加载失败:', err.message))
   }, [])
 
+  useEffect(() => { fetchConfig() }, [fetchConfig])
+
   return (
-    <ConfigContext value={{ countryCodes, contactInfo, siteInfo, homepageStats, aboutInfo, panelConfig }}>
+    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, refreshConfig: () => fetchConfig(true) }}>
       {children}
     </ConfigContext>
   )
@@ -168,8 +137,6 @@ export function useConfig(): ConfigContextType {
 
 /** 已解析语言的配置类型（展示用） */
 interface LocalizedConfigType {
-  countryCodes: CountryCode[]
-  panelConfig: PanelConfig
   siteInfo: {
     brand_name: string
     tagline: string
@@ -177,9 +144,12 @@ interface LocalizedConfigType {
     hotline_contact: string
     logo_url: string
     favicon_url: string
-    wechat_qr_url: string
+    wechat_service_qr_url: string
+    wechat_official_qr_url: string
     company_name: string
     icp_filing: string
+    services_title: string
+    destinations_title: string
   }
   contactInfo: {
     address: string
@@ -195,6 +165,8 @@ interface LocalizedConfigType {
     vision: string
     partnership: string
   }
+  navConfig: NavConfig
+  pageBanners: PageBanners
 }
 
 /** 获取已解析为当前语言的配置（展示用） */
@@ -203,13 +175,13 @@ export function useLocalizedConfig(): LocalizedConfigType {
   const locale = useLocale()
 
   return {
-    countryCodes: config.countryCodes,
-    panelConfig: config.panelConfig,
     siteInfo: {
       ...config.siteInfo,
       brand_name: getLocalizedValue(config.siteInfo.brand_name, locale),
       tagline: getLocalizedValue(config.siteInfo.tagline, locale),
       hotline_contact: getLocalizedValue(config.siteInfo.hotline_contact, locale),
+      services_title: getLocalizedValue(config.siteInfo.services_title, locale),
+      destinations_title: getLocalizedValue(config.siteInfo.destinations_title, locale),
     },
     contactInfo: {
       ...config.contactInfo,
@@ -226,5 +198,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
       vision: getLocalizedValue(config.aboutInfo.vision, locale),
       partnership: getLocalizedValue(config.aboutInfo.partnership, locale),
     },
+    navConfig: config.navConfig,
+    pageBanners: config.pageBanners,
   }
 }

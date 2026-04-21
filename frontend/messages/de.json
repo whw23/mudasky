@@ -32,7 +32,8 @@
     "quickLinks": "Schnelllinks",
     "services": "Dienstleistungen",
     "followUs": "Folgen Sie uns",
-    "wechatQr": "WeChat-Offizielles Konto",
+    "wechatService": "Kundendienst WeChat",
+    "wechatOfficial": "Offizielles Konto",
     "qrPlaceholder": "QR-Code",
     "allRightsReserved": "版权所有",
     "icp": "苏ICP备2022046719号-1",
@@ -454,16 +455,25 @@
     "searchPermissions": "Berechtigungen suchen...",
     "selectAll": "Alle auswählen",
     "noSearchResults": "Keine Ergebnisse",
-    "noApis": "Keine APIs"
+    "noApis": "Keine APIs",
+    "panels": "Panels",
+    "toggleAll": "Alle umschalten"
   },
   "AdminGeneral": {
     "title": "Allgemeine Einstellungen",
     "faviconTitle": "Favicon",
-    "faviconDesc": "Symbol in der Browser-Registerkarte",
+    "faviconDesc": "Kleines Symbol im Browser-Tab, empfohlene Größe 32x32 oder 64x64 Pixel",
     "countryCodeTitle": "Ländercodes",
     "countryCodeDesc": "Verfügbare Telefon-Ländercodes für Anmeldung und Registrierung",
     "saveSuccess": "Erfolgreich gespeichert",
-    "saveError": "Speichern fehlgeschlagen"
+    "saveError": "Speichern fehlgeschlagen",
+    "uploadBtn": "Hochladen",
+    "uploading": "Wird hochgeladen...",
+    "uploadError": "Hochladen fehlgeschlagen",
+    "replace": "Ersetzen",
+    "clear": "Entfernen",
+    "currentIcon": "Aktuelles Symbol",
+    "noIcon": "Kein Symbol festgelegt"
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",
@@ -882,8 +892,8 @@
     "email": "haoranxuexing@163.com",
     "wechatLabel": "WeChat",
     "wechat": "WeChat hinzufügen: 18912686656",
-    "hoursLabel": "Öffnungszeiten",
-    "hours": "Mo-Fr 9:00-18:00 / Sa 9:00-12:00",
+    "registeredAddressLabel": "Registrierte Adresse",
+    "registeredAddress": "Zimmer 5112, 5. Stock, Taiping Financial Building, Nr. 398 Suzhou Avenue East, Suzhou Industrial Park, China (Jiangsu) Pilot-Freihandelszone",
     "mapPlaceholder": "Kartenbereich wird geladen",
     "formTitle": "Nachricht senden",
     "formDesc": "Füllen Sie das folgende Formular aus und wir melden uns so schnell wie möglich.",
@@ -920,6 +930,8 @@
     "fetchError": "Konfiguration konnte nicht geladen werden",
     "noData": "Keine Ländercodes",
     "deleteConfirm": "{code} löschen?",
+    "cancel": "Abbrechen",
+    "confirmDelete": "Löschen",
     "siteInfo": "Markeninformationen",
     "siteInfoDesc": "Markenname, Slogan, Logo usw. verwalten",
     "brandName": "Markenname (Chinesisch)",
@@ -1183,7 +1195,10 @@
     "fileSize": "Größe",
     "uploadDate": "Hochladedatum",
     "actions": "Aktionen",
-    "allCategories": "Alle"
+    "allCategories": "Alle",
+    "cancel": "Abbrechen",
+    "acceptedTypes": "Unterstützt: PDF, Word, Excel, PPT, Bilder (PNG/JPG), TXT",
+    "invalidFileType": "Nicht unterstützter Dateityp. Bitte laden Sie PDF-, Word-, Excel-, PPT-, Bild- oder TXT-Dateien hoch"
   },
   "AdminUniversities": {
     "createUniversity": "Universität hinzufügen",
@@ -1245,6 +1260,7 @@
     "col_createdAt": "Erstellt am",
     "filterMyStudents": "Nur meine Studenten",
     "advisorIdPlaceholder": "Berater-ID",
+    "noAdvisor": "Kein Berater",
     "loading": "Laden...",
     "noData": "Keine Daten",
     "statusActive": "Aktiv",
@@ -1352,6 +1368,7 @@
     "FILE_SIZE_EXCEEDED": "Dateigröße überschreitet das Limit",
     "STORAGE_QUOTA_EXCEEDED": "Speicherkontingent überschritten",
     "SUPERUSER_CANNOT_BE_DELETED": "Superuser kann nicht gelöscht werden",
-    "CANNOT_DELETE_SELF": "Eigenes Konto kann nicht gelöscht werden"
+    "CANNOT_DELETE_SELF": "Eigenes Konto kann nicht gelöscht werden",
+    "INVALID_FILE_TYPE": "Nicht unterstützter Dateityp"
   }
 }

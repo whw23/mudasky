@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import (
+    BadRequestException,
     ForbiddenException,
     NotFoundException,
     QuotaExceededException,
@@ -21,6 +22,19 @@ from app.db.document.models import Document, DocumentCategory
 from app.db.user import repository as user_repo
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_MIME_TYPES = {
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "image/png",
+    "image/jpeg",
+    "text/plain",
+}
 
 
 def _validate_storage_quota(used: int, file_size: int, quota: int) -> None:
@@ -39,6 +53,13 @@ async def upload_document(
 
     包含文件大小检查、配额检查、哈希去重。
     """
+    mime_type = file.content_type or "application/octet-stream"
+    if mime_type not in ALLOWED_MIME_TYPES:
+        raise BadRequestException(
+            message="不支持的文件类型",
+            code="INVALID_FILE_TYPE",
+        )
+
     data = await file.read()
     file_size = len(data)
 
@@ -69,7 +90,7 @@ async def upload_document(
         original_name=original_name,
         file_data=data,
         file_size=file_size,
-        mime_type=file.content_type or "application/octet-stream",
+        mime_type=mime_type,
         category=category,
         file_hash=file_hash,
     )

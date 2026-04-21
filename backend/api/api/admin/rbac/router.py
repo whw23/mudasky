@@ -3,7 +3,7 @@
 提供权限查询、角色管理等 API 端点。
 """
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 from pydantic import BaseModel
 
 from api.core.dependencies import DbSession
@@ -18,6 +18,7 @@ from .schemas import (
 from .service import RbacService
 
 router = APIRouter(prefix="/roles", tags=["rbac"])
+router.label = "角色管理"
 
 
 class MessageResponse(BaseModel):
@@ -86,11 +87,15 @@ async def get_role(
 )
 async def update_role(
     data: RoleUpdate,
+    response: Response,
     session: DbSession,
 ) -> RoleResponse:
     """更新角色。"""
     svc = RbacService(session)
-    return await svc.update_role(data.role_id, data)
+    result, affected_ids = await svc.update_role(data.role_id, data)
+    if affected_ids:
+        response.headers["X-Revoke-User"] = ",".join(affected_ids)
+    return result
 
 
 @router.post(
@@ -100,11 +105,14 @@ async def update_role(
 )
 async def delete_role(
     data: RoleDeleteRequest,
+    response: Response,
     session: DbSession,
 ) -> MessageResponse:
     """删除角色。"""
     svc = RbacService(session)
-    await svc.delete_role(data.role_id)
+    affected_ids = await svc.delete_role(data.role_id)
+    if affected_ids:
+        response.headers["X-Revoke-User"] = ",".join(affected_ids)
     return MessageResponse(message="角色已删除")
 
 

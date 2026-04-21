@@ -480,3 +480,111 @@ async def test_send_code_default_returns_none(
 
     assert result is None
     mock_sms.assert_awaited_once()
+
+
+# ---- logout_current_device ----
+
+
+@patch(AUTH_REPO)
+async def test_logout_current_device(mock_repo, service):
+    """登出当前设备，撤销指定令牌。"""
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
+
+    await service.logout_current_device("hash-abc")
+
+    mock_repo.revoke_refresh_token_by_hash.assert_awaited_once_with(
+        service.session, "hash-abc"
+    )
+
+
+@patch(AUTH_REPO)
+async def test_logout_current_device_other_hash(
+    mock_repo, service
+):
+    """登出另一个设备的令牌。"""
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
+
+    await service.logout_current_device("hash-xyz")
+
+    mock_repo.revoke_refresh_token_by_hash.assert_awaited_once_with(
+        service.session, "hash-xyz"
+    )
+
+
+# ---- _get_visitor_role ----
+
+
+@patch(RBAC_REPO)
+async def test_get_visitor_role(mock_rbac_repo, service):
+    """查找 visitor 角色。"""
+    role = MagicMock()
+    role.name = "visitor"
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=role
+    )
+
+    result = await service._get_visitor_role()
+
+    assert result.name == "visitor"
+    mock_rbac_repo.get_role_by_name.assert_awaited_once_with(
+        service.session, "visitor"
+    )
+
+
+@patch(RBAC_REPO)
+async def test_get_visitor_role_none(mock_rbac_repo, service):
+    """visitor 角色不存在时返回 None。"""
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=None
+    )
+
+    result = await service._get_visitor_role()
+
+    assert result is None
+
+
+# ---- _auto_register ----
+
+
+@patch(USER_REPO)
+@patch(RBAC_REPO)
+async def test_auto_register_success(
+    mock_rbac_repo, mock_user_repo, service
+):
+    """手机号验证码登录时自动注册新用户。"""
+    role = MagicMock()
+    role.id = "role-visitor"
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=role
+    )
+    new_user = MagicMock()
+    new_user.is_active = True
+    mock_user_repo.create = AsyncMock(return_value=new_user)
+
+    with patch("api.auth.service.settings") as mock_settings:
+        mock_settings.default_storage_quota_bytes = 104857600
+        result = await service._auto_register("+86-13900000000")
+
+    assert result == new_user
+    mock_user_repo.create.assert_awaited_once()
+
+
+@patch(USER_REPO)
+@patch(RBAC_REPO)
+async def test_auto_register_no_visitor_role(
+    mock_rbac_repo, mock_user_repo, service
+):
+    """visitor 角色不存在时 role_id 为 None。"""
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=None
+    )
+    new_user = MagicMock()
+    new_user.is_active = True
+    mock_user_repo.create = AsyncMock(return_value=new_user)
+
+    with patch("api.auth.service.settings") as mock_settings:
+        mock_settings.default_storage_quota_bytes = 104857600
+        await service._auto_register("+86-13900000000")
+
+    created_user = mock_user_repo.create.call_args[0][1]
+    assert created_user.role_id is None

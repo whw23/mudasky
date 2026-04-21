@@ -32,7 +32,8 @@
     "quickLinks": "クイックリンク",
     "services": "サービス",
     "followUs": "フォローする",
-    "wechatQr": "WeChat公式アカウント",
+    "wechatService": "カスタマーサービス",
+    "wechatOfficial": "公式アカウント",
     "qrPlaceholder": "QRコード",
     "allRightsReserved": "版权所有",
     "icp": "苏ICP备2022046719号-1",
@@ -454,16 +455,25 @@
     "searchPermissions": "権限を検索...",
     "selectAll": "全選択",
     "noSearchResults": "結果なし",
-    "noApis": "APIなし"
+    "noApis": "APIなし",
+    "panels": "パネル",
+    "toggleAll": "全選択切替"
   },
   "AdminGeneral": {
     "title": "一般設定",
     "faviconTitle": "ファビコン",
-    "faviconDesc": "ブラウザタブに表示されるアイコン",
+    "faviconDesc": "ブラウザタブに表示される小さいアイコン、推奨サイズ 32x32 または 64x64 ピクセル",
     "countryCodeTitle": "国コード管理",
     "countryCodeDesc": "ログインと登録に使用可能な電話番号の国コード",
     "saveSuccess": "保存しました",
-    "saveError": "保存に失敗しました"
+    "saveError": "保存に失敗しました",
+    "uploadBtn": "アップロード",
+    "uploading": "アップロード中...",
+    "uploadError": "アップロードに失敗しました",
+    "replace": "変更",
+    "clear": "削除",
+    "currentIcon": "現在のアイコン",
+    "noIcon": "アイコン未設定"
   },
   "About": {
     "historyTitle": "国際教育15年の実績",
@@ -586,6 +596,7 @@
       "desc": "ヨーロッパトップクラスの工科大学、IDEAリーグメンバー、工学卒業生は企業から高い評価。"
     },
     "searchPlaceholder": "大学名、都市を検索...",
+    "searchButton": "検索",
     "countryFilter": "国で絞り込み",
     "allCountries": "すべての国",
     "allProvinces": "すべての州/県",
@@ -882,8 +893,8 @@
     "email": "haoranxuexing@163.com",
     "wechatLabel": "WeChat",
     "wechat": "WeChat IDを追加：18912686656",
-    "hoursLabel": "営業時間",
-    "hours": "月〜金 9:00-18:00 / 土 9:00-12:00",
+    "registeredAddressLabel": "登記住所",
+    "registeredAddress": "中国(江蘇)自由貿易試験区蘇州エリア蘇州工業園区蘇州大道東398号太平金融ビル5階5112室",
     "mapPlaceholder": "地図読み込みエリア",
     "formTitle": "お問い合わせフォーム",
     "formDesc": "以下のフォームにご記入ください。できるだけ早くご連絡いたします。",
@@ -920,6 +931,8 @@
     "fetchError": "設定の取得に失敗しました",
     "noData": "国コードがありません",
     "deleteConfirm": "{code} を削除しますか？",
+    "cancel": "キャンセル",
+    "confirmDelete": "削除",
     "siteInfo": "ブランド情報",
     "siteInfoDesc": "ブランド名、スローガン、ロゴなどを管理",
     "brandName": "ブランド名（中国語）",
@@ -1183,7 +1196,10 @@
     "fileSize": "サイズ",
     "uploadDate": "アップロード日",
     "actions": "操作",
-    "allCategories": "すべて"
+    "allCategories": "すべて",
+    "cancel": "キャンセル",
+    "acceptedTypes": "対応形式：PDF、Word、Excel、PPT、画像（PNG/JPG）、TXT",
+    "invalidFileType": "対応していないファイル形式です。PDF、Word、Excel、PPT、画像、TXT ファイルをアップロードしてください"
   },
   "AdminUniversities": {
     "createUniversity": "大学を追加",
@@ -1245,6 +1261,7 @@
     "col_createdAt": "作成日時",
     "filterMyStudents": "自分の学生のみ",
     "advisorIdPlaceholder": "アドバイザー ID",
+    "noAdvisor": "なし",
     "loading": "読み込み中...",
     "noData": "データなし",
     "statusActive": "有効",
@@ -1352,6 +1369,7 @@
     "FILE_SIZE_EXCEEDED": "ファイルサイズが制限を超えています",
     "STORAGE_QUOTA_EXCEEDED": "ストレージ容量が不足しています",
     "SUPERUSER_CANNOT_BE_DELETED": "スーパーユーザーは削除できません",
-    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません"
+    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません",
+    "INVALID_FILE_TYPE": "対応していないファイル形式です"
   }
 }

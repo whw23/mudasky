@@ -7,6 +7,7 @@
 
 import { useState, useEffect, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -23,6 +24,7 @@ interface TwoFaFormProps {
 
 /** 二步验证表单 */
 export function TwoFaForm({ phone, hasTotp, hasPhone, loading, error, onSubmit }: TwoFaFormProps) {
+  const countryCodes = useCountryCodes()
   const [twoFaType, setTwoFaType] = useState<'totp' | 'sms'>('totp')
   const [totpCode, setTotpCode] = useState('')
   const [smsCode2fa, setSmsCode2fa] = useState('')
@@ -97,7 +99,7 @@ export function TwoFaForm({ phone, hasTotp, hasPhone, loading, error, onSubmit }
               autoComplete="one-time-code"
               required
             />
-            <SmsCodeButton phone={phone} disabled={!phone} />
+            <SmsCodeButton phone={phone} countryCodes={countryCodes} disabled={!phone} />
           </div>
         </div>
       ) : null}

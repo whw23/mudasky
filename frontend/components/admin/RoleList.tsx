@@ -26,6 +26,16 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { RoleDialog } from "@/components/admin/RoleDialog"
 import api from "@/lib/api"
 import type { Role } from "@/types"
@@ -130,6 +140,7 @@ export function RoleList() {
   const [loading, setLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -192,11 +203,17 @@ export function RoleList() {
   }
 
   /** 删除角色 */
-  const handleDelete = async (role: Role) => {
-    if (!confirm(t("deleteConfirm", { name: role.name }))) return
+  const handleDelete = (role: Role) => {
+    setDeleteTarget(role)
+  }
+
+  /** 确认删除角色 */
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await api.post("/admin/roles/meta/list/detail/delete", { role_id: role.id })
+      await api.post("/admin/roles/meta/list/detail/delete", { role_id: deleteTarget.id })
       toast.success(t("deleteSuccess"))
+      setDeleteTarget(null)
       fetchRoles()
     } catch {
       toast.error(t("deleteError"))
@@ -280,6 +297,25 @@ export function RoleList() {
           onClose={() => setDialogOpen(false)}
           onSave={handleSaved}
         />
+
+        {/* 删除确认弹窗 */}
+        <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("deleteConfirm", { name: deleteTarget?.name ?? "" })}</AlertDialogTitle>
+              <AlertDialogDescription>{t("deleteConfirm", { name: deleteTarget?.name ?? "" })}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-white hover:bg-destructive/90"
+                onClick={confirmDelete}
+              >
+                {t("delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DndContext>
   )

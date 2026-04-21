@@ -224,3 +224,138 @@ class TestListStudentDocuments:
             headers=superuser_headers,
         )
         assert resp.status_code == 200
+
+class TestListAdvisors:
+    """可选顾问列表端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 StudentService。"""
+        with patch(
+            "api.admin.students.router.StudentService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_list_advisors_success(
+        self, client, superuser_headers
+    ):
+        """查询顾问列表返回 200。"""
+        advisor = MagicMock()
+        advisor.id = "advisor-001"
+        advisor.username = "顾问一"
+        advisor.phone = "+86-13900139000"
+        self.mock_svc.list_advisors.return_value = [advisor]
+        resp = await client.get(
+            "/admin/students/meta/advisors",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+
+    async def test_list_advisors_empty(
+        self, client, superuser_headers
+    ):
+        """无顾问时返回空列表。"""
+        self.mock_svc.list_advisors.return_value = []
+        resp = await client.get(
+            "/admin/students/meta/advisors",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+
+class TestGetStudentDocument:
+    """学生文件详情端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 StudentService。"""
+        with patch(
+            "api.admin.students.router.StudentService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_get_student_document_success(
+        self, client, superuser_headers
+    ):
+        """获取学生文件详情返回 200。"""
+        doc = MagicMock()
+        doc.id = "doc-001"
+        doc.original_name = "成绩单.pdf"
+        self.mock_svc.get_student_document.return_value = doc
+        resp = await client.get(
+            "/admin/students/list/detail/documents/list/detail"
+            "?doc_id=doc-001",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+
+    async def test_get_student_document_not_found(
+        self, client, superuser_headers
+    ):
+        """文件不存在返回 404。"""
+        from app.core.exceptions import NotFoundException
+
+        self.mock_svc.get_student_document.side_effect = (
+            NotFoundException(message="文件不存在")
+        )
+        resp = await client.get(
+            "/admin/students/list/detail/documents/list/detail"
+            "?doc_id=nonexistent",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 404
+
+
+class TestDownloadStudentDocument:
+    """学生文件下载端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 StudentService。"""
+        with patch(
+            "api.admin.students.router.StudentService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_download_student_document_success(
+        self, client, superuser_headers
+    ):
+        """下载学生文件返回文件内容。"""
+        doc = MagicMock()
+        doc.file_data = b"fake pdf content"
+        doc.mime_type = "application/pdf"
+        doc.original_name = "transcript.pdf"
+        self.mock_svc.get_student_document.return_value = doc
+        resp = await client.get(
+            "/admin/students/list/detail/documents/list/detail/download"
+            "?doc_id=doc-001",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.content == b"fake pdf content"
+        assert "Content-Disposition" in resp.headers
+
+    async def test_download_student_document_not_found(
+        self, client, superuser_headers
+    ):
+        """下载不存在的文件返回 404。"""
+        from app.core.exceptions import NotFoundException
+
+        self.mock_svc.get_student_document.side_effect = (
+            NotFoundException(message="文件不存在")
+        )
+        resp = await client.get(
+            "/admin/students/list/detail/documents/list/detail/download"
+            "?doc_id=nonexistent",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 404

@@ -21,8 +21,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import api from "@/lib/api"
 import type { Student, Document } from "@/types"
+
+/** "无顾问"的特殊值（SelectItem 不支持空字符串） */
+const NO_ADVISOR = "__none__"
 
 interface StudentExpandPanelProps {
   userId: string
@@ -38,6 +42,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
   const [isActive, setIsActive] = useState(false)
   const [contactNote, setContactNote] = useState("")
   const [advisorId, setAdvisorId] = useState("")
+  const [advisors, setAdvisors] = useState<Array<{ id: string; username: string | null; phone: string | null }>>([])
   const [saving, setSaving] = useState(false)
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false)
 
@@ -70,10 +75,23 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
     }
   }, [userId])
 
+  /** 加载可选顾问列表 */
+  const fetchAdvisors = useCallback(async () => {
+    try {
+      const { data } = await api.get<Array<{ id: string; username: string | null; phone: string | null }>>(
+        "/admin/students/meta/advisors",
+      )
+      setAdvisors(data)
+    } catch {
+      /* 忽略 */
+    }
+  }, [])
+
   useEffect(() => {
     fetchStudent()
     fetchDocuments()
-  }, [fetchStudent, fetchDocuments])
+    fetchAdvisors()
+  }, [fetchStudent, fetchDocuments, fetchAdvisors])
 
   /** 通用操作包装 */
   async function runAction(action: () => Promise<void>, successMsg: string): Promise<void> {
@@ -106,7 +124,7 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
     runAction(
       () => api.post("/admin/students/list/detail/assign-advisor", {
         user_id: userId,
-        advisor_id: advisorId || null,
+        advisor_id: advisorId === NO_ADVISOR ? null : advisorId || null,
       }),
       t("assignAdvisorSuccess"),
     )
@@ -205,11 +223,25 @@ export function StudentExpandPanel({ userId, onUpdate }: StudentExpandPanelProps
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
             {t("assignAdvisor")}
           </h3>
-          <Input
-            placeholder={t("advisorIdPlaceholder")}
-            value={advisorId}
-            onChange={(e) => setAdvisorId(e.target.value)}
-          />
+          <Select value={advisorId || NO_ADVISOR} onValueChange={(v) => setAdvisorId(v === NO_ADVISOR ? "" : v ?? "")}>
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                {(value: string | null) => {
+                  if (!value || value === NO_ADVISOR) return t("noAdvisor")
+                  const a = advisors.find((adv) => adv.id === value)
+                  return a ? (a.username || a.phone || a.id) : t("noAdvisor")
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_ADVISOR}>{t("noAdvisor")}</SelectItem>
+              {advisors.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.username || a.phone || a.id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" disabled={saving} onClick={handleAssignAdvisor}>
             {t("confirm")}
           </Button>

@@ -10,15 +10,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.db.university.models import University
-from api.admin.university.schemas import (
+from api.admin.config.web_settings.universities.schemas import (
     UniversityCreate,
     UniversityUpdate,
 )
-from api.admin.university.service import UniversityService
+from api.admin.config.web_settings.universities.service import UniversityService
 from app.core.exceptions import NotFoundException
 
 
-REPO = "api.admin.university.service.repository"
+REPO = "api.admin.config.web_settings.universities.service.repository"
 
 
 def _make_university(
@@ -34,7 +34,6 @@ def _make_university(
     u.city = "北京"
     u.logo_url = None
     u.description = "简介"
-    u.programs = ["计算机"]
     u.website = None
     u.is_featured = False
     u.sort_order = 0

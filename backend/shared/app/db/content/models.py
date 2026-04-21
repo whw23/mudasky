@@ -6,7 +6,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -58,13 +58,15 @@ class Article(Base):
         String(200), unique=True, index=True, nullable=False
     )
     content_type: Mapped[str] = mapped_column(
-        String(20), default="markdown", nullable=False
+        String(20), default="html", nullable=False
     )
     content: Mapped[str] = mapped_column(
         Text, nullable=False
     )
-    file_url: Mapped[str | None] = mapped_column(
-        String(500), nullable=True
+    file_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("image.id"),
+        nullable=True,
     )
     excerpt: Mapped[str] = mapped_column(
         String(500), default="", nullable=False

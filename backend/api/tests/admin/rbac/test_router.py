@@ -155,7 +155,7 @@ class TestUpdateRole:
     ):
         """可更新角色。"""
         self.mock_svc.update_role.return_value = (
-            _make_role(name="更新后")
+            _make_role(name="更新后"), []
         )
         resp = await client.post(
             "/admin/roles/meta/list/detail/edit",
@@ -166,6 +166,27 @@ class TestUpdateRole:
             headers=superuser_headers,
         )
         assert resp.status_code == 200
+
+    async def test_update_role_with_affected_users(
+        self, client, superuser_headers
+    ):
+        """权限变更后返回 X-Revoke-User 头。"""
+        self.mock_svc.update_role.return_value = (
+            _make_role(name="已更新"),
+            ["user-1", "user-2"],
+        )
+        resp = await client.post(
+            "/admin/roles/meta/list/detail/edit",
+            json={
+                "role_id": "role-001",
+                "permissions": ["admin/*"],
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert "X-Revoke-User" in resp.headers
+        assert "user-1" in resp.headers["X-Revoke-User"]
+        assert "user-2" in resp.headers["X-Revoke-User"]
 
 
 class TestDeleteRole:
@@ -185,7 +206,7 @@ class TestDeleteRole:
         self, client, superuser_headers
     ):
         """可删除角色。"""
-        self.mock_svc.delete_role.return_value = None
+        self.mock_svc.delete_role.return_value = []
         resp = await client.post(
             "/admin/roles/meta/list/detail/delete",
             json={"role_id": "role-001"},
@@ -193,6 +214,22 @@ class TestDeleteRole:
         )
         assert resp.status_code == 200
         assert resp.json()["message"] == "角色已删除"
+
+    async def test_delete_role_with_affected_users(
+        self, client, superuser_headers
+    ):
+        """删除角色后返回 X-Revoke-User 头。"""
+        self.mock_svc.delete_role.return_value = [
+            "user-3", "user-4"
+        ]
+        resp = await client.post(
+            "/admin/roles/meta/list/detail/delete",
+            json={"role_id": "role-002"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert "X-Revoke-User" in resp.headers
+        assert "user-3" in resp.headers["X-Revoke-User"]
 
 
 class TestReorderRoles:

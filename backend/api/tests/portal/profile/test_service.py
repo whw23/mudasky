@@ -202,3 +202,87 @@ async def test_change_phone_already_used(
 
     with pytest.raises(ConflictException):
         await service.change_phone("user-001", data)
+
+
+# ---- delete_user ----
+
+
+@pytest.mark.asyncio
+@patch("api.portal.profile.service.doc_repo")
+@patch(AUTH_REPO)
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_user_success(
+    mock_repo, mock_rbac_repo, mock_auth_repo,
+    mock_doc_repo, service, sample_user
+):
+    """删除用户及其关联数据。"""
+    user = sample_user(id="user-del", phone="+86-13800138000")
+    user.role_id = None
+    mock_repo.get_by_id = AsyncMock(return_value=user)
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
+    mock_auth_repo.delete_sms_codes_by_phone = AsyncMock()
+    mock_doc_repo.delete_by_user = AsyncMock()
+    mock_repo.delete = AsyncMock()
+
+    await service.delete_user("user-del")
+
+    mock_auth_repo.delete_refresh_tokens_by_user.assert_awaited_once()
+    mock_auth_repo.delete_sms_codes_by_phone.assert_awaited_once()
+    mock_doc_repo.delete_by_user.assert_awaited_once()
+    mock_repo.delete.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_delete_user_superuser_forbidden(
+    mock_repo, mock_rbac_repo, service, sample_user
+):
+    """删除超级管理员抛出 ForbiddenException。"""
+    from app.core.exceptions import ForbiddenException
+
+    user = sample_user(id="admin-1")
+    user.role_id = "role-su"
+    mock_repo.get_by_id = AsyncMock(return_value=user)
+    role_mock = MagicMock()
+    role_mock.name = "superuser"
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=role_mock
+    )
+
+    with pytest.raises(ForbiddenException):
+        await service.delete_user("admin-1")
+
+
+@pytest.mark.asyncio
+@patch("api.portal.profile.service.doc_repo")
+@patch(AUTH_REPO)
+@patch(USER_REPO)
+async def test_delete_user_no_phone(
+    mock_repo, mock_auth_repo, mock_doc_repo,
+    service, sample_user
+):
+    """删除无手机号的用户跳过 sms_codes 删除。"""
+    user = sample_user(id="user-nophone")
+    user.phone = None
+    user.role_id = None
+    mock_repo.get_by_id = AsyncMock(return_value=user)
+    mock_auth_repo.delete_refresh_tokens_by_user = AsyncMock()
+    mock_doc_repo.delete_by_user = AsyncMock()
+    mock_repo.delete = AsyncMock()
+
+    await service.delete_user("user-nophone")
+
+    mock_auth_repo.delete_refresh_tokens_by_user.assert_awaited_once()
+    mock_auth_repo.delete_sms_codes_by_phone.assert_not_called()
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_delete_user_not_found(mock_repo, service):
+    """删除不存在的用户抛出异常。"""
+    mock_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.delete_user("nonexistent")

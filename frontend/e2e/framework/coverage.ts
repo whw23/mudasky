@@ -1,0 +1,174 @@
+/**
+ * 覆盖率计算。
+ * 从任务定义的 coverage 声明汇总，和实际收集数据对比。
+ */
+
+import type { Task } from "./types"
+import { getAllSignals } from "./signal"
+import { loadScanTotals, SSR_ONLY_APIS } from "./scan-totals"
+
+/** 加载所有 worker 的任务。 */
+function loadAllTasks(): Task[] {
+  const all: Task[] = []
+  for (let i = 1; i <= 7; i++) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require(`../w${i}/tasks`)
+      all.push(...(mod.tasks || []))
+    } catch { /* skip */ }
+  }
+  return all
+}
+
+/** 覆盖率报告。 */
+export interface CoverageReport {
+  api: { covered: string[]; total: string[]; percent: number }
+  routes: { covered: string[]; total: string[]; percent: number }
+  components: { covered: [string, string][]; total: [string, string][]; percent: number }
+  security: { covered: [string, string][]; total: [string, string][]; percent: number }
+}
+
+/** 计算覆盖率。 */
+export function calculateCoverage(): CoverageReport {
+  const allTasks = loadAllTasks()
+  const signals = getAllSignals()
+  const runtimeDir = process.env.E2E_RUNTIME_DIR
+    || require("path").join(process.cwd(), "test-results", "e2e-runtime")
+  const scanTotals = loadScanTotals(runtimeDir)
+
+  // API 和 Route 的 total 优先使用动态扫描结果
+  const totalApi = new Set<string>(scanTotals?.api || [])
+  const totalRoutes = new Set<string>(scanTotals?.routes || [])
+  const totalComponents: [string, string][] = []
+  const totalSecurity: [string, string][] = []
+
+  // global-setup 拦截的 API 直接计入 covered
+  const coveredApi = new Set<string>(scanTotals?.setupApis || [])
+  const coveredRoutes = new Set<string>()
+  const coveredComponents: [string, string][] = []
+  const coveredSecurity: [string, string][] = []
+
+  for (const task of allTasks) {
+    const cov = task.coverage
+    if (!cov) continue
+
+    // 无扫描结果时回退到静态声明
+    if (!scanTotals) {
+      cov.api?.forEach((a) => totalApi.add(a))
+      cov.routes?.forEach((r) => totalRoutes.add(r))
+    }
+
+    cov.components?.forEach((c) => totalComponents.push(c))
+    cov.security?.forEach((s) => totalSecurity.push(s))
+
+    const signal = signals[task.id]
+    if (signal?.status === "pass") {
+      // API 覆盖从信号拦截的实际调用中收集
+      const apis = (signal.data as Record<string, unknown>)?.apis as string[] | undefined
+      apis?.forEach((a) => coveredApi.add(a))
+      cov.routes?.forEach((r) => {
+        if (!scanTotals || totalRoutes.has(r)) coveredRoutes.add(r)
+      })
+      cov.components?.forEach((c) => coveredComponents.push(c))
+      cov.security?.forEach((s) => coveredSecurity.push(s))
+    }
+  }
+
+  /** 将实际请求路径匹配到模板路径（处理 {param} 动态参数） */
+  function matchApiToTemplate(actual: string, templates: Set<string>): string | null {
+    if (templates.has(actual)) return actual
+    const actualParts = actual.split("/")
+    for (const tmpl of templates) {
+      const tmplParts = tmpl.split("/")
+      if (tmplParts.length !== actualParts.length) continue
+      const match = tmplParts.every((t, i) =>
+        t.startsWith("{") && t.endsWith("}") || t === actualParts[i],
+      )
+      if (match) return tmpl
+    }
+    return null
+  }
+
+  // 重新计算 coveredApi（用模板匹配）
+  if (scanTotals) {
+    const rawCovered = new Set(coveredApi)
+    coveredApi.clear()
+    for (const a of rawCovered) {
+      const matched = matchApiToTemplate(a, totalApi)
+      if (matched) coveredApi.add(matched)
+    }
+  }
+
+  const pct = (a: number, b: number) => (b === 0 ? 100 : Math.round((a / b) * 1000) / 10)
+
+  return {
+    api: {
+      covered: [...coveredApi],
+      total: [...totalApi],
+      percent: pct(coveredApi.size, totalApi.size),
+    },
+    routes: {
+      covered: [...coveredRoutes],
+      total: [...totalRoutes],
+      percent: pct(coveredRoutes.size, totalRoutes.size),
+    },
+    components: {
+      covered: coveredComponents,
+      total: totalComponents,
+      percent: pct(coveredComponents.length, totalComponents.length),
+    },
+    security: {
+      covered: coveredSecurity,
+      total: totalSecurity,
+      percent: pct(coveredSecurity.length, totalSecurity.length),
+    },
+  }
+}
+
+/** 保存覆盖率报告到 JSON 文件。 */
+export function saveCoverageReport(report: CoverageReport): void {
+  const fs = require("fs")
+  const path = require("path")
+  const outputDir = process.env.E2E_OUTPUT_DIR
+    ? path.resolve(__dirname, "../..", process.env.E2E_OUTPUT_DIR)
+    : path.resolve(__dirname, "../../test-results")
+  fs.mkdirSync(outputDir, { recursive: true })
+  fs.writeFileSync(
+    path.join(outputDir, "e2e-coverage.json"),
+    JSON.stringify({
+      api: { covered: report.api.covered.length, total: report.api.total.length, percent: report.api.percent },
+      routes: { covered: report.routes.covered.length, total: report.routes.total.length, percent: report.routes.percent },
+      components: { covered: report.components.covered.length, total: report.components.total.length, percent: report.components.percent },
+      security: { covered: report.security.covered.length, total: report.security.total.length, percent: report.security.percent },
+    }, null, 2),
+  )
+}
+
+/** 打印覆盖率报告。 */
+export function printCoverageReport(report: CoverageReport): void {
+  console.log(`\n[API Coverage] ${report.api.covered.length}/${report.api.total.length} (${report.api.percent}%)`)
+  if (report.api.covered.length < report.api.total.length) {
+    const uncovered = report.api.total.filter((a) => !report.api.covered.includes(a))
+    const ssrApis = uncovered.filter((a) => SSR_ONLY_APIS.has(a))
+    const clientApis = uncovered.filter((a) => !SSR_ONLY_APIS.has(a))
+    if (clientApis.length > 0) {
+      console.log("  Uncovered:")
+      clientApis.forEach((a) => console.log(`    - ${a}`))
+    }
+    if (ssrApis.length > 0) {
+      console.log("  SSR Only (Server Component 调用，Playwright 无法拦截):")
+      ssrApis.forEach((a) => console.log(`    - ${a}`))
+    }
+  }
+
+  console.log(`\n[Route Coverage] ${report.routes.covered.length}/${report.routes.total.length} (${report.routes.percent}%)`)
+  if (report.routes.covered.length < report.routes.total.length) {
+    const uncovered = report.routes.total.filter((r) => !report.routes.covered.includes(r))
+    console.log("  Uncovered:")
+    uncovered.forEach((r) => console.log(`    - ${r}`))
+  }
+
+  console.log(`\n[Component Coverage] ${report.components.covered.length}/${report.components.total.length} (${report.components.percent}%)`)
+
+  console.log(`\n[Security Coverage] ${report.security.covered.length}/${report.security.total.length} (${report.security.percent}%)`)
+}

@@ -25,18 +25,20 @@
 
 ### 测试验证流程
 
-功能开发完成后按以下顺序验证：
+功能开发完成后通过 `scripts/test.sh` 验证：
 
-| 阶段 | 目标 | 命令 |
+| 阶段 | 命令 | 说明 |
 |------|------|------|
-| 1. 后端单元测试 | mock 验证逻辑 | `uv run --project backend/api python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e` |
-| 2. 后端接口测试 | `localhost:8000` 直连 API | `uv run --project backend/api python -m pytest backend/api/tests/ -v -m api` |
-| 3. 后端网关测试 | `localhost:80` 走 gateway | `uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v` |
-| 4. 前端 E2E（本地） | `localhost` 生产构建容器 | `pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
-| 5. 前端 E2E（线上） | 部署后验证 | `BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts` |
+| 1. 后端单元测试 | `./scripts/test.sh unit` | mock 验证逻辑 + 覆盖率 |
+| 2. 前端单元测试 | `./scripts/test.sh vitest` | 组件/hooks/工具函数 |
+| 3. 后端网关测试 | `./scripts/test.sh gateway` | `localhost:80` 走 gateway |
+| 4. 前端 E2E（本地） | `./scripts/test.sh e2e` | 生产容器，自动检查版本 |
+| 5. 前端 E2E（线上） | `./scripts/test.sh e2e:prod` | 部署后验证 |
+| 全部（本地） | `./scripts/test.sh all` | 1-4 依次执行 |
+| 全部（线上） | `./scripts/test.sh all:prod` | 1+2+5 |
 
-- 本地前端 E2E 使用生产构建的容器（速度快、行为一致）
-- 线上 E2E 在部署后执行，验证生产环境实际行为
+- 本地 E2E 必须用生产容器（`./scripts/dev.sh --prod` 构建），脚本自动检查
+- 环境变量由脚本从 `env/backend.env` 自动加载，无需手动输入
 
 ### 测试覆盖要求
 
@@ -103,83 +105,110 @@
 
 ### 前端 E2E 测试
 
-- 使用 Playwright + `adminPage` fixture（已登录的管理员页面）
-- 使用 `gotoAdmin`、`clickAndWaitDialog` 等项目自定义辅助函数
+- 使用 Playwright + 任务队列调度框架
 - 配置文件：`frontend/e2e/playwright.config.ts`
-- fixture 文件：`frontend/e2e/fixtures/base.ts`（基础）、`frontend/e2e/fixtures/coverage.ts`（覆盖率收集）
-- 4 worker 多角色协作模式，三阶段执行：
-  1. **注册阶段**：W2/W3/W4 并行注册各自的测试用户
-  2. **赋权阶段**：W1（superuser）为已注册用户赋权 + 创建种子数据
-  3. **主测试阶段**：4 个 worker 并行执行各自角色的测试
-- Worker 角色分配：W1=superuser、W2=student、W3=advisor、W4=visitor
-- 通过 project dependencies 保证执行顺序（注册→赋权→主测试）
+- 7 个 worker，每个角色一个，通过前置条件非阻塞调度
+- Worker 角色：W1=superuser、W2=student、W3=advisor、W4=visitor、W5=content_admin、W6=support、W7=破坏性测试
+- 所有操作通过 UI 执行，禁止直接调 API
+- `INTERNAL_SECRET` 通过 cookie 传递，跳过短信发送（在注册/登录 fn 内部自动设置）
 - 运行命令（本地）：`pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
-- 运行命令（线上）：`BASE_URL=http://${PRODUCTION_HOST} INTERNAL_SECRET=<密钥> pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
-- 线上环境超时自动增大（`actionTimeout` 5s→15s，`navigationTimeout` 15s→30s）
-- `INTERNAL_SECRET` 通过 cookie 传递，跳过网关限流和短信发送
+- 运行命令（线上）：`TEST_ENV=production pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
+- 重跑失败：`LAST_NOT_PASS=1 pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts`
+- env 文件切换：`TEST_ENV=production` 加载 `env/production.env`，默认加载 `env/backend.env`
 
-#### 覆盖标准
+#### 任务调度模型
 
-每个前端页面的 E2E 测试必须覆盖以下三类：
+每个任务声明前置条件，worker 循环遍历找能做的任务：
+1. 遍历自己的任务，找前置条件已满足的 → 执行
+2. 自己的任务做完了 → 查看 backupWorkers 包含自己的其他任务 → 抢占执行
+3. 没有能做的 → sleep(2s) → 重新遍历
+4. 所有任务完成/熔断 → 退出
+5. 总超时 10 分钟，超时后 pending 任务标记 timeout
 
-1. **后端端点触发**：页面涉及的每个后端 API 调用，至少有一个测试通过 UI 操作触发该请求
-2. **用户交互操作**：页面上每个可交互元素（按钮、输入框、下拉框、checkbox、tab、弹窗、展开面板等）至少被操作一次
-3. **跨页面状态一致性**：不同页面/面板之间切换后状态正确（路由守卫、数据隔离、侧边栏高亮）
+#### 信号机制
 
-#### 测试分类
+任务完成后写信号到 SQLite（`signals.db`，WAL 模式），后续任务通过查询信号判断前置条件。
+- 使用 `better-sqlite3` 同步 API，跨进程安全
+- 信号包含 status、data（拦截的 API 列表等）、error 信息
 
-| 类型 | 说明 | 示例 |
-|------|------|------|
-| 端点覆盖 | 通过 UI 操作触发后端 API | 点击创建按钮 → 填表 → 保存 → 验证列表刷新 |
-| 交互覆盖 | 验证 UI 元素可操作 | tab 切换、弹窗打开/关闭、展开/收起、拖拽排序 |
-| 正向测试 | 操作成功的完整流程 | 创建 → 列表出现新数据 → 编辑 → 数据变更 → 删除 → 数据消失 |
-| 反向测试 | 错误/边界/权限拒绝 | 空表单提交不关闭弹窗、未登录重定向、无权限 403 |
-| 交叉测试 | 页面间快速切换 | admin→portal→admin 切换后数据正确 |
+#### 熔断机制
+
+按前置条件链传播，区分直接失败（fail）和熔断失败（breaker）：
+- 任务执行失败 → status: "fail"
+- 依赖失败任务的后续任务 → status: "breaker"
+- 级联传播，breaker 和 fail 都算失败，不重试
+
+#### 正向 + 反向测试
+
+每个 worker 同时做正向和反向测试：
+- 正向：自己有权限的功能正常使用
+- 反向：自己没权限的功能被正确拒绝（401/403/重定向）
+
+#### 覆盖率
+
+从任务定义的 `coverage` 声明汇总，四维度：
+
+| 维度 | 收集方式 |
+|------|----------|
+| API 端点 | 自动：`page.on("response")` 拦截 |
+| 页面路由 | 自动：`page.on("framenavigated")` 拦截 |
+| 组件交互 | 手动：任务 coverage.components 声明 |
+| 安全场景 | 手动：任务 coverage.security 声明 |
+
+覆盖率计算脚本在 `framework/coverage.ts`，global-teardown 中执行。
 
 #### 测试约定
 
-- E2E 创建的数据以 `E2E` 开头，`global-teardown.ts` 负责清理
+- E2E 创建的数据以 `E2E` 开头，`global-teardown.ts` 负责清理（含 W2-W7 账号）
 - 不修改/删除种子数据（superuser、预设角色等）
-- 未登录测试使用 `test.use({ storageState: { cookies: [], origins: [] } })`
-- 展开面板是行内渲染（非 dialog），用 `getByText("基本信息").waitFor()` 等待加载
-- **禁止使用 `waitForTimeout` 作为主要等待手段**，优先使用条件等待：
-  - 等待元素：`await page.locator("main").waitFor()` 或 `await expect(el).toBeVisible()`
-  - 等待弹窗：`await expect(page.getByRole("dialog")).toBeVisible()`
-  - 等待导航：`await page.waitForURL(/pattern/)`
-  - 等待 API：`await page.waitForResponse(r => r.url().includes("/list"))`
-  - 搜索防抖：允许 `waitForTimeout(500)`（唯一合理场景）
+- W7 使用临时账号做破坏性测试，不影响 W1-W6 的 auth state
+- **禁止使用 `waitForTimeout` 作为主要等待手段**，优先使用条件等待
+- **禁止直接调 API**，所有操作通过 UI
+- 无效路由（如 `/portal/articles`）作为 404 反向测试
+- **手机号使用 `constants.ts` 中的固定号码**，禁止 `Date.now()` 生成随机号（跨 worker 需要匹配）
+- **角色变更后必须 SMS 重新登录**（`reload-auth.ts`），不能用 `refreshToken`（后端会删 refresh_token）
+- **禁用/启用用户后也需重新登录**：禁用时 refresh_token 被删，启用后旧 token 仍无效
+- **首页 (`/`) 交互前加 `waitForLoadState("networkidle")`**，Next.js Streaming SSR + React 水合需要时间
+- **admin 页面不用 `networkidle`**，用具体的 heading/row `waitFor` 替代（更快更精确）
+- **`goto()` 保持默认 `load`**，不加 `waitUntil: "domcontentloaded"`（Streaming SSR 内容未到达就返回）
+- **React controlled `<select>` 用 native setter**：`selectOption()` 可能不触发 React `onChange`，需用 `HTMLSelectElement.prototype.value` 的 native setter + `dispatchEvent(new Event('change', { bubbles: true }))`
+- **跨 worker 测试数据名称必须区分**：如 W1 和 W5 同时创建分类时 slug 不能相同
+- **global-setup 清理所有 E2E 数据**：user、role、category、article、success_case、university
+- **写新 fn 前先用 Playwright MCP 查看真实 DOM**（`browser_navigate` + `browser_snapshot`），不猜选择器
 
-#### E2E 覆盖率统计
+#### 测试结果
 
-每次跑完 E2E 自动输出三种覆盖率：
+```
+[Test Results] 194 pass / 0 fail / 0 breaker / 0 timeout (total: 194)
+```
 
-| 指标 | 基准 | 收集方式 |
-|------|------|----------|
-| API 端点覆盖率 | 后端 73 个端点 | `page.on("response")` 拦截 API 请求 |
-| 页面路由覆盖率 | 前端 35 个路由 | `page.on("framenavigated")` 拦截导航 |
-| JS 代码覆盖率 | V8 Coverage | `page.coverage` API（`E2E_COVERAGE=1` 时启用） |
-
-覆盖率数据在 `global-teardown` 中汇总输出。端点清单在 `helpers/api-endpoints.ts`，路由清单在 `helpers/page-routes.ts`。
+- 0 failed（含 breaker 和 timeout）为通过标准
+- 不重试，首次通过
+- API 覆盖率 69/93 (74.2%)，Route 36/36 (100%)，Component ~99%，Security ~100%
+- 6 个 API 端点前端不调用（backend-only），4 个 SSR Only（Playwright 拦截不到）
 
 #### E2E 测试目录结构
 
 ```text
 frontend/e2e/
-├── fixtures/
-│   ├── base.ts              # adminPage fixture, gotoAdmin, clickAndWaitDialog
-│   └── coverage.ts          # 覆盖率收集 fixture
-├── helpers/
-│   ├── sms.ts               # SMS 验证码获取（cookie 传 INTERNAL_SECRET）
-│   ├── api-endpoints.ts     # 后端全量端点清单
-│   └── page-routes.ts       # 前端全量路由清单
-├── global-setup.ts           # 登录 + 种子数据 + 预热
-├── global-teardown.ts        # 清理 E2E 数据 + 覆盖率报告
-├── playwright.config.ts      # 4 worker 多角色协作, 线上自动增大超时
-├── shared/                   # 共享测试（认证流程等，不绑定特定 worker）
-├── w1/                       # superuser：CRUD、角色管理、用户管理、设置、安全
-├── w2/                       # student：注册、个人资料、文档、双因素、会话
-├── w3/                       # advisor：注册、学员管理、学员文档、联系人
-└── w4/                       # visitor：注册、公开页面、搜索、权限、安全、IDOR
+├── framework/
+│   ├── types.ts             # Task, Signal 类型定义
+│   ├── runner.ts            # 任务队列调度器
+│   ├── signal.ts            # SQLite 信号读写（better-sqlite3, WAL）
+│   ├── coverage.ts          # 覆盖率计算脚本
+│   └── scan-totals.ts       # 动态扫描 API 端点和前端路由
+├── fns/                     # fn 实现，每个功能一个文件（多 worker 共用）
+├── w1/tasks.ts              # superuser 任务声明
+├── w2/tasks.ts              # student 任务声明
+├── w3/tasks.ts              # advisor 任务声明
+├── w4/tasks.ts              # visitor 任务声明
+├── w5/tasks.ts              # content_admin 任务声明
+├── w6/tasks.ts              # support 任务声明
+├── w7/tasks.ts              # 破坏性测试任务声明
+├── runner.spec.ts           # 通用 spec，7 个 project 共享
+├── global-setup.ts          # 清理信号/熔断 + 预热
+├── global-teardown.ts       # 结果汇总 + 覆盖率 + 清理数据
+└── playwright.config.ts     # 7 worker, 无 dependencies
 ```
 
 ### 测试目录结构

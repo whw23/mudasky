@@ -19,6 +19,7 @@ from .schemas import (
 from .service import ContactService
 
 router = APIRouter(prefix="/contacts", tags=["admin-contacts"])
+router.label = "访客联系"
 
 
 @router.get(

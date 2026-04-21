@@ -2,7 +2,7 @@
 
 /**
  * 角色创建/编辑对话框组件。
- * 支持表单填写和基于三栏 PermissionTree 的权限勾选。
+ * 支持表单填写和基于树形 PermissionTree 的权限勾选。
  * 权限为字符串路径列表，直接保存为 JSON 数组。
  */
 
@@ -18,9 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import api from "@/lib/api"
 import type { Role } from "@/types"
-import { PermissionTree } from "./PermissionTree"
-import { PANEL_CONFIG } from "@/lib/permission-config"
-import { fetchOpenApiSpec, parseRoutes, filterRoutesByPrefix } from "@/lib/openapi"
+import { PermissionTree, expandWildcards, collapseToWildcards } from "./PermissionTree"
 
 interface RoleDialogProps {
   role: Role | null
@@ -43,71 +41,31 @@ export function RoleDialog({
   const [description, setDescription] = useState("")
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [permTree, setPermTree] = useState<Record<string, unknown> | null>(null)
 
   /**
    * 将角色的通配符权限展开为 PermissionTree 使用的 code 集合。
-   * 如 `admin/users/*` → 所有以 `admin/users/` 开头的路由码。
+   * 从 permission_tree API 获取权限树，使用 expandWildcards 展开通配符，并缓存 tree。
    */
   const expandToCodeSet = useCallback(
     async (rolePerms: string[]): Promise<Set<string>> => {
-      const codes = new Set<string>()
-      let allRoutes: { path: string }[] = []
       try {
-        const spec = await fetchOpenApiSpec()
-        allRoutes = parseRoutes(spec)
+        const { data } = await api.get<{ permission_tree: Record<string, unknown> }>("/admin/roles/meta")
+        setPermTree(data.permission_tree)
+        const tree = data.permission_tree as Parameters<typeof expandWildcards>[1]
+        return expandWildcards(new Set(rolePerms), tree)
       } catch {
-        return codes
+        return new Set<string>()
       }
-
-      const leafCodes = allRoutes.map((r) =>
-        r.path.startsWith("/") ? r.path.slice(1) : r.path,
-      )
-
-      for (const perm of rolePerms) {
-        if (perm === "*") {
-          for (const lc of leafCodes) codes.add(lc)
-        } else if (perm.endsWith("/*")) {
-          const prefix = perm.slice(0, -1)
-          for (const lc of leafCodes) {
-            if (lc.startsWith(prefix)) codes.add(lc)
-          }
-        } else {
-          codes.add(perm)
-        }
-      }
-
-      /* 根据已选 API 码，自动推导面板/页面可见性码 */
-      for (const panel of PANEL_CONFIG) {
-        let panelHasAny = false
-        for (const page of panel.pages) {
-          const prefix = page.apiPrefix + "/"
-          const hasApiUnderPage = [...codes].some(
-            (c) => c.startsWith(prefix) || c === page.apiPrefix,
-          )
-          if (hasApiUnderPage) {
-            codes.add(`@${page.apiPrefix}`)
-            panelHasAny = true
-          }
-        }
-        if (panelHasAny) codes.add(`@${panel.prefix}`)
-      }
-
-      return codes
     },
     [],
   )
 
-  /**
-   * 将已选中的 code 集合转换为权限路径列表。
-   * 跳过 @ 开头的可见性码（面板/页面可见性，不存入数据库）。
-   */
+  /** 将已选中的 code 集合转换为权限路径列表，使用 collapseToWildcards 压缩。 */
   const codesToPermissions = (): string[] => {
-    const perms: string[] = []
-    for (const code of selectedCodes) {
-      if (code.startsWith("@")) continue
-      perms.push(code)
-    }
-    return perms
+    if (!permTree) return [...selectedCodes]
+    const tree = permTree as Parameters<typeof collapseToWildcards>[1]
+    return [...collapseToWildcards(selectedCodes, tree)]
   }
 
   /** 打开对话框时初始化表单 */
@@ -158,7 +116,7 @@ export function RoleDialog({
         if (!isOpen) onClose()
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[85vh]">
+      <DialogContent className="sm:max-w-6xl max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>
             {t(isEdit ? "editTitle" : "createTitle")}
@@ -189,7 +147,7 @@ export function RoleDialog({
             </div>
           </div>
 
-          {/* 三栏权限选择器 */}
+          {/* 树形权限选择器 */}
           <div className="space-y-2">
             <Label className="text-xs uppercase tracking-wide text-muted-foreground">{t("permissions")}</Label>
             <PermissionTree

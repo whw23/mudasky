@@ -6,6 +6,7 @@ import { ConfigProvider } from "@/contexts/ConfigContext"
 import { LoginModal } from "@/components/auth/LoginModal"
 import { RegisterModal } from "@/components/auth/RegisterModal"
 import { Toaster } from "@/components/ui/sonner"
+import { FaviconHead } from "@/components/layout/FaviconHead"
 
 /** 生成元数据 */
 export async function generateMetadata({
@@ -36,6 +37,7 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages}>
       <AuthProvider>
         <ConfigProvider>
+          <FaviconHead />
           {children}
           <LoginModal />
           <RegisterModal />

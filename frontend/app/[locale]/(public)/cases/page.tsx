@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ConsultButton } from "@/components/common/ConsultButton"
 import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
@@ -12,7 +12,7 @@ import {
 async function fetchCases() {
   try {
     const baseUrl = process.env.INTERNAL_API_URL || "http://api:8000"
-    const res = await fetch(`${baseUrl}/api/public/case/list?page_size=100`, {
+    const res = await fetch(`${baseUrl}/api/public/cases/list?page_size=100`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
@@ -57,7 +57,7 @@ export default async function CasesPage() {
 
   return (
     <>
-      <Banner title={p("cases")} subtitle={p("casesSubtitle")} />
+      <PageBanner pageKey="cases" title={p("cases")} subtitle={p("casesSubtitle")} />
 
       {/* 统计 */}
       <section className="border-b bg-white">

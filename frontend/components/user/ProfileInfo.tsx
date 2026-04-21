@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl'
 import { Pencil, Check, X, ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import api from '@/lib/api'
 import { encryptPassword } from '@/lib/crypto'
 import { getApiError } from '@/lib/api-error'
@@ -100,6 +101,7 @@ function InfoRow({
 /** 用户个人资料 */
 export function ProfileInfo() {
   const { user, fetchUser } = useAuth()
+  const countryCodes = useCountryCodes()
   const t = useTranslations('Profile')
   const tErr = useTranslations('ApiErrors')
   const [editing, setEditing] = useState<EditingField>(null)
@@ -349,7 +351,7 @@ export function ProfileInfo() {
                   autoComplete="one-time-code"
                   required
                 />
-                <SmsCodeButton phone={newPhone} />
+                <SmsCodeButton phone={newPhone} countryCodes={countryCodes} />
               </div>
               <Button type="submit" size="sm" disabled={loading}>
                 {loading ? t('saving') : t('save')}
@@ -374,7 +376,7 @@ export function ProfileInfo() {
                     autoComplete="one-time-code"
                     required
                   />
-                  <SmsCodeButton phone={user.phone!} />
+                  <SmsCodeButton phone={user.phone!} countryCodes={countryCodes} />
                 </div>
               </div>
               <div className="space-y-1">
@@ -487,7 +489,7 @@ export function ProfileInfo() {
                         autoComplete="one-time-code"
                         required
                       />
-                      <SmsCodeButton phone={user.phone!} />
+                      <SmsCodeButton phone={user.phone!} countryCodes={countryCodes} />
                     </div>
                     <Button type="submit" size="sm" disabled={loading}>
                       {loading ? t('saving') : t('confirmEnable')}
@@ -574,7 +576,7 @@ export function ProfileInfo() {
                     autoComplete="one-time-code"
                     required
                   />
-                  <SmsCodeButton phone={user.phone!} />
+                  <SmsCodeButton phone={user.phone!} countryCodes={countryCodes} />
                 </div>
               </div>
               <div className="flex justify-end gap-2 border-t px-5 py-3 -mx-5 -mb-4">
@@ -623,7 +625,7 @@ export function ProfileInfo() {
                     autoComplete="one-time-code"
                     required
                   />
-                  <SmsCodeButton phone={user.phone!} />
+                  <SmsCodeButton phone={user.phone!} countryCodes={countryCodes} />
                 </div>
               </div>
               <div className="flex justify-end gap-2 border-t px-5 py-3 -mx-5 -mb-4">

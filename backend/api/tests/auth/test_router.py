@@ -52,6 +52,39 @@ def _make_user_response() -> dict:
     }
 
 
+class TestGetPublicKey:
+    """获取 RSA 公钥端点测试。"""
+
+    async def test_get_public_key_success(self, client):
+        """获取公钥返回 200。"""
+        with patch(
+            "api.auth.router.get_public_key_pem",
+            return_value="-----BEGIN PUBLIC KEY-----\nfake\n-----END PUBLIC KEY-----",
+        ), patch(
+            "api.auth.router.generate_nonce",
+            return_value="test-nonce",
+        ):
+            resp = await client.get("/auth/public-key")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "public_key" in data
+        assert "nonce" in data
+        assert data["nonce"] == "test-nonce"
+
+    async def test_get_public_key_has_pem(self, client):
+        """公钥包含 PEM 格式内容。"""
+        with patch(
+            "api.auth.router.get_public_key_pem",
+            return_value="PEM_CONTENT",
+        ), patch(
+            "api.auth.router.generate_nonce",
+            return_value="nonce-2",
+        ):
+            resp = await client.get("/auth/public-key")
+        assert resp.status_code == 200
+        assert resp.json()["public_key"] == "PEM_CONTENT"
+
+
 class TestSendSmsCode:
     """短信验证码发送端点测试。"""
 
@@ -92,66 +125,7 @@ class TestSendSmsCode:
         assert resp.status_code == 422
 
 
-class TestRegister:
-    """注册端点测试。"""
-
-    @pytest.fixture(autouse=True)
-    def _patch_service(self):
-        """模拟 AuthService。"""
-        with patch(
-            "api.auth.router.AuthService"
-        ) as mock_cls:
-            self.mock_svc = AsyncMock()
-            mock_cls.return_value = self.mock_svc
-            yield
-
-    async def test_register_success(self, client):
-        """注册成功返回 200。"""
-        user = _make_user()
-        self.mock_svc.register.return_value = user
-        self.mock_svc.build_user_response.return_value = (
-            _make_user_response()
-        )
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "+86-13800138000",
-                "code": "123456",
-                "username": "newuser",
-                "encrypted_password": "enc_data",
-                "nonce": "test_nonce",
-            },
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "user" in data
-
-    async def test_register_invalid_phone(self, client):
-        """注册手机号格式无效返回 422。"""
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "bad",
-                "code": "123456",
-            },
-        )
-        assert resp.status_code == 422
-
-    async def test_register_conflict(self, client):
-        """手机号已注册返回 409。"""
-        from app.core.exceptions import ConflictException
-
-        self.mock_svc.register.side_effect = (
-            ConflictException(message="手机号已注册")
-        )
-        resp = await client.post(
-            "/auth/register",
-            json={
-                "phone": "+86-13800138000",
-                "code": "123456",
-            },
-        )
-        assert resp.status_code == 409
+# TestRegister removed - register endpoint was deleted, registration now uses sms-code + login
 
 
 class TestLogin:
@@ -204,6 +178,58 @@ class TestLogin:
         )
         assert resp.status_code == 200
 
+    async def test_login_2fa_required(self, client):
+        """二步验证启用时返回 2fa_required 步骤。"""
+        user = _make_user(
+            two_factor_enabled=True,
+            totp_secret="secret",
+        )
+        self.mock_svc.login.return_value = (
+            user,
+            "2fa_required",
+        )
+        self.mock_svc.build_user_response.return_value = (
+            _make_user_response()
+        )
+        resp = await client.post(
+            "/auth/login",
+            json={
+                "username": "testuser",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["step"] == "2fa_required"
+        assert data["two_fa_methods"] is not None
+
+    async def test_login_2fa_no_totp(self, client):
+        """二步验证启用但无 TOTP 时 has_totp 为 False。"""
+        user = _make_user(
+            two_factor_enabled=True,
+            totp_secret=None,
+        )
+        self.mock_svc.login.return_value = (
+            user,
+            "2fa_required",
+        )
+        self.mock_svc.build_user_response.return_value = (
+            _make_user_response()
+        )
+        resp = await client.post(
+            "/auth/login",
+            json={
+                "phone": "+86-13800138000",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["two_fa_methods"]["has_totp"] is False
+        assert data["two_fa_methods"]["has_phone"] is True
+
     async def test_login_unauthorized(self, client):
         """凭证错误返回 401。"""
         from app.core.exceptions import UnauthorizedException
@@ -220,6 +246,41 @@ class TestLogin:
             },
         )
         assert resp.status_code == 401
+
+
+class TestLogout:
+    """登出端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 AuthService。"""
+        with patch(
+            "api.auth.router.AuthService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_logout_with_token(self, client):
+        """带 token hash 登出成功。"""
+        self.mock_svc.logout_current_device.return_value = None
+        resp = await client.post(
+            "/auth/logout",
+            headers={
+                "X-Refresh-Token-Hash": "valid-hash"
+            },
+        )
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "已退出登录"
+        self.mock_svc.logout_current_device.assert_awaited_once_with(
+            "valid-hash"
+        )
+
+    async def test_logout_without_token(self, client):
+        """无 token hash 登出也返回 200。"""
+        resp = await client.post("/auth/logout")
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "已退出登录"
 
 
 class TestRefreshTokenHash:

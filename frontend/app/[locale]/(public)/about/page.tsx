@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import {
   HistorySection,
   MissionVisionSection,
@@ -43,7 +43,10 @@ export default async function AboutPage() {
 
   return (
     <>
-      <Banner title={p("about")} subtitle={p("aboutSubtitle")} />
+      <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
+
+      {/* 联系方式 */}
+      <ContactInfoSection />
 
       {/* 公司简介 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
@@ -125,9 +128,6 @@ export default async function AboutPage() {
           ))}
         </div>
       </section>
-
-      {/* 联系方式 */}
-      <ContactInfoSection />
 
       {/* CTA */}
       <section className="bg-gray-50 py-10 md:py-16">

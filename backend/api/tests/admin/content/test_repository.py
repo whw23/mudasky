@@ -44,7 +44,8 @@ async def test_create_category(session):
     result = await create_category(session, cat)
 
     session.add.assert_called_once_with(cat)
-    session.commit.assert_awaited_once()
+    session.flush.assert_awaited_once()
+    session.refresh.assert_awaited_once_with(cat)
     assert result == cat
 
 

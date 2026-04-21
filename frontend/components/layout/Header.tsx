@@ -6,9 +6,9 @@
  * 移动端：单行（Logo+品牌+标语+电话+汉堡）+ 展开菜单。
  */
 
-import { useState, useEffect } from "react"
-import { Phone, Menu, X } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Phone, Menu, X, Upload, Trash2 } from "lucide-react"
+import { useTranslations, useLocale } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { usePermissions } from "@/hooks/use-permissions"
@@ -18,18 +18,32 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { LocaleSwitcher } from "./LocaleSwitcher"
 import { HeaderLogo } from "./HeaderLogo"
 
-/** 导航菜单键与路径映射 */
-const NAV_KEYS = [
-  { key: "home", href: "/" },
-  { key: "universities", href: "/universities" },
-  { key: "studyAbroad", href: "/study-abroad" },
-  { key: "requirements", href: "/requirements" },
-  { key: "cases", href: "/cases" },
-  { key: "visa", href: "/visa" },
-  { key: "life", href: "/life" },
-  { key: "news", href: "/news" },
-  { key: "about", href: "/about" },
-] as const
+
+/** 预设导航项 key → href 映射 */
+const BUILTIN_HREF: Record<string, string> = {
+  home: "/",
+  universities: "/universities",
+  "study-abroad": "/study-abroad",
+  requirements: "/requirements",
+  cases: "/cases",
+  visa: "/visa",
+  life: "/life",
+  news: "/news",
+  about: "/about",
+}
+
+/** 预设导航项 key → 翻译 key 映射（kebab-case → camelCase） */
+const NAV_KEY_TO_I18N: Record<string, string> = {
+  home: "home",
+  universities: "universities",
+  "study-abroad": "studyAbroad",
+  requirements: "requirements",
+  cases: "cases",
+  visa: "visa",
+  life: "life",
+  news: "news",
+  about: "about",
+}
 
 /** 判断导航项是否激活 */
 function isActive(pathname: string, href: string): boolean {
@@ -37,29 +51,87 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href)
 }
 
+/** Logo 直接上传槽位 */
+function LogoUploadSlot({ logoUrl, brandName, onUpload, onClear }: {
+  logoUrl: string; brandName: string
+  onUpload?: (file: File) => Promise<string | void>
+  onClear?: () => Promise<void>
+}) {
+  const ref = useRef<HTMLInputElement>(null)
+  const [localUrl, setLocalUrl] = useState<string | null>(null)
+  const displayUrl = localUrl ?? logoUrl
+
+  useEffect(() => { setLocalUrl(null) }, [logoUrl])
+
+  const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) { const url = await onUpload?.(f); if (url) setLocalUrl(url) }
+    if (ref.current) ref.current.value = ""
+  }, [onUpload])
+
+  return (
+    <div className="group/logo relative shrink-0 cursor-pointer" onClick={() => ref.current?.click()}>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {displayUrl ? (
+        <img src={displayUrl} alt={brandName} className="size-9 rounded-lg object-contain" />
+      ) : (
+        <span className="inline-flex size-9 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg">
+          {brandName.charAt(0)}
+        </span>
+      )}
+      {displayUrl && (
+        <button type="button"
+          onClick={(e) => { e.stopPropagation(); onClear?.(); setLocalUrl("") }}
+          className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-white opacity-0 transition-opacity group-hover/logo:opacity-100">
+          <Trash2 className="size-2.5" />
+        </button>
+      )}
+    </div>
+  )
+}
+
 interface HeaderProps {
   editable?: boolean
   onEdit?: (section: string) => void
   onPageChange?: (key: string) => void
   activePage?: string
+  hideNav?: boolean
+  onImageUpload?: (field: string, file: File) => Promise<string | void>
+  onImageClear?: (field: string) => Promise<void>
 }
 
-export function Header({ editable, onEdit, onPageChange, activePage }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage, hideNav, onImageUpload, onImageClear }: HeaderProps) {
   const pathname = usePathname()
+  const locale = useLocale()
   const { user, logout, showLoginModal } = useAuth()
   const { isAdmin } = usePermissions()
-  const { siteInfo } = useLocalizedConfig()
+  const { siteInfo, navConfig } = useLocalizedConfig()
   const rawConfig = useConfig()
   const tNav = useTranslations("Nav")
   const tHeader = useTranslations("Header")
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
+
   const brandName = siteInfo.brand_name || tHeader("brandName")
   const brandNameEn = getLocalizedValue(rawConfig.siteInfo.brand_name, "en") || "MUTU International Education"
   const tagline = siteInfo.tagline || tHeader("tagline")
   const hotline = siteInfo.hotline
   const hotlineContact = siteInfo.hotline_contact
+
+  /** 根据 navConfig 生成导航项列表 */
+  const navItems = navConfig.order.map((key) => {
+    const i18nKey = NAV_KEY_TO_I18N[key]
+    if (i18nKey) {
+      // 预设项
+      return { key, href: BUILTIN_HREF[key] || `/${key}`, label: tNav(i18nKey) }
+    }
+    // 自定义项
+    const custom = navConfig.custom_items.find((c) => c.slug === key)
+    const name = custom?.name
+    const label = typeof name === "string" ? name : (name as Record<string, string>)?.[locale] || key
+    return { key, href: `/${key}`, label }
+  })
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string) {
@@ -85,12 +157,15 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
     setMenuOpen(false)
   }
 
+  /** 是否当前处于透明状态 */
+  const isTransparentNow = !editable && !scrolled
+
   return (
     <header
       className={`overflow-x-hidden transition-all duration-300 ${
         editable
           ? ""
-          : `sticky top-0 z-50 bg-white ${scrolled ? "bg-white/70 backdrop-blur-xl shadow-sm" : ""}`
+          : `fixed top-0 left-0 right-0 z-50 ${scrolled ? "bg-white/50 backdrop-blur-xl shadow-sm" : "bg-white/10 backdrop-blur-sm"}`
       }`}
     >
       {/* === 桌面顶栏 Row 1 === */}
@@ -98,31 +173,45 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
           {/* 左侧：Logo + 品牌名 + 标语 */}
           <div className="flex items-center gap-3">
-            {wrapEditable(
-              <Link href="/" className="flex items-center gap-3">
-                <HeaderLogo
+            {editable ? (
+              <div className="flex items-center gap-3">
+                <LogoUploadSlot
                   logoUrl={siteInfo.logo_url}
                   brandName={brandName}
-                  size={36}
-                  className="rounded-lg shrink-0"
+                  onUpload={(file) => onImageUpload?.("logo_url", file)}
+                  onClear={() => onImageClear?.("logo_url")}
                 />
+                {wrapEditable(
+                  <div className="flex flex-col">
+                    <span className="font-[800] tracking-wide whitespace-nowrap text-foreground" style={{ fontSize: 22 }}>
+                      {brandName}
+                    </span>
+                    <span className="text-[10px] whitespace-nowrap text-muted-foreground">
+                      {brandNameEn}
+                    </span>
+                  </div>,
+                  "brand_name",
+                  "编辑品牌名称"
+                )}
+              </div>
+            ) : (
+              <Link href="/" className="flex items-center gap-3">
+                <HeaderLogo logoUrl={siteInfo.logo_url} brandName={brandName} size={36} className="rounded-lg shrink-0" />
                 <div className="flex flex-col">
                   <span
-                    className="font-[800] tracking-wide whitespace-nowrap text-foreground"
+                    className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
                     style={{ fontSize: 22 }}
                   >
                     {brandName}
                   </span>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                     {brandNameEn}
                   </span>
                 </div>
-              </Link>,
-              "brand",
-              "编辑品牌名称"
+              </Link>
             )}
             {wrapEditable(
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                 {tagline}
               </span>,
               "tagline",
@@ -131,11 +220,11 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
           </div>
 
           {/* 右侧：热线 + 用户信息 */}
-          <div className="flex items-center gap-4 text-xs text-foreground/60">
+          <div className={`flex items-center gap-4 text-xs ${isTransparentNow ? "text-white/70" : "text-foreground/60"}`}>
             {wrapEditable(
               hotline ? (
-                <span className="flex items-center gap-1.5 font-semibold text-primary">
-                  <Phone className="size-3.5" />
+                <span className={`flex items-center gap-1.5 font-bold text-sm whitespace-nowrap ${isTransparentNow ? "text-amber-300" : "text-primary"}`}>
+                  <Phone className="size-4" />
                   {hotline}
                   {hotlineContact && (
                     <span>{hotlineContact}</span>
@@ -152,24 +241,24 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
 
             <div className={editable ? "pointer-events-none" : ""}>
               {user ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 whitespace-nowrap">
                   <Link
                     href="/portal/overview"
-                    className="text-foreground/70 hover:text-foreground transition-colors"
+                    className={`transition-colors ${isTransparentNow ? "text-white/90 hover:text-white" : "text-foreground/70 hover:text-foreground"}`}
                   >
                     {user.username || user.phone}
                   </Link>
                   {isAdmin && (
                     <Link
                       href="/admin/dashboard"
-                      className="text-foreground/60 hover:text-foreground transition-colors"
+                      className={`transition-colors ${isTransparentNow ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"}`}
                     >
                       {tHeader("adminPanel")}
                     </Link>
                   )}
                   <button
                     onClick={logout}
-                    className="text-foreground/60 hover:text-foreground transition-colors"
+                    className={`transition-colors ${isTransparentNow ? "text-white/80 hover:text-white" : "text-foreground/60 hover:text-foreground"}`}
                   >
                     {tHeader("logout")}
                   </button>
@@ -177,7 +266,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               ) : (
                 <button
                   onClick={showLoginModal}
-                  className="rounded-full border border-foreground/20 px-4 py-1 text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
+                  className={`rounded-full border px-4 py-1 transition-colors ${isTransparentNow ? "border-white/40 text-white hover:border-white" : "border-foreground/20 text-foreground/70 hover:text-foreground hover:border-foreground/40"}`}
                 >
                   {tHeader("loginOrRegister")}
                 </button>
@@ -188,44 +277,50 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
       </div>
 
       {/* === 桌面导航栏 Row 2 === */}
-      <nav className="hidden md:block border-t border-black/[0.04]">
-        <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
-          <ul className="flex flex-1 items-center justify-evenly">
-            {NAV_KEYS.map((item) => {
-              const active = editable
-                ? activePage === item.key
-                : isActive(pathname, item.href)
-              return (
-                <li key={item.key}>
-                  {editable ? (
-                    <button
-                      onClick={() => onPageChange?.(item.key)}
-                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
-                        active
-                          ? "text-primary border-b-2 border-primary"
-                          : "text-foreground/60 hover:text-foreground"
-                      }`}
-                    >
-                      {tNav(item.key)}
-                    </button>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
-                        active
-                          ? "text-primary border-b-2 border-primary"
-                          : "text-foreground/60 hover:text-foreground"
-                      }`}
-                    >
-                      {tNav(item.key)}
-                    </Link>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      </nav>
+      {!hideNav && (
+        <nav className={`hidden md:block border-t ${isTransparentNow ? "border-white/20" : "border-black/[0.04]"}`}>
+          <div className="mx-auto flex max-w-7xl items-center px-4 py-2">
+            <ul className="flex flex-1 items-center justify-evenly">
+              {navItems.map((item) => {
+                const active = editable
+                  ? activePage === item.key
+                  : isActive(pathname, item.href)
+                return (
+                  <li key={item.key}>
+                    {editable ? (
+                      <button
+                        onClick={() => onPageChange?.(item.key)}
+                        className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                          active
+                            ? "text-primary border-b-2 border-primary"
+                            : isTransparentNow
+                              ? "text-white/90 hover:text-white"
+                              : "text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className={`whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors ${
+                          active
+                            ? "text-primary border-b-2 border-primary"
+                            : isTransparentNow
+                              ? "text-white/90 hover:text-white"
+                              : "text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </nav>
+      )}
 
       {/* === 移动端单行 === */}
       <div className="md:hidden">
@@ -241,12 +336,12 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               />
               <div className="flex flex-col min-w-0">
                 <span
-                  className="font-extrabold tracking-wide whitespace-nowrap text-foreground"
+                  className={`font-extrabold tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
                   style={{ fontSize: 17 }}
                 >
                   {brandName}
                 </span>
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap truncate">
+                <span className={`text-[10px] whitespace-nowrap truncate ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                   {tagline}
                 </span>
               </div>
@@ -260,7 +355,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
             {hotline && (
               <a
                 href={`tel:${hotline}`}
-                className="p-2 rounded-full bg-primary/5 text-primary transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-amber-300" : "bg-primary/5 text-primary"}`}
                 aria-label="拨打热线"
               >
                 <Phone className="size-4" />
@@ -270,7 +365,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               <Link
                 href="/portal/overview"
                 onClick={closeMenu}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-white/80" : "bg-foreground/5 text-foreground/60"}`}
               >
                 <span className="size-4 flex items-center justify-center text-xs font-medium">
                   {(user.username || user.phone || "U").charAt(0).toUpperCase()}
@@ -279,7 +374,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
             ) : (
               <button
                 onClick={showLoginModal}
-                className="p-2 rounded-full bg-foreground/5 text-foreground/60 hover:text-foreground transition-colors"
+                className={`p-2 rounded-full transition-colors ${isTransparentNow ? "bg-white/10 text-white/80 hover:text-white" : "bg-foreground/5 text-foreground/60 hover:text-foreground"}`}
                 aria-label={tHeader("loginOrRegister")}
               >
                 <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -289,7 +384,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
               </button>
             )}
             <button
-              className="p-2 text-foreground/70 hover:text-foreground rounded-full hover:bg-foreground/5 transition-colors"
+              className={`p-2 rounded-full transition-colors ${isTransparentNow ? "text-white/80 hover:text-white hover:bg-white/10" : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"}`}
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -302,8 +397,8 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
       {menuOpen && (
         <div className="md:hidden border-t border-black/[0.04] bg-white/90 backdrop-blur-xl">
           <ul className="flex flex-col px-4 py-2">
-            {NAV_KEYS.map((item) => (
-              <li key={item.href}>
+            {navItems.map((item) => (
+              <li key={item.key}>
                 <Link
                   href={item.href}
                   onClick={closeMenu}
@@ -313,7 +408,7 @@ export function Header({ editable, onEdit, onPageChange, activePage }: HeaderPro
                       : "text-foreground/70 hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  {tNav(item.key)}
+                  {item.label}
                 </Link>
               </li>
             ))}

@@ -18,6 +18,7 @@ from .schemas import Sms2faBody, TotpCodeBody
 from .service import TwoFactorService
 
 router = APIRouter(prefix="/two-factor", tags=["two-factor"])
+router.label = "双因素认证"
 
 
 class MessageResponse(BaseModel):

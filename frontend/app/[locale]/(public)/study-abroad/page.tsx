@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ArticleSection } from "@/components/content/ArticleSection"
 import { fetchArticlesByCategorySlug } from "@/lib/content-api"
 import { ConsultButton } from "@/components/common/ConsultButton"
@@ -52,7 +52,7 @@ export default async function StudyAbroadPage() {
 
   return (
     <>
-      <Banner title={p("studyAbroad")} subtitle={p("studyAbroadSubtitle")} />
+      <PageBanner pageKey="study-abroad" title={p("studyAbroad")} subtitle={p("studyAbroadSubtitle")} />
 
       {/* 留学概述 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

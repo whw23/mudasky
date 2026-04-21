@@ -12,7 +12,7 @@
   { "category": "跨角色", "scenario": "student访问admin被拒" },
   { "category": "跨角色", "scenario": "visitor访问admin API被拒" },
   { "category": "跨角色", "scenario": "advisor访问admin/students成功" },
-  { "category": "跨角色", "scenario": "advisor访问admin/articles被拒" },
+  { "category": "跨角色", "scenario": "advisor访问admin/web-settings被拒" },
   { "category": "禁用用户", "scenario": "禁用后API返回401" },
   { "category": "禁用用户", "scenario": "启用后恢复访问" },
   { "category": "文件上传", "scenario": "合法文件上传成功" },

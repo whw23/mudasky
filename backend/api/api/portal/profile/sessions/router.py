@@ -12,6 +12,7 @@ from .schemas import SessionResponse
 from .service import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
+router.label = "会话管理"
 
 
 class MessageResponse(BaseModel):

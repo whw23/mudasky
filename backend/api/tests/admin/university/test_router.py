@@ -20,15 +20,48 @@ def _make_university(**kwargs) -> MagicMock:
     u.city = kwargs.get("city", "北京")
     u.logo_url = kwargs.get("logo_url", None)
     u.description = kwargs.get("description", "简介")
-    u.programs = kwargs.get("programs", ["计算机"])
     u.website = kwargs.get("website", None)
     u.is_featured = kwargs.get("is_featured", False)
     u.sort_order = kwargs.get("sort_order", 0)
+    u.logo_image_id = kwargs.get("logo_image_id", None)
+    u.admission_requirements = kwargs.get("admission_requirements", None)
+    u.scholarship_info = kwargs.get("scholarship_info", None)
+    u.qs_rankings = kwargs.get("qs_rankings", None)
+    u.latitude = kwargs.get("latitude", None)
+    u.longitude = kwargs.get("longitude", None)
     u.created_at = kwargs.get(
         "created_at", datetime.now(timezone.utc)
     )
     u.updated_at = kwargs.get("updated_at", None)
     return u
+
+
+def _make_university_dict(**kwargs) -> dict:
+    """创建院校字典（list_universities 返回格式）。"""
+    return {
+        "id": kwargs.get("id", "uni-001"),
+        "name": kwargs.get("name", "北京大学"),
+        "name_en": kwargs.get("name_en", "Peking University"),
+        "country": kwargs.get("country", "中国"),
+        "province": kwargs.get("province", "北京"),
+        "city": kwargs.get("city", "北京"),
+        "logo_url": kwargs.get("logo_url", None),
+        "description": kwargs.get("description", "简介"),
+        "website": kwargs.get("website", None),
+        "is_featured": kwargs.get("is_featured", False),
+        "sort_order": kwargs.get("sort_order", 0),
+        "logo_image_id": kwargs.get("logo_image_id", None),
+        "admission_requirements": kwargs.get("admission_requirements", None),
+        "scholarship_info": kwargs.get("scholarship_info", None),
+        "qs_rankings": kwargs.get("qs_rankings", None),
+        "latitude": kwargs.get("latitude", None),
+        "longitude": kwargs.get("longitude", None),
+        "created_at": kwargs.get(
+            "created_at", datetime.now(timezone.utc)
+        ),
+        "updated_at": kwargs.get("updated_at", None),
+        "programs": kwargs.get("programs", []),
+    }
 
 
 class TestAdminListUniversities:
@@ -38,7 +71,7 @@ class TestAdminListUniversities:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -49,11 +82,11 @@ class TestAdminListUniversities:
     ):
         """管理员查询院校列表返回 200。"""
         self.mock_svc.list_universities.return_value = (
-            [_make_university()],
+            [_make_university_dict()],
             1,
         )
         resp = await client.get(
-            "/admin/universities/list",
+            "/admin/web-settings/universities/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -70,7 +103,7 @@ class TestAdminListUniversities:
             0,
         )
         resp = await client.get(
-            "/admin/universities/list",
+            "/admin/web-settings/universities/list",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -87,7 +120,7 @@ class TestAdminListUniversities:
             0,
         )
         resp = await client.get(
-            "/admin/universities/list?page_size=50",
+            "/admin/web-settings/universities/list?page_size=50",
             headers=superuser_headers,
         )
         assert resp.status_code == 200
@@ -103,7 +136,7 @@ class TestAdminCreateUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -117,7 +150,7 @@ class TestAdminCreateUniversity:
             _make_university()
         )
         resp = await client.post(
-            "/admin/universities/list/create",
+            "/admin/web-settings/universities/list/create",
             json={
                 "name": "北京大学",
                 "country": "中国",
@@ -134,7 +167,7 @@ class TestAdminCreateUniversity:
     ):
         """缺少必填字段返回 422。"""
         resp = await client.post(
-            "/admin/universities/list/create",
+            "/admin/web-settings/universities/list/create",
             json={"name": "北京大学"},
             headers=superuser_headers,
         )
@@ -148,7 +181,7 @@ class TestAdminUpdateUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -162,7 +195,7 @@ class TestAdminUpdateUniversity:
             _make_university(name="清华大学")
         )
         resp = await client.post(
-            "/admin/universities/list/detail/edit",
+            "/admin/web-settings/universities/list/detail/edit",
             json={
                 "university_id": "uni-001",
                 "name": "清华大学",
@@ -186,7 +219,7 @@ class TestAdminUpdateUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/list/detail/edit",
+            "/admin/web-settings/universities/list/detail/edit",
             json={
                 "university_id": "nonexistent",
                 "name": "不存在",
@@ -203,7 +236,7 @@ class TestAdminDeleteUniversity:
     def _patch_service(self):
         """模拟 UniversityService。"""
         with patch(
-            "api.admin.university.router.UniversityService"
+            "api.admin.config.web_settings.universities.router.UniversityService"
         ) as mock_cls:
             self.mock_svc = AsyncMock()
             mock_cls.return_value = self.mock_svc
@@ -215,7 +248,7 @@ class TestAdminDeleteUniversity:
         """管理员删除院校返回 204。"""
         self.mock_svc.delete_university.return_value = None
         resp = await client.post(
-            "/admin/universities/list/detail/delete",
+            "/admin/web-settings/universities/list/detail/delete",
             json={"university_id": "uni-001"},
             headers=superuser_headers,
         )
@@ -234,7 +267,7 @@ class TestAdminDeleteUniversity:
             )
         )
         resp = await client.post(
-            "/admin/universities/list/detail/delete",
+            "/admin/web-settings/universities/list/detail/delete",
             json={"university_id": "nonexistent"},
             headers=superuser_headers,
         )

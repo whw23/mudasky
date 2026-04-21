@@ -6,7 +6,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -45,6 +45,21 @@ class SuccessCase(Base):
     )
     sort_order: Mapped[int] = mapped_column(
         Integer, default=0, nullable=False
+    )
+    university_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("university.id"),
+        nullable=True,
+    )
+    avatar_image_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("image.id"),
+        nullable=True,
+    )
+    offer_image_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("image.id"),
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

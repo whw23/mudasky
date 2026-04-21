@@ -36,17 +36,18 @@ interface ConfigEditDialogProps {
   data: Record<string, any>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave: (data: Record<string, any>) => Promise<void>
+  defaultValues?: Record<string, string>
 }
 
 /**
- * 上传图片到文档接口。
- * @returns 图片的下载 URL
+ * 上传图片到 image 表。
+ * @returns 图片的 URL
  */
 async function uploadImage(file: File): Promise<string> {
   const formData = new FormData()
   formData.append("file", file)
-  const { data } = await api.post("/portal/documents/list/upload", formData)
-  return data.download_url || data.url
+  const { data } = await api.post("/admin/web-settings/images/upload", formData)
+  return data.url
 }
 
 /** 配置编辑弹窗 */
@@ -57,6 +58,7 @@ export function ConfigEditDialog({
   fields,
   data,
   onSave,
+  defaultValues,
 }: ConfigEditDialogProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<Record<string, any>>({})
@@ -67,9 +69,23 @@ export function ConfigEditDialog({
   /* 打开时复制数据到本地状态 */
   useEffect(() => {
     if (open) {
-      setFormData({ ...data })
+      const merged = { ...data }
+      if (defaultValues) {
+        for (const field of fields) {
+          if (field.localized && defaultValues[field.key]) {
+            const val = merged[field.key]
+            const zhValue = typeof val === "string" ? val : val?.zh
+            if (!zhValue?.trim()) {
+              merged[field.key] = typeof val === "object" && val !== null
+                ? { ...val, zh: defaultValues[field.key] }
+                : { zh: defaultValues[field.key], en: "", ja: "", de: "" }
+            }
+          }
+        }
+      }
+      setFormData(merged)
     }
-  }, [open, data])
+  }, [open, data, defaultValues, fields])
 
   /** 更新单个字段值 */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,20 +172,19 @@ export function ConfigEditDialog({
               type="file"
               accept="image/*"
               className="hidden"
+              id={`config-img-${field.key}`}
+              disabled={isFieldUploading}
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) handleImageUpload(field.key, file)
               }}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isFieldUploading}
-              onClick={() => fileInputRefs.current[field.key]?.click()}
+            <label
+              htmlFor={`config-img-${field.key}`}
+              className={`inline-flex items-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer ${isFieldUploading ? "pointer-events-none opacity-50" : ""}`}
             >
               {isFieldUploading ? "上传中..." : "上传"}
-            </Button>
+            </label>
             {value && (
               <Button
                 type="button"

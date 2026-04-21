@@ -157,6 +157,69 @@ async def test_get_value_with_timestamp_not_found(
 
 @pytest.mark.asyncio
 @patch(CONFIG_REPO)
+async def test_update_value_with_validator_valid(
+    mock_repo, service
+):
+    """带验证器的配置项传入有效数据，验证后存储（含 to_list 转换）。"""
+    config = _make_config(
+        key="phone_country_codes",
+        value=[],
+        description="国家码列表",
+    )
+    mock_repo.get_by_key = AsyncMock(return_value=config)
+    mock_repo.update_value = AsyncMock()
+
+    valid_value = [
+        {
+            "code": "+86",
+            "country": "🇨🇳",
+            "label": "中国",
+            "digits": 11,
+            "enabled": True,
+        }
+    ]
+
+    result = await service.update_value(
+        "phone_country_codes", valid_value
+    )
+
+    assert result.key == "phone_country_codes"
+    mock_repo.update_value.assert_awaited_once()
+    # to_list 转换后的值传给 repository
+    call_args = mock_repo.update_value.call_args
+    stored_value = call_args[0][2]
+    assert isinstance(stored_value, list)
+    assert stored_value[0]["code"] == "+86"
+
+
+@pytest.mark.asyncio
+@patch(CONFIG_REPO)
+async def test_update_value_with_model_validator_no_to_list(
+    mock_repo, service
+):
+    """带验证器但无 to_list 的配置项正常验证存储。"""
+    config = _make_config(
+        key="contact_info",
+        value={},
+        description="联系方式",
+    )
+    mock_repo.get_by_key = AsyncMock(return_value=config)
+    mock_repo.update_value = AsyncMock()
+
+    valid_value = {
+        "address": "北京市",
+        "phone": "010-12345678",
+        "email": "test@test.com",
+    }
+
+    result = await service.update_value("contact_info", valid_value)
+
+    assert result.key == "contact_info"
+    mock_repo.update_value.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(CONFIG_REPO)
 async def test_list_all_success(mock_repo, service):
     """获取所有配置列表。"""
     configs = [

@@ -30,9 +30,12 @@ export interface SiteInfo {
   hotline_contact: LocalizedField
   logo_url: string
   favicon_url: string
-  wechat_qr_url: string
+  wechat_service_qr_url: string
+  wechat_official_qr_url: string
   company_name: string
   icp_filing: string
+  services_title: LocalizedField
+  destinations_title: LocalizedField
 }
 
 /** 首页统计条目 */
@@ -48,3 +51,11 @@ export interface AboutInfo {
   vision: LocalizedField
   partnership: LocalizedField
 }
+
+/** 单个页面的 Banner 配置 */
+export interface PageBannerConfig {
+  image_ids: string[]
+}
+
+/** 所有页面的 Banner 配置 */
+export type PageBanners = Record<string, PageBannerConfig>

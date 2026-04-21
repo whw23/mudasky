@@ -13,6 +13,16 @@ import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import type { CountryCode } from '@/types/config'
 import { getApiError } from '@/lib/api-error'
 
@@ -26,11 +36,12 @@ export function CountryCodeEditor() {
   const [items, setItems] = useState<CountryCodeItem[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
   const nextId = useRef(0)
 
   useEffect(() => {
     setLoading(true)
-    api.get('/admin/general-settings/list')
+    api.get('/admin/web-settings/list')
       .then((res) => {
         const config = res.data.find((c: { key: string; value: unknown }) => c.key === 'phone_country_codes')
         if (config && Array.isArray(config.value)) {
@@ -56,8 +67,18 @@ export function CountryCodeEditor() {
   /** 删除行 */
   function removeItem(index: number): void {
     const item = items[index]
-    if (item.code && !confirm(t('deleteConfirm', { code: item.code }))) return
+    if (item.code) {
+      setDeleteTarget(index)
+      return
+    }
     setItems((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  /** 确认删除 */
+  function confirmRemoveItem(): void {
+    if (deleteTarget === null) return
+    setItems((prev) => prev.filter((_, i) => i !== deleteTarget))
+    setDeleteTarget(null)
   }
 
   /** 保存 */
@@ -66,7 +87,7 @@ export function CountryCodeEditor() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const payload = items.map(({ _id, ...rest }) => rest)
-      await api.post("/admin/general-settings/list/edit", { key: "phone_country_codes", value: payload })
+      await api.post("/admin/web-settings/list/edit", { key: "phone_country_codes", value: payload })
       toast.success(t('saveSuccess'))
     } catch (err) {
       toast.error(getApiError(err, tErr, t('saveError')))
@@ -78,6 +99,7 @@ export function CountryCodeEditor() {
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>{t('phoneCountryCodes')}</CardTitle>
@@ -157,5 +179,25 @@ export function CountryCodeEditor() {
         </div>
       </CardContent>
     </Card>
+
+    {/* 删除确认弹窗 */}
+    <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('deleteConfirm', { code: deleteTarget !== null ? items[deleteTarget]?.code : '' })}</AlertDialogTitle>
+          <AlertDialogDescription>{t('deleteConfirm', { code: deleteTarget !== null ? items[deleteTarget]?.code : '' })}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-white hover:bg-destructive/90"
+            onClick={confirmRemoveItem}
+          >
+            {t('confirmDelete')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

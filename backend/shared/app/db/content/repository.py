@@ -17,7 +17,7 @@ async def create_category(
 ) -> Category:
     """创建分类。"""
     session.add(category)
-    await session.commit()
+    await session.flush()
     await session.refresh(category)
     return category
 
@@ -205,9 +205,48 @@ async def list_all_articles(
     return articles, total
 
 
+async def delete_articles_by_category(
+    session: AsyncSession, category_id: str
+) -> None:
+    """删除指定分类下的所有文章。"""
+    stmt = select(Article).where(
+        Article.category_id == category_id
+    )
+    result = await session.execute(stmt)
+    articles = result.scalars().all()
+    for article in articles:
+        await session.delete(article)
+    await session.commit()
+
+
 async def delete_article(
     session: AsyncSession, article: Article
 ) -> None:
     """删除文章。"""
     await session.delete(article)
     await session.commit()
+
+
+async def get_article_by_slug(
+    session: AsyncSession, slug: str
+) -> Article | None:
+    """根据 slug 查询文章。"""
+    stmt = select(Article).where(Article.slug == slug)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+async def list_articles_by_category(
+    session: AsyncSession, category_id: str
+) -> list[Article]:
+    """查询指定分类下的所有文章。"""
+    stmt = (
+        select(Article)
+        .where(Article.category_id == category_id)
+        .order_by(
+            Article.is_pinned.desc(),
+            Article.created_at.desc(),
+        )
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())

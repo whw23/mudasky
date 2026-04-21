@@ -1,4 +1,4 @@
-import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { ConsultButton } from "@/components/common/ConsultButton"
 import { getTranslations } from "next-intl/server"
 import { ArrowRight } from "lucide-react"
@@ -11,7 +11,7 @@ export default async function UniversitiesPage() {
 
   return (
     <>
-      <Banner title={p("universities")} subtitle={p("universitiesSubtitle")} />
+      <PageBanner pageKey="universities" title={p("universities")} subtitle={p("universitiesSubtitle")} />
 
       {/* 概述 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

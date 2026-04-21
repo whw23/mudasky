@@ -73,7 +73,8 @@ class SiteInfoValue(BaseModel):
     hotline_contact: str | dict = Field("", description="热线联系人（str 或多语言 dict）")
     logo_url: str = Field("", description="Logo 图片地址")
     favicon_url: str = Field("", description="Favicon 地址")
-    wechat_qr_url: str = Field("", description="微信二维码图片地址")
+    wechat_service_qr_url: str = Field("", description="客服微信二维码图片地址")
+    wechat_official_qr_url: str = Field("", description="公众号二维码图片地址")
     company_name: str = Field("", description="公司名称")
     icp_filing: str = Field("", description="ICP 备案号")
 
@@ -112,6 +113,18 @@ class AboutInfoValue(BaseModel):
     partnership: str = Field("", description="合作介绍")
 
 
+class PageBannerItem(BaseModel):
+    """单个页面的 Banner 配置。"""
+
+    image_ids: list[str] = Field(default_factory=list, description="图片 ID 列表")
+
+
+class PageBannersValue(BaseModel):
+    """页面 Banner 配置验证。"""
+
+    model_config = {"extra": "allow"}
+
+
 # 配置键 → 验证器映射
 CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "phone_country_codes": PhoneCountryCodesValue,
@@ -119,6 +132,7 @@ CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "site_info": SiteInfoValue,
     "homepage_stats": HomepageStatsValue,
     "about_info": AboutInfoValue,
+    "page_banners": PageBannersValue,
 }
 
 

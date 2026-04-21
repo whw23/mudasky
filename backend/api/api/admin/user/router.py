@@ -3,7 +3,7 @@
 提供用户管理、密码重置、权限分配、强制下线等管理员 API 端点。
 """
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 
 from api.core.dependencies import CurrentUserId, DbSession
 from api.core.pagination import PaginatedResponse, PaginationParams
@@ -23,6 +23,7 @@ router = APIRouter(
     prefix="/users",
     tags=["admin"],
 )
+router.label = "用户管理"
 
 
 @router.get(
@@ -76,11 +77,16 @@ async def get_user(
 )
 async def update_user(
     data: UserAdminUpdate,
+    response: Response,
     session: DbSession,
 ) -> UserResponse:
     """管理员更新用户信息（激活状态、存储配额）。"""
     svc = AdminService(session)
-    return await svc.update_user(data.user_id, data)
+    result = await svc.update_user(data.user_id, data)
+    # 禁用时通知网关拉黑该用户的 access_token
+    if data.is_active is False:
+        response.headers["X-Revoke-User"] = data.user_id
+    return result
 
 
 @router.post(
@@ -107,11 +113,15 @@ async def reset_password(
 )
 async def assign_role(
     data: RoleAssignment,
+    response: Response,
     session: DbSession,
 ) -> UserResponse:
     """分配用户角色（单个）。"""
     svc = AdminService(session)
-    return await svc.assign_role(data.user_id, data.role_id)
+    result = await svc.assign_role(data.user_id, data.role_id)
+    # 角色变更，通知网关拉黑旧 token
+    response.headers["X-Revoke-User"] = data.user_id
+    return result
 
 
 @router.post(

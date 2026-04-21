@@ -10,6 +10,7 @@ import { useRouter, usePathname } from "@/i18n/navigation"
 import { routing } from "@/i18n/routing"
 import { useTransition } from "react"
 import { Globe } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher")
@@ -18,8 +19,7 @@ export function LocaleSwitcher() {
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const nextLocale = e.target.value
+  function handleChange(nextLocale: string): void {
     startTransition(() => {
       router.replace(pathname, { locale: nextLocale })
     })
@@ -28,18 +28,20 @@ export function LocaleSwitcher() {
   return (
     <div className="flex items-center gap-1">
       <Globe className="size-3.5" />
-      <select
-        value={locale}
-        onChange={handleChange}
-        disabled={isPending}
-        className="bg-transparent text-xs outline-none cursor-pointer"
-      >
-        {routing.locales.map((loc) => (
-          <option key={loc} value={loc} className="text-foreground">
-            {t(loc)}
-          </option>
-        ))}
-      </select>
+      <Select value={locale} onValueChange={(v) => { if (v) handleChange(v) }}>
+        <SelectTrigger className="h-auto border-0 bg-transparent px-0 text-xs shadow-none focus-visible:ring-0" disabled={isPending}>
+          <SelectValue>
+            {(value: string | null) => value ? t(value) : ""}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {routing.locales.map((loc) => (
+            <SelectItem key={loc} value={loc}>
+              {t(loc)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

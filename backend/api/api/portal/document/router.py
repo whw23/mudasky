@@ -22,6 +22,7 @@ from .service import (
 )
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+router.label = "文档管理"
 
 
 class DeleteDocumentBody(BaseModel):

@@ -9,43 +9,21 @@ from api.core.dependencies import DbSession
 
 from .schemas import ConfigDetailResponse, ConfigResponse, ConfigUpdateRequest
 from .service import ConfigService
+from .web_settings.articles import router as ws_articles_router
+from .web_settings.banners import router as ws_banners_router
+from .web_settings.cases import router as ws_cases_router
+from .web_settings.categories import router as ws_categories_router
+from .web_settings.disciplines import router as ws_disciplines_router
+from .web_settings.images import router as ws_images_router
+from .web_settings.nav import router as ws_nav_router
+from .web_settings.universities import router as ws_universities_router
 
 router = APIRouter(tags=["admin-settings"])
-
-general_settings_router = APIRouter(
-    prefix="/general-settings", tags=["admin-settings"]
-)
 
 web_settings_router = APIRouter(
     prefix="/web-settings", tags=["admin-settings"]
 )
-
-
-@general_settings_router.get(
-    "/list",
-    response_model=list[ConfigDetailResponse],
-    summary="获取所有通用配置",
-)
-async def list_general_configs(
-    session: DbSession,
-) -> list[ConfigDetailResponse]:
-    """获取所有通用配置。"""
-    svc = ConfigService(session)
-    return await svc.list_all()
-
-
-@general_settings_router.post(
-    "/list/edit",
-    response_model=ConfigResponse,
-    summary="更新通用配置值",
-)
-async def update_general_config(
-    data: ConfigUpdateRequest,
-    session: DbSession,
-) -> ConfigResponse:
-    """更新通用配置值。"""
-    svc = ConfigService(session)
-    return await svc.update_value(data.key, data.value)
+web_settings_router.label = "网站设置"
 
 
 @web_settings_router.get(
@@ -75,6 +53,15 @@ async def update_web_config(
     return await svc.update_value(data.key, data.value)
 
 
+# 挂载子路由到 web_settings_router
+web_settings_router.include_router(ws_categories_router)
+web_settings_router.include_router(ws_articles_router)
+web_settings_router.include_router(ws_universities_router)
+web_settings_router.include_router(ws_cases_router)
+web_settings_router.include_router(ws_nav_router)
+web_settings_router.include_router(ws_disciplines_router)
+web_settings_router.include_router(ws_banners_router)
+web_settings_router.include_router(ws_images_router)
+
 # 挂载子路由到主路由
-router.include_router(general_settings_router)
 router.include_router(web_settings_router)

@@ -32,7 +32,8 @@
     "quickLinks": "快速链接",
     "services": "服务项目",
     "followUs": "关注我们",
-    "wechatQr": "微信公众号",
+    "wechatService": "客服微信",
+    "wechatOfficial": "微信公众号",
     "qrPlaceholder": "二维码占位",
     "allRightsReserved": "版权所有",
     "icp": "苏ICP备2022046719号-1",
@@ -53,6 +54,9 @@
     "servicesTag": "Our Services",
     "servicesTitle": "精选服务",
     "learnMore": "了解更多",
+    "featuredUniversities": "合作院校",
+    "featuredCases": "成功案例",
+    "viewMore": "查看更多",
     "service": {
       "studyAbroad": "出国留学",
       "studyAbroadDesc": "德国、日本、新加坡等多国留学项目，提供全方位留学咨询服务",
@@ -454,16 +458,9 @@
     "searchPermissions": "搜索权限...",
     "selectAll": "全选",
     "noSearchResults": "无匹配结果",
-    "noApis": "无 API 接口"
-  },
-  "AdminGeneral": {
-    "title": "通用配置",
-    "faviconTitle": "网站图标",
-    "faviconDesc": "浏览器标签页显示的图标",
-    "countryCodeTitle": "国家码管理",
-    "countryCodeDesc": "登录和注册时可用的手机号国家码",
-    "saveSuccess": "保存成功",
-    "saveError": "保存失败"
+    "noApis": "无 API 接口",
+    "panels": "面板",
+    "toggleAll": "全选/取消"
   },
   "About": {
     "historyTitle": "15年专注国际教育",
@@ -549,6 +546,14 @@
   "Universities": {
     "title": "精选合作院校",
     "intro": "我们与德国多所知名大学建立了深度合作关系，为学生提供更便捷的申请通道和更高的录取成功率。以下是部分合作院校，涵盖综合性大学、理工大学和应用科学大学。",
+    "about": "院校简介",
+    "website": "官方网站",
+    "disciplines": "学科设置",
+    "admissionRequirements": "录取要求",
+    "scholarships": "奖学金信息",
+    "rankings": "QS 世界排名",
+    "location": "地理位置",
+    "successCases": "录取案例",
     "uni1": {
       "name": "慕尼黑大学",
       "location": "慕尼黑，巴伐利亚州",
@@ -586,6 +591,7 @@
       "desc": "欧洲顶尖理工大学，IDEA联盟成员，工科毕业生深受企业青睐。"
     },
     "searchPlaceholder": "搜索院校名称、城市...",
+    "searchButton": "搜索院校",
     "countryFilter": "按国家筛选",
     "allCountries": "全部国家",
     "allProvinces": "全部省份",
@@ -603,7 +609,15 @@
     "location": "所在地",
     "programs": "开设专业",
     "about": "学校简介",
-    "visitWebsite": "访问官网"
+    "visitWebsite": "访问官网",
+    "website": "官方网站",
+    "disciplines": "开设学科",
+    "admissionRequirements": "申请要求",
+    "scholarships": "奖学金",
+    "rankings": "QS 世界排名",
+    "successCases": "相关成功案例",
+    "allDisciplineCategories": "全部学科大类",
+    "allDisciplines": "全部学科"
   },
   "Requirements": {
     "overviewTitle": "各国申请条件",
@@ -882,8 +896,8 @@
     "email": "haoranxuexing@163.com",
     "wechatLabel": "微信咨询",
     "wechat": "添加微信号：18912686656",
-    "hoursLabel": "办公时间",
-    "hours": "周一至周五 9:00-18:00 / 周六 9:00-12:00",
+    "registeredAddressLabel": "注册地址",
+    "registeredAddress": "中国(江苏)自由贸易试验区苏州片区苏州工业园区苏州大道东398号太平金融大厦5层5112室",
     "mapPlaceholder": "地图加载区域",
     "formTitle": "在线留言",
     "formDesc": "填写以下表单，我们将尽快与您联系。",
@@ -920,6 +934,8 @@
     "fetchError": "获取配置失败",
     "noData": "暂无国家码",
     "deleteConfirm": "确定删除 {code} 吗？",
+    "cancel": "取消",
+    "confirmDelete": "删除",
     "siteInfo": "品牌信息",
     "siteInfoDesc": "管理网站品牌名称、标语、Logo 等信息",
     "brandName": "品牌名称（中文）",
@@ -1183,16 +1199,26 @@
     "fileSize": "大小",
     "uploadDate": "上传日期",
     "actions": "操作",
-    "allCategories": "全部"
+    "allCategories": "全部",
+    "cancel": "取消",
+    "acceptedTypes": "支持 PDF、Word、Excel、PPT、图片（PNG/JPG）、TXT",
+    "invalidFileType": "不支持的文件类型，请上传 PDF、Word、Excel、PPT、图片或 TXT 文件"
   },
   "AdminGeneral": {
     "title": "通用配置",
     "faviconTitle": "网站图标",
-    "faviconDesc": "上传网站 Favicon，建议尺寸 32x32 或 64x64 像素",
+    "faviconDesc": "浏览器标签页显示的小图标，建议尺寸 32x32 或 64x64 像素",
     "countryCodeTitle": "手机号国家码",
     "countryCodeDesc": "管理用户可选的手机号国家码",
     "saveSuccess": "保存成功",
-    "saveError": "操作失败"
+    "saveError": "操作失败",
+    "uploadBtn": "上传",
+    "uploading": "上传中...",
+    "uploadError": "上传失败",
+    "replace": "更换",
+    "clear": "清除",
+    "currentIcon": "当前图标",
+    "noIcon": "未设置图标"
   },
   "AdminUniversities": {
     "createUniversity": "添加院校",
@@ -1254,6 +1280,7 @@
     "col_createdAt": "创建时间",
     "filterMyStudents": "仅我的学生",
     "advisorIdPlaceholder": "顾问 ID",
+    "noAdvisor": "无顾问",
     "loading": "加载中...",
     "noData": "暂无数据",
     "statusActive": "已激活",
@@ -1361,6 +1388,7 @@
     "FILE_SIZE_EXCEEDED": "文件大小超过限制",
     "STORAGE_QUOTA_EXCEEDED": "存储配额不足",
     "SUPERUSER_CANNOT_BE_DELETED": "超级管理员不可删除",
-    "CANNOT_DELETE_SELF": "不能删除自己的账号"
+    "CANNOT_DELETE_SELF": "不能删除自己的账号",
+    "INVALID_FILE_TYPE": "不支持的文件类型"
   }
 }

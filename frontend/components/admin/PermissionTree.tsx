@@ -1,301 +1,249 @@
 "use client"
 
 /**
- * 三栏权限选择器组件。
- * 第一栏：面板（admin/portal）；第二栏：页面；第三栏：API 路由。
- * 支持级联勾选、搜索过滤、只读模式。
+ * Miller Columns 分栏浏览权限选择器。
+ * 从后端 permission_tree API 获取层级数据，支持分栏导航、级联勾选、搜索过滤。
  */
 
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { useTranslations } from "next-intl"
+import { ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { PANEL_CONFIG, type PanelConfig, type PageConfig } from "@/lib/permission-config"
-import { fetchOpenApiSpec, parseRoutes, filterRoutesByPrefix, type ApiRoute } from "@/lib/openapi"
+import api from "@/lib/api"
 
-/** 将 API 路由转为权限码（去掉开头的 /） */
-function routeToCode(route: ApiRoute): string {
-  return route.path.startsWith("/") ? route.path.slice(1) : route.path
-}
-
-/** HTTP 方法徽章样式 */
-function methodClass(method: string): string {
-  return method === "GET" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-}
+/** 权限树节点 */
+interface TreeNode { description: string; children?: Record<string, TreeNode> }
+/** 权限树数据（后端返回） */
+type PermissionTree = Record<string, TreeNode>
 
 export interface PermissionTreeProps {
-  /** 已选中的权限码集合（如 "admin/users/list"） */
   selectedCodes: Set<string>
-  /** 选中变更回调 */
   onSelectionChange: (codes: Set<string>) => void
-  /** 只读模式 */
   readonly?: boolean
 }
 
-/** 列头标签 */
-function ColHeader({ label, tag, extra }: { label: string; tag: string; extra?: React.ReactNode }) {
-  return (
-    <div className="px-2 py-1.5 border-b flex items-center gap-1.5 shrink-0">
-      <span className="text-xs font-medium text-muted-foreground flex-1">{label}</span>
-      <span className="text-[10px] bg-muted px-1 rounded">{tag}</span>
-      {extra}
-    </div>
-  )
+/** 将下划线 key 转为连字符 URL 路径段 */
+function keyToSlug(key: string): string { return key.replace(/_/g, "-") }
+
+/** 收集节点下所有叶子路径 */
+function collectLeaves(node: TreeNode, prefix: string): string[] {
+  if (!node.children) return [prefix]
+  const leaves: string[] = []
+  for (const [key, child] of Object.entries(node.children)) {
+    const path = prefix ? `${prefix}/${keyToSlug(key)}` : keyToSlug(key)
+    leaves.push(...collectLeaves(child, path))
+  }
+  return leaves
 }
 
-/** 行容器，含 active 指示器 */
-function SelRow({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
+/** 从整棵树收集所有叶子路径 */
+export function collectAllLeaves(tree: PermissionTree): string[] {
+  const leaves: string[] = []
+  for (const [key, node] of Object.entries(tree))
+    leaves.push(...collectLeaves(node, keyToSlug(key)))
+  return leaves
+}
+
+/** 将通配符权限展开为叶子路径集合 */
+export function expandWildcards(codes: Set<string>, tree: PermissionTree): Set<string> {
+  const allLeaves = collectAllLeaves(tree)
+  const result = new Set<string>()
+  for (const code of codes) {
+    if (code === "*") {
+      for (const l of allLeaves) result.add(l)
+    } else if (code.endsWith("/*")) {
+      const prefix = code.slice(0, -1)
+      for (const l of allLeaves) { if (l.startsWith(prefix)) result.add(l) }
+    } else {
+      result.add(code)
+    }
+  }
+  return result
+}
+
+/** 将叶子集合压缩为通配符表示 */
+export function collapseToWildcards(selected: Set<string>, tree: PermissionTree): Set<string> {
+  const allLeaves = collectAllLeaves(tree)
+  if (allLeaves.length > 0 && allLeaves.every((l) => selected.has(l)))
+    return new Set(["*"])
+  return new Set(selected)
+}
+
+/** 判断节点或其后代是否匹配搜索词 */
+function nodeMatches(node: TreeNode, query: string): boolean {
+  if (node.description.toLowerCase().includes(query)) return true
+  if (!node.children) return false
+  return Object.values(node.children).some((c) => nodeMatches(c, query))
+}
+
+/** 根据 activePath 定位节点，返回其 children */
+function resolveChildren(tree: PermissionTree, path: string[]): Record<string, TreeNode> | null {
+  if (path.length === 0) return tree
+  let current: Record<string, TreeNode> | undefined = tree
+  for (const seg of path) {
+    const node: TreeNode | undefined = current?.[seg]
+    if (!node?.children) return null
+    current = node.children
+  }
+  return current ?? null
+}
+
+/** 根据 key 路径数组构建权限码前缀 */
+function buildPrefix(path: string[]): string { return path.map(keyToSlug).join("/") }
+
+/** 栏列信息 */
+interface ColumnInfo { key: string; title: string; entries: [string, TreeNode][] }
+
+/** 单栏行组件 */
+function ColumnRow({ nodeKey, node, prefix, isActive, selected, onToggle, onNavigate, readonly, query }: {
+  nodeKey: string; node: TreeNode; prefix: string; isActive: boolean
+  selected: Set<string>; onToggle: (leaves: string[]) => void
+  onNavigate: (key: string) => void; readonly: boolean; query: string
 }) {
+  const fullPath = prefix ? `${prefix}/${keyToSlug(nodeKey)}` : keyToSlug(nodeKey)
+  const isLeaf = !node.children
+  const leaves = useMemo(() => collectLeaves(node, fullPath), [node, fullPath])
+  const count = useMemo(() => leaves.filter((l) => selected.has(l)).length, [leaves, selected])
+  const allChecked = leaves.length > 0 && count === leaves.length
+  const indeterminate = count > 0 && !allChecked
+
+  if (query && !nodeMatches(node, query)) return null
+
   return (
     <div
-      onClick={onClick}
-      className={`flex items-center gap-2 px-2 py-2 cursor-pointer text-sm transition-colors ${
-        active
-          ? "border-l-2 border-l-foreground bg-muted/50"
-          : "border-l-2 border-l-transparent hover:bg-muted/40"
-      }`}
+      className={`flex items-center gap-1.5 px-2 py-1.5 text-sm cursor-pointer transition-colors
+        ${isActive ? "bg-primary/10" : "hover:bg-muted/40"}`}
+      onClick={() => !isLeaf && onNavigate(nodeKey)}
     >
-      {children}
+      {!readonly && (
+        <Checkbox
+          checked={allChecked} indeterminate={indeterminate}
+          onCheckedChange={() => onToggle(leaves)}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      )}
+      <span className="flex-1 truncate">{node.description}</span>
+      {!isLeaf && (
+        <>
+          <span className="text-[10px] text-muted-foreground bg-muted rounded px-1">{count}/{leaves.length}</span>
+          <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+        </>
+      )}
     </div>
   )
 }
 
-/** 页面可见性码前缀（区分 API 路由码） */
-const VIS_PREFIX = "@"
-/** 生成面板可见性码 */
-function panelVisCode(panel: PanelConfig): string { return `${VIS_PREFIX}${panel.prefix}` }
-/** 生成页面可见性码 */
-function pageVisCode(page: PageConfig): string { return `${VIS_PREFIX}${page.apiPrefix}` }
+/** 面包屑导航 */
+function Breadcrumb({ activePath, tree, t, onNavigate }: {
+  activePath: string[]; tree: PermissionTree
+  t: (key: string) => string; onNavigate: (path: string[]) => void
+}) {
+  if (activePath.length === 0) return null
+  return (
+    <div className="flex items-center gap-1 border-b px-3 py-1.5 text-xs text-muted-foreground overflow-x-auto">
+      <button type="button" className="hover:text-primary shrink-0" onClick={() => onNavigate([])}>
+        {t("panels")}
+      </button>
+      {activePath.map((seg, i) => {
+        const parent = resolveChildren(tree, activePath.slice(0, i))
+        const desc = parent?.[seg]?.description ?? seg
+        return (
+          <span key={seg + i} className="flex items-center gap-1 shrink-0">
+            <ChevronRight className="size-3" />
+            <button type="button" className="hover:text-primary"
+              onClick={() => onNavigate(activePath.slice(0, i + 1))}>{desc}</button>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
 
-/** 三栏权限选择器 */
+/** 构建栏列数据 */
+function buildColumns(tree: PermissionTree, activePath: string[], panelsLabel: string): ColumnInfo[] {
+  const cols: ColumnInfo[] = [{ key: "root", title: panelsLabel, entries: Object.entries(tree) }]
+  for (let i = 0; i < activePath.length; i++) {
+    const sub = activePath.slice(0, i + 1)
+    const children = resolveChildren(tree, sub)
+    if (!children) break
+    const parent = resolveChildren(tree, sub.slice(0, -1))
+    cols.push({ key: sub.join("/"), title: parent?.[activePath[i]]?.description ?? "", entries: Object.entries(children) })
+  }
+  return cols
+}
+
+/** Miller Columns 分栏浏览权限选择器 */
 export function PermissionTree({ selectedCodes, onSelectionChange, readonly = false }: PermissionTreeProps) {
   const t = useTranslations("AdminGroups")
-  const tAdmin = useTranslations("Admin")
-  const tUser = useTranslations("User")
-
-  const [allRoutes, setAllRoutes] = useState<ApiRoute[]>([])
-  const [activePanel, setActivePanel] = useState("admin")
-  const [activePage, setActivePage] = useState("")
+  const [tree, setTree] = useState<PermissionTree | null>(null)
+  const [activePath, setActivePath] = useState<string[]>([])
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    fetchOpenApiSpec().then((s) => setAllRoutes(parseRoutes(s))).catch(() => setAllRoutes([]))
+    api.get<{ permission_tree: PermissionTree }>("/admin/roles/meta")
+      .then(({ data }) => setTree(data.permission_tree))
+      .catch(() => setTree(null))
   }, [])
 
-  useEffect(() => {
-    const panel = PANEL_CONFIG.find((p) => p.key === activePanel)
-    if (panel?.pages.length) setActivePage(panel.pages[0].key)
-  }, [activePanel])
+  const allLeaves = useMemo(() => (tree ? collectAllLeaves(tree) : []), [tree])
+  const totalChecked = useMemo(() => allLeaves.filter((l) => selectedCodes.has(l)).length, [allLeaves, selectedCodes])
 
-  const currentPanel = useMemo(() => PANEL_CONFIG.find((p) => p.key === activePanel), [activePanel])
-  const currentPage = useMemo(() => currentPanel?.pages.find((p) => p.key === activePage), [currentPanel, activePage])
+  const handleToggle = useCallback((leaves: string[]) => {
+    if (readonly) return
+    const allOn = leaves.every((l) => selectedCodes.has(l))
+    const next = new Set(selectedCodes)
+    for (const l of leaves) allOn ? next.delete(l) : next.add(l)
+    onSelectionChange(next)
+  }, [readonly, selectedCodes, onSelectionChange])
 
-  /** 当前页面所有路由 */
-  const currentRoutes = useMemo(
-    () => (currentPage ? filterRoutesByPrefix(allRoutes, currentPage.apiPrefix) : []),
-    [allRoutes, currentPage],
-  )
+  const handleToggleAll = useCallback(() => {
+    if (readonly) return
+    const allOn = allLeaves.every((l) => selectedCodes.has(l))
+    onSelectionChange(allOn ? new Set() : new Set(allLeaves))
+  }, [readonly, allLeaves, selectedCodes, onSelectionChange])
 
-  /** 搜索过滤后路由 */
-  const filteredRoutes = useMemo(() => {
-    if (!search.trim()) return currentRoutes
-    const q = search.toLowerCase()
-    return currentRoutes.filter((r) => r.summary.toLowerCase().includes(q) || r.path.toLowerCase().includes(q))
-  }, [currentRoutes, search])
+  const query = search.trim().toLowerCase()
+  if (!tree) return null
 
-  /** 计算路由集合中已选数 */
-  const countChecked = useCallback(
-    (routes: ApiRoute[]) => routes.filter((r) => selectedCodes.has(routeToCode(r))).length,
-    [selectedCodes],
-  )
-
-  /** 切换指定路由集合的选中状态 */
-  const toggleRoutes = useCallback(
-    (routes: ApiRoute[]) => {
-      if (readonly) return
-      const codes = routes.map(routeToCode)
-      const allOn = codes.length > 0 && codes.every((c) => selectedCodes.has(c))
-      const next = new Set(selectedCodes)
-      for (const c of codes) allOn ? next.delete(c) : next.add(c)
-      onSelectionChange(next)
-    },
-    [readonly, selectedCodes, onSelectionChange],
-  )
-
-  /** 切换页面可见性（级联：页面码 + 所有 API 路由） */
-  const togglePage = useCallback(
-    (page: PageConfig) => {
-      if (readonly) return
-      const vis = pageVisCode(page)
-      const apiCodes = filterRoutesByPrefix(allRoutes, page.apiPrefix).map(routeToCode)
-      const isOn = selectedCodes.has(vis)
-      const next = new Set(selectedCodes)
-      if (isOn) {
-        next.delete(vis)
-        for (const c of apiCodes) next.delete(c)
-      } else {
-        next.add(vis)
-        for (const c of apiCodes) next.add(c)
-      }
-      onSelectionChange(next)
-    },
-    [readonly, selectedCodes, allRoutes, onSelectionChange],
-  )
-
-  /** 切换面板可见性（级联：面板码 + 所有页面码 + 所有 API 路由） */
-  const togglePanel = useCallback(
-    (panel: PanelConfig) => {
-      if (readonly) return
-      const vis = panelVisCode(panel)
-      const isOn = selectedCodes.has(vis)
-      const next = new Set(selectedCodes)
-      if (isOn) {
-        next.delete(vis)
-        for (const page of panel.pages) {
-          next.delete(pageVisCode(page))
-          for (const r of filterRoutesByPrefix(allRoutes, page.apiPrefix)) next.delete(routeToCode(r))
-        }
-      } else {
-        next.add(vis)
-        for (const page of panel.pages) {
-          next.add(pageVisCode(page))
-          for (const r of filterRoutesByPrefix(allRoutes, page.apiPrefix)) next.add(routeToCode(r))
-        }
-      }
-      onSelectionChange(next)
-    },
-    [readonly, selectedCodes, allRoutes, onSelectionChange],
-  )
-
-  /** 页面标签翻译 */
-  const pageLabel = useCallback(
-    (panelKey: string, pageKey: string): string => {
-      try { return panelKey === "admin" ? tAdmin(pageKey) : tUser(pageKey) } catch { return pageKey }
-    },
-    [tAdmin, tUser],
-  )
-
-  /** 判断页面 checkbox 状态 */
-  const getPageCheckState = useCallback(
-    (page: PageConfig): { checked: boolean; indeterminate: boolean } => {
-      const vis = pageVisCode(page)
-      const apiCodes = filterRoutesByPrefix(allRoutes, page.apiPrefix).map(routeToCode)
-      const hasVis = selectedCodes.has(vis)
-      if (apiCodes.length === 0) return { checked: hasVis, indeterminate: false }
-      const apiChecked = apiCodes.filter((c) => selectedCodes.has(c)).length
-      const allOn = apiChecked === apiCodes.length && hasVis
-      const someOn = hasVis || apiChecked > 0
-      return { checked: allOn, indeterminate: someOn && !allOn }
-    },
-    [allRoutes, selectedCodes],
-  )
-
-  /** 判断面板 checkbox 状态 */
-  const getPanelCheckState = useCallback(
-    (panel: PanelConfig): { checked: boolean; indeterminate: boolean } => {
-      const hasVis = selectedCodes.has(panelVisCode(panel))
-      const pageStates = panel.pages.map((p) => getPageCheckState(p))
-      const allPagesChecked = pageStates.every((s) => s.checked) && hasVis
-      const someChecked = hasVis || pageStates.some((s) => s.checked || s.indeterminate)
-      return { checked: allPagesChecked, indeterminate: someChecked && !allPagesChecked }
-    },
-    [selectedCodes, getPageCheckState],
-  )
-
-  const totalChecked = countChecked(allRoutes)
+  const columns = buildColumns(tree, activePath, t("panels"))
 
   return (
     <div className="rounded-lg border">
       {/* 工具栏 */}
       <div className="flex items-center gap-3 border-b px-3 py-2">
-        <Input className="h-7 text-xs flex-1" placeholder={t("searchPermissions")} value={search} onChange={(e) => setSearch(e.target.value)} />
-        <span className="text-xs text-muted-foreground whitespace-nowrap">{totalChecked}/{allRoutes.length}</span>
+        <Input className="h-7 text-xs flex-1" placeholder={t("searchPermissions")}
+          value={search} onChange={(e) => setSearch(e.target.value)} />
+        {!readonly && (
+          <button type="button" className="text-xs text-primary hover:underline whitespace-nowrap"
+            onClick={handleToggleAll}>{t("toggleAll")}</button>
+        )}
+        <span className="text-xs text-muted-foreground whitespace-nowrap">{totalChecked}/{allLeaves.length}</span>
       </div>
 
-      {/* 三栏 */}
-      <div className="flex" style={{ height: 280 }}>
-        {/* 第一栏：面板 */}
-        <div className="w-[22%] border-r overflow-y-auto bg-muted/30 flex flex-col">
-          <ColHeader label={t("panel")} tag={t("auto")} />
-          {PANEL_CONFIG.map((panel) => {
-            const state = getPanelCheckState(panel)
-            return (
-              <SelRow key={panel.key} active={panel.key === activePanel} onClick={() => setActivePanel(panel.key)}>
-                {!readonly && (
-                  <Checkbox checked={state.checked} indeterminate={state.indeterminate}
-                    onCheckedChange={() => togglePanel(panel)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-                <span className="flex-1 truncate">{panel.key === "admin" ? t("admin") : t("portal")}</span>
-              </SelRow>
-            )
-          })}
-        </div>
+      <Breadcrumb activePath={activePath} tree={tree} t={t} onNavigate={setActivePath} />
 
-        {/* 第二栏：页面 */}
-        <div className="w-[30%] border-r overflow-y-auto flex flex-col">
-          <ColHeader label={t("pages")} tag={t("auto")} />
-          {currentPanel?.pages.map((page) => {
-            const state = getPageCheckState(page)
-            const pgRoutes = filterRoutesByPrefix(allRoutes, page.apiPrefix)
-            const apiChecked = countChecked(pgRoutes)
-            return (
-              <SelRow key={page.key} active={page.key === activePage} onClick={() => setActivePage(page.key)}>
-                {!readonly && (
-                  <Checkbox checked={state.checked} indeterminate={state.indeterminate}
-                    onCheckedChange={() => togglePage(page)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-                <span className="flex-1 truncate">{pageLabel(activePanel, page.key)}</span>
-                {pgRoutes.length > 0 && <span className="text-[10px] bg-muted rounded px-1">{apiChecked}</span>}
-              </SelRow>
-            )
-          })}
-        </div>
-
-        {/* 第三栏：API 路由 */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          <ColHeader label="API" tag="OpenAPI" extra={
-            !readonly && (
-              <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1.5 py-0"
-                onClick={() => { const codes = currentRoutes.map(routeToCode); const next = new Set(selectedCodes); codes.forEach((c) => next.add(c)); onSelectionChange(next) }}
-              >{t("selectAll")}</Button>
-            )
-          } />
-          {search && filteredRoutes.length === 0 && (
-            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">{t("noSearchResults")}</div>
-          )}
-          {!search && currentRoutes.length === 0 && (
-            <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">{t("noApis")}</div>
-          )}
-          {filteredRoutes.map((route) => {
-            const code = routeToCode(route)
-            return (
-              <div key={`${route.method}:${route.path}`} onClick={() => !readonly && toggleRoutes([route])}
-                className={`flex items-center gap-2 px-2 py-1.5 text-xs transition-colors hover:bg-muted/40 ${readonly ? "" : "cursor-pointer"}`}
-              >
-                {!readonly && (
-                  <Checkbox checked={selectedCodes.has(code)}
-                    onCheckedChange={() => toggleRoutes([route])} onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-                <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-medium ${methodClass(route.method)}`}>{route.method}</span>
-                <span className="flex-1 font-mono truncate text-[11px]">{route.path}</span>
-                <span className="text-muted-foreground truncate max-w-[100px]">{route.summary}</span>
+      {/* 分栏区域 */}
+      <div className="flex overflow-x-auto" style={{ maxHeight: 340 }}>
+        {columns.map((col, ci) => {
+          const isLast = ci === columns.length - 1
+          const prefix = ci === 0 ? "" : buildPrefix(activePath.slice(0, ci))
+          return (
+            <div key={col.key}
+              className={`shrink-0 overflow-y-auto border-r last:border-r-0
+                ${isLast ? "min-w-[140px] flex-1" : "min-w-[140px] w-[140px]"}`}>
+              <div className="sticky top-0 bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground border-b">
+                {col.title}
               </div>
-            )
-          })}
-        </div>
+              {col.entries.map(([key, node]) => (
+                <ColumnRow key={key} nodeKey={key} node={node} prefix={prefix}
+                  isActive={activePath[ci] === key} selected={selectedCodes} onToggle={handleToggle}
+                  onNavigate={(k) => setActivePath([...activePath.slice(0, ci), k])}
+                  readonly={readonly} query={query} />
+              ))}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

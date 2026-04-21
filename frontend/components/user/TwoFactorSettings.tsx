@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl'
 import { ShieldCheck, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import api from '@/lib/api'
 import { getApiError } from '@/lib/api-error'
 import {
@@ -32,6 +33,7 @@ import { SmsCodeButton } from '@/components/auth/SmsCodeButton'
 /** 两步验证管理 */
 export function TwoFactorSettings() {
   const { user, fetchUser } = useAuth()
+  const countryCodes = useCountryCodes()
   const t = useTranslations('Profile')
   const tErr = useTranslations('ApiErrors')
 
@@ -213,7 +215,7 @@ export function TwoFactorSettings() {
                   autoComplete="one-time-code"
                   required
                 />
-                <SmsCodeButton phone={user.phone || ''} disabled={!user.phone} />
+                <SmsCodeButton phone={user.phone || ''} countryCodes={countryCodes} disabled={!user.phone} />
               </div>
             </div>
             <div className="flex justify-end gap-2">

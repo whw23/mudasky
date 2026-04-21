@@ -21,6 +21,13 @@ from app.db.document.models import Document  # noqa: F401
 from app.db.worker.models import Task  # noqa: F401
 from app.db.config.models import SystemConfig  # noqa: F401
 from app.db.university.models import University  # noqa: F401
+from app.db.university.image_models import UniversityImage  # noqa: F401
+from app.db.university.program_models import UniversityProgram  # noqa: F401
+from app.db.image.models import Image  # noqa: F401
+from app.db.discipline.models import (  # noqa: F401
+    DisciplineCategory,
+    Discipline,
+)
 
 config = context.config
 

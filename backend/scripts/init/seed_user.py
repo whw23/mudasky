@@ -29,15 +29,6 @@ def _get_seed_users() -> list[dict]:
             "phone": os.environ.get(f"SEED_USER_{i}_PHONE"),
         })
 
-    e2e_user = os.environ.get("SEED_USER_E2E_USERNAME")
-    e2e_pass = os.environ.get("SEED_USER_E2E_PASSWORD")
-    if e2e_user and e2e_pass:
-        users.append({
-            "username": e2e_user,
-            "password": e2e_pass,
-            "phone": None,
-        })
-
     return users
 
 

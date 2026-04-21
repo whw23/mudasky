@@ -1,117 +1,176 @@
 /**
- * Playwright 全局初始化。
- * 用 e2e_test_superuser 登录 → 保存 W1 storageState → 清理信号 → 预热。
+ * 全局初始化。
+ * 清理信号/熔断文件,处理 LAST_NOT_PASS 逻辑。
  */
 
-import { chromium, type FullConfig } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"
-import { cleanup as cleanupSignals } from "./helpers/signal"
-import { cleanupBreakers } from "./fixtures/base"
+import { chromium } from "@playwright/test"
+import { initSignalDb, writeSignal } from "./framework/signal"
+import { E2E_RUNTIME_DIR, getAuthFile } from "./constants"
+import { cleanupE2EData } from "./framework/db-cleanup"
+import { scanApiEndpoints, scanFrontendRoutes, saveScanTotals } from "./framework/scan-totals"
 
-const AUTH_DIR = path.join(__dirname, ".auth")
-const W1_AUTH = path.join(AUTH_DIR, "w1.json")
-const BASE = process.env.BASE_URL || "http://localhost"
-const ADMIN_USER = process.env.SEED_USER_E2E_USERNAME!
-const ADMIN_PASS = process.env.SEED_USER_E2E_PASSWORD!
-
-const WARMUP_PAGES = [
-  "/",
-  "/admin/dashboard",
-  "/admin/articles",
-  "/admin/users",
-  "/admin/cases",
-  "/admin/categories",
-  "/admin/universities",
-  "/admin/roles",
-  "/admin/students",
-  "/admin/contacts",
-  "/admin/general-settings",
+/** 所有需要预热的页面路由 */
+const WARMUP_ROUTES = [
+  // 公开页面
+  "/", "/universities", "/study-abroad", "/requirements",
+  "/cases", "/visa", "/life", "/news", "/about",
+  // admin 面板
+  "/admin/dashboard", "/admin/users", "/admin/students",
+  "/admin/contacts", "/admin/roles",
   "/admin/web-settings",
-  "/portal/overview",
-  "/portal/profile",
-  "/portal/documents",
+  // portal 面板
+  "/portal/overview", "/portal/profile", "/portal/documents",
 ]
 
-async function globalSetup(_config: FullConfig) {
-  if (!fs.existsSync(AUTH_DIR)) fs.mkdirSync(AUTH_DIR, { recursive: true })
+export default async function globalSetup(): Promise<void> {
+  // 0. 生成共享 TS（所有 worker 通过文件读取同一个值）
+  fs.mkdirSync(E2E_RUNTIME_DIR, { recursive: true })
+  const tsFile = path.join(E2E_RUNTIME_DIR, "e2e-ts")
+  fs.writeFileSync(tsFile, Date.now().toString().slice(-6))
 
-  /* 如果已有有效的 auth 文件（1 小时内），跳过 */
-  if (fs.existsSync(W1_AUTH)) {
-    const stat = fs.statSync(W1_AUTH)
-    if (Date.now() - stat.mtimeMs < 3600_000) return
+  // 1. 初始化信号数据库
+  initSignalDb()
+
+  // 2. 清理 E2E 测试数据（通过 pg 直连）
+  try {
+    await cleanupE2EData()
+    console.log("[Setup] E2E 数据清理完成（pg 直连）")
+  } catch (e) {
+    console.warn("[Setup] E2E 数据清理失败（继续执行）:", e)
   }
 
-  const browser = await chromium.launch()
-  const context = await browser.newContext({ locale: "zh-CN" })
-  const page = await context.newPage()
+  // 3. LAST_NOT_PASS 模式:为已通过的任务预写 pass 信号
+  if (process.env.LAST_NOT_PASS === "1") {
+    const lastRunPath = path.resolve(__dirname, "../../test-results/latest/e2e-runtime/last-run.json")
+    if (fs.existsSync(lastRunPath)) {
+      const lastRun = JSON.parse(fs.readFileSync(lastRunPath, "utf-8")) as Record<string, string>
 
-  /* ── 登录 ── */
-  // 生产模式首次 SSR 编译可能需要 60s+
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 120_000 })
-  const loginBtn = page.getByRole("button", { name: /登录/ })
-  await loginBtn.waitFor({ timeout: 60_000 })
-
-  // 重试点击登录按钮（生产模式水合较慢）
-  const dialog = page.getByRole("dialog")
-  for (let i = 0; i < 5; i++) {
-    await loginBtn.click()
-    try {
-      await dialog.waitFor({ timeout: 5_000 })
-      break
-    } catch {
-      if (i === 4) throw new Error("登录弹窗未打开 — 5 次重试均失败")
-    }
-  }
-  await page.getByRole("tab", { name: "账号密码" }).click()
-  await page.getByRole("tabpanel").waitFor({ timeout: 10_000 })
-
-  const inputs = dialog.getByRole("textbox")
-  await inputs.first().waitFor({ timeout: 5_000 })
-  await inputs.first().fill(ADMIN_USER)
-  await inputs.nth(1).fill(ADMIN_PASS)
-  // 重试点击登录（处理 JS 水合未完成导致首次点击无效）
-  const loginBtn2 = page.getByRole("tabpanel").getByRole("button", { name: "登录" })
-  for (let i = 0; i < 5; i++) {
-    const responsePromise = page.waitForResponse(
-      (r) => r.url().includes("/api/auth/login"),
-      { timeout: 10_000 },
-    ).catch(() => null)
-    await loginBtn2.click()
-    const res = await responsePromise
-    if (res) {
-      if (res.status() !== 200) {
-        const body = await res.json().catch(() => ({}))
-        await page.screenshot({ path: path.join(AUTH_DIR, "login-failed.png") })
-        throw new Error(`登录 API 返回 ${res.status()}: ${JSON.stringify(body)}`)
+      // 加载所有任务定义
+      const allTasks: Array<{ id: string; requires: string[] }> = []
+      for (let i = 1; i <= 7; i++) {
+        try {
+          const mod = require(`./w${i}/tasks`)
+          allTasks.push(...(mod.tasks || []).map((t: { id: string; requires: string[] }) => ({
+            id: t.id,
+            requires: t.requires,
+          })))
+        } catch { /* skip */ }
       }
-      break
+
+      // 收集未通过的任务 + 运行时状态任务（set_cookie/register 等不能缓存）
+      const notPass = new Set<string>()
+      for (const [taskId, status] of Object.entries(lastRun)) {
+        if (status !== "pass") notPass.add(taskId)
+      }
+      // 标记所有 set_cookie 和 register 任务为 not-pass（它们设置运行时状态，不能缓存）
+      for (const [taskId] of Object.entries(lastRun)) {
+        if (taskId.includes("set_cookie") || taskId.includes("register") || taskId.includes("reload_auth")) {
+          notPass.add(taskId)
+        }
+      }
+
+      // 递归收集依赖链
+      function addDeps(taskId: string): void {
+        const task = allTasks.find((t) => t.id === taskId)
+        if (!task) return
+        for (const req of task.requires) {
+          notPass.add(req)
+          addDeps(req)
+        }
+      }
+      for (const taskId of [...notPass]) addDeps(taskId)
+
+      // 为已通过且不在依赖链中的任务预写 pass 信号
+      for (const [taskId, status] of Object.entries(lastRun)) {
+        if (status === "pass" && !notPass.has(taskId)) {
+          writeSignal(taskId, "pass", { worker: "cached" })
+        }
+      }
     }
   }
+
+  // 4. 预热：W1 登录后遍历所有页面，让 Next.js 编译缓存 JS bundle
+  const baseURL = process.env.BASE_URL || "http://localhost"
+  const internalSecret = process.env.INTERNAL_SECRET || ""
+  const username = process.env.SEED_USER_1_USERNAME || "admin"
+  const password = process.env.SEED_USER_1_PASSWORD || "Admin123!"
+
+  const browser = await chromium.launch({
+    args: ["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"],
+  })
+  const context = await browser.newContext({ baseURL })
 
   try {
-    await dialog.waitFor({ state: "hidden", timeout: 10_000 })
-  } catch {
-    await page.screenshot({ path: path.join(AUTH_DIR, "login-failed.png") })
-    throw new Error("登录失败 — 截图已保存到 e2e/.auth/login-failed.png")
+    // 设置 internal_secret cookie
+    if (internalSecret) {
+      const url = new URL(baseURL)
+      await context.addCookies([
+        { name: "internal_secret", value: internalSecret, url: url.origin },
+      ])
+    }
+
+    const page = await context.newPage()
+
+    // 拦截 global-setup 中的 API 调用，计入覆盖率
+    const setupApis = new Set<string>()
+    page.on("response", (res) => {
+      const url = new URL(res.url())
+      if (url.pathname.startsWith("/api/")) {
+        setupApis.add(url.pathname)
+      }
+    })
+
+    // W1 账号密码登录
+    await page.goto("/", { timeout: 60_000 })
+    const loginBtn = page.getByRole("button", { name: /登录|注册/ })
+    const logoutBtn = page.getByRole("button", { name: "退出" })
+    await loginBtn.or(logoutBtn).first().waitFor({ state: "visible", timeout: 60_000 })
+    if (await logoutBtn.isVisible()) {
+      await logoutBtn.click()
+      await loginBtn.waitFor({ state: "visible", timeout: 30_000 })
+    }
+    const dialog = page.getByRole("dialog")
+    for (let i = 0; i < 10; i++) {
+      await loginBtn.click()
+      if (await dialog.isVisible().catch(() => false)) break
+      await page.waitForTimeout(1000)
+    }
+    await dialog.waitFor({ state: "visible", timeout: 10_000 })
+    await page.getByRole("tab", { name: /账号|密码/ }).click()
+    await page.getByPlaceholder("用户名或手机号").fill(username)
+    await page.getByPlaceholder("请输入密码").fill(password)
+    await page.getByRole("button", { name: /^登录$/ }).click()
+    await page.getByRole("dialog").waitFor({ state: "hidden", timeout: 15_000 })
+
+    // 遍历所有页面预热（不关心内容，只要 Next.js 编译缓存）
+    for (const route of WARMUP_ROUTES) {
+      try {
+        await page.goto(route, { timeout: 30_000, waitUntil: "domcontentloaded" })
+      } catch {
+        // 预热失败不阻塞（如权限不足被 302 也算预热成功）
+      }
+    }
+
+    // 动态扫描 API 端点和前端路由
+    try {
+      const cookies = (await context.cookies())
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ")
+      const apiEndpoints = await scanApiEndpoints(baseURL, cookies)
+      const { routes: frontendRoutes, panelRoutes } = scanFrontendRoutes()
+      saveScanTotals(E2E_RUNTIME_DIR, apiEndpoints, frontendRoutes, panelRoutes, [...setupApis])
+      console.log(`[Setup] 覆盖率基准扫描完成: API ${apiEndpoints.length} 个, Route ${frontendRoutes.length} 个, Setup 调用 ${setupApis.size} 个`)
+    } catch (err) {
+      console.warn("[Setup] 覆盖率扫描失败:", (err as Error).message)
+    }
+
+    await page.close()
+  } catch (err) {
+    console.warn("[global-setup] 预热失败:", (err as Error).message)
+  } finally {
+    await context.close()
+    await browser.close()
   }
-
-  await context.storageState({ path: W1_AUTH })
-  await browser.close()
-
-  /* ── 清理信号和熔断状态 ── */
-  cleanupSignals()
-  cleanupBreakers()
-
-  /* ── 预热入口页 ── */
-  const browser2 = await chromium.launch()
-  const ctx2 = await browser2.newContext({ locale: "zh-CN", storageState: W1_AUTH })
-  const page2 = await ctx2.newPage()
-  for (const p of WARMUP_PAGES) {
-    await page2.goto(`${BASE}${p}`, { waitUntil: "load", timeout: 60_000 })
-    await page2.waitForLoadState("networkidle").catch(() => {})
-  }
-  await browser2.close()
 }
-
-export default globalSetup

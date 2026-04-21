@@ -11,7 +11,6 @@ from .schemas import (
     AuthResponse,
     LoginRequest,
     PublicKeyResponse,
-    RegisterRequest,
     SmsCodeRequest,
     TwoFaMethods,
 )
@@ -60,23 +59,6 @@ async def send_sms_code(
     svc = AuthService(session)
     code = await svc.send_code(data.phone, skip_sms=skip_sms)
     return SmsCodeResponse(message="验证码已发送", code=code)
-
-
-@router.post("/register", response_model=AuthResponse, summary="用户注册")
-async def register(
-    data: RegisterRequest, session: DbSession
-) -> AuthResponse:
-    """用户注册。"""
-    svc = AuthService(session)
-    user = await svc.register(
-        phone=data.phone,
-        code=data.code,
-        username=data.username,
-        encrypted_password=data.encrypted_password,
-        nonce=data.nonce,
-    )
-    user_resp = await svc.build_user_response(user)
-    return AuthResponse(user=user_resp)
 
 
 @router.post("/login", response_model=AuthResponse, summary="用户登录")

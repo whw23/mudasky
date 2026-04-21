@@ -7,7 +7,8 @@
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
-import { useConfig } from '@/contexts/ConfigContext'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useCountryCodes } from '@/hooks/use-country-codes'
 import type { CountryCode } from '@/types/config'
 
 interface PhoneInputProps {
@@ -60,7 +61,7 @@ export function PhoneInput({
   required,
   disabled,
 }: PhoneInputProps) {
-  const { countryCodes } = useConfig()
+  const countryCodes = useCountryCodes()
   const parsed = parsePhone(value, countryCodes)
   const [countryCode, setCountryCode] = useState(parsed.countryCode)
   const localNumber = parsed.local
@@ -82,18 +83,23 @@ export function PhoneInput({
 
   return (
     <div className="flex gap-1.5 w-full">
-      <select
-        value={countryCode}
-        onChange={(e) => handleCodeChange(e.target.value)}
-        disabled={disabled}
-        className="h-9 w-28 shrink-0 rounded-md border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring"
-      >
-        {countryCodes.map((c) => (
-          <option key={c.code} value={c.code}>
-            {c.country} {c.code}
-          </option>
-        ))}
-      </select>
+      <Select value={countryCode} onValueChange={(v) => handleCodeChange(v ?? countryCode)}>
+        <SelectTrigger className="h-9 w-28 shrink-0" disabled={disabled}>
+          <SelectValue>
+            {(value: string | null) => {
+              const found = countryCodes.find((c) => c.code === value)
+              return found ? `${found.country} ${found.code}` : value
+            }}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {countryCodes.map((c) => (
+            <SelectItem key={c.code} value={c.code}>
+              {c.country} {c.code}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Input
         id={id}
         type="tel"

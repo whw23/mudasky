@@ -18,10 +18,25 @@ CONFIGS = [
         "site_info",
         "网站基本信息",
         lambda: {
-            "brand_name": "慕大国际教育",
-            "tagline": "专注国际教育 · 专注出国服务",
+            "brand_name": {
+                "zh": "慕大国际教育",
+                "en": "MUTU International Education",
+                "ja": "慕大国際教育",
+                "de": "MUTU Internationale Bildung",
+            },
+            "tagline": {
+                "zh": "专注国际教育 · 专注出国服务",
+                "en": "International Education · Study Abroad Services",
+                "ja": "国際教育に専念 · 留学サービスに専念",
+                "de": "Internationale Bildung · Auslandsstudium",
+            },
             "hotline": "189-1268-6656",
-            "hotline_contact": "苏老师",
+            "hotline_contact": {
+                "zh": "苏老师",
+                "en": "Ms. Su",
+                "ja": "蘇さん",
+                "de": "Frau Su",
+            },
             "company_name": "浩然学行(苏州)文化传播有限公司",
             "icp_filing": "苏ICP备2022046719号-1",
         },
@@ -63,6 +78,39 @@ CONFIGS = [
         lambda: {
             "admin": [],
             "portal": [],
+        },
+    ),
+    (
+        "nav_config",
+        "导航栏配置",
+        lambda: {
+            "order": [
+                "home",
+                "universities",
+                "study-abroad",
+                "requirements",
+                "cases",
+                "visa",
+                "life",
+                "news",
+                "about",
+            ],
+            "custom_items": [],
+        },
+    ),
+    (
+        "page_banners",
+        "页面 Banner 配置",
+        lambda: {
+            "home": {"image_ids": []},
+            "universities": {"image_ids": []},
+            "cases": {"image_ids": []},
+            "study-abroad": {"image_ids": []},
+            "requirements": {"image_ids": []},
+            "visa": {"image_ids": []},
+            "life": {"image_ids": []},
+            "news": {"image_ids": []},
+            "about": {"image_ids": []},
         },
     ),
     (

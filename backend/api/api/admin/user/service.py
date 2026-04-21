@@ -97,6 +97,11 @@ class AdminService:
 
         if data.is_active is not None:
             user.is_active = data.is_active
+            # 禁用时踢下线，用户无法继续使用旧 token
+            if not data.is_active:
+                await auth_repo.revoke_user_refresh_tokens(
+                    self.session, user_id
+                )
         if data.storage_quota is not None:
             user.storage_quota = data.storage_quota
 
@@ -137,6 +142,11 @@ class AdminService:
 
         await user_repo.set_role_id(
             self.session, user_id, role_id
+        )
+
+        # 角色变更后踢下线，用户需重新登录获取新权限的 JWT
+        await auth_repo.revoke_user_refresh_tokens(
+            self.session, user_id
         )
 
         user = await user_repo.get_by_id(

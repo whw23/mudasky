@@ -10,6 +10,24 @@ from api.core.dependencies import DbSession
 router = APIRouter(tags=["config"])
 
 
+@router.get("/config/all", summary="获取首页全部配置")
+async def get_all_config(
+    session: DbSession,
+    response: Response,
+    if_none_match: str | None = Header(None),
+):
+    """一次返回首页所需的全部配置（contact_info, site_info, homepage_stats, about_info）。"""
+    svc = ConfigService(session)
+    data, max_updated = await svc.get_all_homepage_config()
+
+    if set_cache_headers(
+        response, f"all_config:{max_updated.isoformat()}", 3600, if_none_match
+    ):
+        return response  # type: ignore[return-value]
+
+    return data
+
+
 @router.get("/config/{key}", summary="获取单个配置值")
 async def get_config(
     key: str,
