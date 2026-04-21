@@ -165,13 +165,32 @@ def _add_panel_labels(label_map: dict[str, str]) -> None:
         label_map[f"/{panel}"] = desc
 
 
+def _find_all_matching_prefixes(
+    path: str, label_map: dict[str, str]
+) -> list[str]:
+    """找到路径匹配的所有标签前缀，按长度从短到长排序。"""
+    matches = []
+    for prefix in label_map:
+        if path.startswith(prefix + "/") or path == prefix:
+            matches.append(prefix)
+    matches.sort(key=len)
+    return matches
+
+
+# 虚拟页面节点：纯前端路由，无后端 API 端点
+_VIRTUAL_NODES: dict[str, dict[str, str]] = {
+    "admin": {"dashboard": "管理仪表盘"},
+    "portal": {"overview": "用户总览"},
+}
+
+
 def _build_tree_from_routes(
     app: Any, label_map: dict[str, str]
 ) -> dict[str, Any]:
     """用标签映射和路由 summary 构建权限树。
 
-    有 label 的 router 前缀形成分支节点（带 children），
-    endpoint 路径的剩余部分作为叶子节点（扁平，不嵌套）。
+    有 label 的 router 前缀按层级嵌套形成分支节点（带 children），
+    endpoint 路径的剩余部分作为叶子节点。
     """
     tree: dict[str, Any] = {}
     for panel in _PANELS:
@@ -185,35 +204,60 @@ def _build_tree_from_routes(
         panel = _get_panel(route.path)
         if panel is None:
             continue
-        # 去掉面板前缀，在面板 children 下操作
         path_after_panel = route.path[len(f"/{panel}") :].lstrip("/")
         if not path_after_panel:
             continue
-        # 找最深匹配的标签前缀
-        prefix, leaf_key = _find_deepest_prefix(
+
+        # 找到所有匹配的标签前缀（从浅到深）
+        all_prefixes = _find_all_matching_prefixes(
             route.path, label_map
         )
-        if prefix == f"/{panel}":
-            # 直属面板的叶子节点（不应该出现）
-            tree[panel]["children"][leaf_key] = {
+        # 过滤掉面板自身的前缀
+        panel_prefix = f"/{panel}"
+        branch_prefixes = [
+            p for p in all_prefixes if p != panel_prefix
+        ]
+
+        if not branch_prefixes:
+            # 直属面板的叶子节点
+            tree[panel]["children"][path_after_panel] = {
                 "description": route.summary or ""
             }
             continue
-        # 分支节点 key = 前缀去掉面板部分
-        branch_key = prefix[len(f"/{panel}/") :]
-        branch_label = label_map[prefix]
-        if branch_key not in tree[panel]["children"]:
-            tree[panel]["children"][branch_key] = {
-                "description": branch_label,
-                "children": {},
-            }
-        branch = tree[panel]["children"][branch_key]
-        if "children" not in branch:
-            branch["children"] = {}
+
+        # 按层级依次确保分支节点存在
+        current = tree[panel]["children"]
+        prev_prefix = panel_prefix
+        for bp in branch_prefixes:
+            # 当前分支的 key = 去掉父前缀后的部分
+            segment = bp[len(prev_prefix) :].strip("/")
+            if segment not in current:
+                current[segment] = {
+                    "description": label_map[bp],
+                    "children": {},
+                }
+            if "children" not in current[segment]:
+                current[segment]["children"] = {}
+            current = current[segment]["children"]
+            prev_prefix = bp
+
+        # 叶子 key = 去掉最深前缀后的剩余部分
+        deepest = branch_prefixes[-1]
+        leaf_key = route.path[len(deepest) :].lstrip("/")
         if leaf_key:
-            branch["children"][leaf_key] = {
+            current[leaf_key] = {
                 "description": route.summary or ""
             }
+
+    # 添加虚拟页面节点
+    for panel, nodes in _VIRTUAL_NODES.items():
+        if panel in tree:
+            for key, desc in nodes.items():
+                if key not in tree[panel]["children"]:
+                    tree[panel]["children"][key] = {
+                        "description": desc,
+                    }
+
     return tree
 
 
