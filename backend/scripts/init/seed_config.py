@@ -26,9 +26,9 @@ CONFIGS = [
             },
             "tagline": {
                 "zh": "专注国际教育 · 专注出国服务",
-                "en": "Focused on International Education",
+                "en": "International Education · Study Abroad Services",
                 "ja": "国際教育に専念 · 留学サービスに専念",
-                "de": "Fokus auf internationale Bildung",
+                "de": "Internationale Bildung · Auslandsstudium",
             },
             "hotline": "189-1268-6656",
             "hotline_contact": {
