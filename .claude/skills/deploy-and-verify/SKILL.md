@@ -30,7 +30,7 @@ user_invocable: true
 检查 dev 上有哪些未合并到 main 的 commit：
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git log --oneline main..dev'
+git log --oneline main..dev
 ```
 
 如果没有新 commit，不需要部署。
@@ -40,7 +40,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git log --
 确保 dev 分支已推送到远程：
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git push origin dev 2>&1'
+git push origin dev
 ```
 
 WSL 网络可能不稳定，失败后重试即可。
@@ -50,9 +50,9 @@ WSL 网络可能不稳定，失败后重试即可。
 **push main 会触发 CI/CD 部署，必须用户明确要求才能执行。**
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git checkout main && git merge dev --no-edit 2>&1'
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git push origin main 2>&1'
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git checkout dev 2>&1'
+git checkout main && git merge dev --no-edit
+git push origin main
+git checkout dev
 ```
 
 推送后 CI/CD 自动执行：
@@ -64,7 +64,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && git checko
 ### 4. 等待 CI 完成
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && gh run list -L 3'
+gh run list -L 3
 ```
 
 确认最新一次运行状态为 `completed` + `success`。如果 `in_progress`，等待后再查。如果失败，用 `gh run view <run-id>` 查看详情。
@@ -74,7 +74,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'cd /home/whw23/code/mudasky && gh run lis
 ### 5. 检查版本
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/version'
+curl -sf http://${PRODUCTION_HOST}/api/version
 ```
 
 返回四个容器的版本号（格式 `YYYYMMDD-<7位hash>`）。对比 main 分支的 commit hash，确认各容器是否更新。版本不一致是正常的 — CI 按路径过滤，只构建有改动的服务。
@@ -82,7 +82,7 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/ve
 ### 6. 健康检查
 
 ```bash
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/health'
+curl -sf http://${PRODUCTION_HOST}/api/health
 ```
 
 预期返回 `{"status":"ok","version":"..."}`。
@@ -93,13 +93,13 @@ wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'curl -sf http://${PRODUCTION_HOST}/api/he
 
 ```bash
 # 查看容器状态
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'ssh mudasky "docker ps --format \"{{.Names}} {{.Status}}\""'
+ssh mudasky "docker ps --format '{{.Names}} {{.Status}}'"
 
 # 查看某个容器日志（替换 SERVICE 为 gateway/api/frontend/db）
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'ssh mudasky "docker logs mudasky-SERVICE-1 --tail 20"'
+ssh mudasky "docker logs mudasky-SERVICE-1 --tail 20"
 
 # 检查 db 时区
-wsl -d Ubuntu-24.04 --cd ~ -- bash -c 'ssh mudasky "docker exec mudasky-db-1 psql -U mudasky -c \"SHOW timezone;\""'
+ssh mudasky "docker exec mudasky-db-1 psql -U mudasky -c 'SHOW timezone;'"
 ```
 
 ## 输出格式

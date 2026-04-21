@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { Plus, Pencil, Trash2, GraduationCap } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Banner } from "@/components/layout/Banner"
@@ -26,6 +27,8 @@ interface CaseItem {
   testimonial: string | null
   is_featured: boolean
   avatar_image_id: string | null
+  offer_image_id: string | null
+  related_university_id: string | null
 }
 
 interface CasesEditPreviewProps {

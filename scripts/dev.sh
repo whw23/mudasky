@@ -7,12 +7,17 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+cleanup_docker() {
+  echo "清理悬空镜像..."
+  docker image prune -f
+}
+
 case "${1:-}" in
   start)
     echo "构建并启动开发环境..."
     docker compose down
     docker compose build
-    docker image prune -f
+    cleanup_docker
     docker compose up
     ;;
   --clean)
@@ -20,7 +25,7 @@ case "${1:-}" in
     docker compose down -v
     echo "重新构建并启动..."
     docker compose build
-    docker image prune -f
+    cleanup_docker
     docker compose up
     ;;
   --down)
@@ -36,6 +41,8 @@ case "${1:-}" in
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-gateway:latest ./gateway
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-api:latest -f backend/api/Dockerfile ./backend
     docker build --build-arg BUILD_VERSION=local -t ghcr.io/whw23/mudasky-frontend:latest ./frontend
+    docker build -t ghcr.io/whw23/mudasky-db:latest ./db
+    cleanup_docker
     DB_EXTERNAL_PORT=15432 docker compose -f docker-compose.yml up -d
     echo "生产容器已启动，可运行 ./scripts/test.sh e2e"
     ;;

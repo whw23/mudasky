@@ -56,7 +56,7 @@ export function HeroSearch() {
         />
         {/* 筛选下拉（移动端并排） */}
         <div className="flex gap-2 md:contents">
-          <Select value={country || undefined} onValueChange={(v) => setCountry(v === ALL ? "" : v)}>
+          <Select value={country || undefined} onValueChange={(v) => setCountry(!v || v === ALL ? "" : v)}>
             <SelectTrigger className="flex-1 md:w-32 bg-white/90 text-foreground h-10">
               <SelectValue placeholder={t("allCountries")} />
             </SelectTrigger>
@@ -67,7 +67,7 @@ export function HeroSearch() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={categoryId || undefined} onValueChange={(v) => setCategoryId(v === ALL ? "" : v)}>
+          <Select value={categoryId || undefined} onValueChange={(v) => setCategoryId(!v || v === ALL ? "" : v)}>
             <SelectTrigger className="flex-1 md:w-32 bg-white/90 text-foreground h-10">
               <SelectValue placeholder={t("allDisciplineCategories")} />
             </SelectTrigger>

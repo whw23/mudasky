@@ -30,6 +30,10 @@ interface University {
   website: string | null
   is_featured: boolean
   logo_image_id: string | null
+  latitude: number | null
+  longitude: number | null
+  admission_requirements: string | null
+  scholarship_info: string | null
   qs_rankings: { year: number; ranking: number }[] | null
 }
 

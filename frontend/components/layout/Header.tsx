@@ -178,8 +178,8 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav, on
                 <LogoUploadSlot
                   logoUrl={siteInfo.logo_url}
                   brandName={brandName}
-                  onUpload={(file) => onImageUpload?.("logo_url", file)}
-                  onClear={() => onImageClear?.("logo_url")}
+                  onUpload={onImageUpload ? (file) => onImageUpload("logo_url", file) : undefined}
+                  onClear={onImageClear ? () => onImageClear("logo_url") : undefined}
                 />
                 {wrapEditable(
                   <div className="flex flex-col">

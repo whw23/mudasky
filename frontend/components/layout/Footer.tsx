@@ -201,16 +201,16 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
               placeholder={t("qrPlaceholder")}
               editable={editable}
               alwaysShow
-              onUpload={(file) => onImageUpload?.("wechat_service_qr_url", file)}
-              onClear={() => onImageClear?.("wechat_service_qr_url")}
+              onUpload={onImageUpload ? (file) => onImageUpload("wechat_service_qr_url", file) : undefined}
+              onClear={onImageClear ? () => onImageClear("wechat_service_qr_url") : undefined}
             />
             <QrSlot
               url={siteInfo.wechat_official_qr_url}
               label={t("wechatOfficial")}
               placeholder={t("qrPlaceholder")}
               editable={editable}
-              onUpload={(file) => onImageUpload?.("wechat_official_qr_url", file)}
-              onClear={() => onImageClear?.("wechat_official_qr_url")}
+              onUpload={onImageUpload ? (file) => onImageUpload("wechat_official_qr_url", file) : undefined}
+              onClear={onImageClear ? () => onImageClear("wechat_official_qr_url") : undefined}
             />
           </div>
         </div>

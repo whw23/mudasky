@@ -17,7 +17,7 @@ export interface Article {
   slug: string
   content_type: string
   content: string
-  file_url: string | null
+  file_id: string | null
   excerpt: string
   category_id: string
   published_at: string | null

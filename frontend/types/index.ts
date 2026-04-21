@@ -58,7 +58,7 @@ export interface Article {
   slug: string
   content_type: "markdown" | "file"
   content: string
-  file_url: string | null
+  file_id: string | null
   excerpt: string
   cover_image: string | null
   category_id: string
@@ -145,6 +145,14 @@ export interface University {
   sort_order: number
   created_at: string
   updated_at: string | null
+  logo_image_id: string | null
+  image_ids: string[]
+  disciplines: { id: string; name: string; category_name: string }[]
+  admission_requirements: string | null
+  scholarship_info: string | null
+  qs_rankings: { year: number; ranking: number }[] | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export interface PaginatedResponse<T> {
