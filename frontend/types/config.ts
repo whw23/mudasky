@@ -34,8 +34,6 @@ export interface SiteInfo {
   wechat_official_qr_url: string
   company_name: string
   icp_filing: string
-  hero_title: LocalizedField
-  hero_subtitle: LocalizedField
   services_title: LocalizedField
   destinations_title: LocalizedField
 }

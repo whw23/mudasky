@@ -32,8 +32,6 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   wechat_official_qr_url: '',
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
-  hero_title: '',
-  hero_subtitle: '',
   services_title: '',
   destinations_title: '',
 }
@@ -150,8 +148,6 @@ interface LocalizedConfigType {
     wechat_official_qr_url: string
     company_name: string
     icp_filing: string
-    hero_title: string
-    hero_subtitle: string
     services_title: string
     destinations_title: string
   }
@@ -184,8 +180,6 @@ export function useLocalizedConfig(): LocalizedConfigType {
       brand_name: getLocalizedValue(config.siteInfo.brand_name, locale),
       tagline: getLocalizedValue(config.siteInfo.tagline, locale),
       hotline_contact: getLocalizedValue(config.siteInfo.hotline_contact, locale),
-      hero_title: getLocalizedValue(config.siteInfo.hero_title, locale),
-      hero_subtitle: getLocalizedValue(config.siteInfo.hero_subtitle, locale),
       services_title: getLocalizedValue(config.siteInfo.services_title, locale),
       destinations_title: getLocalizedValue(config.siteInfo.destinations_title, locale),
     },
