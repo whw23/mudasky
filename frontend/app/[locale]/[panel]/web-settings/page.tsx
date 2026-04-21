@@ -93,9 +93,9 @@ export default function WebSettingsPage() {
   const faviconInputRef = useRef<HTMLInputElement>(null)
 
   /** 获取所有配置 */
-  const fetchAllConfigs = useCallback(async () => {
+  const fetchAllConfigs = useCallback(async (bustCache = false) => {
     try {
-      const res = await api.get('/admin/web-settings/list')
+      const res = await api.get('/admin/web-settings/list', bustCache ? { headers: { 'Cache-Control': 'no-cache' } } : {})
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const configs = res.data as Array<{ key: string; value: any }>
       const findValue = (key: string) =>
@@ -129,7 +129,7 @@ export default function WebSettingsPage() {
     if (!dialogState) return
     await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
     toast.success('保存成功')
-    await fetchAllConfigs()
+    await fetchAllConfigs(true)
     refreshConfig()
   }
 
@@ -188,7 +188,7 @@ export default function WebSettingsPage() {
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, favicon_url: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      await fetchAllConfigs()
+      await fetchAllConfigs(true)
       refreshConfig()
       toast.success("上传成功")
     } catch {
@@ -204,7 +204,7 @@ export default function WebSettingsPage() {
     try {
       const updated = { ...rawConfig.siteInfo, favicon_url: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      await fetchAllConfigs()
+      await fetchAllConfigs(true)
       refreshConfig()
       toast.success("已清除")
     } catch {
@@ -220,7 +220,7 @@ export default function WebSettingsPage() {
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      fetchAllConfigs()
+      fetchAllConfigs(true)
       refreshConfig()
       toast.success("上传成功")
       return data.url as string
@@ -234,7 +234,7 @@ export default function WebSettingsPage() {
     try {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      await fetchAllConfigs()
+      await fetchAllConfigs(true)
       refreshConfig()
       toast.success("已清除")
     } catch {
@@ -526,7 +526,7 @@ export default function WebSettingsPage() {
           onOpenChange={(open) => { if (!open) setBannerDialogState(null) }}
           pageKey={bannerDialogState.pageKey}
           imageIds={rawConfig.pageBanners[bannerDialogState.pageKey]?.image_ids || []}
-          onUpdate={fetchAllConfigs}
+          onUpdate={() => { fetchAllConfigs(true); refreshConfig() }}
         />
       )}
     </div>
