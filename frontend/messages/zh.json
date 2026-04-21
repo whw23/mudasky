@@ -459,15 +459,6 @@
     "noSearchResults": "无匹配结果",
     "noApis": "无 API 接口"
   },
-  "AdminGeneral": {
-    "title": "通用配置",
-    "faviconTitle": "网站图标",
-    "faviconDesc": "浏览器标签页显示的图标",
-    "countryCodeTitle": "国家码管理",
-    "countryCodeDesc": "登录和注册时可用的手机号国家码",
-    "saveSuccess": "保存成功",
-    "saveError": "保存失败"
-  },
   "About": {
     "historyTitle": "15年专注国际教育",
     "historyContent": "慕大国际教育成立于2011年，专注于小语种留学项目运营已15年。作为慕尼黑大学语言中心江苏省唯一指定招生考点，我们始终秉承\"专业、诚信、高效\"的服务理念，为数百位学子成功圆梦海外名校。从最初的德语培训到如今涵盖德语、日语、法语、韩语等多语种留学服务，我们不断拓展业务版图，致力于成为中国领先的国际教育服务机构。",
@@ -1206,16 +1197,25 @@
     "uploadDate": "上传日期",
     "actions": "操作",
     "allCategories": "全部",
-    "cancel": "取消"
+    "cancel": "取消",
+    "acceptedTypes": "支持 PDF、Word、Excel、PPT、图片（PNG/JPG）、TXT",
+    "invalidFileType": "不支持的文件类型，请上传 PDF、Word、Excel、PPT、图片或 TXT 文件"
   },
   "AdminGeneral": {
     "title": "通用配置",
     "faviconTitle": "网站图标",
-    "faviconDesc": "上传网站 Favicon，建议尺寸 32x32 或 64x64 像素",
+    "faviconDesc": "浏览器标签页显示的小图标，建议尺寸 32x32 或 64x64 像素",
     "countryCodeTitle": "手机号国家码",
     "countryCodeDesc": "管理用户可选的手机号国家码",
     "saveSuccess": "保存成功",
-    "saveError": "操作失败"
+    "saveError": "操作失败",
+    "uploadBtn": "上传",
+    "uploading": "上传中...",
+    "uploadError": "上传失败",
+    "replace": "更换",
+    "clear": "清除",
+    "currentIcon": "当前图标",
+    "noIcon": "未设置图标"
   },
   "AdminUniversities": {
     "createUniversity": "添加院校",
@@ -1385,6 +1385,7 @@
     "FILE_SIZE_EXCEEDED": "文件大小超过限制",
     "STORAGE_QUOTA_EXCEEDED": "存储配额不足",
     "SUPERUSER_CANNOT_BE_DELETED": "超级管理员不可删除",
-    "CANNOT_DELETE_SELF": "不能删除自己的账号"
+    "CANNOT_DELETE_SELF": "不能删除自己的账号",
+    "INVALID_FILE_TYPE": "不支持的文件类型"
   }
 }

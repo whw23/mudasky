@@ -58,11 +58,11 @@ Router → Service → Repository → Models
 ## 架构决策
 
 - **网关**：OpenResty 厚网关，处理 JWT 验签、解 claims、注入 X-User-Id/X-User-Role 请求头、CSRF 校验、限流
-- **认证**：双 token（access 15-30min + refresh 7-30天），Cookie HttpOnly+Secure+SameSite=Strict，白名单模式（默认 /api/* 需认证），refresh token 轮换
+- **认证**：双 token（access 15min + refresh 30天，环境变量可配），Cookie HttpOnly+SameSite=Strict，白名单模式（默认 /api/* 需认证），refresh token 不轮换（保持原样直到过期或被撤销）；未勾选"保持登录"时 refresh token Cookie Max-Age 为 1 天
 - **文件存储**：PostgreSQL BYTEA 存文件二进制数据，同表存元数据（文件名、大小、哈希），用户有存储配额
 - **开发环境也走 gateway**，不需要 CORS
 - **is_active 在 JWT claims 中**，禁用延迟可接受，续签时查库校验
-- **前端用户信息**：登录/续签/修改时响应体带用户信息，存 localStorage，Cookie 保持 HttpOnly
+- **前端用户信息**：登录/续签时响应体带用户信息，不存 localStorage，通过 `/api/portal/profile/meta/list` 获取最新状态，Cookie 保持 HttpOnly
 - **RBAC 权限**：superuser、content_admin、advisor、support、student、visitor + 自定义角色；每个用户一个角色；Role.permissions 为 JSON 通配符数组；权限码 = 静态 URL 路径；通配符支持子路径 + 祖先路径匹配；改权限时踢下线（删 refresh_token）；角色分配后踢下线（删 refresh_token）；superuser/visitor 不可删除不可改名，superuser 不可改权限，visitor 可改权限；删除角色时用户迁移到 visitor
 - **API 错误码**：后端异常返回具体 code（如 `PHONE_ALREADY_REGISTERED`），前端通过 `getApiError` 查 `ApiErrors` 翻译命名空间实现多语言错误提示
 - **数据库迁移**：alembic（Python/SQLAlchemy），与初始建表保持同一技术栈
@@ -74,5 +74,13 @@ Router → Service → Repository → Models
 - **网页设置所见即所得**：文章/分类/院校/案例管理统一到网页设置预览中；导航栏可拖动排序/增删（NavEditor + nav_config）；预设导航项硬编码，自定义项和排序存数据库；侧边栏不再有独立的文章/分类/院校/案例管理入口
 - **权限树**：后端启动时从路由 description 自动生成 `permission_tree`，前端 PermissionTree 组件从 `/admin/roles/meta` API 获取递归渲染，不依赖 OpenAPI spec
 - **UI 组件**：所有下拉选择用 shadcn Select（base-ui），所有确认弹窗用 AlertDialog，不用原生 `<select>` 和 `confirm()`
+
+- **图片存储优化**：位图（PNG/JPEG/GIF）上传时自动转 WebP（quality=95），SVG/PDF 保持原格式，在 Image Repository 层统一处理；上传大小限制 10MB
+- **文档上传白名单**：Portal 文档上传仅允许 PDF、Word（doc/docx）、Excel（xls/xlsx）、PPT（ppt/pptx）、PNG、JPEG、TXT，前后端双重校验
+- **批量导入导出**：preview/confirm 两步流程（学科分类/院校/成功案例/文章），支持纯 Excel 或 ZIP（含图片/HTML/PDF 资源）；preview 返回变更预览（新增/更新/无变化），confirm 执行 merge（有值覆盖，空值保留）；各数据类型独立实现，通用工具放 `shared/app/utils/excel_io.py`；前端通用组件 `ImportExportToolbar` + `ImportPreviewDialog`
+- **院校专业模型**：`University → UniversityProgram → Discipline`，每个专业关联一个学科小分类，院校学科方向 = 所有专业关联的小分类去重集合
+- **前端路由守卫**：page_guard.lua 对 /admin/* 和 /portal/* 页面做 JWT 校验；access_token 过期或缺失但有 refresh_token 时放行页面，由前端 JS 自动触发续签；仅无 refresh_token 时 302 重定向首页
+- **Favicon 动态设置**：FaviconHead 组件从 ConfigContext 读取 `favicon_url`，通过 DOM 更新 `link[rel='icon']`
+- **网页设置字段级编辑**：一个数据字段 = 一个 EditableOverlay（铅笔+虚线框），弹窗只含该字段；同一 LocalizedField 的多语言渲染合并为一个编辑点；复用数据源的字段可就近编辑（如 Footer 和联系信息的 phone 指向同一 contact_info.phone）
 
 新功能开发遵循面板化组织结构，认证相关改动在网关层处理。

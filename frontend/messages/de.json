@@ -459,11 +459,18 @@
   "AdminGeneral": {
     "title": "Allgemeine Einstellungen",
     "faviconTitle": "Favicon",
-    "faviconDesc": "Symbol in der Browser-Registerkarte",
+    "faviconDesc": "Kleines Symbol im Browser-Tab, empfohlene Größe 32x32 oder 64x64 Pixel",
     "countryCodeTitle": "Ländercodes",
     "countryCodeDesc": "Verfügbare Telefon-Ländercodes für Anmeldung und Registrierung",
     "saveSuccess": "Erfolgreich gespeichert",
-    "saveError": "Speichern fehlgeschlagen"
+    "saveError": "Speichern fehlgeschlagen",
+    "uploadBtn": "Hochladen",
+    "uploading": "Wird hochgeladen...",
+    "uploadError": "Hochladen fehlgeschlagen",
+    "replace": "Ersetzen",
+    "clear": "Entfernen",
+    "currentIcon": "Aktuelles Symbol",
+    "noIcon": "Kein Symbol festgelegt"
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",
@@ -1186,7 +1193,9 @@
     "uploadDate": "Hochladedatum",
     "actions": "Aktionen",
     "allCategories": "Alle",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "acceptedTypes": "Unterstützt: PDF, Word, Excel, PPT, Bilder (PNG/JPG), TXT",
+    "invalidFileType": "Nicht unterstützter Dateityp. Bitte laden Sie PDF-, Word-, Excel-, PPT-, Bild- oder TXT-Dateien hoch"
   },
   "AdminUniversities": {
     "createUniversity": "Universität hinzufügen",
@@ -1356,6 +1365,7 @@
     "FILE_SIZE_EXCEEDED": "Dateigröße überschreitet das Limit",
     "STORAGE_QUOTA_EXCEEDED": "Speicherkontingent überschritten",
     "SUPERUSER_CANNOT_BE_DELETED": "Superuser kann nicht gelöscht werden",
-    "CANNOT_DELETE_SELF": "Eigenes Konto kann nicht gelöscht werden"
+    "CANNOT_DELETE_SELF": "Eigenes Konto kann nicht gelöscht werden",
+    "INVALID_FILE_TYPE": "Nicht unterstützter Dateityp"
   }
 }

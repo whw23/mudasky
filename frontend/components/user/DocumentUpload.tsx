@@ -26,6 +26,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/api"
 import type { DocumentCategory } from "@/types"
 
+const ACCEPTED_TYPES = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt"
+
 /** 所有文档分类 */
 const CATEGORIES: DocumentCategory[] = [
   "transcript",
@@ -59,13 +61,26 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     setDragOver(false)
   }, [])
 
+  /** 校验文件扩展名 */
+  const isFileAccepted = useCallback((f: File) => {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? ""
+    const allowedExts = ACCEPTED_TYPES.split(",").map((t) => t.replace(".", ""))
+    return allowedExts.includes(ext)
+  }, [])
+
   /** 处理文件选择 */
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selected = e.target.files?.[0]
-      if (selected) setFile(selected)
+      if (!selected) return
+      if (!isFileAccepted(selected)) {
+        toast.error(t("invalidFileType"))
+        e.target.value = ""
+        return
+      }
+      setFile(selected)
     },
-    [],
+    [isFileAccepted, t],
   )
 
   /** 处理拖拽放置 */
@@ -73,8 +88,13 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     e.preventDefault()
     setDragOver(false)
     const dropped = e.dataTransfer.files[0]
-    if (dropped) setFile(dropped)
-  }, [])
+    if (!dropped) return
+    if (!isFileAccepted(dropped)) {
+      toast.error(t("invalidFileType"))
+      return
+    }
+    setFile(dropped)
+  }, [isFileAccepted, t])
 
   /** 处理拖拽进入 */
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -152,11 +172,15 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {t("dragDrop")}
                 </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("acceptedTypes")}
+                </p>
               </>
             )}
             <Input
               ref={fileInputRef}
               type="file"
+              accept={ACCEPTED_TYPES}
               className="hidden"
               onChange={handleFileChange}
             />

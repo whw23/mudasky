@@ -134,7 +134,8 @@ class AuthService:
     async def refresh(self, token_hash: str) -> User:
         """刷新令牌续签，返回用户信息。
 
-        验证令牌哈希、删除旧令牌、检查用户状态。
+        验证令牌哈希是否存在且未过期，检查用户状态。
+        refresh_token 不轮换，保持原样直到过期或被撤销。
         """
         token = await repository.get_refresh_token_by_hash(
             self.session, token_hash
@@ -144,9 +145,6 @@ class AuthService:
         now = datetime.now(timezone.utc)
         if token.expires_at < now:
             raise UnauthorizedException(message="刷新令牌已过期", code="REFRESH_TOKEN_EXPIRED")
-        await repository.revoke_refresh_token_by_hash(
-            self.session, token_hash
-        )
         user = await user_repo.get_by_id(
             self.session, token.user_id
         )
@@ -162,7 +160,7 @@ class AuthService:
         user_agent: str | None = None,
         ip_address: str | None = None,
     ) -> None:
-        """保存刷新令牌哈希。"""
+        """保存刷新令牌哈希（登录时调用）。"""
         expires_at = datetime.now(timezone.utc) + timedelta(
             days=expire_days
         )

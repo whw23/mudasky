@@ -59,6 +59,10 @@ local home = "/" .. locale
 -- 读取 access_token
 local access_token = get_cookie("access_token")
 if not access_token then
+  -- 有 refresh_token 时放行，让前端 JS 触发续签
+  if get_cookie("refresh_token") then
+    return
+  end
   return redirect_to(home)
 end
 

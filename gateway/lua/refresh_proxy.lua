@@ -1,6 +1,7 @@
 --- Refresh token 代理模块。
 -- 从 Cookie 读取 refresh_token，验签，算哈希，
--- 调后端续签，生成新 JWT，设置 Cookie。
+-- 调后端验证，生成新 access_token，设置 Cookie。
+-- refresh_token 不轮换，保持原样直到过期或被撤销。
 
 local http = require("resty.http")
 local cjson = require("cjson.safe")
@@ -62,7 +63,7 @@ sha256:update(refresh_token)
 local digest = sha256:final()
 local token_hash = str.to_hex(digest)
 
--- 调后端
+-- 调后端验证 refresh_token 并获取用户信息
 local httpc = http.new()
 local res, err = httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh", {
   method = "POST",
@@ -96,7 +97,7 @@ if not data or not data.user then
   return
 end
 
--- 生成新 JWT
+-- 只生成新 access_token，不轮换 refresh_token
 local user = data.user
 local now = ngx.time()
 
@@ -113,60 +114,14 @@ local access_jwt = jwt:sign(jwt_secret, {
   },
 })
 
-local refresh_expire = config.get_refresh_expire_seconds()
-local new_refresh_jwt = jwt:sign(jwt_secret, {
-  header = { typ = "JWT", alg = "HS256" },
-  payload = {
-    sub = user.id,
-    type = "refresh",
-    iat = now,
-    exp = now + refresh_expire,
-    jti = ngx.var.request_id, -- 使用 nginx 的 request_id 作为 JWT ID,确保唯一性
-  },
-})
-
--- 保存新 refresh_token 的哈希到后端
-local new_sha256 = resty_sha256:new()
-new_sha256:update(new_refresh_jwt)
-local new_digest = new_sha256:final()
-local new_token_hash = str.to_hex(new_digest)
-
-local save_httpc = http.new()
-save_httpc:request_uri(config.get_backend_url() .. "/api/auth/refresh-token-hash", {
-  method = "POST",
-  body = cjson.encode({
-    user_id = user.id,
-    token_hash = new_token_hash,
-    user_agent = ngx.var.http_user_agent or "",
-    ip_address = ngx.var.remote_addr or "",
-  }),
-  headers = {
-    ["Content-Type"] = "application/json",
-    ["X-Requested-With"] = "XMLHttpRequest",
-    ["X-Internal-Secret"] = config.get_internal_secret(),
-  },
-})
-
 -- 续签成功，清除该用户的黑名单
 local blacklist = ngx.shared.user_blacklist
 blacklist:delete("bl:" .. user.id)
 
--- 设置 Cookie
-local keep_login = ngx.req.get_headers()["X-Keep-Login"]
-local keep = (keep_login ~= "false")
-
-local cookies = {}
-table.insert(cookies, "access_token=" .. access_jwt
+-- 只设置 access_token Cookie
+ngx.header["Set-Cookie"] = "access_token=" .. access_jwt
   .. "; Path=/; HttpOnly; SameSite=Strict"
-  .. "; Max-Age=" .. access_expire)
-
-local refresh_max_age = keep and refresh_expire or 86400
-local refresh_cookie = "refresh_token=" .. new_refresh_jwt
-  .. "; Path=/; HttpOnly; SameSite=Strict"
-  .. "; Max-Age=" .. refresh_max_age
-table.insert(cookies, refresh_cookie)
-
-ngx.header["Set-Cookie"] = cookies
+  .. "; Max-Age=" .. access_expire
 ngx.header["Content-Type"] = "application/json"
 ngx.status = 200
 ngx.say(res.body)

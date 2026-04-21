@@ -462,11 +462,18 @@
   "AdminGeneral": {
     "title": "General Settings",
     "faviconTitle": "Favicon",
-    "faviconDesc": "Icon displayed in the browser tab",
+    "faviconDesc": "Small icon displayed in the browser tab, recommended size 32x32 or 64x64 pixels",
     "countryCodeTitle": "Country Codes",
     "countryCodeDesc": "Phone country codes available for login and registration",
     "saveSuccess": "Saved successfully",
-    "saveError": "Save failed"
+    "saveError": "Save failed",
+    "uploadBtn": "Upload",
+    "uploading": "Uploading...",
+    "uploadError": "Upload failed",
+    "replace": "Replace",
+    "clear": "Clear",
+    "currentIcon": "Current icon",
+    "noIcon": "No icon set"
   },
   "About": {
     "historyTitle": "15 Years of International Education",
@@ -1206,7 +1213,9 @@
     "uploadDate": "Upload date",
     "actions": "Actions",
     "allCategories": "All",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "acceptedTypes": "Supported: PDF, Word, Excel, PPT, Images (PNG/JPG), TXT",
+    "invalidFileType": "Unsupported file type. Please upload PDF, Word, Excel, PPT, image or TXT files"
   },
   "AdminUniversities": {
     "createUniversity": "Add University",
@@ -1376,6 +1385,7 @@
     "FILE_SIZE_EXCEEDED": "File size exceeds limit",
     "STORAGE_QUOTA_EXCEEDED": "Storage quota exceeded",
     "SUPERUSER_CANNOT_BE_DELETED": "Superuser cannot be deleted",
-    "CANNOT_DELETE_SELF": "Cannot delete your own account"
+    "CANNOT_DELETE_SELF": "Cannot delete your own account",
+    "INVALID_FILE_TYPE": "Unsupported file type"
   }
 }

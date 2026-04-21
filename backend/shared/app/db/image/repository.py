@@ -1,7 +1,9 @@
 """图片数据访问层。"""
 
 import hashlib
+import io
 
+from PIL import Image as PILImage
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +17,20 @@ ALLOWED_MIME_TYPES = {
     "image/svg+xml",
     "application/pdf",
 }
-MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB
+
+CONVERTIBLE_MIME_TYPES = {"image/png", "image/jpeg", "image/gif"}
+WEBP_QUALITY = 95
+
+
+def _convert_to_webp(file_data: bytes) -> tuple[bytes, str, str]:
+    """将位图转为 WebP 格式，返回 (数据, MIME, 扩展名)。"""
+    img = PILImage.open(io.BytesIO(file_data))
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGBA" if img.info.get("transparency") else "RGB")
+    buf = io.BytesIO()
+    img.save(buf, format="WEBP", quality=WEBP_QUALITY)
+    return buf.getvalue(), "image/webp", ".webp"
 
 
 async def create_image(
@@ -24,7 +39,12 @@ async def create_image(
     filename: str,
     mime_type: str,
 ) -> Image:
-    """创建图片。自动计算哈希和大小，重复哈希返回已有记录。"""
+    """创建图片。位图自动转 WebP，SVG/PDF 保持原格式。"""
+    if mime_type in CONVERTIBLE_MIME_TYPES:
+        file_data, mime_type, ext = _convert_to_webp(file_data)
+        stem = filename.rsplit(".", 1)[0] if "." in filename else filename
+        filename = stem + ext
+
     file_hash = hashlib.sha256(file_data).hexdigest()
     existing = await get_by_hash(session, file_hash)
     if existing:

@@ -30,32 +30,23 @@
 - [x] 首页 Hero 和 header 遮挡关系修复
 - [x] Banner 编辑恢复 EditableOverlay 交互模式
 - [x] 学科分类管理 UI 入口
+- [x] Excel 导入导出 + 院校专业模型改造
+- [x] 网页设置字段级编辑改造
+- [x] 文档上传文件类型白名单（前后端双重校验）
+- [x] 图片上传自动转 WebP（quality=95）
+- [x] Token 续签修复（去掉 refresh token 轮换 + page_guard 放行续签）
+- [x] Favicon 动态设置（FaviconHead 组件 + 通用配置页 UI 重构）
 - [ ] E2E API 覆盖率补全（当前 57/94 = 60.6%）
 - [ ] 压力测试
 
 ---
-
-## ~~图片上传按钮点不开~~
-
-~~改用 `<label htmlFor>` 方式触发文件选择器，替代 `.click()` 方式。~~
-
-## ~~首页 Hero 和 header 遮挡关系修复~~
-
-~~Header 新增 `transparent` prop，首页使用 `fixed` 定位 + 透明背景，滚动后变不透明。Hero 从页面顶部开始占 100vh。~~
-
-## ~~Banner 编辑恢复 EditableOverlay 交互模式~~
-
-~~创建 BannerEditDialog，集成到 EditableOverlay 点击流程中，移除独立的 BannerImageEditor。~~
-
-## ~~学科分类管理 UI 入口~~
-
-~~在院校管理 tab 下添加可折叠的学科分类管理区域，支持大分类和学科的 CRUD。~~
 
 ## E2E API 覆盖率补全
 
 当前 API 覆盖率 57/94（60.6%），37 个端点未被 E2E 测试触发。覆盖率基于 Playwright response 拦截实际 API 调用。
 
 未覆盖端点分类：
+
 - auth: register, refresh-token-hash
 - public: config/{key}, content/article/{id}, cases, universities 相关
 - admin: users 管理操作、roles 详情/排序、settings 编辑、students 分配/降级/文档、contacts 升级

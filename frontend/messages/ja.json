@@ -459,11 +459,18 @@
   "AdminGeneral": {
     "title": "一般設定",
     "faviconTitle": "ファビコン",
-    "faviconDesc": "ブラウザタブに表示されるアイコン",
+    "faviconDesc": "ブラウザタブに表示される小さいアイコン、推奨サイズ 32x32 または 64x64 ピクセル",
     "countryCodeTitle": "国コード管理",
     "countryCodeDesc": "ログインと登録に使用可能な電話番号の国コード",
     "saveSuccess": "保存しました",
-    "saveError": "保存に失敗しました"
+    "saveError": "保存に失敗しました",
+    "uploadBtn": "アップロード",
+    "uploading": "アップロード中...",
+    "uploadError": "アップロードに失敗しました",
+    "replace": "変更",
+    "clear": "削除",
+    "currentIcon": "現在のアイコン",
+    "noIcon": "アイコン未設定"
   },
   "About": {
     "historyTitle": "国際教育15年の実績",
@@ -1187,7 +1194,9 @@
     "uploadDate": "アップロード日",
     "actions": "操作",
     "allCategories": "すべて",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "acceptedTypes": "対応形式：PDF、Word、Excel、PPT、画像（PNG/JPG）、TXT",
+    "invalidFileType": "対応していないファイル形式です。PDF、Word、Excel、PPT、画像、TXT ファイルをアップロードしてください"
   },
   "AdminUniversities": {
     "createUniversity": "大学を追加",
@@ -1357,6 +1366,7 @@
     "FILE_SIZE_EXCEEDED": "ファイルサイズが制限を超えています",
     "STORAGE_QUOTA_EXCEEDED": "ストレージ容量が不足しています",
     "SUPERUSER_CANNOT_BE_DELETED": "スーパーユーザーは削除できません",
-    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません"
+    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません",
+    "INVALID_FILE_TYPE": "対応していないファイル形式です"
   }
 }
