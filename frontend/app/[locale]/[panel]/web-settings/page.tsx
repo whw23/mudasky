@@ -82,7 +82,7 @@ export default function WebSettingsPage() {
   const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
   const tAbout = useTranslations("About")
-  const [activeTab, setActiveTab] = useState<'settings' | 'preview' | 'advanced'>('preview')
+  const [activeTab, setActiveTab] = useState<'preview' | 'advanced'>('preview')
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
@@ -434,7 +434,7 @@ export default function WebSettingsPage() {
 
       {/* 标签页 */}
       <div className="mb-4 flex gap-1 border-b">
-        {([['settings', '基本设置'], ['preview', '页面预览'], ['advanced', '高级设置']] as const).map(([key, label]) => (
+        {([['preview', '页面预览'], ['advanced', '高级设置']] as const).map(([key, label]) => (
           <button key={key} type="button"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === key
@@ -446,48 +446,37 @@ export default function WebSettingsPage() {
         ))}
       </div>
 
-      {/* 基本设置 tab */}
-      {activeTab === 'settings' && (
-        <div className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold">网站图标</h2>
-            <p className="text-sm text-muted-foreground">设置浏览器标签页显示的网站图标（favicon）</p>
-            <div className="inline-flex items-center gap-2">
-              <div
-                className={`relative flex size-20 shrink-0 cursor-pointer items-center justify-center rounded-lg border-2 transition-colors ${
-                  faviconUrl
-                    ? "border-solid border-muted bg-muted/30"
-                    : "border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5"
-                } ${faviconUploading ? "pointer-events-none opacity-50" : ""}`}
-                onClick={() => faviconInputRef.current?.click()}
-              >
-                {faviconUrl ? (
-                  <img src={faviconUrl} alt="favicon" className="size-14 object-contain" />
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="size-5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">
-                      {faviconUploading ? "上传中..." : "点击上传"}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {faviconUrl && (
-                <button type="button"
-                  className="rounded-full p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  onClick={handleFaviconClear}>
-                  <Trash2 className="size-4" />
-                </button>
-              )}
-            </div>
-            <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
-          </section>
-        </div>
-      )}
-
       {/* 页面预览 tab */}
       {activeTab === 'preview' && (
         <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+          {/* 模拟浏览器标签栏 */}
+          <div className="flex items-end bg-muted/60 px-2 pt-2">
+            <div className="group flex items-center gap-2 rounded-t-lg bg-white px-3 py-1.5 text-sm shadow-sm">
+              <div
+                className={`flex size-5 shrink-0 cursor-pointer items-center justify-center rounded transition-colors ${
+                  faviconUrl ? "" : "border border-dashed border-muted-foreground/30 hover:border-primary/50"
+                } ${faviconUploading ? "opacity-50" : ""}`}
+                onClick={() => faviconInputRef.current?.click()}
+                title="点击更换网站图标"
+              >
+                {faviconUrl ? (
+                  <img src={faviconUrl} alt="favicon" className="size-4 object-contain" />
+                ) : (
+                  <Upload className="size-3 text-muted-foreground" />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                {rawConfig.siteInfo.brand_name || '网站标题'}
+              </span>
+              {faviconUrl && (
+                <button type="button" onClick={handleFaviconClear} title="清除图标"
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground hover:!text-destructive transition-colors">
+                  <Trash2 className="size-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
           <Header
             editable
             hideNav
