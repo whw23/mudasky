@@ -5,9 +5,10 @@
  * 通过预览容器展示公共网站各页面，配合编辑浮层和弹窗实现所见即所得编辑。
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import { Upload, Trash2 } from 'lucide-react'
 import api from '@/lib/api'
 import { useConfig } from '@/contexts/ConfigContext'
 import { Header } from '@/components/layout/Header'
@@ -80,11 +81,14 @@ export default function WebSettingsPage() {
   const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
   const tAbout = useTranslations("About")
+  const [activeTab, setActiveTab] = useState<'settings' | 'preview'>('preview')
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
   const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [faviconUploading, setFaviconUploading] = useState(false)
+  const faviconInputRef = useRef<HTMLInputElement>(null)
 
   /** 获取所有配置 */
   const fetchAllConfigs = useCallback(async () => {
@@ -168,6 +172,41 @@ export default function WebSettingsPage() {
         break
       default:
         break
+    }
+  }
+
+  /** Favicon 上传 */
+  async function handleFaviconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFaviconUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { data } = await api.post("/admin/web-settings/images/upload", formData)
+      const updated = { ...rawConfig.siteInfo, favicon_url: data.url }
+      await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await fetchAllConfigs()
+      refreshConfig()
+      toast.success("上传成功")
+    } catch {
+      toast.error("上传失败")
+    } finally {
+      setFaviconUploading(false)
+      if (faviconInputRef.current) faviconInputRef.current.value = ""
+    }
+  }
+
+  /** Favicon 清除 */
+  async function handleFaviconClear() {
+    try {
+      const updated = { ...rawConfig.siteInfo, favicon_url: "" }
+      await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await fetchAllConfigs()
+      refreshConfig()
+      toast.success("已清除")
+    } catch {
+      toast.error("清除失败")
     }
   }
 
@@ -386,23 +425,80 @@ export default function WebSettingsPage() {
     return <p className="text-sm text-muted-foreground">加载中...</p>
   }
 
+  const faviconUrl = rawConfig.siteInfo.favicon_url
+
   return (
     <div className="mx-auto max-w-6xl">
-      <h1 className="mb-6 text-2xl font-bold">网页设置</h1>
+      <h1 className="mb-4 text-2xl font-bold">网页设置</h1>
 
-      {/* 预览容器 — 禁用链接跳转，编辑按钮可点击 */}
-      <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
-        <Header
-          editable
-          hideNav
-          onEdit={handleHeaderEdit}
-        />
-        <NavEditor activePage={activePage} onPageChange={setActivePage} />
-        <div className="max-h-[60vh] overflow-y-auto">
-          <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
-        </div>
-        <Footer editable onEdit={handleFooterEdit} onImageUpload={handleFooterImageUpload} onImageClear={handleFooterImageClear} />
+      {/* 标签页 */}
+      <div className="mb-4 flex gap-1 border-b">
+        {([['settings', '基本设置'], ['preview', '页面预览']] as const).map(([key, label]) => (
+          <button key={key} type="button"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === key
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab(key)}
+          >{label}</button>
+        ))}
       </div>
+
+      {/* 基本设置 tab */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">网站图标</h2>
+            <p className="text-sm text-muted-foreground">设置浏览器标签页显示的网站图标（favicon）</p>
+            <div className="inline-flex items-center gap-2">
+              <div
+                className={`relative flex size-20 shrink-0 cursor-pointer items-center justify-center rounded-lg border-2 transition-colors ${
+                  faviconUrl
+                    ? "border-solid border-muted bg-muted/30"
+                    : "border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5"
+                } ${faviconUploading ? "pointer-events-none opacity-50" : ""}`}
+                onClick={() => faviconInputRef.current?.click()}
+              >
+                {faviconUrl ? (
+                  <img src={faviconUrl} alt="favicon" className="size-14 object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <Upload className="size-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {faviconUploading ? "上传中..." : "点击上传"}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {faviconUrl && (
+                <button type="button"
+                  className="rounded-full p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  onClick={handleFaviconClear}>
+                  <Trash2 className="size-4" />
+                </button>
+              )}
+            </div>
+            <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
+          </section>
+        </div>
+      )}
+
+      {/* 页面预览 tab */}
+      {activeTab === 'preview' && (
+        <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+          <Header
+            editable
+            hideNav
+            onEdit={handleHeaderEdit}
+          />
+          <NavEditor activePage={activePage} onPageChange={setActivePage} />
+          <div className="max-h-[60vh] overflow-y-auto">
+            <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
+          </div>
+          <Footer editable onEdit={handleFooterEdit} onImageUpload={handleFooterImageUpload} onImageClear={handleFooterImageClear} />
+        </div>
+      )}
 
       {/* 配置编辑弹窗 */}
       {dialogState && (
