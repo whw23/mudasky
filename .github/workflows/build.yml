@@ -167,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: 安装 uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
       - name: 运行后端单元测试
         run: uv run --project backend/api --extra dev python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e
 
@@ -178,11 +178,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: 安装 pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: latest
       - name: 安装依赖
@@ -391,11 +391,11 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v5
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: 安装 pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: latest
       - name: 安装依赖
