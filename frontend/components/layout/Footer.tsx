@@ -7,7 +7,7 @@
 
 "use client"
 
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useState, useEffect } from "react"
 import { Phone, Mail, Upload, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
@@ -34,30 +34,42 @@ const SERVICE_LINKS = [
 function QrSlot({ url, label, placeholder, editable, alwaysShow, onUpload, onClear }: {
   url: string; label: string; placeholder: string
   editable?: boolean; alwaysShow?: boolean
-  onUpload?: (file: File) => Promise<void>
+  onUpload?: (file: File) => Promise<string | void>
   onClear?: () => Promise<void>
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const [localUrl, setLocalUrl] = useState<string | null>(null)
+  const displayUrl = localUrl ?? url
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => { setLocalUrl(null) }, [url])
+
+  const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
-    if (f) onUpload?.(f)
+    if (f) {
+      const result = await onUpload?.(f)
+      if (result) setLocalUrl(result)
+    }
     if (fileRef.current) fileRef.current.value = ""
   }, [onUpload])
 
-  if (!url && !editable && !alwaysShow) return null
+  const handleClear = useCallback(async () => {
+    await onClear?.()
+    setLocalUrl("")
+  }, [onClear])
+
+  if (!displayUrl && !editable && !alwaysShow) return null
 
   return (
     <div className="group relative">
       {editable && (
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
       )}
-      {url ? (
+      {displayUrl ? (
         <div className="relative cursor-pointer" onClick={() => editable && fileRef.current?.click()}>
-          <img src={url} alt={label} className="h-28 w-28 rounded-lg border border-border bg-background object-contain" />
+          <img src={displayUrl} alt={label} className="h-28 w-28 rounded-lg border border-border bg-background object-contain" />
           {editable && (
             <button type="button"
-              onClick={(e) => { e.stopPropagation(); onClear?.() }}
+              onClick={(e) => { e.stopPropagation(); handleClear() }}
               className="absolute -top-2 -right-2 rounded-full bg-destructive p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Trash2 className="size-3" />
             </button>
@@ -82,7 +94,7 @@ function QrSlot({ url, label, placeholder, editable, alwaysShow, onUpload, onCle
 interface FooterProps {
   editable?: boolean
   onEdit?: (section: string) => void
-  onImageUpload?: (field: string, file: File) => Promise<void>
+  onImageUpload?: (field: string, file: File) => Promise<string | void>
   onImageClear?: (field: string) => Promise<void>
 }
 

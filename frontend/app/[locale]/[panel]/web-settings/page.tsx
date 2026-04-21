@@ -172,16 +172,17 @@ export default function WebSettingsPage() {
   }
 
   /** 处理 Footer 二维码上传 */
-  async function handleFooterImageUpload(field: string, file: File): Promise<void> {
+  async function handleFooterImageUpload(field: string, file: File): Promise<string | void> {
     try {
       const formData = new FormData()
       formData.append("file", file)
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      await fetchAllConfigs()
+      fetchAllConfigs()
       refreshConfig()
       toast.success("上传成功")
+      return data.url as string
     } catch {
       toast.error("上传失败")
     }
