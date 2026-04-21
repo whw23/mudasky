@@ -6,8 +6,8 @@
  * 移动端：单行（Logo+品牌+标语+电话+汉堡）+ 展开菜单。
  */
 
-import { useState, useEffect } from "react"
-import { Phone, Menu, X } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Phone, Menu, X, Upload, Trash2 } from "lucide-react"
 import { useTranslations, useLocale } from "next-intl"
 import { Link, usePathname } from "@/i18n/navigation"
 import { useAuth } from "@/hooks/use-auth"
@@ -51,15 +51,50 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href)
 }
 
+/** Logo 直接上传槽位 */
+function LogoUploadSlot({ logoUrl, brandName, onUpload, onClear }: {
+  logoUrl: string; brandName: string
+  onUpload?: (file: File) => Promise<string | void>
+  onClear?: () => Promise<void>
+}) {
+  const ref = useRef<HTMLInputElement>(null)
+  const [localUrl, setLocalUrl] = useState<string | null>(null)
+  const displayUrl = localUrl ?? logoUrl
+
+  useEffect(() => { setLocalUrl(null) }, [logoUrl])
+
+  const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) { const url = await onUpload?.(f); if (url) setLocalUrl(url) }
+    if (ref.current) ref.current.value = ""
+  }, [onUpload])
+
+  return (
+    <div className="group/logo relative shrink-0 cursor-pointer" onClick={() => ref.current?.click()}>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      <HeaderLogo logoUrl={displayUrl} brandName={brandName} size={36} className="rounded-lg" />
+      {displayUrl && (
+        <button type="button"
+          onClick={(e) => { e.stopPropagation(); onClear?.(); setLocalUrl("") }}
+          className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-destructive text-white opacity-0 transition-opacity group-hover/logo:opacity-100">
+          <Trash2 className="size-2.5" />
+        </button>
+      )}
+    </div>
+  )
+}
+
 interface HeaderProps {
   editable?: boolean
   onEdit?: (section: string) => void
   onPageChange?: (key: string) => void
   activePage?: string
   hideNav?: boolean
+  onImageUpload?: (field: string, file: File) => Promise<string | void>
+  onImageClear?: (field: string) => Promise<void>
 }
 
-export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: HeaderProps) {
+export function Header({ editable, onEdit, onPageChange, activePage, hideNav, onImageUpload, onImageClear }: HeaderProps) {
   const pathname = usePathname()
   const locale = useLocale()
   const { user, logout, showLoginModal } = useAuth()
@@ -132,18 +167,30 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
           {/* 左侧：Logo + 品牌名 + 标语 */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3">
-              {wrapEditable(
-                <HeaderLogo
+            {editable ? (
+              <div className="flex items-center gap-3">
+                <LogoUploadSlot
                   logoUrl={siteInfo.logo_url}
                   brandName={brandName}
-                  size={36}
-                  className="rounded-lg shrink-0"
-                />,
-                "logo",
-                "编辑 Logo"
-              )}
-              {wrapEditable(
+                  onUpload={(file) => onImageUpload?.("logo_url", file)}
+                  onClear={() => onImageClear?.("logo_url")}
+                />
+                {wrapEditable(
+                  <div className="flex flex-col">
+                    <span className="font-[800] tracking-wide whitespace-nowrap text-foreground" style={{ fontSize: 22 }}>
+                      {brandName}
+                    </span>
+                    <span className="text-[10px] whitespace-nowrap text-muted-foreground">
+                      {brandNameEn}
+                    </span>
+                  </div>,
+                  "brand_name",
+                  "编辑品牌名称"
+                )}
+              </div>
+            ) : (
+              <Link href="/" className="flex items-center gap-3">
+                <HeaderLogo logoUrl={siteInfo.logo_url} brandName={brandName} size={36} className="rounded-lg shrink-0" />
                 <div className="flex flex-col">
                   <span
                     className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
@@ -154,11 +201,9 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                   <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                     {brandNameEn}
                   </span>
-                </div>,
-                "brand_name",
-                "编辑品牌名称"
-              )}
-            </Link>
+                </div>
+              </Link>
+            )}
             {wrapEditable(
               <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                 {tagline}

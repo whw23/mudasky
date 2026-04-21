@@ -130,22 +130,12 @@ export default function WebSettingsPage() {
     await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
     toast.success('保存成功')
     await fetchAllConfigs()
+    refreshConfig()
   }
 
   /** 处理 Header 编辑区域点击 */
   function handleHeaderEdit(section: string): void {
     switch (section) {
-      case 'logo':
-        setDialogState({
-          open: true,
-          title: '编辑 Logo',
-          fields: [
-            { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
       case 'brand_name':
         setDialogState({
           open: true,
@@ -222,8 +212,8 @@ export default function WebSettingsPage() {
     }
   }
 
-  /** 处理 Footer 二维码上传 */
-  async function handleFooterImageUpload(field: string, file: File): Promise<string | void> {
+  /** 处理 site_info 图片上传（Logo、二维码等） */
+  async function handleSiteImageUpload(field: string, file: File): Promise<string | void> {
     try {
       const formData = new FormData()
       formData.append("file", file)
@@ -239,8 +229,8 @@ export default function WebSettingsPage() {
     }
   }
 
-  /** 处理 Footer 二维码清除 */
-  async function handleFooterImageClear(field: string): Promise<void> {
+  /** 处理 site_info 图片清除 */
+  async function handleSiteImageClear(field: string): Promise<void> {
     try {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
@@ -494,12 +484,14 @@ export default function WebSettingsPage() {
             editable
             hideNav
             onEdit={handleHeaderEdit}
+            onImageUpload={handleSiteImageUpload}
+            onImageClear={handleSiteImageClear}
           />
           <NavEditor activePage={activePage} onPageChange={setActivePage} />
           <div className="max-h-[60vh] overflow-y-auto">
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
           </div>
-          <Footer editable onEdit={handleFooterEdit} onImageUpload={handleFooterImageUpload} onImageClear={handleFooterImageClear} />
+          <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
         </div>
       )}
 
