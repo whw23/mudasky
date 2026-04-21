@@ -452,28 +452,30 @@ export default function WebSettingsPage() {
           {/* 模拟浏览器标签栏 */}
           <div className="bg-[#dee1e6] px-2 pt-1.5 pb-0">
             <div className="group inline-flex items-center gap-2 rounded-t-md bg-white px-3 py-1.5 min-w-[160px] max-w-[220px] relative">
-              <div
-                className={`flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors ${
-                  faviconUrl ? "" : "border border-dashed border-muted-foreground/40 hover:border-primary/60"
-                } ${faviconUploading ? "opacity-50" : ""}`}
-                onClick={() => faviconInputRef.current?.click()}
-                title="点击更换网站图标"
-              >
-                {faviconUrl ? (
-                  <img src={faviconUrl} alt="favicon" className="size-4 object-contain rounded-sm" />
-                ) : (
-                  <Upload className="size-2.5 text-muted-foreground/60" />
+              <div className="relative shrink-0">
+                <div
+                  className={`flex size-4 cursor-pointer items-center justify-center rounded-sm transition-colors ${
+                    faviconUrl ? "" : "border border-dashed border-muted-foreground/40 hover:border-primary/60"
+                  } ${faviconUploading ? "opacity-50" : ""}`}
+                  onClick={() => faviconInputRef.current?.click()}
+                  title="点击更换网站图标"
+                >
+                  {faviconUrl ? (
+                    <img src={faviconUrl} alt="favicon" className="size-4 object-contain rounded-sm" />
+                  ) : (
+                    <Upload className="size-2.5 text-muted-foreground/60" />
+                  )}
+                </div>
+                {faviconUrl && editable && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); handleFaviconClear() }} title="清除图标"
+                    className="absolute -top-1.5 -right-1.5 flex size-3.5 items-center justify-center rounded-full bg-destructive text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <Trash2 className="size-2" />
+                  </button>
                 )}
               </div>
               <span className="text-[11px] text-muted-foreground truncate flex-1">
                 {rawConfig.siteInfo.brand_name || '网站标题'}
               </span>
-              <button type="button"
-                onClick={(e) => { e.stopPropagation(); faviconUrl ? handleFaviconClear() : faviconInputRef.current?.click() }}
-                title={faviconUrl ? "清除图标" : "上传图标"}
-                className="size-4 flex items-center justify-center rounded-sm text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!bg-muted hover:!text-foreground transition-all">
-                {faviconUrl ? <span className="text-[10px] leading-none">✕</span> : <Upload className="size-2.5" />}
-              </button>
             </div>
           </div>
           <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
