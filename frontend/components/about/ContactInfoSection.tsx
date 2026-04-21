@@ -1,5 +1,7 @@
 "use client"
 
+import { useState, useRef, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { MapPin, Phone, Mail, MessageCircle, Building } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
@@ -10,6 +12,33 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
  * 从 ConfigContext 读取联系信息
  * 支持字段级编辑（每个联系信息独立 EditableOverlay）
  */
+/** 二维码悬浮放大 */
+function QrPopover({ url, alt }: { url: string; alt: string }) {
+  const [show, setShow] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  const handleEnter = useCallback(() => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect()
+      setPos({ top: rect.top - 200, left: rect.left + rect.width / 2 - 96 })
+    }
+    setShow(true)
+  }, [])
+
+  return (
+    <div ref={ref} className="shrink-0" onMouseEnter={handleEnter} onMouseLeave={() => setShow(false)}>
+      <img src={url} alt={alt} className="size-16 rounded border border-border object-contain cursor-pointer" />
+      {show && createPortal(
+        <div className="pointer-events-none fixed z-[9999]" style={{ top: pos.top, left: pos.left }}>
+          <img src={url} alt={alt} className="size-48 rounded-lg border bg-white shadow-xl object-contain p-2" />
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
 interface ContactInfoSectionProps {
   editable?: boolean
   onEditField?: (field: string) => void
@@ -77,16 +106,7 @@ export function ContactInfoSection({
                     {item.value}
                   </div>
                 </div>
-                {qrUrl && (
-                  <div className="group/qr relative shrink-0">
-                    <img src={qrUrl} alt={item.label}
-                      className="size-16 rounded border border-border object-contain cursor-pointer" />
-                    <div className="pointer-events-none absolute bottom-full right-0 mb-2 opacity-0 transition-opacity group-hover/qr:opacity-100 z-50">
-                      <img src={qrUrl} alt={item.label}
-                        className="size-48 rounded-lg border bg-white shadow-lg object-contain p-1" />
-                    </div>
-                  </div>
-                )}
+                {qrUrl && <QrPopover url={qrUrl} alt={item.label} />}
               </div>
             )
 
