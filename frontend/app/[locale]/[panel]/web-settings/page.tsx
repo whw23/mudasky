@@ -12,6 +12,7 @@ import { Upload, Trash2 } from 'lucide-react'
 import api from '@/lib/api'
 import { useConfig } from '@/contexts/ConfigContext'
 import { Header } from '@/components/layout/Header'
+import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
 import { Footer } from '@/components/layout/Footer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
@@ -81,7 +82,7 @@ export default function WebSettingsPage() {
   const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
   const tAbout = useTranslations("About")
-  const [activeTab, setActiveTab] = useState<'settings' | 'preview'>('preview')
+  const [activeTab, setActiveTab] = useState<'settings' | 'preview' | 'advanced'>('preview')
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
@@ -433,7 +434,7 @@ export default function WebSettingsPage() {
 
       {/* 标签页 */}
       <div className="mb-4 flex gap-1 border-b">
-        {([['settings', '基本设置'], ['preview', '页面预览']] as const).map(([key, label]) => (
+        {([['settings', '基本设置'], ['preview', '页面预览'], ['advanced', '高级设置']] as const).map(([key, label]) => (
           <button key={key} type="button"
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === key
@@ -497,6 +498,17 @@ export default function WebSettingsPage() {
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
           </div>
           <Footer editable onEdit={handleFooterEdit} onImageUpload={handleFooterImageUpload} onImageClear={handleFooterImageClear} />
+        </div>
+      )}
+
+      {/* 高级设置 tab */}
+      {activeTab === 'advanced' && (
+        <div className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
+          <section className="space-y-2">
+            <h2 className="text-lg font-semibold">手机号国家码</h2>
+            <p className="text-sm text-muted-foreground">管理登录/注册页面可选的手机号国家码列表</p>
+            <CountryCodeEditor />
+          </section>
         </div>
       )}
 

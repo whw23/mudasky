@@ -24,7 +24,6 @@ const MODULE_PERMISSIONS: Record<string, Record<string, string>> = {
     dashboard: "admin/dashboard",
     users: "admin/users",
     roles: "admin/roles",
-    "general-settings": "admin/general-settings",
     "web-settings": "admin/web-settings",
     students: "admin/students",
     contacts: "admin/contacts",
