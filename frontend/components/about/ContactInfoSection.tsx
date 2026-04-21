@@ -78,8 +78,14 @@ export function ContactInfoSection({
                   </div>
                 </div>
                 {qrUrl && (
-                  <img src={qrUrl} alt={item.label}
-                    className="size-16 shrink-0 rounded border border-border object-contain" />
+                  <div className="group/qr relative shrink-0">
+                    <img src={qrUrl} alt={item.label}
+                      className="size-16 rounded border border-border object-contain cursor-pointer" />
+                    <div className="pointer-events-none absolute bottom-full right-0 mb-2 opacity-0 transition-opacity group-hover/qr:opacity-100 z-50">
+                      <img src={qrUrl} alt={item.label}
+                        className="size-48 rounded-lg border bg-white shadow-lg object-contain p-1" />
+                    </div>
+                  </div>
                 )}
               </div>
             )
