@@ -45,6 +45,9 @@ export default async function AboutPage() {
     <>
       <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
 
+      {/* 联系方式 */}
+      <ContactInfoSection />
+
       {/* 公司简介 */}
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <div className="text-center">
@@ -125,9 +128,6 @@ export default async function AboutPage() {
           ))}
         </div>
       </section>
-
-      {/* 联系方式 */}
-      <ContactInfoSection />
 
       {/* CTA */}
       <section className="bg-gray-50 py-10 md:py-16">

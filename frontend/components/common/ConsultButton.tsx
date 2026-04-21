@@ -20,9 +20,8 @@ export function ConsultButton({ className, children }: ConsultButtonProps) {
   const router = useRouter()
 
   const handleClick = () => {
-    if (isLoggedIn) {
-      router.push("/about#contact-info")
-    } else {
+    router.push("/about#contact-info")
+    if (!isLoggedIn) {
       showLoginModal()
     }
   }
