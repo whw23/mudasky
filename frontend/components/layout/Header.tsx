@@ -132,14 +132,18 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
           {/* 左侧：Logo + 品牌名 + 标语 */}
           <div className="flex items-center gap-3">
-            {wrapEditable(
-              <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              {wrapEditable(
                 <HeaderLogo
                   logoUrl={siteInfo.logo_url}
                   brandName={brandName}
                   size={36}
                   className="rounded-lg shrink-0"
-                />
+                />,
+                "logo",
+                "编辑 Logo"
+              )}
+              {wrapEditable(
                 <div className="flex flex-col">
                   <span
                     className={`font-[800] tracking-wide whitespace-nowrap ${isTransparentNow ? "text-white/90" : "text-foreground"}`}
@@ -150,11 +154,11 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav }: 
                   <span className={`text-[10px] whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                     {brandNameEn}
                   </span>
-                </div>
-              </Link>,
-              "brand",
-              "编辑品牌名称"
-            )}
+                </div>,
+                "brand_name",
+                "编辑品牌名称"
+              )}
+            </Link>
             {wrapEditable(
               <span className={`text-xs whitespace-nowrap ${isTransparentNow ? "text-white/60" : "text-muted-foreground"}`}>
                 {tagline}

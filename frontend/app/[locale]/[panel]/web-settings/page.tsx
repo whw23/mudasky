@@ -135,13 +135,23 @@ export default function WebSettingsPage() {
   /** 处理 Header 编辑区域点击 */
   function handleHeaderEdit(section: string): void {
     switch (section) {
-      case 'brand':
+      case 'logo':
         setDialogState({
           open: true,
-          title: '编辑品牌',
+          title: '编辑 Logo',
+          fields: [
+            { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'brand_name':
+        setDialogState({
+          open: true,
+          title: '编辑品牌名称',
           fields: [
             { key: 'brand_name', label: '品牌名称', type: 'text' as const, localized: true },
-            { key: 'logo_url', label: 'Logo', type: 'image' as const, localized: false },
           ],
           configKey: 'site_info',
           data: rawConfig.siteInfo,
