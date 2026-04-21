@@ -116,7 +116,7 @@ export function RoleDialog({
         if (!isOpen) onClose()
       }}
     >
-      <DialogContent className="max-w-5xl max-h-[85vh]">
+      <DialogContent className="sm:max-w-6xl max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>
             {t(isEdit ? "editTitle" : "createTitle")}
