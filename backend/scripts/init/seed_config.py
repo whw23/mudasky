@@ -22,7 +22,7 @@ CONFIGS = [
                 "zh": "慕大国际教育",
                 "en": "MUTU International Education",
                 "ja": "慕大国際教育",
-                "de": "Mudasky Internationale Bildung",
+                "de": "MUTU Internationale Bildung",
             },
             "tagline": {
                 "zh": "专注国际教育 · 专注出国服务",
