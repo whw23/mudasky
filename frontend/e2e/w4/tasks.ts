@@ -530,10 +530,10 @@ export const tasks: Task[] = [
     requires: ["w4_register"],
     fn: verifyPermissionDenied,
     fnArgs: {
-      routes: ["/portal/profile", "/portal/documents", "/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/general-settings", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
+      routes: ["/portal/profile", "/portal/documents", "/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
     },
     coverage: {
-      routes: ["/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/general-settings", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
+      routes: ["/portal/overview", "/portal/contacts", "/portal/dashboard", "/portal/roles", "/portal/students", "/portal/users", "/portal/web-settings"],
       api: [],
       components: [],
       security: ["portal-denied"],

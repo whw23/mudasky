@@ -292,8 +292,8 @@ export const tasks: Task[] = [
     },
     backupWorkers: ["w1"],
     coverage: {
-      routes: ["/admin/general-settings"],
-      api: ["/api/admin/general-settings/list", "/api/admin/general-settings/list/detail/edit"],
+      routes: ["/admin/web-settings"],
+      api: ["/api/admin/web-settings/list", "/api/admin/web-settings/list/detail/edit"],
       components: [["GeneralSettingsPage", "config-section"], ["EditableOverlay", "edit-button"]],
     },
   },
@@ -356,7 +356,6 @@ export const tasks: Task[] = [
     fnArgs: { role: "content_admin" },
     coverage: {
       routes: [
-        "/admin/general-settings",
         "/admin/web-settings",
       ],
       components: [["AdminSidebar", "nav-links"]],

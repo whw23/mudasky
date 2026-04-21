@@ -162,7 +162,7 @@ class TestFindLabeledRouters:
     def test_multiple_routers(self):
         """找到模块中多个带标签的 router。"""
         mod = ModuleType("test_mod")
-        r1 = APIRouter(prefix="/general-settings")
+        r1 = APIRouter(prefix="/web-settings/general")
         r1.label = "通用配置"
         r2 = APIRouter(prefix="/web-settings")
         r2.label = "网站设置"
@@ -284,7 +284,7 @@ class TestBuildLabelMap:
 
         module_routes = {
             "api.admin.config.router": [
-                ("/admin/general-settings/list", "配置列表"),
+                ("/admin/web-settings/list", "配置列表"),
             ],
         }
         result = _build_label_map(module_routes)

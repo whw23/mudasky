@@ -38,8 +38,6 @@ async function main() {
     "/admin/users",
     "/admin/roles",
     "/admin/web-settings",
-    "/admin/general-settings",
-    "/admin/web-settings",
   ]
 
   for (const p of adminPages) {

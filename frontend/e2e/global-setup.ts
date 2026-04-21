@@ -19,7 +19,7 @@ const WARMUP_ROUTES = [
   // admin 面板
   "/admin/dashboard", "/admin/users", "/admin/students",
   "/admin/contacts", "/admin/roles",
-  "/admin/general-settings", "/admin/web-settings",
+  "/admin/web-settings",
   // portal 面板
   "/portal/overview", "/portal/profile", "/portal/documents",
 ]

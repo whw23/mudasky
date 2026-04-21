@@ -9,13 +9,13 @@ export type TaskFn = (page: Page, args?: Record<string, unknown>) => Promise<voi
 
 /** 验证通用配置页面 */
 export async function verifyGeneralSettings(page: Page): Promise<void> {
-  await page.goto("/admin/general-settings")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
 }
 
 /** 编辑通用配置（修改国家码启用状态后回滚） */
 export async function editGeneralSettings(page: Page): Promise<void> {
-  await page.goto("/admin/general-settings")
+  await page.goto("/admin/web-settings")
   await page.getByRole("heading", { name: "通用配置" }).waitFor({ timeout: 15_000 })
   await page.getByRole("button", { name: "保存" }).waitFor({ timeout: 15_000 })
 
@@ -23,7 +23,7 @@ export async function editGeneralSettings(page: Page): Promise<void> {
   await secondCheckbox.click()
 
   const saveResponse = page.waitForResponse(
-    (r) => r.url().includes("/admin/general-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
+    (r) => r.url().includes("/admin/web-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
     { timeout: 15_000 },
   )
   await page.getByRole("button", { name: "保存" }).click()
@@ -32,7 +32,7 @@ export async function editGeneralSettings(page: Page): Promise<void> {
   // 回滚
   await secondCheckbox.click()
   const rollbackResponse = page.waitForResponse(
-    (r) => r.url().includes("/admin/general-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
+    (r) => r.url().includes("/admin/web-settings/list/edit") && r.request().method() === "POST" && r.status() === 200,
     { timeout: 15_000 },
   )
   await page.getByRole("button", { name: "保存" }).click()

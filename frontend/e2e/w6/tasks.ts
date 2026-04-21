@@ -253,19 +253,6 @@ export const tasks: Task[] = [
     },
   },
   {
-    id: "w6_denied_general_settings",
-    worker: "w6",
-    name: "无权限访问通用配置",
-    requires: ["w6_reload_auth"],
-    fn: verifyPermissionDenied,
-    fnArgs: {
-      routes: ["/admin/general-settings"],
-    },
-    coverage: {
-      security: [["permission", "route-denied-general-settings"]],
-    },
-  },
-  {
     id: "w6_denied_web_settings",
     worker: "w6",
     name: "无权限访问网页设置",

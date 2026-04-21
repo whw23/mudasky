@@ -702,8 +702,8 @@ export const tasks: Task[] = [
     fnArgs: {},
     backupWorkers: ["w5"],
     coverage: {
-      routes: ["/admin/general-settings"],
-      api: ["/admin/general-settings/list"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/list"],
       components: ["GeneralSettings"],
       security: [],
     },
@@ -717,8 +717,8 @@ export const tasks: Task[] = [
     fnArgs: {},
     backupWorkers: ["w5"],
     coverage: {
-      routes: ["/admin/general-settings"],
-      api: ["/admin/general-settings/list/edit"],
+      routes: ["/admin/web-settings"],
+      api: ["/admin/web-settings/list/edit"],
       components: ["GeneralSettings"],
       security: [],
     },
