@@ -69,18 +69,18 @@ export function ContactInfoSection({
             const content = (
               <div className="flex items-start gap-3 rounded-lg bg-white p-5">
                 <item.icon className="mt-0.5 size-5 shrink-0 text-primary" />
-                <div>
+                <div className="flex-1">
                   <div className="text-sm font-medium text-muted-foreground">
                     {item.label}
                   </div>
                   <div className="mt-1 text-sm text-foreground">
                     {item.value}
                   </div>
-                  {qrUrl && (
-                    <img src={qrUrl} alt={item.label}
-                      className="mt-3 size-28 rounded-lg border border-border object-contain" />
-                  )}
                 </div>
+                {qrUrl && (
+                  <img src={qrUrl} alt={item.label}
+                    className="size-16 shrink-0 rounded border border-border object-contain" />
+                )}
               </div>
             )
 
