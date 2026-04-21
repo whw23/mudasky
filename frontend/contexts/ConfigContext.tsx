@@ -109,8 +109,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [navConfig, setNavConfig] = useState<NavConfig>(DEFAULT_NAV_CONFIG)
   const [pageBanners, setPageBanners] = useState<PageBanners>({})
 
-  const fetchConfig = useCallback(() => {
-    api.get('/public/config/all')
+  const fetchConfig = useCallback((bustCache = false) => {
+    api.get('/public/config/all', bustCache ? { headers: { 'Cache-Control': 'no-cache' } } : {})
       .then((res) => {
         const data = res.data
         if (data.contact_info) setContactInfo({ ...DEFAULT_CONTACT_INFO, ...data.contact_info })
@@ -126,7 +126,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   useEffect(() => { fetchConfig() }, [fetchConfig])
 
   return (
-    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, refreshConfig: fetchConfig }}>
+    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, refreshConfig: () => fetchConfig(true) }}>
       {children}
     </ConfigContext>
   )
