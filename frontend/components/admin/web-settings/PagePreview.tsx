@@ -9,6 +9,7 @@
 
 import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { useLocalizedConfig } from "@/contexts/ConfigContext"
 
 import { Banner } from "@/components/layout/Banner"
 import { StatsSection } from "@/components/home/StatsSection"
@@ -49,6 +50,12 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
 /** 首页预览 — 复用真实首页组件 */
 function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
   const t = useTranslations("Home")
+  const { siteInfo } = useLocalizedConfig()
+
+  const heroTitle = siteInfo.hero_title || t("heroTitle")
+  const heroSubtitle = siteInfo.hero_subtitle || t("heroSubtitle")
+  const servicesTitle = siteInfo.services_title || t("servicesTitle")
+  const destinationsTitle = siteInfo.destinations_title || t("destinationsTitle")
 
   const services = [
     { icon: "🎓", title: t("service.studyAbroad"), desc: t("service.studyAbroadDesc") },
@@ -67,17 +74,17 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
     <>
       <div className="relative">
         <EditableOverlay onClick={() => onBannerEdit("home")} label="编辑 Banner 背景">
-          <Banner title={t("heroTitle")} subtitle={t("heroSubtitle")} large />
+          <Banner title={heroTitle} subtitle={heroSubtitle} large />
         </EditableOverlay>
         <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
           <EditableOverlay onClick={() => onEditConfig("hero_title")} label="编辑标题" inline>
             <span className="pointer-events-auto text-2xl md:text-5xl font-bold tracking-wide text-transparent select-none">
-              【{t("heroTitle")}】
+              【{heroTitle}】
             </span>
           </EditableOverlay>
           <EditableOverlay onClick={() => onEditConfig("hero_subtitle")} label="编辑副标题" inline>
             <span className="pointer-events-auto text-xs md:text-sm tracking-[0.3em] text-transparent select-none">
-              {t("heroSubtitle")}
+              {heroSubtitle}
             </span>
           </EditableOverlay>
         </div>
@@ -94,7 +101,7 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
               {t("servicesTag")}
             </h2>
             <EditableOverlay onClick={() => onEditConfig("services_title")} label="编辑服务标题" inline>
-              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("servicesTitle")}</h3>
+              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{servicesTitle}</h3>
             </EditableOverlay>
             <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
           </div>
@@ -117,7 +124,7 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
             {t("destinationsTag")}
           </h2>
           <EditableOverlay onClick={() => onEditConfig("destinations_title")} label="编辑留学国家标题" inline>
-            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("destinationsTitle")}</h3>
+            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{destinationsTitle}</h3>
           </EditableOverlay>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
