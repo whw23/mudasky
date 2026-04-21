@@ -7,7 +7,8 @@
 
 "use client"
 
-import { Phone, Mail } from "lucide-react"
+import { useRef } from "react"
+import { Phone, Mail, Upload, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
@@ -29,15 +30,59 @@ const SERVICE_LINKS = [
   { key: "news", href: "/news" },
 ] as const
 
+/** 二维码槽位 */
+function QrSlot({ url, label, placeholder, editable, alwaysShow, inputRef, onUpload, onClear }: {
+  url: string; label: string; placeholder: string
+  editable?: boolean; alwaysShow?: boolean
+  inputRef: React.RefObject<HTMLInputElement | null>
+  onUpload?: (file: File) => Promise<void>
+  onClear?: () => Promise<void>
+}) {
+  if (!url && !editable && !alwaysShow) return null
+
+  return (
+    <div className="group relative">
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload?.(f); if (inputRef.current) inputRef.current.value = "" }} />
+      {url ? (
+        <div className="relative">
+          <img src={url} alt={label} className="h-28 w-28 rounded-lg border border-border bg-background object-contain" />
+          {editable && (
+            <button type="button" onClick={() => onClear?.()}
+              className="absolute -top-2 -right-2 rounded-full bg-destructive p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Trash2 className="size-3" />
+            </button>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border bg-background text-xs text-muted-foreground ${
+            editable ? "cursor-pointer border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5" : "border-border"
+          }`}
+          onClick={() => editable && inputRef.current?.click()}
+        >
+          {editable ? <Upload className="size-5 text-muted-foreground" /> : null}
+          {placeholder}
+        </div>
+      )}
+      <p className="mt-2 text-center text-xs text-muted-foreground">{label}</p>
+    </div>
+  )
+}
+
 interface FooterProps {
   editable?: boolean
   onEdit?: (section: string) => void
+  onImageUpload?: (field: string, file: File) => Promise<void>
+  onImageClear?: (field: string) => Promise<void>
 }
 
-export function Footer({ editable, onEdit }: FooterProps) {
+export function Footer({ editable, onEdit, onImageUpload, onImageClear }: FooterProps) {
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
   const { contactInfo, siteInfo } = useLocalizedConfig()
+  const serviceQrRef = useRef<HTMLInputElement>(null)
+  const officialQrRef = useRef<HTMLInputElement>(null)
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string, inline?: boolean) {
@@ -131,42 +176,25 @@ export function Footer({ editable, onEdit }: FooterProps) {
             {t("followUs")}
           </h3>
           <div className="flex gap-4">
-            {/* 客服微信（必展示） */}
-            {wrapEditable(
-              <div>
-                {siteInfo.wechat_service_qr_url ? (
-                  <img
-                    src={siteInfo.wechat_service_qr_url}
-                    alt={t("wechatService")}
-                    className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
-                  />
-                ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-lg border border-border bg-background text-xs text-muted-foreground">
-                    {t("qrPlaceholder")}
-                  </div>
-                )}
-                <p className="mt-2 text-center text-xs text-muted-foreground">
-                  {t("wechatService")}
-                </p>
-              </div>,
-              "wechat_service_qr",
-              "编辑客服微信二维码"
-            )}
-            {/* 公众号（有值才展示） */}
-            {siteInfo.wechat_official_qr_url && wrapEditable(
-              <div>
-                <img
-                  src={siteInfo.wechat_official_qr_url}
-                  alt={t("wechatOfficial")}
-                  className="h-28 w-28 rounded-lg border border-border bg-background object-contain"
-                />
-                <p className="mt-2 text-center text-xs text-muted-foreground">
-                  {t("wechatOfficial")}
-                </p>
-              </div>,
-              "wechat_official_qr",
-              "编辑公众号二维码"
-            )}
+            <QrSlot
+              url={siteInfo.wechat_service_qr_url}
+              label={t("wechatService")}
+              placeholder={t("qrPlaceholder")}
+              editable={editable}
+              alwaysShow
+              inputRef={serviceQrRef}
+              onUpload={(file) => onImageUpload?.("wechat_service_qr_url", file)}
+              onClear={() => onImageClear?.("wechat_service_qr_url")}
+            />
+            <QrSlot
+              url={siteInfo.wechat_official_qr_url}
+              label={t("wechatOfficial")}
+              placeholder={t("qrPlaceholder")}
+              editable={editable}
+              inputRef={officialQrRef}
+              onUpload={(file) => onImageUpload?.("wechat_official_qr_url", file)}
+              onClear={() => onImageClear?.("wechat_official_qr_url")}
+            />
           </div>
         </div>
       </div>

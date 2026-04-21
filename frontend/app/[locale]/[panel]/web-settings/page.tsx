@@ -169,6 +169,33 @@ export default function WebSettingsPage() {
     }
   }
 
+  /** 处理 Footer 二维码上传 */
+  async function handleFooterImageUpload(field: string, file: File): Promise<void> {
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { data } = await api.post("/admin/web-settings/images/upload", formData)
+      const updated = { ...rawConfig.siteInfo, [field]: data.url }
+      await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await fetchAllConfigs()
+      toast.success("上传成功")
+    } catch {
+      toast.error("上传失败")
+    }
+  }
+
+  /** 处理 Footer 二维码清除 */
+  async function handleFooterImageClear(field: string): Promise<void> {
+    try {
+      const updated = { ...rawConfig.siteInfo, [field]: "" }
+      await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await fetchAllConfigs()
+      toast.success("已清除")
+    } catch {
+      toast.error("清除失败")
+    }
+  }
+
   /** 处理 Footer 编辑区域点击 */
   function handleFooterEdit(section: string): void {
     switch (section) {
@@ -198,24 +225,6 @@ export default function WebSettingsPage() {
           fields: [{ key: 'email', label: '邮箱', type: 'text' as const, localized: false }],
           configKey: 'contact_info',
           data: rawConfig.contactInfo,
-        })
-        break
-      case 'wechat_service_qr':
-        setDialogState({
-          open: true,
-          title: '编辑客服微信二维码',
-          fields: [{ key: 'wechat_service_qr_url', label: '客服微信二维码', type: 'image' as const, localized: false }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'wechat_official_qr':
-        setDialogState({
-          open: true,
-          title: '编辑公众号二维码',
-          fields: [{ key: 'wechat_official_qr_url', label: '公众号二维码', type: 'image' as const, localized: false }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
         })
         break
       case 'company':
@@ -387,7 +396,7 @@ export default function WebSettingsPage() {
         <div className="max-h-[60vh] overflow-y-auto">
           <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
         </div>
-        <Footer editable onEdit={handleFooterEdit} />
+        <Footer editable onEdit={handleFooterEdit} onImageUpload={handleFooterImageUpload} onImageClear={handleFooterImageClear} />
       </div>
 
       {/* 配置编辑弹窗 */}
