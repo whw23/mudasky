@@ -12,6 +12,7 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 
 import { Banner } from "@/components/layout/Banner"
+import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
 import {
   HistorySection,
@@ -52,8 +53,6 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
   const t = useTranslations("Home")
   const { siteInfo } = useLocalizedConfig()
 
-  const heroTitle = siteInfo.brand_name || t("heroTitle")
-  const heroSubtitle = siteInfo.tagline || t("heroSubtitle")
   const servicesTitle = siteInfo.services_title || t("servicesTitle")
   const destinationsTitle = siteInfo.destinations_title || t("destinationsTitle")
 
@@ -72,23 +71,7 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
 
   return (
     <>
-      <div className="relative">
-        <EditableOverlay onClick={() => onBannerEdit("home")} label="编辑 Banner 背景">
-          <Banner title={heroTitle} subtitle={heroSubtitle} large />
-        </EditableOverlay>
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
-          <EditableOverlay onClick={() => onEditConfig("brand_name")} label="编辑品牌名称" inline>
-            <span className="pointer-events-auto text-2xl md:text-5xl font-bold tracking-wide text-transparent select-none">
-              【{heroTitle}】
-            </span>
-          </EditableOverlay>
-          <EditableOverlay onClick={() => onEditConfig("tagline")} label="编辑标语" inline>
-            <span className="pointer-events-auto text-xs md:text-sm tracking-[0.3em] text-transparent select-none">
-              {heroSubtitle}
-            </span>
-          </EditableOverlay>
-        </div>
-      </div>
+      <HomeBanner editable onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
 
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <StatsSection />
