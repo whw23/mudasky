@@ -104,7 +104,7 @@ class CaseService:
         file_data = await file.read()
         if len(file_data) > MAX_IMAGE_SIZE:
             raise BadRequestException(
-                message="图片大小不能超过 5MB",
+                message="图片大小不能超过 10MB",
                 code="IMAGE_TOO_LARGE",
             )
         return await image_repo.create_image(

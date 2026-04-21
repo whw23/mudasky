@@ -409,13 +409,13 @@ async def test_upload_pdf_not_found(mock_repo, service):
 @pytest.mark.asyncio
 @patch(REPO)
 async def test_upload_pdf_too_large(mock_repo, service):
-    """上传超过 5MB 的 PDF 抛出 BadRequestException。"""
+    """上传超过 10MB 的 PDF 抛出 BadRequestException。"""
     article = _make_article()
     mock_repo.get_article_by_id = AsyncMock(
         return_value=article
     )
 
-    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    large_content = b"x" * (10 * 1024 * 1024 + 1)
     file = _make_upload_file(content=large_content)
 
     with pytest.raises(BadRequestException) as exc_info:

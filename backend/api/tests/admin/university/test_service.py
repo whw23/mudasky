@@ -53,8 +53,9 @@ def service() -> UniversityService:
 
 
 @pytest.mark.asyncio
+@patch("api.admin.config.web_settings.universities.service.prog_repo")
 @patch(REPO)
-async def test_list_universities(mock_repo, service):
+async def test_list_universities(mock_repo, mock_prog_repo, service):
     """分页查询院校列表，返回列表和总数。"""
     universities = [
         _make_university(),
@@ -63,6 +64,7 @@ async def test_list_universities(mock_repo, service):
     mock_repo.list_universities = AsyncMock(
         return_value=(universities, 2)
     )
+    mock_prog_repo.list_programs = AsyncMock(return_value=[])
 
     result, total = await service.list_universities(
         offset=0, limit=10

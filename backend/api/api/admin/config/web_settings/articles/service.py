@@ -104,7 +104,7 @@ class ArticleService:
         file_data = await file.read()
         if len(file_data) > MAX_IMAGE_SIZE:
             raise BadRequestException(
-                message="文件大小不能超过 5MB",
+                message="文件大小不能超过 10MB",
                 code="FILE_TOO_LARGE",
             )
         image = await image_repo.create_image(

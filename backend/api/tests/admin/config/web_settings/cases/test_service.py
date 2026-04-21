@@ -345,11 +345,11 @@ async def test_upload_avatar_invalid_type(mock_repo, service):
 async def test_upload_avatar_too_large(
     mock_repo, mock_image_repo, service
 ):
-    """上传超过 5MB 的图片抛出 BadRequestException。"""
+    """上传超过 10MB 的图片抛出 BadRequestException。"""
     case = _make_case()
     mock_repo.get_case_by_id = AsyncMock(return_value=case)
 
-    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    large_content = b"x" * (10 * 1024 * 1024 + 1)
     file = _make_upload_file(content=large_content)
 
     with pytest.raises(BadRequestException) as exc_info:
@@ -418,11 +418,11 @@ async def test_upload_offer_invalid_type(mock_repo, service):
 async def test_upload_offer_too_large(
     mock_repo, mock_image_repo, service
 ):
-    """上传超过 5MB 的图片抛出 BadRequestException。"""
+    """上传超过 10MB 的图片抛出 BadRequestException。"""
     case = _make_case()
     mock_repo.get_case_by_id = AsyncMock(return_value=case)
 
-    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    large_content = b"x" * (10 * 1024 * 1024 + 1)
     file = _make_upload_file(content=large_content)
 
     with pytest.raises(BadRequestException) as exc_info:

@@ -349,8 +349,11 @@ class TestBuildTreeFromRoutes:
         }
         result = _build_tree_from_routes(app, label_map)
         children = result["admin"]["children"]
-        assert "web-settings/articles" in children
-        articles = children["web-settings/articles"]
+        assert "web-settings" in children
+        ws = children["web-settings"]
+        assert ws["description"] == "网站设置"
+        assert "articles" in ws["children"]
+        articles = ws["children"]["articles"]
         assert articles["description"] == "文章管理"
         assert articles["children"]["list"]["description"] == "文章列表"
 
@@ -365,7 +368,9 @@ class TestBuildTreeFromRoutes:
             "/portal": "用户面板",
         }
         result = _build_tree_from_routes(app, label_map)
-        assert result["admin"]["children"] == {}
+        assert result["admin"]["children"] == {
+            "dashboard": {"description": "管理仪表盘"},
+        }
 
 
 # ---- build_permission_tree ----

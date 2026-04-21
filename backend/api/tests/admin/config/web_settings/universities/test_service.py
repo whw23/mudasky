@@ -203,13 +203,12 @@ async def test_upload_image_university_not_found(mock_repo, service):
 @patch(IMAGE_REPO)
 @patch(REPO)
 async def test_upload_image_too_large(mock_repo, mock_image_repo, service):
-    """上传超过 5MB 的图片抛出 BadRequestException。"""
+    """上传超过 10MB 的图片抛出 BadRequestException。"""
     university = _make_university()
     mock_repo.get_university_by_id = AsyncMock(return_value=university)
     mock_repo.count_university_images = AsyncMock(return_value=2)
 
-    # 创建超过 5MB 的文件
-    large_content = b"x" * (5 * 1024 * 1024 + 1)
+    large_content = b"x" * (10 * 1024 * 1024 + 1)
     file = _make_upload_file(content=large_content)
 
     with pytest.raises(BadRequestException) as exc_info:
