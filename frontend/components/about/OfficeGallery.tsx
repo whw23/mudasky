@@ -71,9 +71,9 @@ export function OfficeGallery({ editable }: OfficeGalleryProps) {
         <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 flex gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: "thin" }}>
         {hasImages && images.map((img) => (
-          <div key={img.image_id} className="group relative overflow-hidden rounded-lg border">
+          <div key={img.image_id} className="group relative shrink-0 overflow-hidden rounded-lg border" style={{ width: 280 }}>
             <img
               src={`/api/public/images/detail?id=${img.image_id}`}
               alt={img.caption || "办公环境"}
@@ -91,7 +91,7 @@ export function OfficeGallery({ editable }: OfficeGalleryProps) {
         ))}
 
         {editable && (
-          <label className="flex aspect-video cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition hover:border-primary">
+          <label className="flex shrink-0 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition hover:border-primary" style={{ width: 280, aspectRatio: "16/9" }}>
             <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
             <div className="flex flex-col items-center text-muted-foreground">
               {uploading ? (
@@ -107,7 +107,7 @@ export function OfficeGallery({ editable }: OfficeGalleryProps) {
         )}
 
         {!hasImages && !editable && (
-          <div className="col-span-full flex items-center justify-center py-16 text-muted-foreground">
+          <div className="flex w-full items-center justify-center py-16 text-muted-foreground">
             <Building2 className="mr-2 size-5" />
             暂无办公环境图片
           </div>
