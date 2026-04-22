@@ -4,6 +4,7 @@ import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
 import { SectionTitle } from "@/components/home/SectionTitle"
 import { CtaSection } from "@/components/common/CtaSection"
+import { NewsSection } from "@/components/home/NewsSection"
 import {
   GraduationCap,
   Globe,
@@ -107,40 +108,7 @@ export default async function HomePage() {
       </section>
 
       {/* 最新资讯 */}
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {t("newsTag")}
-              </h2>
-              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("newsTitle")}</h3>
-            </div>
-            <Link
-              href="/news"
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
-            >
-              {t("viewAll")} <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="group rounded-lg border bg-white p-6 transition-all duration-200 hover:border-primary hover:shadow-sm"
-              >
-                <div className="text-xs text-muted-foreground">2026-04-07</div>
-                <h4 className="mt-2 font-bold transition-colors group-hover:text-primary">
-                  {t("articlePlaceholderTitle", { index: i })}
-                </h4>
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                  {t("articlePlaceholderSummary")}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <NewsSection />
 
       {/* CTA */}
       <CtaSection translationNamespace="Home" variant="border-t" />
