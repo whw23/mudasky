@@ -10,7 +10,7 @@ import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { useTranslations } from "next-intl"
 import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
-import { HeroSearch } from "./HeroSearch"
+import { SearchBar } from "@/components/common/SearchBar"
 
 interface HomeBannerProps {
   editable?: boolean
@@ -28,7 +28,7 @@ export function HomeBanner({ editable, onEditConfig, onBannerEdit }: HomeBannerP
   const subtitle = siteInfo.tagline || t("heroSubtitle")
 
   const banner = <Banner title={title} subtitle={subtitle} imageIds={imageIds} large>
-    {!editable && <HeroSearch />}
+    {!editable && <SearchBar />}
   </Banner>
 
   if (!editable) return banner
