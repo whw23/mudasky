@@ -18,6 +18,7 @@ import { PreviewContainer } from '@/components/admin/PreviewContainer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
+import { ArrayEditDialog } from '@/components/admin/ArrayEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
@@ -96,6 +97,14 @@ export default function WebSettingsPage() {
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
   const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
+  const [arrayDialogState, setArrayDialogState] = useState<{
+    open: boolean
+    title: string
+    siteInfoKey: string
+    fields: { key: string; label: string; type: 'text' | 'textarea'; localized: boolean; rows?: number }[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any[]
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [faviconUploading, setFaviconUploading] = useState(false)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -139,6 +148,17 @@ export default function WebSettingsPage() {
     toast.success('保存成功')
     await fetchAllConfigs(true)
     refreshConfig()
+  }
+
+  /** 数组字段保存处理 */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function handleArraySave(data: any[]): Promise<void> {
+    if (!arrayDialogState) return
+    const updated = { ...rawConfig.siteInfo, [arrayDialogState.siteInfoKey]: data }
+    await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+    await fetchAllConfigs(true)
+    refreshConfig()
+    setArrayDialogState(null)
   }
 
   /** 处理 Header 编辑区域点击 */
@@ -425,9 +445,15 @@ export default function WebSettingsPage() {
         })
         break
       case 'about_office_images':
-        // TODO: This will use ArrayEditDialog — for now just add a placeholder case
-        // The actual ArrayEditDialog integration will be done when we wire up all array editing
-        toast.info('办公环境图片管理功能开发中')
+        setArrayDialogState({
+          open: true, title: '编辑办公环境图片',
+          siteInfoKey: 'about_office_images',
+          fields: [
+            { key: 'image_id', label: '图片 ID', type: 'text', localized: false },
+            { key: 'caption', label: '图片说明', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.about_office_images || [],
+        })
         break
       case 'universities_intro_title':
         setDialogState({
@@ -520,7 +546,16 @@ export default function WebSettingsPage() {
         })
         break
       case 'study_abroad_programs':
-        toast.info('留学项目编辑功能开发中')
+        setArrayDialogState({
+          open: true, title: '编辑留学项目',
+          siteInfoKey: 'study_abroad_programs',
+          fields: [
+            { key: 'name', label: '项目名称', type: 'text', localized: true },
+            { key: 'country', label: '国家', type: 'text', localized: true },
+            { key: 'desc', label: '项目描述', type: 'textarea', localized: true, rows: 3 },
+          ],
+          data: rawConfig.siteInfo.study_abroad_programs || [],
+        })
         break
       case 'visa_cta':
         setDialogState({
@@ -535,10 +570,47 @@ export default function WebSettingsPage() {
         })
         break
       case 'visa_process_steps':
+        setArrayDialogState({
+          open: true, title: '编辑签证流程',
+          siteInfoKey: 'visa_process_steps',
+          fields: [
+            { key: 'title', label: '步骤标题', type: 'text', localized: true },
+            { key: 'desc', label: '步骤描述', type: 'textarea', localized: true, rows: 2 },
+          ],
+          data: rawConfig.siteInfo.visa_process_steps || [],
+        })
+        break
       case 'visa_required_docs':
+        setArrayDialogState({
+          open: true, title: '编辑签证所需材料',
+          siteInfoKey: 'visa_required_docs',
+          fields: [
+            { key: 'text', label: '材料名称', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.visa_required_docs || [],
+        })
+        break
       case 'visa_timeline':
+        setArrayDialogState({
+          open: true, title: '编辑办理周期',
+          siteInfoKey: 'visa_timeline',
+          fields: [
+            { key: 'title', label: '阶段名称', type: 'text', localized: true },
+            { key: 'time', label: '时间', type: 'text', localized: true },
+            { key: 'desc', label: '说明', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.visa_timeline || [],
+        })
+        break
       case 'visa_tips':
-        toast.info('编辑功能开发中')
+        setArrayDialogState({
+          open: true, title: '编辑签证注意事项',
+          siteInfoKey: 'visa_tips',
+          fields: [
+            { key: 'text', label: '注意事项', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.visa_tips || [],
+        })
         break
       case 'requirements_cta':
         setDialogState({
@@ -553,10 +625,45 @@ export default function WebSettingsPage() {
         })
         break
       case 'requirements_countries':
+        setArrayDialogState({
+          open: true, title: '编辑各国申请条件',
+          siteInfoKey: 'requirements_countries',
+          fields: [
+            { key: 'country', label: '国家', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.requirements_countries || [],
+        })
+        break
       case 'requirements_languages':
+        setArrayDialogState({
+          open: true, title: '编辑语言要求',
+          siteInfoKey: 'requirements_languages',
+          fields: [
+            { key: 'language', label: '语言', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.requirements_languages || [],
+        })
+        break
       case 'requirements_docs':
+        setArrayDialogState({
+          open: true, title: '编辑材料清单',
+          siteInfoKey: 'requirements_docs',
+          fields: [
+            { key: 'text', label: '材料名称', type: 'text', localized: true },
+          ],
+          data: rawConfig.siteInfo.requirements_docs || [],
+        })
+        break
       case 'requirements_steps':
-        toast.info('编辑功能开发中')
+        setArrayDialogState({
+          open: true, title: '编辑申请流程',
+          siteInfoKey: 'requirements_steps',
+          fields: [
+            { key: 'title', label: '步骤标题', type: 'text', localized: true },
+            { key: 'desc', label: '步骤描述', type: 'textarea', localized: true, rows: 2 },
+          ],
+          data: rawConfig.siteInfo.requirements_steps || [],
+        })
         break
       case 'life_intro_title':
         setDialogState({
@@ -589,8 +696,29 @@ export default function WebSettingsPage() {
         })
         break
       case 'life_guide_cards':
+        setArrayDialogState({
+          open: true, title: '编辑生活指南板块',
+          siteInfoKey: 'life_guide_cards',
+          fields: [
+            { key: 'icon', label: '图标名称', type: 'text', localized: false },
+            { key: 'title', label: '板块标题', type: 'text', localized: true },
+            { key: 'desc', label: '板块描述', type: 'textarea', localized: true, rows: 2 },
+          ],
+          data: rawConfig.siteInfo.life_guide_cards || [],
+        })
+        break
       case 'life_city_cards':
-        toast.info('编辑功能开发中')
+        setArrayDialogState({
+          open: true, title: '编辑城市指南',
+          siteInfoKey: 'life_city_cards',
+          fields: [
+            { key: 'city', label: '城市名称', type: 'text', localized: true },
+            { key: 'country', label: '国家', type: 'text', localized: true },
+            { key: 'desc', label: '城市描述', type: 'textarea', localized: true, rows: 2 },
+            { key: 'image_id', label: '图片 ID', type: 'text', localized: false },
+          ],
+          data: rawConfig.siteInfo.life_city_cards || [],
+        })
         break
       default:
         // contact_* prefix handles individual contact fields
@@ -723,6 +851,18 @@ export default function WebSettingsPage() {
           pageKey={bannerDialogState.pageKey}
           imageIds={rawConfig.pageBanners[bannerDialogState.pageKey]?.image_ids || []}
           onUpdate={() => { fetchAllConfigs(true); refreshConfig() }}
+        />
+      )}
+
+      {/* 数组字段编辑弹窗 */}
+      {arrayDialogState && (
+        <ArrayEditDialog
+          open={arrayDialogState.open}
+          onOpenChange={(open) => { if (!open) setArrayDialogState(null) }}
+          title={arrayDialogState.title}
+          fields={arrayDialogState.fields}
+          data={arrayDialogState.data}
+          onSave={handleArraySave}
         />
       )}
     </div>
