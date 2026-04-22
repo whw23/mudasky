@@ -6,11 +6,12 @@
  */
 
 import * as React from "react"
+import { useState } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
+import { Maximize2, Minimize2, XIcon } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return (
@@ -54,35 +55,54 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  enableFullscreen = true,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  /** 是否显示全屏切换按钮 */
+  enableFullscreen?: boolean
 }) {
+  const [fullscreen, setFullscreen] = useState(false)
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-popover text-sm text-popover-foreground shadow-lg duration-100 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          className
-        )}
+        data-fullscreen={fullscreen || undefined}
+        className={
+          fullscreen
+            ? "fixed inset-2 z-50 flex flex-col rounded-xl border bg-popover text-sm text-popover-foreground shadow-lg duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+            : cn(
+                "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-popover text-sm text-popover-foreground shadow-lg duration-100 outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+                className,
+              )
+        }
         {...props}
       >
         {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            render={
-              <button
-                className="absolute top-3 right-4 text-muted-foreground hover:text-foreground transition-colors"
-              />
-            }
-          >
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
+        <div className="absolute top-3 right-4 flex items-center gap-1">
+          {enableFullscreen && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setFullscreen((f) => !f)}
+            >
+              {fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            </button>
+          )}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              render={
+                <button className="text-muted-foreground hover:text-foreground transition-colors" />
+              }
+            >
+              <XIcon className="size-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          )}
+        </div>
       </DialogPrimitive.Popup>
     </DialogPortal>
   )
@@ -132,7 +152,11 @@ function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-body"
-      className={cn("px-5 py-4", className)}
+      className={cn(
+        "px-5 py-4",
+        "[[data-fullscreen]_&]:flex-1 [[data-fullscreen]_&]:overflow-y-auto",
+        className,
+      )}
       {...props}
     />
   )
