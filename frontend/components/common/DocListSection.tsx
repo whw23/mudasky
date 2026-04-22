@@ -9,7 +9,12 @@
 
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
-import { FileText, type LucideIcon } from "lucide-react"
+import { FileText, AlertTriangle } from "lucide-react"
+
+const ICON_MAP: Record<string, typeof FileText> = {
+  FileText,
+  AlertTriangle,
+}
 
 interface DocListSectionProps {
   /** siteInfo 中的字段名，如 "visa_required_docs" */
@@ -20,8 +25,8 @@ interface DocListSectionProps {
   sectionTitle: string
   /** 兜底数据（从翻译文件获取） */
   fallbackDocs: string[]
-  /** 图标组件（默认 FileText） */
-  icon?: LucideIcon
+  /** 图标名称（默认 "FileText"，可选 "AlertTriangle"） */
+  iconName?: string
   /** 背景色（默认白色，可选 "bg-gray-50"） */
   bgColor?: string
   /** 是否可编辑 */
@@ -36,11 +41,12 @@ export function DocListSection({
   sectionTag,
   sectionTitle,
   fallbackDocs,
-  icon: Icon = FileText,
+  iconName = "FileText",
   bgColor = "",
   editable,
   onEdit,
 }: DocListSectionProps) {
+  const Icon = ICON_MAP[iconName] || FileText
   const { siteInfo } = useLocalizedConfig()
   const docs = (siteInfo as any)[configKey] as { text: string }[]
   const data = docs?.length > 0 ? docs.map((d) => d.text) : fallbackDocs

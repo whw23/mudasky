@@ -86,7 +86,7 @@ function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string
           />
         </div>
       </section>
-      <OfficeGallery editable onEdit={() => onEditConfig("about_office_images")} />
+      <OfficeGallery editable />
       <CtaSection translationNamespace="About" editable onEdit={() => onEditConfig("about_cta")} />
     </>
   )

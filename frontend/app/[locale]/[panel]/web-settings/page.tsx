@@ -20,7 +20,6 @@ import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
 import { ArrayEditDialog } from '@/components/admin/ArrayEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
-import { OfficeImagesDialog } from '@/components/admin/OfficeImagesDialog'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 统计项编辑字段定义 */
@@ -106,7 +105,6 @@ export default function WebSettingsPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any[]
   } | null>(null)
-  const [officeDialogOpen, setOfficeDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [faviconUploading, setFaviconUploading] = useState(false)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -445,9 +443,6 @@ export default function WebSettingsPage() {
           configKey: 'site_info',
           data: rawConfig.siteInfo,
         })
-        break
-      case 'about_office_images':
-        setOfficeDialogOpen(true)
         break
       case 'universities_intro_title':
         setDialogState({
@@ -860,17 +855,6 @@ export default function WebSettingsPage() {
         />
       )}
 
-      <OfficeImagesDialog
-        open={officeDialogOpen}
-        onOpenChange={setOfficeDialogOpen}
-        data={rawConfig.siteInfo.about_office_images || []}
-        onSave={async (data) => {
-          const updated = { ...rawConfig.siteInfo, about_office_images: data }
-          await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-          await fetchAllConfigs(true)
-          refreshConfig()
-        }}
-      />
     </div>
   )
 }
