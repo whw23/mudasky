@@ -1,179 +1,138 @@
 "use client"
 
 /**
- * Tiptap 富文本编辑器
- * 包含工具栏和编辑区域
+ * Tiptap 富文本编辑器主组件。
+ * 集成工具栏、源码编辑、预览面板、图片上传、视频嵌入等功能。
  */
 
-import { useEditor, EditorContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import Image from "@tiptap/extension-image"
-import Link from "@tiptap/extension-link"
-import Placeholder from "@tiptap/extension-placeholder"
+import { useState, useCallback, useRef } from "react"
+import { useEditor, EditorContent, type Editor } from "@tiptap/react"
 import { useTranslations } from "next-intl"
-import {
-  Heading2,
-  Heading3,
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
-  ImageIcon,
-  LinkIcon,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { createEditorExtensions } from "./editor-extensions"
+import { handleImagePaste, handleImageDrop, handleImageSelect } from "./image-upload"
+import { insertVideo } from "./video-embed"
+import { EditorToolbar, type EditorMode } from "./EditorToolbar"
+import { HtmlSourceEditor } from "./HtmlSourceEditor"
+import { EditorPreview } from "./EditorPreview"
+import "./editor.css"
 
 interface TiptapEditorProps {
+  /** 初始 HTML 内容 */
   content?: string
+  /** 内容变更回调 */
   onChange?: (html: string) => void
+  /** 占位文本 */
   placeholder?: string
 }
 
-/** 编辑器工具栏 */
-function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
-  const t = useTranslations("Editor")
-
-  if (!editor) return null
-
-  /** 工具栏按钮配置 */
-  const buttons = [
-    {
-      icon: Heading2,
-      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      active: editor.isActive("heading", { level: 2 }),
-      label: t("heading2"),
-    },
-    {
-      icon: Heading3,
-      action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      active: editor.isActive("heading", { level: 3 }),
-      label: t("heading3"),
-    },
-    {
-      icon: Bold,
-      action: () => editor.chain().focus().toggleBold().run(),
-      active: editor.isActive("bold"),
-      label: t("bold"),
-    },
-    {
-      icon: Italic,
-      action: () => editor.chain().focus().toggleItalic().run(),
-      active: editor.isActive("italic"),
-      label: t("italic"),
-    },
-    {
-      icon: List,
-      action: () => editor.chain().focus().toggleBulletList().run(),
-      active: editor.isActive("bulletList"),
-      label: t("bulletList"),
-    },
-    {
-      icon: ListOrdered,
-      action: () => editor.chain().focus().toggleOrderedList().run(),
-      active: editor.isActive("orderedList"),
-      label: t("orderedList"),
-    },
-    {
-      icon: Quote,
-      action: () => editor.chain().focus().toggleBlockquote().run(),
-      active: editor.isActive("blockquote"),
-      label: t("quote"),
-    },
-  ]
-
-  /** 插入图片 */
-  const insertImage = () => {
-    const url = window.prompt(t("imagePrompt"))
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
-    }
-  }
-
-  /** 插入链接 */
-  const insertLink = () => {
-    const url = window.prompt(t("linkPrompt"))
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run()
-    }
-  }
-
-  return (
-    <div className="flex flex-wrap gap-1 border-b p-2">
-      {buttons.map((btn) => {
-        const Icon = btn.icon
-        return (
-          <Button
-            key={btn.label}
-            type="button"
-            variant={btn.active ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={btn.action}
-            title={btn.label}
-          >
-            <Icon className="size-4" />
-          </Button>
-        )
-      })}
-
-      {/* 分隔线 */}
-      <div className="mx-1 w-px self-stretch bg-border" />
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        onClick={insertImage}
-        title={t("insertImage")}
-      >
-        <ImageIcon className="size-4" />
-      </Button>
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        onClick={insertLink}
-        title={t("insertLink")}
-      >
-        <LinkIcon className="size-4" />
-      </Button>
-    </div>
-  )
-}
-
+/** Tiptap 富文本编辑器 */
 export function TiptapEditor({
   content,
   onChange,
   placeholder,
 }: TiptapEditorProps) {
   const t = useTranslations("Editor")
+  const [mode, setMode] = useState<EditorMode>("edit")
+  const [sourceHtml, setSourceHtml] = useState("")
+  const editorRef = useRef<Editor | null>(null)
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit,
-      Image,
-      Link.configure({ openOnClick: false }),
-      Placeholder.configure({
-        placeholder: placeholder ?? t("placeholder"),
-      }),
-    ],
+    extensions: createEditorExtensions({
+      placeholder: placeholder ?? t("placeholder"),
+    }),
     content: content ?? "",
+    onCreate: ({ editor: e }) => {
+      editorRef.current = e
+    },
     onUpdate: ({ editor: e }) => {
       onChange?.(e.getHTML())
     },
+    editorProps: {
+      handlePaste: (_view, event): boolean => {
+        const ed = editorRef.current
+        if (ed) {
+          return handleImagePaste(ed, event as unknown as ClipboardEvent)
+        }
+        return false
+      },
+      handleDrop: (_view, event): boolean => {
+        const ed = editorRef.current
+        if (ed) {
+          return handleImageDrop(ed, event as unknown as DragEvent)
+        }
+        return false
+      },
+    },
   })
+
+  /** 处理模式切换 */
+  const handleModeChange = useCallback(
+    (newMode: EditorMode) => {
+      if (!editor) return
+
+      /* 从编辑模式切换到源码模式：同步 HTML */
+      if (mode === "edit" && newMode === "source") {
+        setSourceHtml(editor.getHTML())
+      }
+
+      /* 从源码模式切换回编辑模式：应用源码 */
+      if (mode === "source" && newMode !== "source") {
+        editor.commands.setContent(sourceHtml)
+        onChange?.(sourceHtml)
+      }
+
+      setMode(newMode)
+    },
+    [editor, mode, sourceHtml, onChange],
+  )
+
+  /** 处理图片选择 */
+  const handleImageSelectClick = useCallback(() => {
+    if (editor) {
+      handleImageSelect(editor)
+    }
+  }, [editor])
+
+  /** 处理视频插入 */
+  const handleVideoInsert = useCallback(() => {
+    if (editor) {
+      insertVideo(editor, t("videoPrompt"))
+    }
+  }, [editor, t])
 
   if (!editor) return null
 
   return (
     <div className="overflow-hidden rounded-lg border">
-      <Toolbar editor={editor} />
-      <EditorContent
+      <EditorToolbar
         editor={editor}
-        className="prose max-w-none p-4 [&_.tiptap]:min-h-[300px] [&_.tiptap]:outline-none"
+        mode={mode}
+        onModeChange={handleModeChange}
+        onImageSelect={handleImageSelectClick}
+        onVideoInsert={handleVideoInsert}
       />
+      <div className="flex min-h-[300px]">
+        {mode === "source" ? (
+          <HtmlSourceEditor value={sourceHtml} onChange={setSourceHtml} />
+        ) : (
+          <EditorContent
+            editor={editor}
+            className="flex-1 p-4 [&_.tiptap]:outline-none"
+          />
+        )}
+        {(mode === "preview" || mode === "source") && (
+          <div className="w-1/2 overflow-y-auto border-l p-4">
+            <EditorPreview
+              html={
+                mode === "source"
+                  ? sourceHtml
+                  : editor.getHTML()
+              }
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
