@@ -877,7 +877,10 @@
     "readMore": "阅读全文",
     "backToList": "返回列表",
     "noContent": "暂无内容，敬请期待",
-    "relatedArticles": "相关文章"
+    "relatedArticles": "相关文章",
+    "ctaTitle": "获取最新留学资讯",
+    "ctaDesc": "关注我们，第一时间了解最新的留学政策和院校动态",
+    "ctaButton": "立即咨询"
   },
   "Contact": {
     "infoTitle": "联系信息",

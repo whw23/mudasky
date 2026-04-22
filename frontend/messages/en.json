@@ -893,7 +893,10 @@
     "readMore": "Read More",
     "backToList": "Back to List",
     "noContent": "No content yet, stay tuned",
-    "relatedArticles": "Related Articles"
+    "relatedArticles": "Related Articles",
+    "ctaTitle": "Get Latest Study Abroad News",
+    "ctaDesc": "Follow us for the latest study abroad policies and university updates",
+    "ctaButton": "Contact Us"
   },
   "Contact": {
     "infoTitle": "Contact Information",
