@@ -40,9 +40,9 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "home":
       return <HomePreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     case "universities":
-      return <UniversitiesPreviewPage onBannerEdit={onBannerEdit} />
+      return <UniversitiesPreviewPage onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
     case "cases":
-      return <CasesPreviewPage onBannerEdit={onBannerEdit} />
+      return <CasesPreviewPage onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:

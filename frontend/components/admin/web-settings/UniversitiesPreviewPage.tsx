@@ -11,6 +11,7 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Banner } from "@/components/layout/Banner"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { PageIntroSection } from "@/components/common/PageIntroSection"
 import { UniversityList } from "@/components/public/UniversityList"
 import { CtaSection } from "@/components/common/CtaSection"
 import { UniversityEditDialog } from "./UniversityEditDialog"
@@ -40,10 +41,11 @@ interface University {
 
 interface UniversitiesPreviewPageProps {
   onBannerEdit: (pageKey: string) => void
+  onEditConfig: (section: string) => void
 }
 
 /** 院校页面预览 */
-export function UniversitiesPreviewPage({ onBannerEdit }: UniversitiesPreviewPageProps) {
+export function UniversitiesPreviewPage({ onBannerEdit, onEditConfig }: UniversitiesPreviewPageProps) {
   const t = useTranslations("Pages")
   const ut = useTranslations("Universities")
 
@@ -114,14 +116,16 @@ export function UniversitiesPreviewPage({ onBannerEdit }: UniversitiesPreviewPag
       </EditableOverlay>
 
       {/* Overview section */}
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Partner Universities</h2>
-          <h3 className="mt-2 text-2xl font-bold md:text-3xl">{ut("title")}</h3>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">{ut("intro")}</p>
-      </section>
+      <PageIntroSection
+        titleKey="universities_intro_title"
+        contentKey="universities_intro_desc"
+        titleFallback={ut("title")}
+        contentFallback={ut("intro")}
+        sectionTag="Partner Universities"
+        editable
+        onEditTitle={() => onEditConfig("universities_intro_title")}
+        onEditContent={() => onEditConfig("universities_intro_desc")}
+      />
 
       {/* 管理工具栏 */}
       <div className="mx-auto max-w-7xl px-4 pb-6">
@@ -153,7 +157,7 @@ export function UniversitiesPreviewPage({ onBannerEdit }: UniversitiesPreviewPag
       </div>
 
       {/* CTA Section */}
-      <CtaSection translationNamespace="Universities" variant="border-t" />
+      <CtaSection translationNamespace="Universities" editable onEdit={() => onEditConfig("universities_cta")} />
 
       {/* 编辑弹窗 */}
       <UniversityEditDialog

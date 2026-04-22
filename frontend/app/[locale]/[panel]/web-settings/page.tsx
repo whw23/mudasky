@@ -429,6 +429,66 @@ export default function WebSettingsPage() {
         // The actual ArrayEditDialog integration will be done when we wire up all array editing
         toast.info('办公环境图片管理功能开发中')
         break
+      case 'universities_intro_title':
+        setDialogState({
+          open: true,
+          title: '编辑院校页介绍标题',
+          fields: [{ key: 'universities_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'universities_intro_desc':
+        setDialogState({
+          open: true,
+          title: '编辑院校页介绍描述',
+          fields: [{ key: 'universities_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'universities_cta':
+        setDialogState({
+          open: true,
+          title: '编辑院校页 CTA',
+          fields: [
+            { key: 'universities_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'universities_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'cases_intro_title':
+        setDialogState({
+          open: true,
+          title: '编辑案例页介绍标题',
+          fields: [{ key: 'cases_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'cases_intro_desc':
+        setDialogState({
+          open: true,
+          title: '编辑案例页介绍描述',
+          fields: [{ key: 'cases_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'cases_cta':
+        setDialogState({
+          open: true,
+          title: '编辑案例页 CTA',
+          fields: [
+            { key: 'cases_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'cases_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
       default:
         // contact_* prefix handles individual contact fields
         if (section.startsWith('contact_')) {
