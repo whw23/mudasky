@@ -12,7 +12,6 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
-import { StatsSection } from "@/components/home/StatsSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
 import { CtaSection } from "@/components/common/CtaSection"
@@ -53,9 +52,6 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
   return (
     <>
       <HomeBanner editable onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
-      <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
-        <StatsSection />
-      </EditableOverlay>
       <FeaturedUniversities />
       <FeaturedCases />
       <CtaSection translationNamespace="Home" variant="border-t" editable onEdit={() => onEditConfig("home_cta")} />
