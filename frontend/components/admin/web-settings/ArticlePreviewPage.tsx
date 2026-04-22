@@ -19,13 +19,13 @@ import { ManageToolbar } from "./ManageToolbar"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
-import { LifeIntro } from "@/components/life/LifeIntro"
 import { PageIntroSection } from "@/components/common/PageIntroSection"
 import { StepListSection } from "@/components/common/StepListSection"
 import { DocListSection } from "@/components/common/DocListSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
 import { CountryRequirementsSection } from "@/components/common/CountryRequirementsSection"
-import { Clock, AlertTriangle, Languages } from "lucide-react"
+import { Clock, AlertTriangle, Languages, Home, Bus, UtensilsCrossed, Palette, MapPin } from "lucide-react"
+import Image from "next/image"
 
 interface Category {
   id: string
@@ -207,6 +207,7 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
   const tStudyAbroad = useTranslations("StudyAbroad")
   const tVisa = useTranslations("Visa")
   const tRequirements = useTranslations("Requirements")
+  const tLife = useTranslations("Life")
 
   switch (slug) {
     case "study-abroad":
@@ -370,8 +371,84 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
         </>
       )
     }
-    case "life":
-      return <LifeIntro />
+    case "life": {
+      const fallbackGuideCards = [
+        { icon: "Home", title: tLife("housing.title"), desc: tLife("housing.desc") },
+        { icon: "Bus", title: tLife("transport.title"), desc: tLife("transport.desc") },
+        { icon: "UtensilsCrossed", title: tLife("food.title"), desc: tLife("food.desc") },
+        { icon: "Palette", title: tLife("culture.title"), desc: tLife("culture.desc") },
+      ]
+      const fallbackCityCards = [
+        { city: tLife("munich.name"), country: "德国", desc: tLife("munich.desc"), image_id: null },
+        { city: tLife("berlin.name"), country: "德国", desc: tLife("berlin.desc"), image_id: null },
+        { city: tLife("hamburg.name"), country: "德国", desc: tLife("hamburg.desc"), image_id: null },
+      ]
+      const ICON_MAP: Record<string, any> = { Home, Bus, UtensilsCrossed, Palette }
+      return (
+        <>
+          <PageIntroSection
+            titleKey="life_intro_title"
+            contentKey="life_intro_desc"
+            titleFallback={tLife("guideTitle")}
+            contentFallback={tLife("guideIntro")}
+            sectionTag="Living Guide"
+          />
+          <CardGridSection
+            configKey="life_guide_cards"
+            sectionTag="Daily Life"
+            sectionTitle="生活板块"
+            fallbackCards={fallbackGuideCards}
+            columns="md:grid-cols-2"
+            bgColor="bg-gray-50"
+            renderCard={(card) => {
+              const IconComponent = ICON_MAP[card.icon] || Home
+              return (
+                <div className="group rounded-lg border bg-white p-6 transition-all hover:shadow-md">
+                  <IconComponent className="h-10 w-10 text-gray-400 transition-colors group-hover:text-primary" />
+                  <h4 className="mt-4 text-lg font-bold">{card.title}</h4>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {card.desc}
+                  </p>
+                </div>
+              )
+            }}
+          />
+          <CardGridSection
+            configKey="life_city_cards"
+            sectionTag="City Guides"
+            sectionTitle={tLife("cityTitle")}
+            fallbackCards={fallbackCityCards}
+            columns="md:grid-cols-3"
+            renderCard={(card) => (
+              <div className="group rounded-lg border bg-white overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md">
+                {card.image_id ? (
+                  <Image
+                    src={`/api/public/images/detail?id=${card.image_id}`}
+                    alt={card.city}
+                    width={400}
+                    height={160}
+                    className="h-40 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-40 items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                    <MapPin className="h-10 w-10 text-gray-400" />
+                  </div>
+                )}
+                <div className="p-6">
+                  <h4 className="text-lg font-bold transition-colors group-hover:text-primary">
+                    {card.city}
+                  </h4>
+                  <p className="mt-1 text-xs text-muted-foreground">{card.country}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {card.desc}
+                  </p>
+                </div>
+              </div>
+            )}
+          />
+        </>
+      )
+    }
     case "news":
       return (
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

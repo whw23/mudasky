@@ -558,6 +558,40 @@ export default function WebSettingsPage() {
       case 'requirements_steps':
         toast.info('编辑功能开发中')
         break
+      case 'life_intro_title':
+        setDialogState({
+          open: true,
+          title: '编辑留学生活介绍标题',
+          fields: [{ key: 'life_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'life_intro_desc':
+        setDialogState({
+          open: true,
+          title: '编辑留学生活介绍描述',
+          fields: [{ key: 'life_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'life_cta':
+        setDialogState({
+          open: true,
+          title: '编辑留学生活页 CTA',
+          fields: [
+            { key: 'life_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'life_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'life_guide_cards':
+      case 'life_city_cards':
+        toast.info('编辑功能开发中')
+        break
       default:
         // contact_* prefix handles individual contact fields
         if (section.startsWith('contact_')) {
