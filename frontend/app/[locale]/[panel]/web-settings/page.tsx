@@ -66,7 +66,14 @@ const DEFAULT_RAW: RawConfig = {
   siteInfo: {
     brand_name: '', tagline: '', hotline: '', hotline_contact: '',
     logo_url: '', favicon_url: '', wechat_service_qr_url: '', wechat_official_qr_url: '', company_name: '', icp_filing: '',
-    services_title: '',
+    home_intro_title: '', home_intro_content: '', home_cta_title: '', home_cta_desc: '',
+    about_cta_title: '', about_cta_desc: '', about_office_images: [],
+    universities_intro_title: '', universities_intro_desc: '', universities_cta_title: '', universities_cta_desc: '',
+    cases_intro_title: '', cases_intro_desc: '', cases_cta_title: '', cases_cta_desc: '',
+    study_abroad_intro_title: '', study_abroad_intro_desc: '', study_abroad_cta_title: '', study_abroad_cta_desc: '', study_abroad_programs: [],
+    visa_cta_title: '', visa_cta_desc: '', visa_process_steps: [], visa_required_docs: [], visa_timeline: [], visa_tips: [],
+    requirements_cta_title: '', requirements_cta_desc: '', requirements_countries: [], requirements_languages: [], requirements_docs: [], requirements_steps: [],
+    life_intro_title: '', life_intro_desc: '', life_cta_title: '', life_cta_desc: '', life_guide_cards: [], life_city_cards: [],
   },
   contactInfo: {
     address: '', phone: '', email: '', wechat: '', registered_address: '',
@@ -82,7 +89,6 @@ export default function WebSettingsPage() {
   const { refreshConfig } = useConfig()
   const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
-  const tHome = useTranslations("Home")
   const tContact = useTranslations("Contact")
   const tAbout = useTranslations("About")
   const [activeTab, setActiveTab] = useState<'preview' | 'advanced'>('preview')
@@ -334,16 +340,6 @@ export default function WebSettingsPage() {
           fields: STAT_FIELDS,
           configKey: 'homepage_stats',
           data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
-        })
-        break
-      case 'services_title':
-        setDialogState({
-          open: true,
-          title: '编辑服务标题',
-          fields: [{ key: 'services_title', label: '服务标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-          defaultValues: { services_title: tHome("servicesTitle") },
         })
         break
       case 'about_history':

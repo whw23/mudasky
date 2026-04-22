@@ -1,20 +1,16 @@
-"use client"
-
 /**
  * 通用节标题组件。
- * 从配置读取标题，翻译兜底。
+ * @deprecated 将在后续任务中删除，请勿新增使用。
  */
 
-import { useLocalizedConfig } from "@/contexts/ConfigContext"
-
 interface SectionTitleProps {
-  configKey: "services_title"
+  /** @deprecated SectionTitle 将在后续任务中删除 */
+  configKey?: string
   fallback: string
   className?: string
 }
 
 /** 从配置读取的节标题（翻译兜底） */
-export function SectionTitle({ configKey, fallback, className }: SectionTitleProps) {
-  const { siteInfo } = useLocalizedConfig()
-  return <h3 className={className}>{siteInfo[configKey] || fallback}</h3>
+export function SectionTitle({ fallback, className }: SectionTitleProps) {
+  return <h3 className={className}>{fallback}</h3>
 }
