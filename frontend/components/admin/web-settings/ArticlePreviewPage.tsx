@@ -24,8 +24,6 @@ import { StepListSection } from "@/components/common/StepListSection"
 import { DocListSection } from "@/components/common/DocListSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
 import { CountryRequirementsSection } from "@/components/common/CountryRequirementsSection"
-import { Clock, AlertTriangle, Languages, Home, Bus, UtensilsCrossed, Palette, MapPin } from "lucide-react"
-import Image from "next/image"
 
 interface Category {
   id: string
@@ -293,21 +291,14 @@ function IntroSection({
             columns="md:grid-cols-3"
             editable={editable}
             onEdit={() => onEditConfig?.("visa_timeline")}
-            renderCard={(card) => (
-              <>
-                <Clock className="mx-auto h-8 w-8 text-primary" />
-                <h4 className="mt-3 font-bold">{card.title}</h4>
-                <p className="mt-2 text-2xl font-bold text-primary">{card.time}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{card.desc}</p>
-              </>
-            )}
+            cardType="timeline"
           />
           <DocListSection
             configKey="visa_tips"
             sectionTag="Tips"
             sectionTitle={tVisa("tipsTitle")}
             fallbackDocs={fallbackTips}
-            icon={AlertTriangle}
+            iconName="AlertTriangle"
             bgColor="bg-gray-50"
             editable={editable}
             onEdit={() => onEditConfig?.("visa_tips")}
@@ -385,13 +376,7 @@ function IntroSection({
             bgColor="bg-gray-50"
             editable={editable}
             onEdit={() => onEditConfig?.("requirements_languages")}
-            renderCard={(card) => (
-              <>
-                <Languages className="h-8 w-8 text-primary" />
-                <h4 className="mt-3 font-bold">{card.title}</h4>
-                <p className="mt-2 text-sm text-muted-foreground">{card.desc}</p>
-              </>
-            )}
+            cardType="language"
           />
           <DocListSection
             configKey="requirements_docs"
@@ -425,7 +410,6 @@ function IntroSection({
         { city: tLife("berlin.name"), country: "德国", desc: tLife("berlin.desc"), image_id: null },
         { city: tLife("hamburg.name"), country: "德国", desc: tLife("hamburg.desc"), image_id: null },
       ]
-      const ICON_MAP: Record<string, any> = { Home, Bus, UtensilsCrossed, Palette }
       return (
         <>
           <PageIntroSection
@@ -447,18 +431,7 @@ function IntroSection({
             bgColor="bg-gray-50"
             editable={editable}
             onEdit={() => onEditConfig?.("life_guide_cards")}
-            renderCard={(card) => {
-              const IconComponent = ICON_MAP[card.icon] || Home
-              return (
-                <div className="group rounded-lg border bg-white p-6 transition-all hover:shadow-md">
-                  <IconComponent className="h-10 w-10 text-gray-400 transition-colors group-hover:text-primary" />
-                  <h4 className="mt-4 text-lg font-bold">{card.title}</h4>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {card.desc}
-                  </p>
-                </div>
-              )
-            }}
+            cardType="guide"
           />
           <CardGridSection
             configKey="life_city_cards"
@@ -468,32 +441,7 @@ function IntroSection({
             columns="md:grid-cols-3"
             editable={editable}
             onEdit={() => onEditConfig?.("life_city_cards")}
-            renderCard={(card) => (
-              <div className="group rounded-lg border bg-white overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md">
-                {card.image_id ? (
-                  <Image
-                    src={`/api/public/images/detail?id=${card.image_id}`}
-                    alt={card.city}
-                    width={400}
-                    height={160}
-                    className="h-40 w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-40 items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                    <MapPin className="h-10 w-10 text-gray-400" />
-                  </div>
-                )}
-                <div className="p-6">
-                  <h4 className="text-lg font-bold transition-colors group-hover:text-primary">
-                    {card.city}
-                  </h4>
-                  <p className="mt-1 text-xs text-muted-foreground">{card.country}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {card.desc}
-                  </p>
-                </div>
-              </div>
-            )}
+            cardType="city"
           />
         </>
       )

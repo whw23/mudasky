@@ -6,7 +6,6 @@ import { getTranslations } from "next-intl/server"
 import { StepListSection } from "@/components/common/StepListSection"
 import { DocListSection } from "@/components/common/DocListSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
-import { Clock, AlertTriangle } from "lucide-react"
 
 /** 签证办理页面 */
 export default async function VisaPage() {
@@ -64,14 +63,7 @@ export default async function VisaPage() {
         sectionTitle={t("timelineTitle")}
         fallbackCards={fallbackTimeline}
         columns="md:grid-cols-3"
-        renderCard={(card) => (
-          <>
-            <Clock className="mx-auto h-8 w-8 text-primary" />
-            <h4 className="mt-3 font-bold">{card.title}</h4>
-            <p className="mt-2 text-2xl font-bold text-primary">{card.time}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{card.desc}</p>
-          </>
-        )}
+        cardType="timeline"
       />
 
       <DocListSection
@@ -79,7 +71,7 @@ export default async function VisaPage() {
         sectionTag="Tips"
         sectionTitle={t("tipsTitle")}
         fallbackDocs={fallbackTips}
-        icon={AlertTriangle}
+        iconName="AlertTriangle"
         bgColor="bg-gray-50"
       />
 

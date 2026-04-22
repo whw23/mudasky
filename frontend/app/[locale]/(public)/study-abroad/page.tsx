@@ -112,36 +112,7 @@ export default async function StudyAbroadPage() {
         fallbackCards={fallbackPrograms}
         columns="md:grid-cols-2"
         bgColor="bg-white"
-        renderCard={(card, i) => (
-          <div
-            key={i}
-            className={`group rounded-lg border p-6 transition-all hover:shadow-md ${
-              card.highlight ? "border-primary/30 bg-primary/5" : "bg-white"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <h4 className="text-lg font-bold">{card.name}</h4>
-              {card.highlight && (
-                <span className="rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
-                  {t("recommended")}
-                </span>
-              )}
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {card.desc}
-            </p>
-            {card.features?.length > 0 && (
-              <ul className="mt-4 space-y-2">
-                {card.features.map((f: string, j: number) => (
-                  <li key={j} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        cardType="program"
       />
 
       <ArticleSection

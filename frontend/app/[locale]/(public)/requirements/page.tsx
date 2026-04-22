@@ -7,7 +7,6 @@ import { CountryRequirementsSection } from "@/components/common/CountryRequireme
 import { DocListSection } from "@/components/common/DocListSection"
 import { StepListSection } from "@/components/common/StepListSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
-import { Languages } from "lucide-react"
 
 /** 申请条件页面 */
 export default async function RequirementsPage() {
@@ -76,13 +75,7 @@ export default async function RequirementsPage() {
         fallbackCards={fallbackLanguages}
         columns="md:grid-cols-2"
         bgColor="bg-gray-50"
-        renderCard={(card) => (
-          <>
-            <Languages className="h-8 w-8 text-primary" />
-            <h4 className="mt-3 font-bold">{card.title}</h4>
-            <p className="mt-2 text-sm text-muted-foreground">{card.desc}</p>
-          </>
-        )}
+        cardType="language"
       />
 
       <DocListSection

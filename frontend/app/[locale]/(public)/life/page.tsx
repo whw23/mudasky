@@ -5,22 +5,6 @@ import { CtaSection } from "@/components/common/CtaSection"
 import { PageIntroSection } from "@/components/common/PageIntroSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
 import { getTranslations } from "next-intl/server"
-import {
-  Home,
-  Bus,
-  UtensilsCrossed,
-  Palette,
-  MapPin,
-} from "lucide-react"
-import Image from "next/image"
-
-/** Lucide icon map for life guide cards */
-const ICON_MAP: Record<string, any> = {
-  Home,
-  Bus,
-  UtensilsCrossed,
-  Palette,
-}
 
 /** 留学生活页面 */
 export default async function LifePage() {
@@ -81,18 +65,7 @@ export default async function LifePage() {
         fallbackCards={fallbackGuideCards}
         columns="md:grid-cols-2"
         bgColor="bg-gray-50"
-        renderCard={(card) => {
-          const IconComponent = ICON_MAP[card.icon] || Home
-          return (
-            <div className="group rounded-lg border bg-white p-6 transition-all hover:shadow-md">
-              <IconComponent className="h-10 w-10 text-gray-400 transition-colors group-hover:text-primary" />
-              <h4 className="mt-4 text-lg font-bold">{card.title}</h4>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {card.desc}
-              </p>
-            </div>
-          )
-        }}
+        cardType="guide"
       />
 
       {/* 城市指南卡片 */}
@@ -102,32 +75,7 @@ export default async function LifePage() {
         sectionTitle={t("cityTitle")}
         fallbackCards={fallbackCityCards}
         columns="md:grid-cols-3"
-        renderCard={(card) => (
-          <div className="group rounded-lg border bg-white overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md">
-            {card.image_id ? (
-              <Image
-                src={`/api/public/images/detail?id=${card.image_id}`}
-                alt={card.city}
-                width={400}
-                height={160}
-                className="h-40 w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-40 items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                <MapPin className="h-10 w-10 text-gray-400" />
-              </div>
-            )}
-            <div className="p-6">
-              <h4 className="text-lg font-bold transition-colors group-hover:text-primary">
-                {card.city}
-              </h4>
-              <p className="mt-1 text-xs text-muted-foreground">{card.country}</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {card.desc}
-              </p>
-            </div>
-          </div>
-        )}
+        cardType="city"
       />
 
       {/* 相关文章 */}
