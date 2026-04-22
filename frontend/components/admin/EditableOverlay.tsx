@@ -19,7 +19,6 @@ export function EditableOverlay({ children, onClick, label, inline }: EditableOv
   const Tag = inline ? "span" : "div"
   return (
     <Tag
-      data-editable
       className={`group relative cursor-pointer ${inline ? "inline" : ""}`}
       onClick={(e) => {
         e.stopPropagation()

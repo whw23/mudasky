@@ -2,8 +2,12 @@
 
 /**
  * 预览容器。
- * 拦截所有 <a>/<button> 的点击，防止预览内的链接导航和按钮操作。
- * 带 data-editable 属性的元素及其子元素不受影响。
+ * 拦截 <a>/<button> 的点击，防止链接导航和按钮操作。
+ *
+ * 放行规则：
+ * - <div>/<span> + onClick 不受影响（EditableOverlay 等）
+ * - data-editable 元素及其子元素不受影响（ManageToolbar 等）
+ * - <input>/<select> 不受影响（筛选器）
  */
 
 import { ReactNode, MouseEvent } from "react"
