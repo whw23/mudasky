@@ -9,11 +9,16 @@
 
 import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
-import { useLocalizedConfig } from "@/contexts/ConfigContext"
 
 import { Banner } from "@/components/layout/Banner"
 import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
+import { AboutIntroSection } from "@/components/home/AboutIntroSection"
+import { ServicesSection } from "@/components/home/ServicesSection"
+import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
+import { FeaturedCases } from "@/components/home/FeaturedCases"
+import { NewsSection } from "@/components/home/NewsSection"
+import { CtaSection } from "@/components/common/CtaSection"
 import {
   HistorySection,
   MissionVisionSection,
@@ -21,7 +26,6 @@ import {
   AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { NewsPreview } from "./NewsPreview"
 import { UniversitiesEditPreview } from "./UniversitiesEditPreview"
 import { CasesEditPreview } from "./CasesEditPreview"
 import { ArticleListPreview } from "./ArticleListPreview"
@@ -50,82 +54,20 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
 
 /** 首页预览 — 复用真实首页组件 */
 function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
-  const t = useTranslations("Home")
-  const { siteInfo } = useLocalizedConfig()
-
-  const servicesTitle = siteInfo.services_title || t("servicesTitle")
-  const destinationsTitle = siteInfo.destinations_title || t("destinationsTitle")
-
-  const services = [
-    { icon: "🎓", title: t("service.studyAbroad"), desc: t("service.studyAbroadDesc") },
-    { icon: "🌍", title: t("service.universities"), desc: t("service.universitiesDesc") },
-    { icon: "📋", title: t("service.visa"), desc: t("service.visaDesc") },
-    { icon: "👥", title: t("service.cases"), desc: t("service.casesDesc") },
-  ]
-
-  const countries = [
-    { key: "germany", name: t("germany") },
-    { key: "japan", name: t("japan") },
-    { key: "singapore", name: t("singapore") },
-  ]
-
   return (
     <>
       <HomeBanner editable onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
-
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <StatsSection />
       </EditableOverlay>
-
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="text-center">
-            <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {t("servicesTag")}
-            </h2>
-            <EditableOverlay onClick={() => onEditConfig("services_title")} label="编辑服务标题" inline>
-              <h3 className="mt-2 text-2xl md:text-3xl font-bold">{servicesTitle}</h3>
-            </EditableOverlay>
-            <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-          </div>
-          <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {services.map((s) => (
-              <div key={s.title} className="rounded-lg border bg-white p-6 shadow-sm">
-                <span className="text-3xl">{s.icon}</span>
-                <h4 className="mt-4 text-lg font-bold">{s.title}</h4>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 热门留学国家 */}
+      <AboutIntroSection />
+      <ServicesSection editable onEditTitle={() => onEditConfig("services_title")} />
       <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {t("destinationsTag")}
-          </h2>
-          <EditableOverlay onClick={() => onEditConfig("destinations_title")} label="编辑留学国家标题" inline>
-            <h3 className="mt-2 text-2xl md:text-3xl font-bold">{destinationsTitle}</h3>
-          </EditableOverlay>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
-          {countries.map((c) => (
-            <div key={c.key} className="group relative overflow-hidden rounded-lg" style={{ backgroundImage: "linear-gradient(135deg, #374151 0%, #1f2937 100%)" }}>
-              <div className="flex h-48 items-center justify-center">
-                <div className="text-center text-white">
-                  <h4 className="text-2xl font-bold">{c.name}</h4>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <FeaturedUniversities />
+        <FeaturedCases />
       </section>
-
-      {/* 最新资讯（只读预览） */}
-      <NewsPreview />
+      <NewsSection />
+      <CtaSection translationNamespace="Home" variant="border-t" />
     </>
   )
 }
