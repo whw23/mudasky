@@ -30,7 +30,7 @@ import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { TeamSection } from "@/components/about/TeamSection"
 import { UniversitiesPreviewPage } from "./UniversitiesPreviewPage"
 import { CasesPreviewPage } from "./CasesPreviewPage"
-import { ArticleListPreview } from "./ArticleListPreview"
+import { ArticlePreviewPage } from "./ArticlePreviewPage"
 
 interface PagePreviewProps {
   activePage: string
@@ -50,7 +50,7 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:
-      return <ArticleListPreview categorySlug={activePage} onBannerEdit={onBannerEdit} />
+      return <ArticlePreviewPage categorySlug={activePage} onBannerEdit={onBannerEdit} />
   }
 }
 
