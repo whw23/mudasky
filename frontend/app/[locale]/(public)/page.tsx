@@ -3,6 +3,7 @@ import { StatsSection } from "@/components/home/StatsSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
 import { SectionTitle } from "@/components/home/SectionTitle"
+import { CtaSection } from "@/components/common/CtaSection"
 import {
   GraduationCap,
   Globe,
@@ -11,7 +12,6 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
-import { ConsultButton } from "@/components/common/ConsultButton"
 import { getTranslations } from "next-intl/server"
 
 /** 官网首页 */
@@ -143,19 +143,7 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t bg-white py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold">{t("ctaTitle")}</h3>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            {t("ctaDescription")}
-          </p>
-          <ConsultButton
-            className="mt-8 inline-block rounded-lg border-2 border-primary bg-white px-8 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            {t("ctaButton")}
-          </ConsultButton>
-        </div>
-      </section>
+      <CtaSection translationNamespace="Home" variant="border-t" />
     </>
   )
 }

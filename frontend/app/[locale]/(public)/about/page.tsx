@@ -6,13 +6,12 @@ import {
   AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { ConsultButton } from "@/components/common/ConsultButton"
+import { CtaSection } from "@/components/common/CtaSection"
 import { getTranslations } from "next-intl/server"
 import {
   GraduationCap,
   Globe,
   Handshake,
-  ArrowRight,
 } from "lucide-react"
 
 /** 关于我们页面 */
@@ -130,19 +129,7 @@ export default async function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold">{t("ctaTitle")}</h3>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            {t("ctaDesc")}
-          </p>
-          <ConsultButton
-            className="mt-8 inline-flex items-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            {t("ctaButton")} <ArrowRight className="h-4 w-4" />
-          </ConsultButton>
-        </div>
-      </section>
+      <CtaSection translationNamespace="About" />
     </>
   )
 }

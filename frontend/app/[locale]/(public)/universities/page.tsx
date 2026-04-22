@@ -1,5 +1,6 @@
 import { PageBanner } from "@/components/layout/PageBanner"
 import { ConsultButton } from "@/components/common/ConsultButton"
+import { CtaSection } from "@/components/common/CtaSection"
 import { getTranslations } from "next-intl/server"
 import { ArrowRight } from "lucide-react"
 import { UniversityList } from "@/components/public/UniversityList"
