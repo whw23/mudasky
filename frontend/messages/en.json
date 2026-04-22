@@ -569,7 +569,7 @@
     "scholarships": "Scholarships",
     "rankings": "QS World Rankings",
     "location": "Location",
-    "successCases": "Success Cases",
+    "successCases": "Related Success Cases",
     "uni1": {
       "name": "LMU Munich",
       "location": "Munich, Bavaria",
@@ -622,18 +622,12 @@
     "ctaButton": "Book a Consultation",
     "backToList": "Back to Universities",
     "detailTitle": "University Detail",
-    "location": "Location",
     "programs": "Programs",
-    "about": "About",
     "visitWebsite": "Visit Website",
-    "website": "Official Website",
-    "disciplines": "Disciplines",
-    "admissionRequirements": "Admission Requirements",
-    "scholarships": "Scholarships",
-    "rankings": "QS World Rankings",
-    "successCases": "Related Success Cases",
     "allDisciplineCategories": "All Categories",
-    "allDisciplines": "All Disciplines"
+    "allDisciplines": "All Disciplines",
+    "ctaTitle": "Find Your Perfect University",
+    "ctaDesc": "We offer free background assessments to help you find the best study abroad direction"
   },
   "Requirements": {
     "overviewTitle": "Application Requirements by Country",
