@@ -3,6 +3,7 @@
 /**
  * 院校列表组件。
  * 从后端获取院校数据，支持搜索筛选和分页。
+ * 支持双栏布局（左侧筛选 + 右侧内容）和 editable 模式。
  */
 
 import { useCallback, useEffect, useState } from "react"
@@ -18,13 +19,20 @@ import {
 import { Link } from "@/i18n/navigation"
 import { Pagination } from "@/components/common/Pagination"
 import { UniversitySearch } from "@/components/public/UniversitySearch"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import api from "@/lib/api"
 import type { University, PaginatedResponse } from "@/types"
 
 const PAGE_SIZE = 12
 
+interface UniversityListProps {
+  editable?: boolean
+  onEdit?: (university: University) => void
+  onManageDisciplines?: () => void
+}
+
 /** 院校列表（含搜索筛选） */
-export function UniversityList() {
+export function UniversityList({ editable = false, onEdit, onManageDisciplines }: UniversityListProps) {
   const t = useTranslations("Universities")
 
   const [universities, setUniversities] = useState<University[]>([])
@@ -99,126 +107,155 @@ export function UniversityList() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* 搜索筛选栏 */}
-      <UniversitySearch
-        countries={countries}
-        onFilterChange={handleFilterChange}
-      />
+    <div className="flex gap-6">
+      {/* 左侧筛选栏 */}
+      <aside className="hidden md:block w-60 shrink-0">
+        <UniversitySearch
+          countries={countries}
+          onFilterChange={handleFilterChange}
+          editable={editable}
+          onManageDisciplines={onManageDisciplines}
+        />
+      </aside>
 
-      {/* 总数 */}
-      {!loading && total > 0 && (
-        <p className="text-sm text-muted-foreground">
-          {t("totalCount", { count: total })}
-        </p>
-      )}
-
-      {/* 加载状态 */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">{t("loading")}</span>
-        </div>
-      ) : universities.length === 0 ? (
-        /* 空状态 */
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <SearchX className="size-12 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-medium text-muted-foreground">
-            {t("noResults")}
+      {/* 右侧内容区 */}
+      <div className="flex-1 space-y-6">
+        {/* 总数 */}
+        {!loading && total > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {t("totalCount", { count: total })}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground/70">
-            {t("noResultsHint")}
-          </p>
-        </div>
-      ) : (
-        /* 院校卡片网格 */
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {universities.map((uni) => {
-            const latestRanking = uni.qs_rankings?.sort((a: any, b: any) => b.year - a.year)[0]
-            const displayDisciplines = (uni.disciplines || []).slice(0, 3)
+        )}
 
-            return (
-              <Link
-                key={uni.id}
-                href={`/universities/${uni.id}`}
-                className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
-              >
-                {/* Logo */}
-                <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
-                  {uni.logo_image_id ? (
-                    <img
-                      src={`/api/public/images/detail?id=${uni.logo_image_id}`}
-                      alt={uni.name}
-                      className="size-12 object-contain"
-                    />
-                  ) : (
-                    <Building2 className="size-8 text-gray-400 transition-colors group-hover:text-primary" />
-                  )}
-                </div>
+        {/* 加载状态 */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">{t("loading")}</span>
+          </div>
+        ) : universities.length === 0 ? (
+          /* 空状态 */
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <SearchX className="size-12 text-muted-foreground/50" />
+            <p className="mt-4 text-lg font-medium text-muted-foreground">
+              {t("noResults")}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground/70">
+              {t("noResultsHint")}
+            </p>
+          </div>
+        ) : (
+          /* 院校卡片网格 */
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {universities.map((uni) => {
+              const latestRanking = uni.qs_rankings?.sort((a: any, b: any) => b.year - a.year)[0]
+              const displayDisciplines = (uni.disciplines || []).slice(0, 3)
 
-                {/* 院校名称 */}
-                <h4 className="mt-4 text-lg font-bold transition-colors group-hover:text-primary">
-                  {uni.name}
-                </h4>
-                {uni.name_en && (
-                  <p className="text-xs text-muted-foreground">{uni.name_en}</p>
-                )}
-
-                {/* 地理位置 */}
-                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                  <MapPin className="size-4" />
-                  {uni.city}, {uni.country}
-                </div>
-
-                {/* QS排名徽章 */}
-                {latestRanking && (
-                  <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                    <Award className="size-3" />
-                    QS {latestRanking.year} #{latestRanking.ranking}
-                  </div>
-                )}
-
-                {/* 学科标签 */}
-                {displayDisciplines.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {displayDisciplines.map((d: any) => (
-                      <span
-                        key={d.id}
-                        className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground"
-                      >
-                        {d.name}
-                      </span>
-                    ))}
-                    {(uni.disciplines || []).length > 3 && (
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground">
-                        +{(uni.disciplines || []).length - 3}
-                      </span>
+              const cardContent = (
+                <>
+                  {/* Logo */}
+                  <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
+                    {uni.logo_image_id ? (
+                      <img
+                        src={`/api/public/images/detail?id=${uni.logo_image_id}`}
+                        alt={uni.name}
+                        className="size-12 object-contain"
+                      />
+                    ) : (
+                      <Building2 className="size-8 text-gray-400 transition-colors group-hover:text-primary" />
                     )}
                   </div>
-                )}
 
-                {/* 简介 */}
-                {uni.description && (
-                  <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {uni.description.replace(/<[^>]*>/g, "")}
-                  </p>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-      )}
+                  {/* 院校名称 */}
+                  <h4 className="mt-4 text-lg font-bold transition-colors group-hover:text-primary">
+                    {uni.name}
+                  </h4>
+                  {uni.name_en && (
+                    <p className="text-xs text-muted-foreground">{uni.name_en}</p>
+                  )}
 
-      {/* 分页 */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center">
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </div>
-      )}
+                  {/* 地理位置 */}
+                  <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                    <MapPin className="size-4" />
+                    {uni.city}, {uni.country}
+                  </div>
+
+                  {/* QS排名徽章 */}
+                  {latestRanking && (
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      <Award className="size-3" />
+                      QS {latestRanking.year} #{latestRanking.ranking}
+                    </div>
+                  )}
+
+                  {/* 学科标签 */}
+                  {displayDisciplines.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {displayDisciplines.map((d: any) => (
+                        <span
+                          key={d.id}
+                          className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground"
+                        >
+                          {d.name}
+                        </span>
+                      ))}
+                      {(uni.disciplines || []).length > 3 && (
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-muted-foreground">
+                          +{(uni.disciplines || []).length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 简介 */}
+                  {uni.description && (
+                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {uni.description.replace(/<[^>]*>/g, "")}
+                    </p>
+                  )}
+                </>
+              )
+
+              // editable 模式：用 EditableOverlay 包装的 div
+              if (editable && onEdit) {
+                return (
+                  <EditableOverlay
+                    key={uni.id}
+                    onClick={() => onEdit(uni)}
+                    label={`编辑 ${uni.name}`}
+                  >
+                    <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
+                      {cardContent}
+                    </div>
+                  </EditableOverlay>
+                )
+              }
+
+              // 普通模式：Link
+              return (
+                <Link
+                  key={uni.id}
+                  href={`/universities/${uni.id}`}
+                  className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
+                >
+                  {cardContent}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+
+        {/* 分页 */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

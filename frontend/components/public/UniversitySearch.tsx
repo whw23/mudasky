@@ -35,12 +35,16 @@ interface Filters {
 interface UniversitySearchProps {
   countries: string[]
   onFilterChange: (filters: Filters) => void
+  editable?: boolean
+  onManageDisciplines?: () => void
 }
 
 /** 院校搜索筛选栏 */
 export function UniversitySearch({
   countries,
   onFilterChange,
+  editable = false,
+  onManageDisciplines,
 }: UniversitySearchProps) {
   const t = useTranslations("Universities")
   const searchParams = useSearchParams()
@@ -239,9 +243,9 @@ export function UniversitySearch({
     disciplineId !== ""
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+    <div className="flex flex-col gap-3">
       {/* 搜索框 */}
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
