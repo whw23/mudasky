@@ -522,6 +522,42 @@ export default function WebSettingsPage() {
       case 'study_abroad_programs':
         toast.info('留学项目编辑功能开发中')
         break
+      case 'visa_cta':
+        setDialogState({
+          open: true,
+          title: '编辑签证页 CTA',
+          fields: [
+            { key: 'visa_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'visa_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'visa_process_steps':
+      case 'visa_required_docs':
+      case 'visa_timeline':
+      case 'visa_tips':
+        toast.info('编辑功能开发中')
+        break
+      case 'requirements_cta':
+        setDialogState({
+          open: true,
+          title: '编辑申请条件页 CTA',
+          fields: [
+            { key: 'requirements_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'requirements_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'requirements_countries':
+      case 'requirements_languages':
+      case 'requirements_docs':
+      case 'requirements_steps':
+        toast.info('编辑功能开发中')
+        break
       default:
         // contact_* prefix handles individual contact fields
         if (section.startsWith('contact_')) {

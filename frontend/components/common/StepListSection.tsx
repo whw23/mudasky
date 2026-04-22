@@ -19,6 +19,8 @@ interface StepListSectionProps {
   sectionTitle: string
   /** 兜底数据（从翻译文件获取） */
   fallbackSteps: { title: string; desc: string }[]
+  /** 背景色（默认白色，可选 "bg-gray-50"） */
+  bgColor?: string
   /** 是否可编辑 */
   editable?: boolean
   /** 编辑回调 */
@@ -31,6 +33,7 @@ export function StepListSection({
   sectionTag,
   sectionTitle,
   fallbackSteps,
+  bgColor = "",
   editable,
   onEdit,
 }: StepListSectionProps) {
@@ -39,24 +42,26 @@ export function StepListSection({
   const data = steps?.length > 0 ? steps : fallbackSteps
 
   const content = (
-    <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-      <div className="text-center">
-        <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">{sectionTag}</h2>
-        <h3 className="mt-2 text-2xl font-bold md:text-3xl">{sectionTitle}</h3>
-        <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-      </div>
-      <div className="mx-auto mt-12 max-w-3xl space-y-6">
-        {data.map((step, i) => (
-          <div key={i} className="flex gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-              {String(i + 1).padStart(2, "0")}
+    <section className={`py-10 md:py-16 ${bgColor}`}>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="text-center">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">{sectionTag}</h2>
+          <h3 className="mt-2 text-2xl font-bold md:text-3xl">{sectionTitle}</h3>
+          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
+        </div>
+        <div className="mx-auto mt-12 max-w-3xl space-y-6">
+          {data.map((step, i) => (
+            <div key={i} className="flex gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                {String(i + 1).padStart(2, "0")}
+              </div>
+              <div className="pt-1">
+                <h4 className="font-bold">{step.title}</h4>
+                <p className="mt-1 text-sm text-muted-foreground">{step.desc}</p>
+              </div>
             </div>
-            <div className="pt-1">
-              <h4 className="font-bold">{step.title}</h4>
-              <p className="mt-1 text-sm text-muted-foreground">{step.desc}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )

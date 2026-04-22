@@ -19,10 +19,13 @@ import { ManageToolbar } from "./ManageToolbar"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
-import { VisaIntro } from "@/components/visa/VisaIntro"
-import { RequirementsIntro } from "@/components/requirements/RequirementsIntro"
 import { LifeIntro } from "@/components/life/LifeIntro"
 import { PageIntroSection } from "@/components/common/PageIntroSection"
+import { StepListSection } from "@/components/common/StepListSection"
+import { DocListSection } from "@/components/common/DocListSection"
+import { CardGridSection } from "@/components/common/CardGridSection"
+import { CountryRequirementsSection } from "@/components/common/CountryRequirementsSection"
+import { Clock, AlertTriangle, Languages } from "lucide-react"
 
 interface Category {
   id: string
@@ -201,7 +204,9 @@ export function ArticlePreviewPage({
 
 /** 页面介绍区 — 根据 slug 渲染不同的 Intro */
 function IntroSection({ slug, title }: { slug: string; title: string }) {
-  const t = useTranslations("StudyAbroad")
+  const tStudyAbroad = useTranslations("StudyAbroad")
+  const tVisa = useTranslations("Visa")
+  const tRequirements = useTranslations("Requirements")
 
   switch (slug) {
     case "study-abroad":
@@ -209,15 +214,162 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
         <PageIntroSection
           titleKey="study_abroad_intro_title"
           contentKey="study_abroad_intro_desc"
-          titleFallback={t("overviewTitle")}
-          contentFallback={t("overviewContent")}
+          titleFallback={tStudyAbroad("overviewTitle")}
+          contentFallback={tStudyAbroad("overviewContent")}
           sectionTag="Overview"
         />
       )
-    case "visa":
-      return <VisaIntro />
-    case "requirements":
-      return <RequirementsIntro />
+    case "visa": {
+      const fallbackSteps = [
+        { title: tVisa("step1.title"), desc: tVisa("step1.desc") },
+        { title: tVisa("step2.title"), desc: tVisa("step2.desc") },
+        { title: tVisa("step3.title"), desc: tVisa("step3.desc") },
+        { title: tVisa("step4.title"), desc: tVisa("step4.desc") },
+        { title: tVisa("step5.title"), desc: tVisa("step5.desc") },
+      ]
+      const fallbackDocs = [
+        tVisa("doc1"), tVisa("doc2"), tVisa("doc3"), tVisa("doc4"),
+        tVisa("doc5"), tVisa("doc6"), tVisa("doc7"), tVisa("doc8"),
+      ]
+      const fallbackTimeline = [
+        { title: tVisa("timeline1.title"), time: tVisa("timeline1.time"), desc: tVisa("timeline1.desc") },
+        { title: tVisa("timeline2.title"), time: tVisa("timeline2.time"), desc: tVisa("timeline2.desc") },
+        { title: tVisa("timeline3.title"), time: tVisa("timeline3.time"), desc: tVisa("timeline3.desc") },
+      ]
+      const fallbackTips = [
+        tVisa("tip1"), tVisa("tip2"), tVisa("tip3"), tVisa("tip4"), tVisa("tip5"),
+      ]
+      return (
+        <>
+          <StepListSection
+            configKey="visa_process_steps"
+            sectionTag="Process"
+            sectionTitle={tVisa("processTitle")}
+            fallbackSteps={fallbackSteps}
+          />
+          <DocListSection
+            configKey="visa_required_docs"
+            sectionTag="Documents"
+            sectionTitle={tVisa("docsTitle")}
+            fallbackDocs={fallbackDocs}
+            bgColor="bg-gray-50"
+          />
+          <CardGridSection
+            configKey="visa_timeline"
+            sectionTag="Timeline"
+            sectionTitle={tVisa("timelineTitle")}
+            fallbackCards={fallbackTimeline}
+            columns="md:grid-cols-3"
+            renderCard={(card) => (
+              <>
+                <Clock className="mx-auto h-8 w-8 text-primary" />
+                <h4 className="mt-3 font-bold">{card.title}</h4>
+                <p className="mt-2 text-2xl font-bold text-primary">{card.time}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{card.desc}</p>
+              </>
+            )}
+          />
+          <DocListSection
+            configKey="visa_tips"
+            sectionTag="Tips"
+            sectionTitle={tVisa("tipsTitle")}
+            fallbackDocs={fallbackTips}
+            icon={AlertTriangle}
+            bgColor="bg-gray-50"
+          />
+        </>
+      )
+    }
+    case "requirements": {
+      const fallbackCountries = [
+        {
+          label: tRequirements("germany.title"),
+          items: [
+            tRequirements("germany.r1"),
+            tRequirements("germany.r2"),
+            tRequirements("germany.r3"),
+            tRequirements("germany.r4"),
+          ],
+        },
+        {
+          label: tRequirements("japan.title"),
+          items: [
+            tRequirements("japan.r1"),
+            tRequirements("japan.r2"),
+            tRequirements("japan.r3"),
+          ],
+        },
+        {
+          label: tRequirements("korea.title"),
+          items: [
+            tRequirements("korea.r1"),
+            tRequirements("korea.r2"),
+            tRequirements("korea.r3"),
+          ],
+        },
+      ]
+      const fallbackLanguages = [
+        {
+          title: tRequirements("langGerman.title"),
+          desc: tRequirements("langGerman.desc"),
+        },
+        {
+          title: tRequirements("langJapanese.title"),
+          desc: tRequirements("langJapanese.desc"),
+        },
+      ]
+      const fallbackDocs = [
+        tRequirements("doc1"), tRequirements("doc2"), tRequirements("doc3"), tRequirements("doc4"),
+        tRequirements("doc5"), tRequirements("doc6"), tRequirements("doc7"), tRequirements("doc8"),
+      ]
+      const fallbackSteps = [
+        { title: tRequirements("step1.title"), desc: tRequirements("step1.desc") },
+        { title: tRequirements("step2.title"), desc: tRequirements("step2.desc") },
+        { title: tRequirements("step3.title"), desc: tRequirements("step3.desc") },
+        { title: tRequirements("step4.title"), desc: tRequirements("step4.desc") },
+        { title: tRequirements("step5.title"), desc: tRequirements("step5.desc") },
+        { title: tRequirements("step6.title"), desc: tRequirements("step6.desc") },
+      ]
+      return (
+        <>
+          <CountryRequirementsSection
+            configKey="requirements_countries"
+            sectionTag="Requirements"
+            sectionTitle={tRequirements("overviewTitle")}
+            labelKey="title"
+            fallbackData={fallbackCountries}
+          />
+          <CardGridSection
+            configKey="requirements_languages"
+            sectionTag="Language"
+            sectionTitle={tRequirements("langTitle")}
+            fallbackCards={fallbackLanguages}
+            columns="md:grid-cols-2"
+            bgColor="bg-gray-50"
+            renderCard={(card) => (
+              <>
+                <Languages className="h-8 w-8 text-primary" />
+                <h4 className="mt-3 font-bold">{card.title}</h4>
+                <p className="mt-2 text-sm text-muted-foreground">{card.desc}</p>
+              </>
+            )}
+          />
+          <DocListSection
+            configKey="requirements_docs"
+            sectionTag="Documents"
+            sectionTitle={tRequirements("docsTitle")}
+            fallbackDocs={fallbackDocs}
+          />
+          <StepListSection
+            configKey="requirements_steps"
+            sectionTag="Timeline"
+            sectionTitle={tRequirements("timelineTitle")}
+            fallbackSteps={fallbackSteps}
+            bgColor="bg-gray-50"
+          />
+        </>
+      )
+    }
     case "life":
       return <LifeIntro />
     case "news":
