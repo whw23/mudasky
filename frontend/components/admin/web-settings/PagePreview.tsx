@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 import { Banner } from "@/components/layout/Banner"
+import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
 import { AboutIntroSection } from "@/components/home/AboutIntroSection"
@@ -26,6 +27,7 @@ import {
   AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
+import { TeamSection } from "@/components/about/TeamSection"
 import { UniversitiesEditPreview } from "./UniversitiesEditPreview"
 import { CasesEditPreview } from "./CasesEditPreview"
 import { ArticleListPreview } from "./ArticleListPreview"
@@ -74,30 +76,37 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
 
 /** 关于我们预览 */
 function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
-  const t = useTranslations("Pages")
+  const t = useTranslations("About")
+  const p = useTranslations("Pages")
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("about")} label="编辑 Banner">
-        <Banner title={t("about")} subtitle={t("aboutSubtitle")} />
+        <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
       </EditableOverlay>
-      <EditableOverlay onClick={() => onEditConfig("about_history")} label="编辑历史">
-        <HistorySection />
-      </EditableOverlay>
-      <MissionVisionSection
-        editable
-        onEditMission={() => onEditConfig("about_mission")}
-        onEditVision={() => onEditConfig("about_vision")}
-      />
-      <EditableOverlay onClick={() => onEditConfig("about_partnership")} label="编辑合作">
-        <PartnershipSection />
-      </EditableOverlay>
+      <ContactInfoSection editable onEditField={(field) => onEditConfig(`contact_${field}`)} />
+      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+        <div className="text-center">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Our Story</h2>
+          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("historyTitle")}</h3>
+          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
+        </div>
+        <HistorySection editable onEdit={() => onEditConfig("about_history")} />
+      </section>
+      <section className="bg-gray-50 py-10 md:py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <MissionVisionSection
+            editable
+            onEditMission={() => onEditConfig("about_mission")}
+            onEditVision={() => onEditConfig("about_vision")}
+          />
+        </div>
+      </section>
+      <PartnershipSection withWrapper editable onEdit={() => onEditConfig("about_partnership")} />
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <AboutStatsSection />
       </EditableOverlay>
-      <ContactInfoSection
-        editable
-        onEditField={(field) => onEditConfig(`contact_${field}`)}
-      />
+      <TeamSection />
+      <CtaSection translationNamespace="About" />
     </>
   )
 }
