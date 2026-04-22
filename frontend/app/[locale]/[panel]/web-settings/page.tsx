@@ -489,6 +489,39 @@ export default function WebSettingsPage() {
           data: rawConfig.siteInfo,
         })
         break
+      case 'study_abroad_intro_title':
+        setDialogState({
+          open: true,
+          title: '编辑出国留学介绍标题',
+          fields: [{ key: 'study_abroad_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'study_abroad_intro_desc':
+        setDialogState({
+          open: true,
+          title: '编辑出国留学介绍描述',
+          fields: [{ key: 'study_abroad_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'study_abroad_cta':
+        setDialogState({
+          open: true,
+          title: '编辑出国留学 CTA',
+          fields: [
+            { key: 'study_abroad_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'study_abroad_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'study_abroad_programs':
+        toast.info('留学项目编辑功能开发中')
+        break
       default:
         // contact_* prefix handles individual contact fields
         if (section.startsWith('contact_')) {

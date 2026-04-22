@@ -19,10 +19,10 @@ import { ManageToolbar } from "./ManageToolbar"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
-import { StudyAbroadIntro } from "@/components/study-abroad/StudyAbroadIntro"
 import { VisaIntro } from "@/components/visa/VisaIntro"
 import { RequirementsIntro } from "@/components/requirements/RequirementsIntro"
 import { LifeIntro } from "@/components/life/LifeIntro"
+import { PageIntroSection } from "@/components/common/PageIntroSection"
 
 interface Category {
   id: string
@@ -201,9 +201,19 @@ export function ArticlePreviewPage({
 
 /** 页面介绍区 — 根据 slug 渲染不同的 Intro */
 function IntroSection({ slug, title }: { slug: string; title: string }) {
+  const t = useTranslations("StudyAbroad")
+
   switch (slug) {
     case "study-abroad":
-      return <StudyAbroadIntro />
+      return (
+        <PageIntroSection
+          titleKey="study_abroad_intro_title"
+          contentKey="study_abroad_intro_desc"
+          titleFallback={t("overviewTitle")}
+          contentFallback={t("overviewContent")}
+          sectionTag="Overview"
+        />
+      )
     case "visa":
       return <VisaIntro />
     case "requirements":
