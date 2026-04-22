@@ -14,6 +14,7 @@ import { useConfig, useLocalizedConfig } from '@/contexts/ConfigContext'
 import { Header } from '@/components/layout/Header'
 import { CountryCodeEditor } from '@/components/admin/CountryCodeEditor'
 import { Footer } from '@/components/layout/Footer'
+import { PreviewContainer } from '@/components/admin/PreviewContainer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
@@ -477,20 +478,9 @@ export default function WebSettingsPage() {
             onImageClear={handleSiteImageClear}
           />
           <NavEditor activePage={activePage} onPageChange={setActivePage} />
-          <div
-            className="max-h-[60vh] overflow-y-auto"
-            onClickCapture={(e) => {
-              const target = e.target as HTMLElement
-              if (target.closest("[data-editable]")) return
-              const interactive = target.closest("a, button")
-              if (interactive) {
-                e.preventDefault()
-                e.stopPropagation()
-              }
-            }}
-          >
+          <PreviewContainer className="max-h-[60vh] overflow-y-auto">
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
-          </div>
+          </PreviewContainer>
           <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
         </div>
       )}
