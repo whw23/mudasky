@@ -20,9 +20,9 @@ CONFIGS = [
         lambda: {
             "brand_name": {
                 "zh": "慕大国际教育",
-                "en": "MUTU International Education",
+                "en": "Muda International Education",
                 "ja": "慕大国際教育",
-                "de": "MUTU Internationale Bildung",
+                "de": "Muda Internationale Bildung",
             },
             "tagline": {
                 "zh": "专注国际教育 · 专注出国服务",
