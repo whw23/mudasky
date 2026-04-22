@@ -477,7 +477,18 @@ export default function WebSettingsPage() {
             onImageClear={handleSiteImageClear}
           />
           <NavEditor activePage={activePage} onPageChange={setActivePage} />
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div
+            className="max-h-[60vh] overflow-y-auto"
+            onClickCapture={(e) => {
+              const target = e.target as HTMLElement
+              if (target.closest("[data-editable]")) return
+              const interactive = target.closest("a, button")
+              if (interactive) {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            }}
+          >
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
           </div>
           <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
