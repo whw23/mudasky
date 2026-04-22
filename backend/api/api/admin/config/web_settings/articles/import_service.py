@@ -21,6 +21,7 @@ from app.core.exceptions import BadRequestException
 from app.db.content import repository
 from app.db.content.models import Article
 from app.db.image import repository as image_repo
+from app.utils.html_images import base64_to_urls
 from app.utils.slug import generate_unique_slug
 from app.utils.excel_io import (
     create_placeholder_image,
@@ -318,6 +319,7 @@ class ArticleImportService:
             content_path = f"content/{content_filename}"
             if content_path in file_map:
                 content_text = file_map[content_path].decode("utf-8")
+                content_text = await base64_to_urls(self.session, content_text)
             else:
                 raise ValueError(f"未找到 HTML 文件: {content_filename}")
         else:  # file (PDF)
@@ -394,7 +396,9 @@ class ArticleImportService:
             if existing.content_type == "html":
                 content_path = f"content/{content_filename}"
                 if content_path in file_map:
-                    existing.content = file_map[content_path].decode("utf-8")
+                    existing.content = await base64_to_urls(
+                        self.session, file_map[content_path].decode("utf-8")
+                    )
             else:  # file (PDF)
                 content_path = f"content/{content_filename}"
                 if content_path in file_map:
