@@ -19,9 +19,7 @@ interface CtaSectionProps {
 export function CtaSection({ translationNamespace, variant = "bg-gray-50" }: CtaSectionProps) {
   const t = useTranslations(translationNamespace)
 
-  const desc = (() => {
-    try { return t("ctaDesc") } catch { return t("ctaDescription") }
-  })()
+  const desc = t("ctaDesc")
 
   return (
     <section className={`py-10 md:py-16 ${variant === "border-t" ? "border-t bg-white" : "bg-gray-50"}`}>

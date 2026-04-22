@@ -79,7 +79,7 @@
     "articlePlaceholderTitle": "文章标题占位 {index}",
     "articlePlaceholderSummary": "这里是文章摘要的占位内容，后续从 API 获取真实数据填充。",
     "ctaTitle": "开启你的留学之旅",
-    "ctaDescription": "15年专注国际教育，为你提供最专业的留学咨询服务",
+    "ctaDesc": "15年专注国际教育，为你提供最专业的留学咨询服务",
     "ctaButton": "立即咨询"
   },
   "Pages": {
