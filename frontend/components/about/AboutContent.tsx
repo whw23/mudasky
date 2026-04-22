@@ -22,6 +22,12 @@ interface MissionVisionProps {
   onEditVision?: () => void
 }
 
+interface PartnershipProps {
+  editable?: boolean
+  onEdit?: () => void
+  withWrapper?: boolean
+}
+
 /** 公司历史区块 */
 export function HistorySection({ editable, onEdit }: EditableProps) {
   const t = useTranslations('About')
@@ -86,25 +92,41 @@ export function MissionVisionSection({ editable, onEditMission, onEditVision }: 
 }
 
 /** 合作介绍区块 */
-export function PartnershipSection({ editable, onEdit }: EditableProps) {
+export function PartnershipSection({ editable, onEdit, withWrapper }: PartnershipProps) {
   const t = useTranslations('About')
   const { aboutInfo } = useLocalizedConfig()
 
-  const content = (
+  const innerContent = (
     <p className="leading-relaxed text-muted-foreground">
       {aboutInfo.partnership || t('partnershipContent')}
     </p>
   )
 
-  if (editable) {
-    return (
-      <EditableOverlay onClick={() => onEdit?.()} label="编辑合作介绍">
-        {content}
-      </EditableOverlay>
-    )
-  }
+  const editableContent = editable ? (
+    <EditableOverlay onClick={() => onEdit?.()} label="编辑合作介绍">
+      {innerContent}
+    </EditableOverlay>
+  ) : innerContent
 
-  return content
+  if (!withWrapper) return editableContent
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
+      <div className="text-center">
+        <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Partnership</h2>
+        <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t('partnershipTitle')}</h3>
+        <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
+      </div>
+      <div className="mx-auto mt-8 max-w-4xl rounded-lg border bg-gray-50 p-8 md:p-12">
+        {editableContent}
+        <div className="mt-6 flex flex-wrap gap-3">
+          <span className="rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">{t('partnerBadge1')}</span>
+          <span className="rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">{t('partnerBadge2')}</span>
+          <span className="rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">{t('partnerBadge3')}</span>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 /** 关于页面统计区块 */
