@@ -28,7 +28,7 @@ import {
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { TeamSection } from "@/components/about/TeamSection"
-import { UniversitiesEditPreview } from "./UniversitiesEditPreview"
+import { UniversitiesPreviewPage } from "./UniversitiesPreviewPage"
 import { CasesPreviewPage } from "./CasesPreviewPage"
 import { ArticleListPreview } from "./ArticleListPreview"
 
@@ -44,7 +44,7 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "home":
       return <HomePreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     case "universities":
-      return <UniversitiesEditPreview onBannerEdit={onBannerEdit} />
+      return <UniversitiesPreviewPage onBannerEdit={onBannerEdit} />
     case "cases":
       return <CasesPreviewPage onBannerEdit={onBannerEdit} />
     case "about":
