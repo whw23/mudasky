@@ -1184,10 +1184,13 @@ git commit -m "refactor: 文章预览视觉化 + ArticleListClient 共享组件"
 
 ## Phase 8: 清理 + 最终验证
 
-### Task 15: PagePreview 路由清理 + 最终验证
+### Task 15: 前后端清理 + 最终验证
 
 **Files:**
 - Modify: `frontend/components/admin/web-settings/PagePreview.tsx`
+- Scan: `frontend/` 全局未使用导入和组件
+- Scan: `backend/api/tests/` 涉及旧组件的测试引用
+- Scan: `frontend/e2e/` E2E 测试中的选择器和断言
 
 - [ ] **Step 1: 清理 PagePreview 导入**
 
@@ -1197,7 +1200,35 @@ git commit -m "refactor: 文章预览视觉化 + ArticleListClient 共享组件"
 - 清理未使用的 `useTranslations`、`useLocalizedConfig` 调用
 - 确认文件行数 ≤ 300 行（如超过则拆分各预览为独立文件）
 
-- [ ] **Step 2: TypeScript 构建检查**
+- [ ] **Step 2: 前端全局清理**
+
+扫描并修复：
+- `web-settings/page.tsx` 主页面中对已删组件的引用（如 import 路径、dialog 状态管理中引用旧 Preview 组件的逻辑）
+- 已删除组件的 `*.test.tsx` 测试文件（如存在则删除或更新）
+- `frontend/components/admin/web-settings/` 目录下不再被引用的编辑弹窗（UniversityEditDialog、CaseEditDialog、ArticleEditDialog 仍需保留，确认引用路径正确）
+- `frontend/components/home/SectionTitle.tsx` 的 `configKey` 类型：如果 `destinations_title` 不再被使用（首页"热门留学国家"板块已删），从类型联合中移除
+
+```bash
+# 查找引用已删文件的地方
+grep -r "UniversitiesEditPreview\|CasesEditPreview\|ArticleListPreview\|NewsPreview\|HeroSearch\|CasesPreview" frontend/src frontend/components frontend/app --include="*.tsx" --include="*.ts" -l
+```
+
+- [ ] **Step 3: 后端清理**
+
+扫描并修复：
+- 后端测试中如果有直接引用前端路由或组件名称的断言（E2E 测试 fixture 中的 component 清单等）
+- `frontend/e2e/helpers/components.json`：如果包含旧的组件名（如 "UniversitiesEditPreview"），更新为新的组件名
+- `frontend/e2e/fns/` 和 `frontend/e2e/w*/tasks.ts`：检查是否有引用旧管理界面 DOM 选择器的 E2E 函数需要更新（如院校管理的"学科分类管理"折叠面板选择器、案例管理的网格选择器等）
+- 后端 API 端点不变，但确认前端新组件使用的 admin API 路径与后端 router 一致
+
+```bash
+# 检查 E2E 测试中对旧 UI 的引用
+grep -r "学科分类管理\|院校管理\|案例管理\|文章管理" frontend/e2e/ --include="*.ts" -l
+# 检查组件清单
+cat frontend/e2e/helpers/components.json 2>/dev/null | head -20
+```
+
+- [ ] **Step 4: TypeScript 构建检查**
 
 ```bash
 pnpm --prefix frontend tsc --noEmit
@@ -1205,7 +1236,7 @@ pnpm --prefix frontend tsc --noEmit
 
 修复所有类型错误。
 
-- [ ] **Step 3: 端到端验证**
+- [ ] **Step 5: 端到端验证**
 
 用 Playwright MCP 逐页验证 web-settings 预览：
 1. 首页 → 8 个板块完整
@@ -1218,25 +1249,32 @@ pnpm --prefix frontend tsc --noEmit
 
 同时验证实际公开页面未被破坏（`/`、`/about`、`/universities`、`/cases`、`/news`）。
 
-- [ ] **Step 4: 提交**
+- [ ] **Step 6: 提交清理**
 
 ```bash
 git add frontend/
-git commit -m "chore: 清理 PagePreview 导入 + 最终验证"
+git commit -m "chore: 清理前端已删组件引用 + PagePreview 导入整理"
 ```
 
-- [ ] **Step 5: 运行测试**
+- [ ] **Step 7: 运行测试**
 
 ```bash
 ./scripts/test.sh unit
 ./scripts/test.sh vitest
 ```
 
-修复所有失败的测试（主要是导入路径变更和删除文件导致的引用错误）。
+修复所有失败的测试：
+- **后端单元测试**：检查是否有 mock 路径引用了被改名/删除的前端路由
+- **前端 Vitest**：修复因组件移动/删除导致的导入错误和快照不匹配
+- **确认不降低覆盖率**
 
-- [ ] **Step 6: 提交测试修复**
+- [ ] **Step 8: 提交测试修复**
 
 ```bash
 git add frontend/ backend/
-git commit -m "test: 修复组件提取后的测试引用"
+git commit -m "test: 修复组件提取后的前后端测试引用"
 ```
+
+- [ ] **Step 9: 运行 /simplify 代码审查**
+
+使用 `/simplify` skill 审查所有变更的代码，检查复用性、质量和效率问题并修复。
