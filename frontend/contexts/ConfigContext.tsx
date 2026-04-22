@@ -33,7 +33,6 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
   services_title: '',
-  destinations_title: '',
 }
 
 /** 默认首页统计（兜底） */
@@ -149,7 +148,6 @@ interface LocalizedConfigType {
     company_name: string
     icp_filing: string
     services_title: string
-    destinations_title: string
   }
   contactInfo: {
     address: string
@@ -181,7 +179,6 @@ export function useLocalizedConfig(): LocalizedConfigType {
       tagline: getLocalizedValue(config.siteInfo.tagline, locale),
       hotline_contact: getLocalizedValue(config.siteInfo.hotline_contact, locale),
       services_title: getLocalizedValue(config.siteInfo.services_title, locale),
-      destinations_title: getLocalizedValue(config.siteInfo.destinations_title, locale),
     },
     contactInfo: {
       ...config.contactInfo,

@@ -35,7 +35,6 @@ export interface SiteInfo {
   company_name: string
   icp_filing: string
   services_title: LocalizedField
-  destinations_title: LocalizedField
 }
 
 /** 首页统计条目 */

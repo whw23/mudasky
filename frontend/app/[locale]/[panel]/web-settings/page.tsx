@@ -65,7 +65,7 @@ const DEFAULT_RAW: RawConfig = {
   siteInfo: {
     brand_name: '', tagline: '', hotline: '', hotline_contact: '',
     logo_url: '', favicon_url: '', wechat_service_qr_url: '', wechat_official_qr_url: '', company_name: '', icp_filing: '',
-    services_title: '', destinations_title: '',
+    services_title: '',
   },
   contactInfo: {
     address: '', phone: '', email: '', wechat: '', registered_address: '',
@@ -343,16 +343,6 @@ export default function WebSettingsPage() {
           configKey: 'site_info',
           data: rawConfig.siteInfo,
           defaultValues: { services_title: tHome("servicesTitle") },
-        })
-        break
-      case 'destinations_title':
-        setDialogState({
-          open: true,
-          title: '编辑热门留学国家标题',
-          fields: [{ key: 'destinations_title', label: '板块标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-          defaultValues: { destinations_title: tHome("destinationsTitle") },
         })
         break
       case 'about_history':

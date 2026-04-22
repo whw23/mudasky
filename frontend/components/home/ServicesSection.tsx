@@ -60,7 +60,7 @@ export function ServicesSection({ editable, onEditTitle }: ServicesSectionProps)
           <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {t("servicesTag")}
           </h2>
-          {editable ? (
+          {editable && onEditTitle ? (
             <EditableOverlay onClick={onEditTitle} label="编辑服务标题">
               <SectionTitle
                 configKey="services_title"

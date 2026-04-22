@@ -8,7 +8,7 @@
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 
 interface SectionTitleProps {
-  configKey: "services_title" | "destinations_title"
+  configKey: "services_title"
   fallback: string
   className?: string
 }

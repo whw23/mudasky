@@ -10,7 +10,6 @@
 import { useTranslations } from "next-intl"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
-import { Banner } from "@/components/layout/Banner"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
