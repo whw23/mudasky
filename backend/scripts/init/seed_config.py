@@ -81,13 +81,13 @@ CONFIGS = [
             # 关于我们 - 办公室图片
             "about_office_images": [],
             # 院校选择页面
-            "universities_title": {
+            "universities_intro_title": {
                 "zh": "精选合作院校",
                 "en": "Selected Partner Universities",
                 "ja": "選定パートナー大学",
                 "de": "Ausgewählte Partneruniversitäten",
             },
-            "universities_intro": {
+            "universities_intro_desc": {
                 "zh": "我们与德国多所知名大学建立了深度合作关系，为学生提供更便捷的申请通道和更高的录取成功率。以下是部分合作院校，涵盖综合性大学、理工大学和应用科学大学。",
                 "en": "We have established deep partnerships with numerous prestigious German universities, providing students with more convenient application channels and higher admission success rates. Below are some of our partner institutions, covering comprehensive universities, technical universities, and universities of applied sciences.",
                 "ja": "ドイツの多くの有名大学と深い協力関係を築き、学生により便利な出願チャネルと高い合格率を提供しています。以下は一部の協力大学で、総合大学、工科大学、応用科学大学を含みます。",
@@ -131,13 +131,13 @@ CONFIGS = [
                 "de": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
             },
             # 出国留学页面
-            "study_abroad_overview_title": {
+            "study_abroad_intro_title": {
                 "zh": "多国留学项目",
                 "en": "Multi-Country Study Programs",
                 "ja": "多国留学プログラム",
                 "de": "Mehrländer-Studienprogramme",
             },
-            "study_abroad_overview_content": {
+            "study_abroad_intro_desc": {
                 "zh": "慕大国际提供德国、日本、法国、韩国等多国留学服务。我们根据每位学生的学术背景、语言水平和职业规划，量身定制最适合的留学方案。无论你是高中毕业生还是大学在读，我们都有匹配的留学项目。",
                 "en": "MUTU International offers study abroad services for Germany, Japan, France, South Korea, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
                 "ja": "慕大国際はドイツ、日本、フランス、韓国などの留学サービスを提供しています。各学生の学術背景、言語能力、キャリアプランに基づいて、最適な留学プランをカスタマイズします。高校卒業生でも大学生でも、マッチングプログラムがあります。",
@@ -155,6 +155,7 @@ CONFIGS = [
                 "ja": "すべての学生はユニークです。最適な留学プランを見つけるお手伝いをします",
                 "de": "Jeder Student ist einzigartig — wir helfen Ihnen, den besten Studienplan zu finden",
             },
+            "study_abroad_programs": [],
             # 签证办理页面
             "visa_process_steps": [
                 {
@@ -228,7 +229,7 @@ CONFIGS = [
                     },
                 },
             ],
-            "visa_docs": [
+            "visa_required_docs": [
                 {"zh": "有效护照原件及复印件", "en": "Valid passport original and copies", "ja": "有効なパスポート原本とコピー", "de": "Gültiger Reisepass Original und Kopien"},
                 {"zh": "签证申请表", "en": "Visa application form", "ja": "ビザ申請フォーム", "de": "Visaantragsformular"},
                 {"zh": "证件照（符合使馆规格）", "en": "Passport photos (embassy specifications)", "ja": "証明写真（大使館規格に準拠）", "de": "Passfotos (Botschaftsspezifikationen)"},
@@ -275,12 +276,6 @@ CONFIGS = [
                 "de": "98% Visumserfolgrate — unser professionelles Visumsoteam sichert Ihren Erfolg",
             },
             # 申请条件页面
-            "requirements_overview_title": {
-                "zh": "各国申请条件",
-                "en": "Application Requirements by Country",
-                "ja": "各国の出願要件",
-                "de": "Bewerbungsanforderungen nach Land",
-            },
             "requirements_cta_title": {
                 "zh": "不确定自己是否符合条件？",
                 "en": "Unsure If You Qualify?",
@@ -293,14 +288,18 @@ CONFIGS = [
                 "ja": "無料のバックグラウンド評価サービスを提供し、最適な留学方向を見つけるお手伝いをします",
                 "de": "Wir bieten kostenlose Hintergrundprüfungen, um Ihnen die beste Studienrichtung zu finden",
             },
+            "requirements_countries": [],
+            "requirements_languages": [],
+            "requirements_docs": [],
+            "requirements_steps": [],
             # 留学生活页面
-            "life_guide_title": {
+            "life_intro_title": {
                 "zh": "留学生活指南",
                 "en": "Study Abroad Living Guide",
                 "ja": "留学生活ガイド",
                 "de": "Studienführer für das Leben im Ausland",
             },
-            "life_guide_intro": {
+            "life_intro_desc": {
                 "zh": "踏上留学之旅，不仅是学术的深造，更是人生的历练。了解目标国家的生活方方面面，让你的留学生活更加顺利和丰富。我们整理了详细的生活指南，帮助你快速融入海外生活。",
                 "en": "Embarking on your study abroad journey is not just about academic growth — it's a life-changing experience. Understanding all aspects of life in your destination country will make your study abroad experience smoother and richer. We've compiled a detailed living guide to help you quickly adapt to life overseas.",
                 "ja": "留学の旅に出ることは、学術的な成長だけでなく、人生を変える体験です。目的地の国の生活のあらゆる側面を理解することで、留学体験がよりスムーズで豊かになります。海外生活に迅速に適応するための詳細な生活ガイドをまとめました。",
@@ -318,6 +317,8 @@ CONFIGS = [
                 "ja": "相談を予約してください - 海外経験のあるコンサルタントが実際の留学体験を共有します",
                 "de": "Buchen Sie eine Beratung — unsere im Ausland erfahrenen Berater teilen echte Studienerfahrungen",
             },
+            "life_guide_cards": [],
+            "life_city_cards": [],
         },
     ),
     (
