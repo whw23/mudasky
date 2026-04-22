@@ -29,7 +29,7 @@ import {
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { TeamSection } from "@/components/about/TeamSection"
 import { UniversitiesEditPreview } from "./UniversitiesEditPreview"
-import { CasesEditPreview } from "./CasesEditPreview"
+import { CasesPreviewPage } from "./CasesPreviewPage"
 import { ArticleListPreview } from "./ArticleListPreview"
 
 interface PagePreviewProps {
@@ -46,7 +46,7 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "universities":
       return <UniversitiesEditPreview onBannerEdit={onBannerEdit} />
     case "cases":
-      return <CasesEditPreview onBannerEdit={onBannerEdit} />
+      return <CasesPreviewPage onBannerEdit={onBannerEdit} />
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:
