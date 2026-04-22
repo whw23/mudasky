@@ -42,6 +42,15 @@ interface Article {
   created_at: string
 }
 
+const SLUG_TO_I18N: Record<string, string> = {
+  "study-abroad": "studyAbroad",
+  "requirements": "requirements",
+  "cases": "cases",
+  "visa": "visa",
+  "life": "life",
+  "news": "news",
+}
+
 interface ArticlePreviewPageProps {
   categorySlug: string
   onBannerEdit: (pageKey: string) => void
@@ -117,8 +126,8 @@ export function ArticlePreviewPage({
       >
         <PageBanner
           pageKey={categorySlug}
-          title={p(categorySlug as any)}
-          subtitle={p(`${categorySlug}Subtitle` as any)}
+          title={p((SLUG_TO_I18N[categorySlug] ?? categorySlug) as any)}
+          subtitle={p(`${SLUG_TO_I18N[categorySlug] ?? categorySlug}Subtitle` as any)}
         />
       </EditableOverlay>
 
