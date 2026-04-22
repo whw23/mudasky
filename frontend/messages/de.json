@@ -477,7 +477,7 @@
   },
   "About": {
     "historyTitle": "15 Jahre Internationale Bildung",
-    "historyContent": "MUTU Internationale Bildung wurde 2011 gegründet und ist seit 15 Jahren auf Studienprogramme für Fremdsprachen spezialisiert. Als einzige offizielle Anmeldestelle des Sprachzentrums der Universität München in der Provinz Jiangsu haben wir stets unsere Servicephilosophie von 'Professionalität, Integrität und Effizienz' verfolgt und Hunderten von Studierenden geholfen, ihren Traum von einem Studium an renommierten Hochschulen zu verwirklichen. Von anfänglichen Deutschkursen bis hin zu umfassenden mehrsprachigen Studiendienstleistungen für Deutsch, Japanisch, Französisch und Koreanisch erweitern wir unser Angebot stetig.",
+    "historyContent": "MUTU Internationale Bildung wurde 2011 gegründet und ist seit 15 Jahren auf Studienprogramme für Fremdsprachen spezialisiert. Als einzige offizielle Anmeldestelle des Sprachzentrums der Universität München in der Provinz Jiangsu haben wir stets unsere Servicephilosophie von 'Professionalität, Integrität und Effizienz' verfolgt und Hunderten von Studierenden geholfen, ihren Traum von einem Studium an renommierten Hochschulen zu verwirklichen. Von anfänglichen Deutschkursen bis hin zu umfassenden mehrsprachigen Studiendienstleistungen für Deutsch, Japanisch und Englisch erweitern wir unser Angebot stetig.",
     "missionTitle": "Unsere Mission",
     "missionContent": "Jedem Studierenden mit dem Traum eines Auslandsstudiums professionelle, fürsorgliche Rundum-Dienstleistungen zu bieten und die am besten geeignete Hochschule zu finden.",
     "visionTitle": "Unsere Vision",
@@ -511,7 +511,7 @@
   },
   "StudyAbroad": {
     "overviewTitle": "Studienprogramme in mehreren Ländern",
-    "overviewContent": "MUTU International bietet Studiendienstleistungen für Deutschland, Japan, Frankreich, Südkorea und weitere Länder. Wir erstellen individuelle Studienpläne basierend auf dem akademischen Hintergrund, den Sprachkenntnissen und den Karrierezielen jedes Studierenden.",
+    "overviewContent": "MUTU International bietet Studiendienstleistungen für Deutschland, Japan, Singapur und weitere Länder. Wir erstellen individuelle Studienpläne basierend auf dem akademischen Hintergrund, den Sprachkenntnissen und den Karrierezielen jedes Studierenden.",
     "germanFocusTitle": "Deutschsprachiges Studienprogramm (Empfohlen)",
     "germanFocusName": "LMU Sprachzentrum Direktprogramm",
     "germanFocusDesc": "Gestützt auf unsere offizielle Partnerschaft mit dem LMU Sprachzentrum bieten wir einen vollständigen Weg vom Deutschlernen bis zur Einschreibung an deutschen Spitzenuniversitäten. Dieses Kernprogramm hat Hunderten von Studierenden den Zugang zu deutschen Top-Universitäten ermöglicht.",
@@ -545,12 +545,12 @@
       "f2": "Niedrige Studiengebühren an öffentlichen Unis",
       "f3": "Reiche kulturelle und künstlerische Ressourcen"
     },
-    "korean": {
-      "title": "Studium in Südkorea",
-      "desc": "Hohe Bildungsstandards mit moderaten Studienkosten und Nähe zu China. Starke K-Culture-Anziehungskraft, ideal für Studierende mit Interesse an der koreanischen Sprache und Kultur.",
-      "f1": "Relativ niedrige Studienkosten",
-      "f2": "Geografische Nähe",
-      "f3": "Umfangreiche Koreanischkurse"
+    "singapore": {
+      "title": "Studium in Singapur",
+      "desc": "Asiens Spitzenbildungssystem mit zweisprachiger Umgebung (Englisch + Chinesisch) und globalem Finanz- und Technologiezentrum. Hervorragende Sicherheit, ideal für Studenten, die hochwertige englischsprachige Bildung suchen.",
+      "f1": "Englisch + Chinesisch zweisprachige Umgebung",
+      "f2": "Weltklasse-Universitäten (NUS, NTU)",
+      "f3": "Breite Karriereperspektiven nach dem Abschluss"
     },
     "ctaTitle": "Wählen Sie das richtige Programm für sich",
     "ctaDesc": "Jeder Studierende ist einzigartig — lassen Sie uns den besten Studienplan für Sie finden",
@@ -630,11 +630,11 @@
       "r2": "JLPT N2+ oder EJU-Ergebnis",
       "r3": "Nachweis der finanziellen Unterstützung"
     },
-    "korea": {
-      "title": "Studium in Südkorea",
+    "singapore": {
+      "title": "Studium in Singapur",
       "r1": "Abitur oder höher",
-      "r2": "TOPIK Stufe 3+",
-      "r3": "Kontoauszug"
+      "r2": "IELTS 6.0+ oder TOEFL 80+",
+      "r3": "Finanzgarantiezertifikat"
     },
     "langTitle": "Sprachanforderungen",
     "langGerman": {
@@ -720,9 +720,9 @@
     },
     "s6": {
       "name": "Student Liu",
-      "uni": "Seoul National University",
+      "uni": "National University of Singapore",
       "program": "BSc Internationaler Handel",
-      "quote": "Von der Beratung bis zur Einschreibung dauerte es nur ein halbes Jahr. Sehr effizient. Auch nach der Ankunft in Korea kann ich mich jederzeit an die Berater wenden."
+      "quote": "Von der Beratung bis zur Einschreibung dauerte es nur ein halbes Jahr. Sehr effizient. Auch nach der Ankunft in Singapur kann ich mich jederzeit an die Berater wenden."
     },
     "ctaTitle": "Sie könnten unsere nächste Erfolgsgeschichte sein",
     "ctaDesc": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",

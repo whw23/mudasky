@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 OFFICE_DIR = ASSETS_DIR / "office"
+CITIES_DIR = ASSETS_DIR / "cities"
 
 MIME_MAP = {
     ".png": "image/png",
@@ -62,6 +63,9 @@ async def init_seed_images(session) -> None:
     if await _init_office_images(session, site_info):
         updated = True
 
+    if await _init_city_images(session, site_info):
+        updated = True
+
     if updated:
         config.value = site_info
         await session.flush()
@@ -102,3 +106,37 @@ async def _init_office_images(session, site_info: dict) -> bool:
 
     site_info["about_office_images"] = office_images
     return True
+
+
+async def _init_city_images(session, site_info: dict) -> bool:
+    """导入 cities/ 目录下的城市占位图片到 life_city_cards。"""
+    cards = site_info.get("life_city_cards") or []
+    if not cards:
+        return False
+
+    has_images = any(c.get("image_id") for c in cards)
+    if has_images:
+        logger.debug("life_city_cards 已有图片，跳过")
+        return False
+
+    if not CITIES_DIR.exists():
+        return False
+
+    city_files = ["munich.png", "berlin.png", "hamburg.png"]
+    updated = False
+    for i, filename in enumerate(city_files):
+        if i >= len(cards):
+            break
+        filepath = CITIES_DIR / filename
+        if not filepath.exists():
+            continue
+        mime_type = MIME_MAP[filepath.suffix.lower()]
+        file_data = filepath.read_bytes()
+        image = await create_image(session, file_data, filename, mime_type)
+        cards[i]["image_id"] = str(image.id)
+        updated = True
+        logger.info("城市图片已导入: %s", filename)
+
+    if updated:
+        site_info["life_city_cards"] = cards
+    return updated

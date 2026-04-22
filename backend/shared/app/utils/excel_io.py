@@ -3,6 +3,8 @@
 import io
 import zipfile
 
+from PIL import Image, ImageDraw
+
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
@@ -42,6 +44,21 @@ def extract_zip(content: bytes) -> dict[str, bytes]:
                 continue
             files[name] = zf.read(name)
     return files
+
+
+def create_placeholder_image(
+    width: int = 800, height: int = 450,
+    text: str = "placeholder", color: str = "#94a3b8",
+) -> bytes:
+    """生成纯色占位 PNG 图片。"""
+    img = Image.new("RGB", (width, height), color)
+    draw = ImageDraw.Draw(img)
+    bbox = draw.textbbox((0, 0), text)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text(((width - tw) / 2, (height - th) / 2), text, fill="white")
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
 
 
 def create_zip(files: dict[str, bytes]) -> bytes:

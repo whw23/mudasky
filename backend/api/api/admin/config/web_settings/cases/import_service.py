@@ -17,6 +17,7 @@ from app.db.case.models import SuccessCase
 from app.db.image import repository as image_repo
 from app.db.university import repository as uni_repo
 from app.utils.excel_io import (
+    create_placeholder_image,
     create_zip,
     extract_zip,
     load_workbook_from_bytes,
@@ -168,7 +169,8 @@ class ImportService:
         # 创建 ZIP
         files = {
             "cases.xlsx": excel_bytes,
-            "images/.gitkeep": b"",  # 占位符
+            "images/张三_avatar.jpg": create_placeholder_image(200, 200, "Avatar", "#6366f1"),
+            "images/张三_offer.jpg": create_placeholder_image(800, 450, "Offer"),
         }
         return create_zip(files)
 

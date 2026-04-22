@@ -33,7 +33,6 @@ class ArticleExportService:
         ws.title = "文章"
         headers = [
             "标题",
-            "Slug",
             "内容类型",
             "正文文件名",
             "摘要",
@@ -86,7 +85,6 @@ class ArticleExportService:
             ws.append(
                 [
                     article.title,
-                    article.slug,
                     article.content_type,
                     content_filename,
                     article.excerpt,

@@ -138,10 +138,10 @@ CONFIGS = [
                 "de": "Mehrländer-Studienprogramme",
             },
             "study_abroad_intro_desc": {
-                "zh": "慕大国际提供德国、日本、法国、韩国等多国留学服务。我们根据每位学生的学术背景、语言水平和职业规划，量身定制最适合的留学方案。无论你是高中毕业生还是大学在读，我们都有匹配的留学项目。",
-                "en": "MUTU International offers study abroad services for Germany, Japan, France, South Korea, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
-                "ja": "慕大国際はドイツ、日本、フランス、韓国などの留学サービスを提供しています。各学生の学術背景、言語能力、キャリアプランに基づいて、最適な留学プランをカスタマイズします。高校卒業生でも大学生でも、マッチングプログラムがあります。",
-                "de": "MUTU International bietet Studiendienstleistungen für Deutschland, Japan, Frankreich, Südkorea und mehr. Wir erstellen maßgeschneiderte Studienpläne basierend auf akademischem Hintergrund, Sprachkenntnissen und Karrierezielen. Ob Abiturient oder Student, wir haben passende Programme.",
+                "zh": "慕大国际提供德国、日本、新加坡等多国留学服务。我们根据每位学生的学术背景、语言水平和职业规划，量身定制最适合的留学方案。无论你是高中毕业生还是大学在读，我们都有匹配的留学项目。",
+                "en": "MUTU International offers study abroad services for Germany, Japan, Singapore, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
+                "ja": "慕大国際はドイツ、日本、シンガポールなどの留学サービスを提供しています。各学生の学術背景、言語能力、キャリアプランに基づいて、最適な留学プランをカスタマイズします。高校卒業生でも大学生でも、マッチングプログラムがあります。",
+                "de": "MUTU International bietet Studiendienstleistungen für Deutschland, Japan, Singapur und mehr. Wir erstellen maßgeschneiderte Studienpläne basierend auf akademischem Hintergrund, Sprachkenntnissen und Karrierezielen. Ob Abiturient oder Student, wir haben passende Programme.",
             },
             "study_abroad_cta_title": {
                 "zh": "选择最适合你的留学项目",
@@ -157,6 +157,7 @@ CONFIGS = [
             },
             "study_abroad_programs": [
                 {
+                    "featured": True,
                     "name": {"zh": "慕尼黑大学语言中心直通项目", "en": "Munich University Language Center Direct Program", "ja": "ミュンヘン大学言語センター直接プログラム", "de": "Direktprogramm des Sprachenzentrums der LMU München"},
                     "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
                     "desc": {"zh": "依托慕尼黑大学语言中心官方合作关系，为学生提供从德语学习到入读德国名校的完整通道。该项目是我们的核心优势项目，已成功帮助数百名学生进入德国顶尖大学。", "en": "Leveraging our official partnership with the Munich University Language Center, we provide students with a complete pathway from German language learning to enrollment at prestigious German universities. This is our core program and has helped hundreds of students enter top German universities.", "ja": "ミュンヘン大学言語センターとの公式パートナーシップを活用し、ドイツ語学習からドイツの名門大学への入学までの完全な経路を学生に提供します。これは当社のコアプログラムであり、数百人の学生がドイツのトップ大学に入学するのを支援してきました。", "de": "Durch unsere offizielle Partnerschaft mit dem Sprachenzentrum der LMU München bieten wir Studenten einen vollständigen Weg vom Deutschlernen bis zur Einschreibung an renommierten deutschen Universitäten. Dies ist unser Kernprogramm und hat Hunderten von Studenten geholfen, an Top-Universitäten in Deutschland aufgenommen zu werden."},
@@ -170,6 +171,7 @@ CONFIGS = [
                     ],
                 },
                 {
+                    "featured": False,
                     "name": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"},
                     "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
                     "desc": {"zh": "享受免学费的世界一流教育，工科、商科、医学等专业全球领先。德国留学性价比极高，毕业后就业前景广阔。", "en": "Enjoy world-class tuition-free education with globally leading programs in engineering, business, and medicine. Studying in Germany offers excellent value and broad career prospects after graduation.", "ja": "授業料無料の世界一流の教育を受け、工学、ビジネス、医学などの専攻が世界をリードしています。ドイツ留学は非常にコストパフォーマンスが高く、卒業後のキャリア見通しも広いです。", "de": "Genießen Sie erstklassige kostenlose Bildung mit weltweit führenden Programmen in Ingenieurwesen, Wirtschaft und Medizin. Ein Studium in Deutschland bietet hervorragendes Preis-Leistungs-Verhältnis und breite Karriereperspektiven nach dem Abschluss."},
@@ -181,6 +183,7 @@ CONFIGS = [
                     ],
                 },
                 {
+                    "featured": False,
                     "name": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"},
                     "country": {"zh": "日本", "en": "Japan", "ja": "日本", "de": "Japan"},
                     "desc": {"zh": "亚洲顶尖教育体系，丰富的奖学金机会，文化体验独特。适合对日语和日本文化有浓厚兴趣的学生。", "en": "Asia's top education system with abundant scholarship opportunities and unique cultural experiences. Ideal for students interested in Japanese language and culture.", "ja": "アジアトップの教育システムで、豊富な奨学金の機会と独特の文化体験があります。日本語と日本文化に強い関心を持つ学生に最適です。", "de": "Asiens führendes Bildungssystem mit reichlich Stipendienmöglichkeiten und einzigartigen kulturellen Erfahrungen. Ideal für Studenten, die sich für japanische Sprache und Kultur interessieren."},
@@ -191,13 +194,14 @@ CONFIGS = [
                     ],
                 },
                 {
-                    "name": {"zh": "韩国留学", "en": "Study in South Korea", "ja": "韓国留学", "de": "Studium in Südkorea"},
-                    "country": {"zh": "韩国", "en": "South Korea", "ja": "韓国", "de": "Südkorea"},
-                    "desc": {"zh": "教育水平高，留学费用适中，距离中国近。韩流文化吸引力强，适合对韩语和韩国文化感兴趣的学生。", "en": "High educational standards with moderate study costs and close proximity to China. Strong K-culture appeal, ideal for students interested in Korean language and culture.", "ja": "教育水準が高く、留学費用が適度で、中国に近いです。韓流文化の魅力が強く、韓国語と韓国文化に興味のある学生に最適です。", "de": "Hohe Bildungsstandards mit moderaten Studienkosten und enger Nähe zu China. Starke K-Culture-Anziehungskraft, ideal für Studenten, die sich für koreanische Sprache und Kultur interessieren."},
+                    "featured": False,
+                    "name": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"},
+                    "country": {"zh": "新加坡", "en": "Singapore", "ja": "シンガポール", "de": "Singapur"},
+                    "desc": {"zh": "亚洲顶尖教育体系，双语教学环境（英语+中文），全球金融与科技中心。治安优良，适合追求高质量英语授课教育的学生。", "en": "Asia's top education system with a bilingual environment (English + Chinese) and a global finance and tech hub. Excellent safety, ideal for students seeking high-quality English-taught education.", "ja": "アジアトップの教育システムで、バイリンガル環境（英語+中国語）、グローバルな金融・テクノロジーハブです。治安が良く、高品質な英語教育を求める学生に最適です。", "de": "Asiens Spitzenbildungssystem mit zweisprachiger Umgebung (Englisch + Chinesisch) und globalem Finanz- und Technologiezentrum. Hervorragende Sicherheit, ideal für Studenten, die hochwertige englischsprachige Bildung suchen."},
                     "features": [
-                        {"zh": "留学费用相对较低", "en": "Relatively low study costs", "ja": "留学費用が比較的低い", "de": "Relativ niedrige Studienkosten"},
-                        {"zh": "地理位置近便", "en": "Close geographical proximity", "ja": "地理的に近い", "de": "Nahe geografische Lage"},
-                        {"zh": "丰富的韩语课程", "en": "Rich Korean language courses", "ja": "豊富な韓国語コース", "de": "Reichhaltige koreanische Sprachkurse"},
+                        {"zh": "英语+中文双语环境", "en": "English + Chinese bilingual environment", "ja": "英語+中国語のバイリンガル環境", "de": "Englisch + Chinesisch zweisprachige Umgebung"},
+                        {"zh": "全球顶尖大学（NUS、NTU）", "en": "World-class universities (NUS, NTU)", "ja": "世界トップクラスの大学（NUS、NTU）", "de": "Weltklasse-Universitäten (NUS, NTU)"},
+                        {"zh": "毕业后就业前景广阔", "en": "Broad career prospects after graduation", "ja": "卒業後のキャリア展望が広い", "de": "Breite Karriereperspektiven nach dem Abschluss"},
                     ],
                 },
             ],
@@ -275,14 +279,14 @@ CONFIGS = [
                 },
             ],
             "visa_required_docs": [
-                {"zh": "有效护照原件及复印件", "en": "Valid passport original and copies", "ja": "有効なパスポート原本とコピー", "de": "Gültiger Reisepass Original und Kopien"},
-                {"zh": "签证申请表", "en": "Visa application form", "ja": "ビザ申請フォーム", "de": "Visaantragsformular"},
-                {"zh": "证件照（符合使馆规格）", "en": "Passport photos (embassy specifications)", "ja": "証明写真（大使館規格に準拠）", "de": "Passfotos (Botschaftsspezifikationen)"},
-                {"zh": "大学录取通知书", "en": "University admission letter", "ja": "大学入学許可書", "de": "Universitätszulassungsschreiben"},
-                {"zh": "资金证明 / 经济担保", "en": "Proof of finances / financial guarantee", "ja": "資金証明 / 経済保証", "de": "Finanznachweis / Finanzgarantie"},
-                {"zh": "保险证明", "en": "Insurance certificate", "ja": "保険証明書", "de": "Versicherungszertifikat"},
-                {"zh": "语言证书", "en": "Language certificate", "ja": "語学証明書", "de": "Sprachzertifikat"},
-                {"zh": "学历认证文件", "en": "Academic credential verification", "ja": "学歴認証書類", "de": "Akademische Anerkennungsdokumente"},
+                {"text": {"zh": "有效护照原件及复印件", "en": "Valid passport original and copies", "ja": "有効なパスポート原本とコピー", "de": "Gültiger Reisepass Original und Kopien"}},
+                {"text": {"zh": "签证申请表", "en": "Visa application form", "ja": "ビザ申請フォーム", "de": "Visaantragsformular"}},
+                {"text": {"zh": "证件照（符合使馆规格）", "en": "Passport photos (embassy specifications)", "ja": "証明写真（大使館規格に準拠）", "de": "Passfotos (Botschaftsspezifikationen)"}},
+                {"text": {"zh": "大学录取通知书", "en": "University admission letter", "ja": "大学入学許可書", "de": "Universitätszulassungsschreiben"}},
+                {"text": {"zh": "资金证明 / 经济担保", "en": "Proof of finances / financial guarantee", "ja": "資金証明 / 経済保証", "de": "Finanznachweis / Finanzgarantie"}},
+                {"text": {"zh": "保险证明", "en": "Insurance certificate", "ja": "保険証明書", "de": "Versicherungszertifikat"}},
+                {"text": {"zh": "语言证书", "en": "Language certificate", "ja": "語学証明書", "de": "Sprachzertifikat"}},
+                {"text": {"zh": "学历认证文件", "en": "Academic credential verification", "ja": "学歴認証書類", "de": "Akademische Anerkennungsdokumente"}},
             ],
             "visa_timeline": [
                 {
@@ -302,11 +306,11 @@ CONFIGS = [
                 },
             ],
             "visa_tips": [
-                {"zh": "务必提前至少3个月开始准备签证材料，避免时间紧张影响入学。", "en": "Start preparing visa materials at least 3 months in advance to avoid time pressure affecting enrollment.", "ja": "入学に影響を与える時間的プレッシャーを避けるため、少なくとも3か月前にビザ書類の準備を開始してください。", "de": "Beginnen Sie mindestens 3 Monate im Voraus mit der Vorbereitung der Visumsunterlagen, um Zeitdruck zu vermeiden."},
-                {"zh": "资金证明金额需满足目标国家的最低要求，德国目前为每年10,332欧元。", "en": "Financial proof must meet the target country's minimum requirements; Germany currently requires €10,332 per year.", "ja": "資金証明額は対象国の最低要件を満たす必要があり、ドイツは現在年間10,332ユーロです。", "de": "Der Finanznachweis muss die Mindestanforderungen des Ziellandes erfüllen; Deutschland verlangt derzeit 10.332 € pro Jahr."},
-                {"zh": "所有非中文和非英文的材料需要经过公证翻译，建议选择正规翻译机构。", "en": "All non-Chinese and non-English documents need certified translation; use reputable translation agencies.", "ja": "すべての非中国語および非英語の書類は公証翻訳が必要です。評判の良い翻訳機関を選択してください。", "de": "Alle nicht-chinesischen und nicht-englischen Dokumente benötigen beglaubigte Übersetzungen; nutzen Sie seriöse Übersetzungsbüros."},
-                {"zh": "面签时保持自信、回答真实，不要背诵答案，注意着装得体。", "en": "Stay confident during the interview, answer honestly, don't memorize answers, and dress appropriately.", "ja": "面接時は自信を持ち、正直に答え、答えを暗記せず、適切な服装に注意してください。", "de": "Bleiben Sie während des Interviews selbstbewusst, antworten Sie ehrlich, memorieren Sie keine Antworten und kleiden Sie sich angemessen."},
-                {"zh": "保留所有申请材料的副本和电子版，以备使馆要求补充材料。", "en": "Keep copies and digital versions of all application materials in case the embassy requests supplements.", "ja": "大使館が補足資料を要求した場合に備えて、すべての申請書類のコピーと電子版を保管してください。", "de": "Bewahren Sie Kopien und digitale Versionen aller Antragsunterlagen auf, falls die Botschaft Ergänzungen anfordert."},
+                {"text": {"zh": "务必提前至少3个月开始准备签证材料，避免时间紧张影响入学。", "en": "Start preparing visa materials at least 3 months in advance to avoid time pressure affecting enrollment.", "ja": "入学に影響を与える時間的プレッシャーを避けるため、少なくとも3か月前にビザ書類の準備を開始してください。", "de": "Beginnen Sie mindestens 3 Monate im Voraus mit der Vorbereitung der Visumsunterlagen, um Zeitdruck zu vermeiden."}},
+                {"text": {"zh": "资金证明金额需满足目标国家的最低要求，德国目前为每年10,332欧元。", "en": "Financial proof must meet the target country's minimum requirements; Germany currently requires €10,332 per year.", "ja": "資金証明額は対象国の最低要件を満たす必要があり、ドイツは現在年間10,332ユーロです。", "de": "Der Finanznachweis muss die Mindestanforderungen des Ziellandes erfüllen; Deutschland verlangt derzeit 10.332 € pro Jahr."}},
+                {"text": {"zh": "所有非中文和非英文的材料需要经过公证翻译，建议选择正规翻译机构。", "en": "All non-Chinese and non-English documents need certified translation; use reputable translation agencies.", "ja": "すべての非中国語および非英語の書類は公証翻訳が必要です。評判の良い翻訳機関を選択してください。", "de": "Alle nicht-chinesischen und nicht-englischen Dokumente benötigen beglaubigte Übersetzungen; nutzen Sie seriöse Übersetzungsbüros."}},
+                {"text": {"zh": "面签时保持自信、回答真实，不要背诵答案，注意着装得体。", "en": "Stay confident during the interview, answer honestly, don't memorize answers, and dress appropriately.", "ja": "面接時は自信を持ち、正直に答え、答えを暗記せず、適切な服装に注意してください。", "de": "Bleiben Sie während des Interviews selbstbewusst, antworten Sie ehrlich, memorieren Sie keine Antworten und kleiden Sie sich angemessen."}},
+                {"text": {"zh": "保留所有申请材料的副本和电子版，以备使馆要求补充材料。", "en": "Keep copies and digital versions of all application materials in case the embassy requests supplements.", "ja": "大使館が補足資料を要求した場合に備えて、すべての申請書類のコピーと電子版を保管してください。", "de": "Bewahren Sie Kopien und digitale Versionen aller Antragsunterlagen auf, falls die Botschaft Ergänzungen anfordert."}},
             ],
             "visa_cta_title": {
                 "zh": "签证问题？交给我们",
@@ -352,11 +356,11 @@ CONFIGS = [
                     ],
                 },
                 {
-                    "country": {"zh": "韩国留学", "en": "Study in South Korea", "ja": "韓国留学", "de": "Studium in Südkorea"},
+                    "country": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"},
                     "items": [
                         {"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"},
-                        {"zh": "TOPIK 3级以上", "en": "TOPIK Level 3+", "ja": "TOPIK 3級以上", "de": "TOPIK Level 3+"},
-                        {"zh": "银行存款证明", "en": "Bank deposit certificate", "ja": "銀行預金証明書", "de": "Bankeinlagenzertifikat"},
+                        {"zh": "雅思6.0以上或托福80以上", "en": "IELTS 6.0+ or TOEFL 80+", "ja": "IELTS 6.0以上またはTOEFL 80以上", "de": "IELTS 6.0+ oder TOEFL 80+"},
+                        {"zh": "资金担保证明", "en": "Financial guarantee certificate", "ja": "資金保証証明書", "de": "Finanzgarantiezertifikat"},
                     ],
                 },
             ],
@@ -437,22 +441,22 @@ CONFIGS = [
             },
             "life_guide_cards": [
                 {
-                    "icon": "Home",
+                    "icon": "home",
                     "title": {"zh": "住宿安排", "en": "Accommodation", "ja": "宿泊手配", "de": "Unterkunft"},
                     "desc": {"zh": "在德国，留学生可以选择学生宿舍（Studentenwohnheim）、合租公寓（WG）或单独租房。学生宿舍价格最低，约250-400欧元/月，但名额有限需提前申请。合租公寓是最受欢迎的选择，月租约350-600欧元。我们会协助学生在出发前安排好住宿。", "en": "In Germany, international students can choose student dormitories (Studentenwohnheim), shared apartments (WG), or private rentals. Student dormitories are the most affordable at around €250-400/month but have limited availability. Shared apartments are the most popular choice at about €350-600/month. We help students arrange accommodation before departure.", "ja": "ドイツでは、留学生は学生寮（Studentenwohnheim）、シェアアパート（WG）、または個人賃貸を選択できます。学生寮は月額約250-400ユーロで最も手頃ですが、空きが限られているため事前申請が必要です。シェアアパートは月額約350-600ユーロで最も人気のある選択肢です。私たちは出発前に学生の宿泊を手配するのを支援します。", "de": "In Deutschland können internationale Studenten zwischen Studentenwohnheimen, Wohngemeinschaften (WG) oder privaten Mietwohnungen wählen. Studentenwohnheime sind am günstigsten (ca. 250-400 €/Monat), haben aber begrenzte Verfügbarkeit. WGs sind die beliebteste Wahl (ca. 350-600 €/Monat). Wir helfen Studenten, vor der Abreise eine Unterkunft zu organisieren."},
                 },
                 {
-                    "icon": "Bus",
+                    "icon": "bus",
                     "title": {"zh": "交通出行", "en": "Transportation", "ja": "交通", "de": "Verkehr"},
                     "desc": {"zh": "德国公共交通系统发达，留学生可购买学期票（Semesterticket），覆盖所在城市及周边地区的公交、地铁和区域火车。此外，德铁（DB）提供多种优惠票价，BahnCard 25/50可享受相应折扣。骑自行车也是德国学生的主要出行方式。", "en": "Germany has an excellent public transportation system. Students can purchase a semester ticket (Semesterticket) covering local buses, metros, and regional trains. Deutsche Bahn (DB) offers various discount fares, and BahnCard 25/50 provides corresponding discounts. Cycling is also a primary mode of transport for German students.", "ja": "ドイツには優れた公共交通システムがあります。学生は学期チケット（Semesterticket）を購入して、地元のバス、地下鉄、地域列車をカバーできます。ドイツ鉄道（DB）はさまざまな割引運賃を提供し、BahnCard 25/50は対応する割引を提供します。サイクリングはドイツの学生の主要な移動手段でもあります。", "de": "Deutschland verfügt über ein hervorragendes öffentliches Verkehrssystem. Studenten können ein Semesterticket kaufen, das lokale Busse, U-Bahnen und Regionalzüge abdeckt. Die Deutsche Bahn (DB) bietet verschiedene ermäßigte Tarife, und BahnCard 25/50 bietet entsprechende Rabatte. Radfahren ist auch ein Hauptverkehrsmittel für deutsche Studenten."},
                 },
                 {
-                    "icon": "UtensilsCrossed",
+                    "icon": "utensils-crossed",
                     "title": {"zh": "饮食文化", "en": "Food & Dining", "ja": "食事文化", "de": "Essen & Kultur"},
                     "desc": {"zh": "德国大学食堂（Mensa）提供经济实惠的餐食，一顿饭约2-5欧元。超市如Aldi、Lidl、REWE等选择丰富，自己做饭每月食品支出约200-300欧元。亚洲超市也越来越多，可以买到中国食材。德国啤酒和面包种类繁多，值得尝试。", "en": "German university cafeterias (Mensa) offer affordable meals at about €2-5 each. Supermarkets like Aldi, Lidl, and REWE offer diverse options; cooking at home costs about €200-300/month for groceries. Asian supermarkets are increasingly available for Chinese ingredients. Germany's beer and bread varieties are worth exploring.", "ja": "ドイツの大学食堂（Mensa）は、1食約2-5ユーロで手頃な食事を提供しています。Aldi、Lidl、REWEなどのスーパーマーケットは多様な選択肢を提供しており、自炊すると月額約200-300ユーロの食品費がかかります。アジア系スーパーマーケットも増えており、中国の食材を購入できます。ドイツのビールとパンの種類は探索する価値があります。", "de": "Deutsche Universitätskafeterien (Mensa) bieten erschwingliche Mahlzeiten für ca. 2-5 € pro Mahlzeit. Supermärkte wie Aldi, Lidl und REWE bieten vielfältige Optionen; Selbstkochen kostet ca. 200-300 €/Monat für Lebensmittel. Asiatische Supermärkte sind zunehmend verfügbar für chinesische Zutaten. Deutschlands Bier- und Brotsorten sind es wert, erkundet zu werden."},
                 },
                 {
-                    "icon": "Palette",
+                    "icon": "palette",
                     "title": {"zh": "文化适应", "en": "Cultural Adaptation", "ja": "文化適応", "de": "Kulturelle Anpassung"},
                     "desc": {"zh": "德国人注重守时和规则，初期适应可能需要时间。大学通常有国际学生服务中心和丰富的社团活动，是结交朋友和融入当地文化的好渠道。德国的博物馆、剧院和音乐会非常丰富，很多对学生提供免费或优惠票价。", "en": "Germans value punctuality and following rules, which may take time to adjust to. Universities typically have international student service centers and diverse student organizations — great channels for making friends and integrating into local culture. Germany's museums, theaters, and concerts are abundant, with many offering free or discounted tickets for students.", "ja": "ドイツ人は時間厳守とルールを重視しており、適応には時間がかかる場合があります。大学には通常、留学生サービスセンターと多様な学生組織があり、友達を作り、地元文化に統合するための素晴らしいチャネルです。ドイツの博物館、劇場、コンサートは豊富で、多くが学生に無料または割引チケットを提供しています。", "de": "Deutsche legen Wert auf Pünktlichkeit und Regelbefolgung, was Zeit zur Anpassung erfordern kann. Universitäten haben in der Regel internationale Studentenservicezentren und vielfältige Studentenorganisationen — großartige Kanäle, um Freunde zu finden und sich in die lokale Kultur zu integrieren. Deutschlands Museen, Theater und Konzerte sind reichlich vorhanden, viele bieten kostenlose oder ermäßigte Tickets für Studenten."},
                 },
