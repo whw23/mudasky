@@ -14,6 +14,14 @@ from app.db.image.repository import create_image
 logger = logging.getLogger(__name__)
 
 ASSETS_DIR = Path(__file__).parent / "assets"
+OFFICE_DIR = ASSETS_DIR / "office"
+
+MIME_MAP = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 
 SEED_IMAGES = [
     ("logo.png", "image/png", "logo_url"),
@@ -51,8 +59,46 @@ async def init_seed_images(session) -> None:
         updated = True
         logger.info("种子图片已导入: %s → %s", filename, config_field)
 
+    if await _init_office_images(session, site_info):
+        updated = True
+
     if updated:
         config.value = site_info
         await session.flush()
 
     print("  + 种子图片已初始化")
+
+
+async def _init_office_images(session, site_info: dict) -> bool:
+    """导入 office/ 目录下的办公环境图片到 about_office_images。"""
+    existing = site_info.get("about_office_images") or []
+    if existing:
+        logger.debug("about_office_images 已有数据，跳过")
+        return False
+
+    if not OFFICE_DIR.exists():
+        return False
+
+    files = sorted(
+        f for f in OFFICE_DIR.iterdir()
+        if f.suffix.lower() in MIME_MAP
+    )
+    if not files:
+        return False
+
+    office_images = []
+    for filepath in files:
+        mime_type = MIME_MAP[filepath.suffix.lower()]
+        file_data = filepath.read_bytes()
+        image = await create_image(
+            session, file_data, filepath.name, mime_type,
+        )
+        caption = filepath.stem.replace("-", " ").replace("_", " ")
+        office_images.append({
+            "image_id": str(image.id),
+            "caption": {"zh": caption, "en": caption},
+        })
+        logger.info("办公环境图片已导入: %s", filepath.name)
+
+    site_info["about_office_images"] = office_images
+    return True
