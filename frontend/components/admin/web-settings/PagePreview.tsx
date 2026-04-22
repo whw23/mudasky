@@ -21,11 +21,9 @@ import { CtaSection } from "@/components/common/CtaSection"
 import {
   HistorySection,
   MissionVisionSection,
-  PartnershipSection,
-  AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { TeamSection } from "@/components/about/TeamSection"
+import { OfficeGallery } from "@/components/about/OfficeGallery"
 import { UniversitiesPreviewPage } from "./UniversitiesPreviewPage"
 import { CasesPreviewPage } from "./CasesPreviewPage"
 import { ArticlePreviewPage } from "./ArticlePreviewPage"
@@ -105,12 +103,8 @@ function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string
           />
         </div>
       </section>
-      <PartnershipSection withWrapper editable onEdit={() => onEditConfig("about_partnership")} />
-      <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
-        <AboutStatsSection />
-      </EditableOverlay>
-      <TeamSection />
-      <CtaSection translationNamespace="About" />
+      <OfficeGallery editable onEdit={() => onEditConfig("about_office_images")} />
+      <CtaSection translationNamespace="About" editable onEdit={() => onEditConfig("about_cta")} />
     </>
   )
 }

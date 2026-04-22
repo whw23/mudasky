@@ -412,6 +412,23 @@ export default function WebSettingsPage() {
           defaultValues: { partnership: tAbout("partnershipContent") },
         })
         break
+      case 'about_cta':
+        setDialogState({
+          open: true,
+          title: '编辑关于页 CTA',
+          fields: [
+            { key: 'about_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'about_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'about_office_images':
+        // TODO: This will use ArrayEditDialog — for now just add a placeholder case
+        // The actual ArrayEditDialog integration will be done when we wire up all array editing
+        toast.info('办公环境图片管理功能开发中')
+        break
       default:
         // contact_* prefix handles individual contact fields
         if (section.startsWith('contact_')) {

@@ -2,11 +2,9 @@ import { PageBanner } from "@/components/layout/PageBanner"
 import {
   HistorySection,
   MissionVisionSection,
-  PartnershipSection,
-  AboutStatsSection,
 } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { TeamSection } from "@/components/about/TeamSection"
+import { OfficeGallery } from "@/components/about/OfficeGallery"
 import { CtaSection } from "@/components/common/CtaSection"
 import { getTranslations } from "next-intl/server"
 
@@ -43,14 +41,8 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* 慕尼黑大学语言中心合作 */}
-      <PartnershipSection withWrapper />
-
-      {/* 数据统计 */}
-      <AboutStatsSection />
-
-      {/* 团队介绍 */}
-      <TeamSection />
+      {/* 办公环境 */}
+      <OfficeGallery />
 
       {/* CTA */}
       <CtaSection translationNamespace="About" />

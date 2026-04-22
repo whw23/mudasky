@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { Building2 } from "lucide-react"
@@ -15,6 +16,7 @@ interface OfficeGalleryProps {
  * 从 about_office_images 配置中读取图片列表并渲染成网格
  */
 export function OfficeGallery({ editable, onEdit }: OfficeGalleryProps) {
+  const t = useTranslations("About")
   const { siteInfo } = useLocalizedConfig()
   const images = (siteInfo as any).about_office_images as {
     image_id: string
@@ -31,7 +33,7 @@ export function OfficeGallery({ editable, onEdit }: OfficeGalleryProps) {
           <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Office
           </h2>
-          <h3 className="mt-2 text-2xl md:text-3xl font-bold">办公环境</h3>
+          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("officeTitle")}</h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
         <div className="mt-8 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-16 text-muted-foreground">
@@ -53,7 +55,7 @@ export function OfficeGallery({ editable, onEdit }: OfficeGalleryProps) {
         <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
           Office
         </h2>
-        <h3 className="mt-2 text-2xl md:text-3xl font-bold">办公环境</h3>
+        <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("officeTitle")}</h3>
         <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
       </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
