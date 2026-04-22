@@ -746,7 +746,8 @@
     "major": "Program",
     "year": "Year",
     "testimonialTitle": "Testimonial",
-    "detailTitle": "Case Detail"
+    "detailTitle": "Case Detail",
+    "noContent": "No cases yet"
   },
   "Visa": {
     "processTitle": "Visa Application Process",

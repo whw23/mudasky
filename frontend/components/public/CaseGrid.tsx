@@ -29,7 +29,7 @@ interface CaseGridProps {
 
 /** 案例卡片网格 */
 export function CaseGrid({ editable, onEdit }: CaseGridProps) {
-  const tc = useTranslations("Common")
+  const t = useTranslations("Cases")
   const [cases, setCases] = useState<CaseItem[]>([])
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function CaseGrid({ editable, onEdit }: CaseGridProps) {
   }, [editable])
 
   if (cases.length === 0) {
-    return <p className="text-center text-muted-foreground py-12">{tc("noContent")}</p>
+    return <p className="text-center text-muted-foreground py-12">{t("noContent")}</p>
   }
 
   return (

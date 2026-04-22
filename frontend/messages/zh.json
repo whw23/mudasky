@@ -730,7 +730,8 @@
     "major": "专业",
     "year": "年份",
     "testimonialTitle": "学生感言",
-    "detailTitle": "案例详情"
+    "detailTitle": "案例详情",
+    "noContent": "暂无案例"
   },
   "Visa": {
     "processTitle": "签证办理流程",
