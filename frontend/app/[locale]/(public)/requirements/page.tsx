@@ -26,8 +26,8 @@ export default async function RequirementsPage() {
       items: [t("japan.r1"), t("japan.r2"), t("japan.r3")],
     },
     {
-      label: t("korea.title"),
-      items: [t("korea.r1"), t("korea.r2"), t("korea.r3")],
+      label: t("singapore.title"),
+      items: [t("singapore.r1"), t("singapore.r2"), t("singapore.r3")],
     },
   ]
 
@@ -64,7 +64,7 @@ export default async function RequirementsPage() {
         configKey="requirements_countries"
         sectionTag="Requirements"
         sectionTitle={t("overviewTitle")}
-        labelKey="title"
+        labelKey="country"
         fallbackData={fallbackCountries}
       />
 

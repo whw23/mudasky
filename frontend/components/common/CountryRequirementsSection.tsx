@@ -4,6 +4,12 @@ import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { CheckSquare, type LucideIcon } from "lucide-react"
 
+/** 根据条目数量自动选择网格列数 */
+const GRID_COLS: Record<number, string> = {
+  1: "md:grid-cols-1 max-w-lg mx-auto",
+  2: "md:grid-cols-2 max-w-4xl mx-auto",
+}
+
 interface CountryRequirementsSectionProps {
   configKey: string
   sectionTag: string
@@ -12,7 +18,6 @@ interface CountryRequirementsSectionProps {
   fallbackData: { label: string; items: string[] }[]
   icon?: LucideIcon
   bgColor?: string
-  gridCols?: string
   editable?: boolean
   onEdit?: () => void
 }
@@ -30,7 +35,6 @@ export function CountryRequirementsSection({
   fallbackData,
   icon: Icon = CheckSquare,
   bgColor = "",
-  gridCols = "md:grid-cols-3",
   editable,
   onEdit,
 }: CountryRequirementsSectionProps) {
@@ -43,6 +47,8 @@ export function CountryRequirementsSection({
           items: item.items as string[],
         }))
       : fallbackData
+
+  const gridCols = GRID_COLS[data.length] || "md:grid-cols-3"
 
   const content = (
     <section className={`py-10 md:py-16 ${bgColor}`}>

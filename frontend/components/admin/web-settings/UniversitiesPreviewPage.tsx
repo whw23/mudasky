@@ -18,6 +18,7 @@ import { UniversityEditDialog } from "./UniversityEditDialog"
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog"
 import { DisciplineManageDialog } from "./DisciplineManageDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
+import { ManageToolbar } from "./ManageToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
 import api from "@/lib/api"
 
@@ -128,23 +129,21 @@ export function UniversitiesPreviewPage({ onBannerEdit, onEditConfig }: Universi
       />
 
       {/* 管理工具栏 */}
-      <div className="mx-auto max-w-7xl px-4 pb-6">
-        <div className="flex items-center justify-end gap-2">
-          <ImportExportToolbar
-            templateUrl="/admin/web-settings/universities/list/import/template"
-            importUrl="/admin/web-settings/universities/list/import/preview"
-            exportUrl="/admin/web-settings/universities/list/export"
-            onImportPreview={setUniPreviewData}
-            onFileSelect={setImportFile}
-            templateFilename="universities_template.zip"
-            exportFilename="universities.zip"
-          />
-          <Button size="sm" onClick={handleCreate}>
-            <Plus className="mr-1 size-4" />
-            添加院校
-          </Button>
-        </div>
-      </div>
+      <ManageToolbar>
+        <ImportExportToolbar
+          templateUrl="/admin/web-settings/universities/list/import/template"
+          importUrl="/admin/web-settings/universities/list/import/preview"
+          exportUrl="/admin/web-settings/universities/list/export"
+          onImportPreview={setUniPreviewData}
+          onFileSelect={setImportFile}
+          templateFilename="universities_template.zip"
+          exportFilename="universities.zip"
+        />
+        <Button size="sm" onClick={handleCreate}>
+          <Plus className="mr-1 size-4" />
+          添加院校
+        </Button>
+      </ManageToolbar>
 
       {/* 院校列表（可编辑模式） */}
       <div className="mx-auto max-w-7xl px-4 pb-10">

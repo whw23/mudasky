@@ -24,6 +24,7 @@ import { StepListSection } from "@/components/common/StepListSection"
 import { DocListSection } from "@/components/common/DocListSection"
 import { CardGridSection } from "@/components/common/CardGridSection"
 import { CountryRequirementsSection } from "@/components/common/CountryRequirementsSection"
+import { FeaturedProgramSection } from "@/components/common/FeaturedProgramSection"
 
 interface Category {
   id: string
@@ -231,19 +232,63 @@ function IntroSection({
   const tLife = useTranslations("Life")
 
   switch (slug) {
-    case "study-abroad":
+    case "study-abroad": {
+      const fallbackPrograms = [
+        {
+          name: tStudyAbroad("german.title"), desc: tStudyAbroad("german.desc"),
+          features: [tStudyAbroad("german.f1"), tStudyAbroad("german.f2"), tStudyAbroad("german.f3"), tStudyAbroad("german.f4")],
+          highlight: true,
+        },
+        {
+          name: tStudyAbroad("japanese.title"), desc: tStudyAbroad("japanese.desc"),
+          features: [tStudyAbroad("japanese.f1"), tStudyAbroad("japanese.f2"), tStudyAbroad("japanese.f3")],
+          highlight: false,
+        },
+        {
+          name: tStudyAbroad("singapore.title"), desc: tStudyAbroad("singapore.desc"),
+          features: [tStudyAbroad("singapore.f1"), tStudyAbroad("singapore.f2"), tStudyAbroad("singapore.f3")],
+          highlight: false,
+        },
+      ]
       return (
-        <PageIntroSection
-          titleKey="study_abroad_intro_title"
-          contentKey="study_abroad_intro_desc"
-          titleFallback={tStudyAbroad("overviewTitle")}
-          contentFallback={tStudyAbroad("overviewContent")}
-          sectionTag="Overview"
-          editable={editable}
-          onEditTitle={() => onEditConfig?.("study_abroad_intro_title")}
-          onEditContent={() => onEditConfig?.("study_abroad_intro_desc")}
-        />
+        <>
+          <PageIntroSection
+            titleKey="study_abroad_intro_title"
+            contentKey="study_abroad_intro_desc"
+            titleFallback={tStudyAbroad("overviewTitle")}
+            contentFallback={tStudyAbroad("overviewContent")}
+            sectionTag="Overview"
+            editable={editable}
+            onEditTitle={() => onEditConfig?.("study_abroad_intro_title")}
+            onEditContent={() => onEditConfig?.("study_abroad_intro_desc")}
+          />
+          <FeaturedProgramSection
+            sectionTag="Featured Program"
+            sectionTitle={tStudyAbroad("germanFocusTitle")}
+            fallbackTitle={tStudyAbroad("germanFocusName")}
+            fallbackDesc={tStudyAbroad("germanFocusDesc")}
+            fallbackFeatures={[
+              tStudyAbroad("germanFocusF1"), tStudyAbroad("germanFocusF2"),
+              tStudyAbroad("germanFocusF3"), tStudyAbroad("germanFocusF4"),
+              tStudyAbroad("germanFocusF5"), tStudyAbroad("germanFocusF6"),
+            ]}
+            editable={editable}
+            onEdit={() => onEditConfig?.("study_abroad_programs")}
+          />
+          <CardGridSection
+            configKey="study_abroad_programs"
+            sectionTag="Programs"
+            sectionTitle={tStudyAbroad("programsTitle")}
+            fallbackCards={fallbackPrograms}
+            columns="md:grid-cols-2"
+            bgColor="bg-white"
+            cardType="program"
+            editable={editable}
+            onEdit={() => onEditConfig?.("study_abroad_programs")}
+          />
+        </>
       )
+    }
     case "visa": {
       const fallbackSteps = [
         { title: tVisa("step1.title"), desc: tVisa("step1.desc") },
@@ -326,11 +371,11 @@ function IntroSection({
           ],
         },
         {
-          label: tRequirements("korea.title"),
+          label: tRequirements("singapore.title"),
           items: [
-            tRequirements("korea.r1"),
-            tRequirements("korea.r2"),
-            tRequirements("korea.r3"),
+            tRequirements("singapore.r1"),
+            tRequirements("singapore.r2"),
+            tRequirements("singapore.r3"),
           ],
         },
       ]
@@ -362,7 +407,7 @@ function IntroSection({
             configKey="requirements_countries"
             sectionTag="Requirements"
             sectionTitle={tRequirements("overviewTitle")}
-            labelKey="title"
+            labelKey="country"
             fallbackData={fallbackCountries}
             editable={editable}
             onEdit={() => onEditConfig?.("requirements_countries")}

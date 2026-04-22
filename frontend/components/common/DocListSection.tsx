@@ -59,7 +59,7 @@ export function DocListSection({
           <h3 className="mt-2 text-2xl font-bold md:text-3xl">{sectionTitle}</h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
-        <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+        <div className={`mx-auto mt-8 grid w-fit gap-3 ${data.length > 1 ? "sm:grid-cols-2" : ""}`}>
           {data.map((text, i) => (
             <div key={i} className="flex items-center gap-2 rounded-lg border bg-white px-4 py-3">
               <Icon className="h-4 w-4 shrink-0 text-primary" />

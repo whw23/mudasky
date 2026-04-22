@@ -100,8 +100,9 @@ export default function WebSettingsPage() {
   const [arrayDialogState, setArrayDialogState] = useState<{
     open: boolean
     title: string
+    description?: React.ReactNode
     siteInfoKey: string
-    fields: { key: string; label: string; type: 'text' | 'textarea'; localized: boolean; rows?: number }[]
+    fields: { key: string; label: string; type: 'text' | 'textarea' | 'nested-items' | 'radio' | 'image'; localized: boolean; rows?: number }[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any[]
   } | null>(null)
@@ -539,9 +540,11 @@ export default function WebSettingsPage() {
           open: true, title: '编辑留学项目',
           siteInfoKey: 'study_abroad_programs',
           fields: [
+            { key: 'featured', label: '主推', type: 'radio', localized: false },
             { key: 'name', label: '项目名称', type: 'text', localized: true },
             { key: 'country', label: '国家', type: 'text', localized: true },
             { key: 'desc', label: '项目描述', type: 'textarea', localized: true, rows: 3 },
+            { key: 'features', label: '特色', type: 'nested-items', localized: false },
           ],
           data: rawConfig.siteInfo.study_abroad_programs || [],
         })
@@ -619,6 +622,7 @@ export default function WebSettingsPage() {
           siteInfoKey: 'requirements_countries',
           fields: [
             { key: 'country', label: '国家', type: 'text', localized: true },
+            { key: 'items', label: '条件', type: 'nested-items', localized: false },
           ],
           data: rawConfig.siteInfo.requirements_countries || [],
         })
@@ -629,6 +633,7 @@ export default function WebSettingsPage() {
           siteInfoKey: 'requirements_languages',
           fields: [
             { key: 'language', label: '语言', type: 'text', localized: true },
+            { key: 'items', label: '要求', type: 'nested-items', localized: false },
           ],
           data: rawConfig.siteInfo.requirements_languages || [],
         })
@@ -687,6 +692,7 @@ export default function WebSettingsPage() {
       case 'life_guide_cards':
         setArrayDialogState({
           open: true, title: '编辑生活指南板块',
+          description: <>编辑列表项，拖动排序。图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a></>,
           siteInfoKey: 'life_guide_cards',
           fields: [
             { key: 'icon', label: '图标名称', type: 'text', localized: false },
@@ -704,7 +710,7 @@ export default function WebSettingsPage() {
             { key: 'city', label: '城市名称', type: 'text', localized: true },
             { key: 'country', label: '国家', type: 'text', localized: true },
             { key: 'desc', label: '城市描述', type: 'textarea', localized: true, rows: 2 },
-            { key: 'image_id', label: '图片 ID', type: 'text', localized: false },
+            { key: 'image_id', label: '城市图片', type: 'image', localized: false },
           ],
           data: rawConfig.siteInfo.life_city_cards || [],
         })
@@ -849,6 +855,7 @@ export default function WebSettingsPage() {
           open={arrayDialogState.open}
           onOpenChange={(open) => { if (!open) setArrayDialogState(null) }}
           title={arrayDialogState.title}
+          description={arrayDialogState.description}
           fields={arrayDialogState.fields}
           data={arrayDialogState.data}
           onSave={handleArraySave}

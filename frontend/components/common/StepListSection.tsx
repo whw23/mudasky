@@ -49,7 +49,7 @@ export function StepListSection({
           <h3 className="mt-2 text-2xl font-bold md:text-3xl">{sectionTitle}</h3>
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
-        <div className="mx-auto mt-12 max-w-3xl space-y-6">
+        <div className="mx-auto mt-12 w-fit space-y-6">
           {data.map((step, i) => (
             <div key={i} className="flex gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">

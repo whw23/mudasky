@@ -9,12 +9,9 @@ import { useEffect, useState } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Plus, Star, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import {
   Dialog, DialogContent, DialogHeader,
   DialogTitle, DialogDescription, DialogFooter, DialogBody,
@@ -24,14 +21,13 @@ import {
   AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { LocalizedField } from "@/lib/i18n-config"
-import { LocalizedInput } from "./LocalizedInput"
+import { ArrayFieldRenderer } from "./ArrayFieldRenderer"
 
 /** 数组字段定义 */
 export interface ArrayFieldDef {
   key: string
   label: string
-  type: "text" | "textarea"
+  type: "text" | "textarea" | "nested-items" | "radio" | "image"
   localized: boolean
   rows?: number
 }
@@ -40,6 +36,8 @@ export interface ArrayEditDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
+  /** 弹窗描述（支持 ReactNode，可传链接等） */
+  description?: React.ReactNode
   fields: ArrayFieldDef[]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
@@ -47,20 +45,12 @@ export interface ArrayEditDialogProps {
   onSave: (data: any[]) => Promise<void>
 }
 
-/** 获取条目的预览文本（取第一个字段的中文值） */
-function getPreviewText(item: Record<string, unknown>, fields: ArrayFieldDef[]): string {
-  if (fields.length === 0) return ""
-  const val = item[fields[0].key]
-  if (!val) return ""
-  if (typeof val === "string") return val
-  return (val as Record<string, string>).zh || ""
-}
-
 /** 通用数组编辑弹窗 */
 export function ArrayEditDialog({
   open,
   onOpenChange,
   title,
+  description,
   fields,
   data,
   onSave,
@@ -71,9 +61,7 @@ export function ArrayEditDialog({
 
   /* 打开时深拷贝数据到本地状态 */
   useEffect(() => {
-    if (open) {
-      setItems(JSON.parse(JSON.stringify(data)))
-    }
+    if (open) setItems(JSON.parse(JSON.stringify(data)))
   }, [open, data])
 
   /** 更新指定条目的指定字段 */
@@ -85,7 +73,6 @@ export function ArrayEditDialog({
     })
   }
 
-  /** 拖动结束：重新排序 */
   function handleDragEnd(result: DropResult) {
     if (!result.destination) return
     if (result.source.index === result.destination.index) return
@@ -96,21 +83,25 @@ export function ArrayEditDialog({
     setItems(next)
   }
 
-  /** 添加空条目 */
+  const radioField = fields.find((f) => f.type === "radio")
+
+  function handleRadioSelect(index: number) {
+    if (!radioField) return
+    setItems((prev) => prev.map((item, i) => ({ ...item, [radioField.key]: i === index })))
+  }
+
   function handleAdd() {
     const empty: Record<string, unknown> = {}
-    for (const field of fields) empty[field.key] = ""
+    for (const f of fields) empty[f.key] = f.type === "nested-items" ? [] : f.type === "radio" ? false : ""
     setItems((prev) => [...prev, empty])
   }
 
-  /** 确认删除条目 */
   function handleDeleteConfirm() {
     if (deleteIndex === null) return
     setItems((prev) => prev.filter((_, i) => i !== deleteIndex))
     setDeleteIndex(null)
   }
 
-  /** 保存 */
   async function handleSave() {
     setSaving(true)
     try {
@@ -124,52 +115,6 @@ export function ArrayEditDialog({
     }
   }
 
-  /** 渲染单个字段 */
-  function renderField(item: Record<string, unknown>, index: number, field: ArrayFieldDef) {
-    const value = item[field.key]
-
-    /* 多语言字段 */
-    if (field.localized) {
-      return (
-        <LocalizedInput
-          key={field.key}
-          value={(value ?? "") as LocalizedField}
-          onChange={(v) => updateItem(index, field.key, v)}
-          label={field.label}
-          multiline={field.type === "textarea"}
-          rows={field.rows}
-        />
-      )
-    }
-
-    const strValue = (value ?? "") as string
-
-    /* 多行文本 */
-    if (field.type === "textarea") {
-      return (
-        <div key={field.key} className="space-y-2">
-          <Label className="text-sm font-medium">{field.label}</Label>
-          <Textarea
-            value={strValue}
-            onChange={(e) => updateItem(index, field.key, e.target.value)}
-            rows={field.rows ?? 3}
-          />
-        </div>
-      )
-    }
-
-    /* 普通文本 */
-    return (
-      <div key={field.key} className="space-y-2">
-        <Label className="text-sm font-medium">{field.label}</Label>
-        <Input
-          value={strValue}
-          onChange={(e) => updateItem(index, field.key, e.target.value)}
-        />
-      </div>
-    )
-  }
-
   return (
     <>
       <Dialog
@@ -181,7 +126,7 @@ export function ArrayEditDialog({
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>编辑列表项，拖动排序。</DialogDescription>
+            <DialogDescription>{description || "编辑列表项，拖动排序。"}</DialogDescription>
           </DialogHeader>
 
           <DialogBody className="max-h-[70vh] space-y-3 overflow-y-auto">
@@ -220,8 +165,25 @@ export function ArrayEditDialog({
                                 条目 {index + 1}
                               </span>
                               <span className="flex-1 truncate text-xs text-muted-foreground">
-                                {getPreviewText(item, fields)}
+                                {(() => {
+                                  const val = fields.find((f) => f.type !== "radio" && f.type !== "nested-items")
+                                  if (!val) return ""
+                                  const v = item[val.key]
+                                  if (!v) return ""
+                                  return typeof v === "string" ? v : (v as Record<string, string>).zh || ""
+                                })()}
                               </span>
+                              {radioField && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7"
+                                  title={radioField.label}
+                                  onClick={() => handleRadioSelect(index)}
+                                >
+                                  <Star className={`size-4 ${item[radioField.key] ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`} />
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -234,7 +196,9 @@ export function ArrayEditDialog({
 
                             {/* 字段列表 */}
                             <div className="space-y-3">
-                              {fields.map((field) => renderField(item, index, field))}
+                              {fields.map((field) => (
+                                <ArrayFieldRenderer key={field.key} item={item} index={index} field={field} onUpdate={updateItem} />
+                              ))}
                             </div>
                           </div>
                         )}
