@@ -3,10 +3,15 @@
 import { useTranslations } from "next-intl"
 import { ArrowRight } from "lucide-react"
 import { ConsultButton } from "@/components/common/ConsultButton"
+import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 interface CtaSectionProps {
   translationNamespace: string
   variant?: "border-t" | "bg-gray-50"
+  /** 是否可编辑（预览模式） */
+  editable?: boolean
+  /** 编辑回调 */
+  onEdit?: () => void
 }
 
 /**
@@ -16,12 +21,12 @@ interface CtaSectionProps {
  * - `border-t`: 白色背景 + 顶部边框（用于首页、签证、申请条件）
  * - `bg-gray-50`: 灰色背景（用于关于我们、院校、案例、出国留学、留学生活）
  */
-export function CtaSection({ translationNamespace, variant = "bg-gray-50" }: CtaSectionProps) {
+export function CtaSection({ translationNamespace, variant = "bg-gray-50", editable, onEdit }: CtaSectionProps) {
   const t = useTranslations(translationNamespace)
 
   const desc = t("ctaDesc")
 
-  return (
+  const content = (
     <section className={`py-10 md:py-16 ${variant === "border-t" ? "border-t bg-white" : "bg-gray-50"}`}>
       <div className="mx-auto max-w-7xl px-4 text-center">
         <h3 className="text-2xl md:text-3xl font-bold">{t("ctaTitle")}</h3>
@@ -34,4 +39,10 @@ export function CtaSection({ translationNamespace, variant = "bg-gray-50" }: Cta
       </div>
     </section>
   )
+
+  if (editable && onEdit) {
+    return <EditableOverlay onClick={onEdit} label="编辑 CTA">{content}</EditableOverlay>
+  }
+
+  return content
 }

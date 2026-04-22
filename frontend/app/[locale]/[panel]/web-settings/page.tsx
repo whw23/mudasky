@@ -342,6 +342,36 @@ export default function WebSettingsPage() {
           data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
         })
         break
+      case 'home_intro_title':
+        setDialogState({
+          open: true,
+          title: '编辑公司简介标题',
+          fields: [{ key: 'home_intro_title', label: '简介标题', type: 'text' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'home_intro_content':
+        setDialogState({
+          open: true,
+          title: '编辑公司简介内容',
+          fields: [{ key: 'home_intro_content', label: '简介内容', type: 'textarea' as const, localized: true, rows: 5 }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
+      case 'home_cta':
+        setDialogState({
+          open: true,
+          title: '编辑首页 CTA',
+          fields: [
+            { key: 'home_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
+            { key: 'home_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
+          ],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
       case 'about_history':
         setDialogState({
           open: true,

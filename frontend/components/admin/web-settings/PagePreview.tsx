@@ -13,8 +13,7 @@ import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
 import { StatsSection } from "@/components/home/StatsSection"
-import { AboutIntroSection } from "@/components/home/AboutIntroSection"
-import { ServicesSection } from "@/components/home/ServicesSection"
+import { PageIntroSection } from "@/components/common/PageIntroSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
 import { NewsSection } from "@/components/home/NewsSection"
@@ -61,14 +60,20 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
       <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
         <StatsSection />
       </EditableOverlay>
-      <AboutIntroSection />
-      <ServicesSection editable onEditTitle={() => onEditConfig("services_title")} />
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <FeaturedUniversities />
-        <FeaturedCases />
-      </section>
+      <PageIntroSection
+        titleKey="home_intro_title"
+        contentKey="home_intro_content"
+        titleFallback="关于我们"
+        contentFallback="慕大国际从事小语种留学项目运营已15年，为慕尼黑大学语言中心江苏省唯一指定招生考点。慕尼黑大学语言中心是官方德语培训基地考点。我们致力于为学生提供全方位的留学咨询、院校申请、签证办理等一站式服务。"
+        sectionTag="About Us"
+        editable
+        onEditTitle={() => onEditConfig("home_intro_title")}
+        onEditContent={() => onEditConfig("home_intro_content")}
+      />
+      <FeaturedUniversities />
+      <FeaturedCases />
       <NewsSection />
-      <CtaSection translationNamespace="Home" variant="border-t" />
+      <CtaSection translationNamespace="Home" variant="border-t" editable onEdit={() => onEditConfig("home_cta")} />
     </>
   )
 }
