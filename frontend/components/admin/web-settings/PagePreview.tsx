@@ -46,7 +46,7 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:
-      return <ArticlePreviewPage categorySlug={activePage} onBannerEdit={onBannerEdit} />
+      return <ArticlePreviewPage categorySlug={activePage} onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
   }
 }
 

@@ -54,15 +54,25 @@ const SLUG_TO_I18N: Record<string, string> = {
   "news": "news",
 }
 
+const SLUG_TO_NS: Record<string, string> = {
+  "study-abroad": "StudyAbroad",
+  "requirements": "Requirements",
+  "visa": "Visa",
+  "life": "Life",
+  "news": "News",
+}
+
 interface ArticlePreviewPageProps {
   categorySlug: string
   onBannerEdit: (pageKey: string) => void
+  onEditConfig?: (section: string) => void
 }
 
 /** 文章预览页面 */
 export function ArticlePreviewPage({
   categorySlug,
   onBannerEdit,
+  onEditConfig,
 }: ArticlePreviewPageProps) {
   const p = useTranslations("Pages")
   const t = useTranslations("News")
@@ -135,7 +145,7 @@ export function ArticlePreviewPage({
       </EditableOverlay>
 
       {/* 页面介绍区 */}
-      <IntroSection slug={categorySlug} title={t("title")} />
+      <IntroSection slug={categorySlug} title={t("title")} onEditConfig={onEditConfig} />
 
       {/* 管理工具栏 */}
       <ManageToolbar>
@@ -173,7 +183,11 @@ export function ArticlePreviewPage({
       </section>
 
       {/* CTA */}
-      <CtaSection translationNamespace="News" />
+      <CtaSection
+        translationNamespace={SLUG_TO_NS[categorySlug] || "News"}
+        editable={!!onEditConfig}
+        onEdit={() => onEditConfig?.(`${categorySlug.replace(/-/g, "_")}_cta`)}
+      />
 
       {/* 编辑弹窗 */}
       {categoryId && (
@@ -203,7 +217,16 @@ export function ArticlePreviewPage({
 }
 
 /** 页面介绍区 — 根据 slug 渲染不同的 Intro */
-function IntroSection({ slug, title }: { slug: string; title: string }) {
+function IntroSection({
+  slug,
+  title,
+  onEditConfig,
+}: {
+  slug: string
+  title: string
+  onEditConfig?: (section: string) => void
+}) {
+  const editable = !!onEditConfig
   const tStudyAbroad = useTranslations("StudyAbroad")
   const tVisa = useTranslations("Visa")
   const tRequirements = useTranslations("Requirements")
@@ -218,6 +241,9 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
           titleFallback={tStudyAbroad("overviewTitle")}
           contentFallback={tStudyAbroad("overviewContent")}
           sectionTag="Overview"
+          editable={editable}
+          onEditTitle={() => onEditConfig?.("study_abroad_intro_title")}
+          onEditContent={() => onEditConfig?.("study_abroad_intro_desc")}
         />
       )
     case "visa": {
@@ -247,6 +273,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTag="Process"
             sectionTitle={tVisa("processTitle")}
             fallbackSteps={fallbackSteps}
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_process_steps")}
           />
           <DocListSection
             configKey="visa_required_docs"
@@ -254,6 +282,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTitle={tVisa("docsTitle")}
             fallbackDocs={fallbackDocs}
             bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_required_docs")}
           />
           <CardGridSection
             configKey="visa_timeline"
@@ -261,6 +291,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTitle={tVisa("timelineTitle")}
             fallbackCards={fallbackTimeline}
             columns="md:grid-cols-3"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_timeline")}
             renderCard={(card) => (
               <>
                 <Clock className="mx-auto h-8 w-8 text-primary" />
@@ -277,6 +309,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             fallbackDocs={fallbackTips}
             icon={AlertTriangle}
             bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_tips")}
           />
         </>
       )
@@ -339,6 +373,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTitle={tRequirements("overviewTitle")}
             labelKey="title"
             fallbackData={fallbackCountries}
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_countries")}
           />
           <CardGridSection
             configKey="requirements_languages"
@@ -347,6 +383,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             fallbackCards={fallbackLanguages}
             columns="md:grid-cols-2"
             bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_languages")}
             renderCard={(card) => (
               <>
                 <Languages className="h-8 w-8 text-primary" />
@@ -360,6 +398,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTag="Documents"
             sectionTitle={tRequirements("docsTitle")}
             fallbackDocs={fallbackDocs}
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_docs")}
           />
           <StepListSection
             configKey="requirements_steps"
@@ -367,6 +407,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTitle={tRequirements("timelineTitle")}
             fallbackSteps={fallbackSteps}
             bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_steps")}
           />
         </>
       )
@@ -392,6 +434,9 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             titleFallback={tLife("guideTitle")}
             contentFallback={tLife("guideIntro")}
             sectionTag="Living Guide"
+            editable={editable}
+            onEditTitle={() => onEditConfig?.("life_intro_title")}
+            onEditContent={() => onEditConfig?.("life_intro_desc")}
           />
           <CardGridSection
             configKey="life_guide_cards"
@@ -400,6 +445,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             fallbackCards={fallbackGuideCards}
             columns="md:grid-cols-2"
             bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("life_guide_cards")}
             renderCard={(card) => {
               const IconComponent = ICON_MAP[card.icon] || Home
               return (
@@ -419,6 +466,8 @@ function IntroSection({ slug, title }: { slug: string; title: string }) {
             sectionTitle={tLife("cityTitle")}
             fallbackCards={fallbackCityCards}
             columns="md:grid-cols-3"
+            editable={editable}
+            onEdit={() => onEditConfig?.("life_city_cards")}
             renderCard={(card) => (
               <div className="group rounded-lg border bg-white overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md">
                 {card.image_id ? (
