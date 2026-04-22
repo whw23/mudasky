@@ -155,7 +155,52 @@ CONFIGS = [
                 "ja": "すべての学生はユニークです。最適な留学プランを見つけるお手伝いをします",
                 "de": "Jeder Student ist einzigartig — wir helfen Ihnen, den besten Studienplan zu finden",
             },
-            "study_abroad_programs": [],
+            "study_abroad_programs": [
+                {
+                    "name": {"zh": "慕尼黑大学语言中心直通项目", "en": "Munich University Language Center Direct Program", "ja": "ミュンヘン大学言語センター直接プログラム", "de": "Direktprogramm des Sprachenzentrums der LMU München"},
+                    "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
+                    "desc": {"zh": "依托慕尼黑大学语言中心官方合作关系，为学生提供从德语学习到入读德国名校的完整通道。该项目是我们的核心优势项目，已成功帮助数百名学生进入德国顶尖大学。", "en": "Leveraging our official partnership with the Munich University Language Center, we provide students with a complete pathway from German language learning to enrollment at prestigious German universities. This is our core program and has helped hundreds of students enter top German universities.", "ja": "ミュンヘン大学言語センターとの公式パートナーシップを活用し、ドイツ語学習からドイツの名門大学への入学までの完全な経路を学生に提供します。これは当社のコアプログラムであり、数百人の学生がドイツのトップ大学に入学するのを支援してきました。", "de": "Durch unsere offizielle Partnerschaft mit dem Sprachenzentrum der LMU München bieten wir Studenten einen vollständigen Weg vom Deutschlernen bis zur Einschreibung an renommierten deutschen Universitäten. Dies ist unser Kernprogramm und hat Hunderten von Studenten geholfen, an Top-Universitäten in Deutschland aufgenommen zu werden."},
+                    "features": [
+                        {"zh": "官方认证德语课程", "en": "Officially certified German courses", "ja": "公式認定ドイツ語コース", "de": "Offiziell zertifizierte Deutschkurse"},
+                        {"zh": "小班制精品教学", "en": "Small class premium instruction", "ja": "少人数制プレミアム指導", "de": "Kleingruppen-Premium-Unterricht"},
+                        {"zh": "慕尼黑大学语言等级考试", "en": "Munich University language level exams", "ja": "ミュンヘン大学言語レベル試験", "de": "Sprachniveauprüfungen der LMU München"},
+                        {"zh": "德国名校申请指导", "en": "German university application guidance", "ja": "ドイツ名門大学出願指導", "de": "Beratung für Bewerbungen an deutschen Spitzenuniversitäten"},
+                        {"zh": "签证全程代办", "en": "Full visa processing service", "ja": "ビザ手続き全面サポート", "de": "Vollständiger Visumsbearbeitungsservice"},
+                        {"zh": "境外接机安排", "en": "Airport pickup arrangement", "ja": "空港ピックアップ手配", "de": "Flughafenabholungsvereinbarung"},
+                    ],
+                },
+                {
+                    "name": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"},
+                    "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
+                    "desc": {"zh": "享受免学费的世界一流教育，工科、商科、医学等专业全球领先。德国留学性价比极高，毕业后就业前景广阔。", "en": "Enjoy world-class tuition-free education with globally leading programs in engineering, business, and medicine. Studying in Germany offers excellent value and broad career prospects after graduation.", "ja": "授業料無料の世界一流の教育を受け、工学、ビジネス、医学などの専攻が世界をリードしています。ドイツ留学は非常にコストパフォーマンスが高く、卒業後のキャリア見通しも広いです。", "de": "Genießen Sie erstklassige kostenlose Bildung mit weltweit führenden Programmen in Ingenieurwesen, Wirtschaft und Medizin. Ein Studium in Deutschland bietet hervorragendes Preis-Leistungs-Verhältnis und breite Karriereperspektiven nach dem Abschluss."},
+                    "features": [
+                        {"zh": "公立大学免学费", "en": "Tuition-free public universities", "ja": "公立大学授業料無料", "de": "Studiengebührenfreie öffentliche Universitäten"},
+                        {"zh": "工程与技术专业全球领先", "en": "World-leading engineering programs", "ja": "工学・技術専攻が世界トップ", "de": "Weltweit führende Ingenieurprogramme"},
+                        {"zh": "18个月毕业后求职签证", "en": "18-month post-graduation job-seeking visa", "ja": "卒業後18ヶ月の求職ビザ", "de": "18-monatiges Visum zur Arbeitssuche nach Abschluss"},
+                        {"zh": "申根区自由通行", "en": "Free movement in Schengen area", "ja": "シェンゲン圏内自由移動", "de": "Freizügigkeit im Schengen-Raum"},
+                    ],
+                },
+                {
+                    "name": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"},
+                    "country": {"zh": "日本", "en": "Japan", "ja": "日本", "de": "Japan"},
+                    "desc": {"zh": "亚洲顶尖教育体系，丰富的奖学金机会，文化体验独特。适合对日语和日本文化有浓厚兴趣的学生。", "en": "Asia's top education system with abundant scholarship opportunities and unique cultural experiences. Ideal for students interested in Japanese language and culture.", "ja": "アジアトップの教育システムで、豊富な奨学金の機会と独特の文化体験があります。日本語と日本文化に強い関心を持つ学生に最適です。", "de": "Asiens führendes Bildungssystem mit reichlich Stipendienmöglichkeiten und einzigartigen kulturellen Erfahrungen. Ideal für Studenten, die sich für japanische Sprache und Kultur interessieren."},
+                    "features": [
+                        {"zh": "丰富的奖学金项目", "en": "Abundant scholarship programs", "ja": "豊富な奨学金プログラム", "de": "Reichlich Stipendienprogramme"},
+                        {"zh": "动漫、设计等特色专业", "en": "Unique programs in animation, design, etc.", "ja": "アニメ、デザインなどの特色ある専攻", "de": "Einzigartige Programme in Animation, Design usw."},
+                        {"zh": "勤工俭学机会丰富", "en": "Part-time work opportunities", "ja": "アルバイトの機会が豊富", "de": "Teilzeitarbeitsmöglichkeiten"},
+                    ],
+                },
+                {
+                    "name": {"zh": "韩国留学", "en": "Study in South Korea", "ja": "韓国留学", "de": "Studium in Südkorea"},
+                    "country": {"zh": "韩国", "en": "South Korea", "ja": "韓国", "de": "Südkorea"},
+                    "desc": {"zh": "教育水平高，留学费用适中，距离中国近。韩流文化吸引力强，适合对韩语和韩国文化感兴趣的学生。", "en": "High educational standards with moderate study costs and close proximity to China. Strong K-culture appeal, ideal for students interested in Korean language and culture.", "ja": "教育水準が高く、留学費用が適度で、中国に近いです。韓流文化の魅力が強く、韓国語と韓国文化に興味のある学生に最適です。", "de": "Hohe Bildungsstandards mit moderaten Studienkosten und enger Nähe zu China. Starke K-Culture-Anziehungskraft, ideal für Studenten, die sich für koreanische Sprache und Kultur interessieren."},
+                    "features": [
+                        {"zh": "留学费用相对较低", "en": "Relatively low study costs", "ja": "留学費用が比較的低い", "de": "Relativ niedrige Studienkosten"},
+                        {"zh": "地理位置近便", "en": "Close geographical proximity", "ja": "地理的に近い", "de": "Nahe geografische Lage"},
+                        {"zh": "丰富的韩语课程", "en": "Rich Korean language courses", "ja": "豊富な韓国語コース", "de": "Reichhaltige koreanische Sprachkurse"},
+                    ],
+                },
+            ],
             # 签证办理页面
             "visa_process_steps": [
                 {
@@ -288,10 +333,83 @@ CONFIGS = [
                 "ja": "無料のバックグラウンド評価サービスを提供し、最適な留学方向を見つけるお手伝いをします",
                 "de": "Wir bieten kostenlose Hintergrundprüfungen, um Ihnen die beste Studienrichtung zu finden",
             },
-            "requirements_countries": [],
-            "requirements_languages": [],
-            "requirements_docs": [],
-            "requirements_steps": [],
+            "requirements_countries": [
+                {
+                    "country": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"},
+                    "items": [
+                        {"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"},
+                        {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"},
+                        {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"},
+                        {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"},
+                    ],
+                },
+                {
+                    "country": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"},
+                    "items": [
+                        {"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"},
+                        {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"},
+                        {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"},
+                    ],
+                },
+                {
+                    "country": {"zh": "韩国留学", "en": "Study in South Korea", "ja": "韓国留学", "de": "Studium in Südkorea"},
+                    "items": [
+                        {"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"},
+                        {"zh": "TOPIK 3级以上", "en": "TOPIK Level 3+", "ja": "TOPIK 3級以上", "de": "TOPIK Level 3+"},
+                        {"zh": "银行存款证明", "en": "Bank deposit certificate", "ja": "銀行預金証明書", "de": "Bankeinlagenzertifikat"},
+                    ],
+                },
+            ],
+            "requirements_languages": [
+                {
+                    "language": {"zh": "德语等级要求", "en": "German Language Requirements", "ja": "ドイツ語レベル要件", "de": "Deutschsprachanforderungen"},
+                    "items": [
+                        {"zh": "大多数德语授课项目要求德福（TestDaF）4x4或DSH-2。预科项目通常要求B1水平。我们与慕尼黑大学语言中心合作，提供从零基础到B2的完整德语培训课程。", "en": "Most German-taught programs require TestDaF 4x4 or DSH-2. Foundation programs typically require B1 level. We partner with the Munich University Language Center to offer complete German training courses from beginner to B2.", "ja": "ほとんどのドイツ語で教える科目はTestDaF 4x4またはDSH-2を必要とします。予備コースは通常B1レベルを必要とします。私たちはミュンヘン大学言語センターと提携し、初心者からB2までの完全なドイツ語トレーニングコースを提供しています。", "de": "Die meisten deutschsprachigen Programme erfordern TestDaF 4x4 oder DSH-2. Studienvorbereitung erfordert in der Regel B1-Niveau. Wir arbeiten mit dem Sprachenzentrum der LMU München zusammen und bieten komplette Deutschkurse von Anfänger bis B2."},
+                    ],
+                },
+                {
+                    "language": {"zh": "日语等级要求", "en": "Japanese Language Requirements", "ja": "日本語レベル要件", "de": "Japanischsprachanforderungen"},
+                    "items": [
+                        {"zh": "语言学校通常要求N5-N4水平，本科直申需要N2以上，研究生申请建议N1水平。我们提供配套的日语培训和考试辅导服务。", "en": "Language schools typically require N5-N4 level, direct undergraduate applications need N2+, and graduate applications recommend N1 level. We offer supplementary Japanese training and exam preparation.", "ja": "語学学校は通常N5-N4レベルを必要とし、学部への直接出願にはN2以上が必要で、大学院出願にはN1レベルを推奨します。私たちは補完的な日本語トレーニングと試験準備を提供しています。", "de": "Sprachschulen erfordern in der Regel N5-N4-Niveau, direkte Bachelor-Bewerbungen benötigen N2+ und Master-Bewerbungen empfehlen N1-Niveau. Wir bieten ergänzendes Japanisch-Training und Prüfungsvorbereitung."},
+                    ],
+                },
+            ],
+            "requirements_docs": [
+                {"text": {"zh": "护照（有效期6个月以上）", "en": "Valid passport (6+ months validity)", "ja": "パスポート（有効期限6ヶ月以上）", "de": "Gültiger Reisepass (6+ Monate gültig)"}},
+                {"text": {"zh": "学历证明及成绩单", "en": "Academic certificates and transcripts", "ja": "学歴証明書と成績証明書", "de": "Akademische Zeugnisse und Abschriften"}},
+                {"text": {"zh": "语言等级证书", "en": "Language proficiency certificate", "ja": "語学レベル証明書", "de": "Sprachkompetenzzertifikat"}},
+                {"text": {"zh": "个人陈述 / 动机信", "en": "Personal statement / motivation letter", "ja": "個人声明書 / モチベーションレター", "de": "Persönliche Erklärung / Motivationsschreiben"}},
+                {"text": {"zh": "推荐信（2封）", "en": "Letters of recommendation (2)", "ja": "推薦状（2通）", "de": "Empfehlungsschreiben (2)"}},
+                {"text": {"zh": "资金证明", "en": "Proof of finances", "ja": "資金証明", "de": "Finanznachweis"}},
+                {"text": {"zh": "APS审核证书（德国）", "en": "APS verification certificate (Germany)", "ja": "APS審査証明書（ドイツ）", "de": "APS-Zertifikat (Deutschland)"}},
+                {"text": {"zh": "证件照", "en": "Passport photos", "ja": "証明写真", "de": "Passfotos"}},
+            ],
+            "requirements_steps": [
+                {
+                    "title": {"zh": "免费咨询评估", "en": "Free Consultation & Assessment", "ja": "無料相談・評価", "de": "Kostenlose Beratung & Bewertung"},
+                    "desc": {"zh": "专业顾问一对一评估学生背景，制定个性化留学方案。", "en": "One-on-one professional assessment of student background with customized study abroad plans.", "ja": "専門のコンサルタントが学生の背景を一対一で評価し、個別の留学プランを作成します。", "de": "Eins-zu-eins-professionelle Bewertung des Schülerhintergrunds mit maßgeschneiderten Studienplänen."},
+                },
+                {
+                    "title": {"zh": "语言培训", "en": "Language Training", "ja": "語学トレーニング", "de": "Sprachtraining"},
+                    "desc": {"zh": "根据目标院校要求，进行针对性语言培训和考试辅导。", "en": "Targeted language training and exam preparation based on university requirements.", "ja": "大学の要件に基づいて、対象を絞った語学トレーニングと試験準備を行います。", "de": "Gezielte Sprachtraining und Prüfungsvorbereitung basierend auf Universitätsanforderungen."},
+                },
+                {
+                    "title": {"zh": "材料准备", "en": "Document Preparation", "ja": "資料準備", "de": "Dokumentenvorbereitung"},
+                    "desc": {"zh": "协助准备申请材料，确保材料完整、规范、高质量。", "en": "Assistance in preparing application materials, ensuring completeness, accuracy, and quality.", "ja": "申請資料の準備を支援し、完全性、正確性、品質を確保します。", "de": "Unterstützung bei der Vorbereitung von Bewerbungsunterlagen, um Vollständigkeit, Genauigkeit und Qualität zu gewährleisten."},
+                },
+                {
+                    "title": {"zh": "院校申请", "en": "University Application", "ja": "大学出願", "de": "Universitätsbewerbung"},
+                    "desc": {"zh": "提交院校申请，跟进申请进度，及时处理补充材料。", "en": "Submit university applications, track progress, and handle supplementary materials promptly.", "ja": "大学の申請を提出し、進捗を追跡し、補足資料を迅速に処理します。", "de": "Universitätsbewerbungen einreichen, Fortschritt verfolgen und ergänzende Materialien rechtzeitig bearbeiten."},
+                },
+                {
+                    "title": {"zh": "签证办理", "en": "Visa Processing", "ja": "ビザ手続き", "de": "Visumsbearbeitung"},
+                    "desc": {"zh": "获得录取后协助办理签证，准备签证材料，预约面签。", "en": "Visa assistance after admission, including document preparation and interview scheduling.", "ja": "入学後のビザ支援、資料準備、面接予約を含みます。", "de": "Visumsunterstützung nach Zulassung, einschließlich Dokumentenvorbereitung und Terminplanung."},
+                },
+                {
+                    "title": {"zh": "行前指导", "en": "Pre-departure Guidance", "ja": "出発前ガイダンス", "de": "Vorabfahrtberatung"},
+                    "desc": {"zh": "提供行前培训、购票指导、接机安排等全方位服务。", "en": "Pre-departure training, flight booking guidance, airport pickup arrangements, and more.", "ja": "出発前トレーニング、航空券予約ガイダンス、空港ピックアップ手配などを提供します。", "de": "Vorabfahrttraining, Flugbuchungsberatung, Flughafenabholungsvereinbarungen und mehr."},
+                },
+            ],
             # 留学生活页面
             "life_intro_title": {
                 "zh": "留学生活指南",
@@ -317,8 +435,48 @@ CONFIGS = [
                 "ja": "相談を予約してください - 海外経験のあるコンサルタントが実際の留学体験を共有します",
                 "de": "Buchen Sie eine Beratung — unsere im Ausland erfahrenen Berater teilen echte Studienerfahrungen",
             },
-            "life_guide_cards": [],
-            "life_city_cards": [],
+            "life_guide_cards": [
+                {
+                    "icon": "Home",
+                    "title": {"zh": "住宿安排", "en": "Accommodation", "ja": "宿泊手配", "de": "Unterkunft"},
+                    "desc": {"zh": "在德国，留学生可以选择学生宿舍（Studentenwohnheim）、合租公寓（WG）或单独租房。学生宿舍价格最低，约250-400欧元/月，但名额有限需提前申请。合租公寓是最受欢迎的选择，月租约350-600欧元。我们会协助学生在出发前安排好住宿。", "en": "In Germany, international students can choose student dormitories (Studentenwohnheim), shared apartments (WG), or private rentals. Student dormitories are the most affordable at around €250-400/month but have limited availability. Shared apartments are the most popular choice at about €350-600/month. We help students arrange accommodation before departure.", "ja": "ドイツでは、留学生は学生寮（Studentenwohnheim）、シェアアパート（WG）、または個人賃貸を選択できます。学生寮は月額約250-400ユーロで最も手頃ですが、空きが限られているため事前申請が必要です。シェアアパートは月額約350-600ユーロで最も人気のある選択肢です。私たちは出発前に学生の宿泊を手配するのを支援します。", "de": "In Deutschland können internationale Studenten zwischen Studentenwohnheimen, Wohngemeinschaften (WG) oder privaten Mietwohnungen wählen. Studentenwohnheime sind am günstigsten (ca. 250-400 €/Monat), haben aber begrenzte Verfügbarkeit. WGs sind die beliebteste Wahl (ca. 350-600 €/Monat). Wir helfen Studenten, vor der Abreise eine Unterkunft zu organisieren."},
+                },
+                {
+                    "icon": "Bus",
+                    "title": {"zh": "交通出行", "en": "Transportation", "ja": "交通", "de": "Verkehr"},
+                    "desc": {"zh": "德国公共交通系统发达，留学生可购买学期票（Semesterticket），覆盖所在城市及周边地区的公交、地铁和区域火车。此外，德铁（DB）提供多种优惠票价，BahnCard 25/50可享受相应折扣。骑自行车也是德国学生的主要出行方式。", "en": "Germany has an excellent public transportation system. Students can purchase a semester ticket (Semesterticket) covering local buses, metros, and regional trains. Deutsche Bahn (DB) offers various discount fares, and BahnCard 25/50 provides corresponding discounts. Cycling is also a primary mode of transport for German students.", "ja": "ドイツには優れた公共交通システムがあります。学生は学期チケット（Semesterticket）を購入して、地元のバス、地下鉄、地域列車をカバーできます。ドイツ鉄道（DB）はさまざまな割引運賃を提供し、BahnCard 25/50は対応する割引を提供します。サイクリングはドイツの学生の主要な移動手段でもあります。", "de": "Deutschland verfügt über ein hervorragendes öffentliches Verkehrssystem. Studenten können ein Semesterticket kaufen, das lokale Busse, U-Bahnen und Regionalzüge abdeckt. Die Deutsche Bahn (DB) bietet verschiedene ermäßigte Tarife, und BahnCard 25/50 bietet entsprechende Rabatte. Radfahren ist auch ein Hauptverkehrsmittel für deutsche Studenten."},
+                },
+                {
+                    "icon": "UtensilsCrossed",
+                    "title": {"zh": "饮食文化", "en": "Food & Dining", "ja": "食事文化", "de": "Essen & Kultur"},
+                    "desc": {"zh": "德国大学食堂（Mensa）提供经济实惠的餐食，一顿饭约2-5欧元。超市如Aldi、Lidl、REWE等选择丰富，自己做饭每月食品支出约200-300欧元。亚洲超市也越来越多，可以买到中国食材。德国啤酒和面包种类繁多，值得尝试。", "en": "German university cafeterias (Mensa) offer affordable meals at about €2-5 each. Supermarkets like Aldi, Lidl, and REWE offer diverse options; cooking at home costs about €200-300/month for groceries. Asian supermarkets are increasingly available for Chinese ingredients. Germany's beer and bread varieties are worth exploring.", "ja": "ドイツの大学食堂（Mensa）は、1食約2-5ユーロで手頃な食事を提供しています。Aldi、Lidl、REWEなどのスーパーマーケットは多様な選択肢を提供しており、自炊すると月額約200-300ユーロの食品費がかかります。アジア系スーパーマーケットも増えており、中国の食材を購入できます。ドイツのビールとパンの種類は探索する価値があります。", "de": "Deutsche Universitätskafeterien (Mensa) bieten erschwingliche Mahlzeiten für ca. 2-5 € pro Mahlzeit. Supermärkte wie Aldi, Lidl und REWE bieten vielfältige Optionen; Selbstkochen kostet ca. 200-300 €/Monat für Lebensmittel. Asiatische Supermärkte sind zunehmend verfügbar für chinesische Zutaten. Deutschlands Bier- und Brotsorten sind es wert, erkundet zu werden."},
+                },
+                {
+                    "icon": "Palette",
+                    "title": {"zh": "文化适应", "en": "Cultural Adaptation", "ja": "文化適応", "de": "Kulturelle Anpassung"},
+                    "desc": {"zh": "德国人注重守时和规则，初期适应可能需要时间。大学通常有国际学生服务中心和丰富的社团活动，是结交朋友和融入当地文化的好渠道。德国的博物馆、剧院和音乐会非常丰富，很多对学生提供免费或优惠票价。", "en": "Germans value punctuality and following rules, which may take time to adjust to. Universities typically have international student service centers and diverse student organizations — great channels for making friends and integrating into local culture. Germany's museums, theaters, and concerts are abundant, with many offering free or discounted tickets for students.", "ja": "ドイツ人は時間厳守とルールを重視しており、適応には時間がかかる場合があります。大学には通常、留学生サービスセンターと多様な学生組織があり、友達を作り、地元文化に統合するための素晴らしいチャネルです。ドイツの博物館、劇場、コンサートは豊富で、多くが学生に無料または割引チケットを提供しています。", "de": "Deutsche legen Wert auf Pünktlichkeit und Regelbefolgung, was Zeit zur Anpassung erfordern kann. Universitäten haben in der Regel internationale Studentenservicezentren und vielfältige Studentenorganisationen — großartige Kanäle, um Freunde zu finden und sich in die lokale Kultur zu integrieren. Deutschlands Museen, Theater und Konzerte sind reichlich vorhanden, viele bieten kostenlose oder ermäßigte Tickets für Studenten."},
+                },
+            ],
+            "life_city_cards": [
+                {
+                    "city": {"zh": "慕尼黑", "en": "Munich", "ja": "ミュンヘン", "de": "München"},
+                    "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
+                    "desc": {"zh": "巴伐利亚州首府，德国第三大城市。高科技产业聚集，宝马、西门子等总部所在地。生活品质高，啤酒花园文化享誉世界。", "en": "Capital of Bavaria and Germany's third-largest city. Home to major tech companies like BMW and Siemens. High quality of life with world-famous beer garden culture.", "ja": "バイエルン州の州都で、ドイツ第3の都市。BMW、シーメンスなど主要なテック企業の本社があります。生活の質が高く、世界的に有名なビアガーデン文化があります。", "de": "Hauptstadt Bayerns und Deutschlands drittgrößte Stadt. Heimat großer Technologieunternehmen wie BMW und Siemens. Hohe Lebensqualität mit weltberühmter Biergartenkultur."},
+                    "image_id": "",
+                },
+                {
+                    "city": {"zh": "柏林", "en": "Berlin", "ja": "ベルリン", "de": "Berlin"},
+                    "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
+                    "desc": {"zh": "德国首都，欧洲最具活力的城市之一。文化多元、艺术氛围浓厚，生活成本在德国大城市中相对较低。创业生态活跃。", "en": "Germany's capital and one of Europe's most vibrant cities. Culturally diverse with a strong arts scene, relatively lower living costs among major German cities. Active startup ecosystem.", "ja": "ドイツの首都であり、ヨーロッパで最も活気のある都市の1つ。文化的に多様で、芸術シーンが強く、ドイツの主要都市の中で比較的低い生活費。活発なスタートアップエコシステム。", "de": "Deutschlands Hauptstadt und eine der lebendigsten Städte Europas. Kulturell vielfältig mit starker Kunstszene, relativ niedrigere Lebenshaltungskosten unter den großen deutschen Städten. Aktives Startup-Ökosystem."},
+                    "image_id": "",
+                },
+                {
+                    "city": {"zh": "汉堡", "en": "Hamburg", "ja": "ハンブルク", "de": "Hamburg"},
+                    "country": {"zh": "德国", "en": "Germany", "ja": "ドイツ", "de": "Deutschland"},
+                    "desc": {"zh": "德国第二大城市，重要港口城市。媒体和航空产业发达，城市绿化优美，生活质量极高。拥有著名的易北音乐厅。", "en": "Germany's second-largest city and major port. Thriving media and aviation industries, beautiful green spaces, and extremely high quality of life. Home to the famous Elbphilharmonie.", "ja": "ドイツ第2の都市であり、主要な港湾都市。メディアと航空産業が盛んで、美しい緑地と非常に高い生活の質。有名なエルプフィルハーモニーがあります。", "de": "Deutschlands zweitgrößte Stadt und wichtiger Hafen. Blühende Medien- und Luftfahrtindustrie, wunderschöne Grünflächen und extrem hohe Lebensqualität. Heimat der berühmten Elbphilharmonie."},
+                    "image_id": "",
+                },
+            ],
         },
     ),
     (
