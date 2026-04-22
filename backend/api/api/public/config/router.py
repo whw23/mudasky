@@ -21,7 +21,7 @@ async def get_all_config(
     data, max_updated = await svc.get_all_homepage_config()
 
     if set_cache_headers(
-        response, f"all_config:{max_updated.isoformat()}", 3600, if_none_match
+        response, f"all_config:{max_updated.isoformat()}", if_none_match
     ):
         return response  # type: ignore[return-value]
 
@@ -40,7 +40,7 @@ async def get_config(
     config, updated_at = await svc.get_value_with_timestamp(key)
 
     if set_cache_headers(
-        response, f"{key}:{updated_at.isoformat()}", 3600, if_none_match
+        response, f"{key}:{updated_at.isoformat()}", if_none_match
     ):
         return response  # type: ignore[return-value]
 
@@ -58,7 +58,7 @@ async def get_panel_config(
     config, updated_at = await svc.get_value_with_timestamp("panel_pages")
 
     if set_cache_headers(
-        response, f"panel_pages:{updated_at.isoformat()}", 3600, if_none_match
+        response, f"panel_pages:{updated_at.isoformat()}", if_none_match
     ):
         return response  # type: ignore[return-value]
 

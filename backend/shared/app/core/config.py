@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # 内部接口密钥（网关与后端通信）
     INTERNAL_SECRET: str = ""
 
+    # HTTP 缓存
+    CACHE_MAX_AGE: int = 0
+
     # 文件上传
     MAX_UPLOAD_SIZE_MB: int = 10
     DEFAULT_STORAGE_QUOTA_MB: int = 100

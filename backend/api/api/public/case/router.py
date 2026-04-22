@@ -64,7 +64,7 @@ async def list_cases(
     )
 
     seed = f"case:list:{page}:{page_size}:{year}:{featured}:{total}"
-    if set_cache_headers(response, seed, 0, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
@@ -95,6 +95,6 @@ async def get_case(
 
     ts = case.updated_at.isoformat() if case.updated_at else ""
     seed = f"case:{case_id}:{ts}"
-    if set_cache_headers(response, seed, 1800, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result

@@ -279,6 +279,7 @@ jobs:
           CONTACT_EMAIL=${{ vars.CONTACT_EMAIL }}
           CONTACT_WECHAT=${{ vars.CONTACT_WECHAT }}
           CONTACT_REGISTERED_ADDRESS=${{ vars.CONTACT_REGISTERED_ADDRESS }}
+          CACHE_MAX_AGE=${{ vars.CACHE_MAX_AGE }}
           ENVEOF
 
           cat > env/gateway.env << 'ENVEOF'

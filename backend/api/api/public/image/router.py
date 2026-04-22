@@ -26,7 +26,7 @@ async def get_image(
     file_data, mime_type = await svc.get_image(id)
 
     seed = f"img:{id}"
-    if set_cache_headers(response, seed, 86400, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response
 
     return Response(

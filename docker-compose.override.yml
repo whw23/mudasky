@@ -33,6 +33,8 @@ services:
       dockerfile: api/Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      - DEBUG=true
     volumes:
       - ./backend:/app
 
