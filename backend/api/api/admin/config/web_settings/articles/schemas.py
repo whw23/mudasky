@@ -12,7 +12,6 @@ class ArticleCreate(BaseModel):
     """文章创建请求。"""
 
     title: str = Field(..., max_length=200, description="标题")
-    slug: str = Field(..., max_length=200, description="URL 标识")
     content_type: str = Field("html", description="内容类型: html/file")
     content: str = Field("", description="正文内容（html 时使用）")
     file_id: str | None = Field(None, description="PDF 文件 ID")
@@ -36,9 +35,6 @@ class ArticleUpdate(BaseModel):
     article_id: str = Field(..., description="文章 ID")
     title: str | None = Field(
         None, max_length=200, description="标题"
-    )
-    slug: str | None = Field(
-        None, max_length=200, description="URL 标识"
     )
     content_type: str | None = Field(None, description="内容类型")
     content: str | None = Field(None, description="正文内容")
