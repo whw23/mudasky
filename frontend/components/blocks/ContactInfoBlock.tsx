@@ -21,7 +21,7 @@ interface BlockProps {
 }
 
 /** 联系信息区块：渲染 5 个联系字段 + 微信二维码 */
-export function ContactInfoBlock({ header, bg, editable, onEditConfig }: BlockProps) {
+export function ContactInfoBlock({ block, header, bg, editable, onEditConfig }: BlockProps) {
   return (
     <div className={bg}>
       {header && <div className="mx-auto max-w-7xl px-4 pt-10">{header}</div>}
