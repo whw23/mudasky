@@ -8,7 +8,7 @@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import type { LocalizedField } from "@/lib/i18n-config"
+import type { LocalizedField, ConfigLocale } from "@/lib/i18n-config"
 import { LocalizedInput } from "./LocalizedInput"
 import { NestedItemsField } from "./NestedItemsField"
 import { ImageUploadField } from "./ImageUploadField"
@@ -19,10 +19,11 @@ interface ArrayFieldRendererProps {
   index: number
   field: ArrayFieldDef
   onUpdate: (index: number, key: string, value: unknown) => void
+  locale?: ConfigLocale
 }
 
 /** 渲染单个数组字段 */
-export function ArrayFieldRenderer({ item, index, field, onUpdate }: ArrayFieldRendererProps) {
+export function ArrayFieldRenderer({ item, index, field, onUpdate, locale }: ArrayFieldRendererProps) {
   if (field.type === "radio") return null
   const value = item[field.key]
 
@@ -46,6 +47,7 @@ export function ArrayFieldRenderer({ item, index, field, onUpdate }: ArrayFieldR
         label={field.label}
         items={(value ?? []) as LocalizedField[]}
         onChange={(v) => onUpdate(index, field.key, v)}
+        locale={locale}
       />
     )
   }
@@ -60,6 +62,7 @@ export function ArrayFieldRenderer({ item, index, field, onUpdate }: ArrayFieldR
         label={field.label}
         multiline={field.type === "textarea"}
         rows={field.rows}
+        locale={locale}
       />
     )
   }

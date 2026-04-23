@@ -8,17 +8,18 @@
 import { Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import type { LocalizedField } from "@/lib/i18n-config"
+import type { LocalizedField, ConfigLocale } from "@/lib/i18n-config"
 import { LocalizedInput } from "./LocalizedInput"
 
 interface NestedItemsFieldProps {
   label: string
   items: LocalizedField[]
   onChange: (items: LocalizedField[]) => void
+  locale?: ConfigLocale
 }
 
 /** 嵌套条目列表字段 */
-export function NestedItemsField({ label, items, onChange }: NestedItemsFieldProps) {
+export function NestedItemsField({ label, items, onChange, locale }: NestedItemsFieldProps) {
   function handleItemChange(index: number, value: LocalizedField) {
     const next = [...items]
     next[index] = value
@@ -44,6 +45,7 @@ export function NestedItemsField({ label, items, onChange }: NestedItemsFieldPro
                 value={item}
                 onChange={(v) => handleItemChange(i, v as LocalizedField)}
                 label={`${label} ${i + 1}`}
+                locale={locale}
               />
             </div>
             <Button
