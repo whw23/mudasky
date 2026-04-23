@@ -83,7 +83,7 @@ export default function WebSettingsPage() {
   const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
   const tContact = useTranslations("Contact")
-  const tAbout = useTranslations("About")
+
   const [activeTab, setActiveTab] = useState<'preview' | 'advanced'>('preview')
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
@@ -305,7 +305,7 @@ export default function WebSettingsPage() {
     })
   }
 
-  /** 处理页面预览中的配置编辑（仅保留 Header/统计/历史/联系信息） */
+  /** 处理页面预览中的配置编辑（Header/统计/联系信息） */
   function handleEditConfig(section: string): void {
     switch (section) {
       case 'brand_name':
@@ -333,26 +333,6 @@ export default function WebSettingsPage() {
           fields: STAT_FIELDS,
           configKey: 'homepage_stats',
           data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
-        })
-        break
-      case 'about_history_title':
-        setDialogState({
-          open: true,
-          title: '编辑公司历史标题',
-          fields: [{ key: 'history_title', label: '标题', type: 'text' as const, localized: true }],
-          configKey: 'about_info',
-          data: rawConfig.aboutInfo,
-          defaultValues: { history_title: tAbout("historyTitle") },
-        })
-        break
-      case 'about_history':
-        setDialogState({
-          open: true,
-          title: '编辑公司历史',
-          fields: [{ key: 'history', label: '公司历史', type: 'textarea' as const, localized: true, rows: 5 }],
-          configKey: 'about_info',
-          data: rawConfig.aboutInfo,
-          defaultValues: { history: tAbout("historyContent") },
         })
         break
       default:

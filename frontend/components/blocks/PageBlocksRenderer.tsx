@@ -15,11 +15,13 @@ interface PageBlocksRendererProps {
   editable?: boolean
   onEditBlock?: (block: Block) => void
   onEditData?: (block: Block) => void
+  /** 字段级配置编辑回调（contact_info 等全局配置字段） */
+  onEditConfig?: (section: string) => void
 }
 
 /** 页面级 Block 渲染器 */
 export function PageBlocksRenderer({
-  pageSlug, initialBlocks, editable, onEditBlock, onEditData,
+  pageSlug, initialBlocks, editable, onEditBlock, onEditData, onEditConfig,
 }: PageBlocksRendererProps) {
   const { pageBlocks } = useConfig()
   const contextBlocks = pageBlocks[pageSlug]
@@ -33,6 +35,7 @@ export function PageBlocksRenderer({
       editable={editable}
       onEditBlock={onEditBlock}
       onEditData={onEditData}
+      onEditConfig={onEditConfig}
     />
   )
 }

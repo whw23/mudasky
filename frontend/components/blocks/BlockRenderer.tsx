@@ -18,21 +18,24 @@ import { FeaturedDataBlock } from "./FeaturedDataBlock"
 import { ArticleListBlock } from "./ArticleListBlock"
 import { UniversityListBlock } from "./UniversityListBlock"
 import { CaseGridBlock } from "./CaseGridBlock"
+import { ContactInfoBlock } from "./ContactInfoBlock"
 
 interface BlockRendererProps {
   blocks: Block[]
   editable?: boolean
   onEditBlock?: (block: Block) => void
   onEditData?: (block: Block) => void
+  /** 字段级配置编辑回调（contact_info 等全局配置字段） */
+  onEditConfig?: (section: string) => void
 }
 
 /** Block 列表渲染器 */
-export function BlockRenderer({ blocks, editable, onEditBlock, onEditData }: BlockRendererProps) {
+export function BlockRenderer({ blocks, editable, onEditBlock, onEditData, onEditConfig }: BlockRendererProps) {
   return (
     <>
       {blocks.map((block) => (
         <Fragment key={block.id}>
-          {renderBlock(block, editable, onEditData)}
+          {renderBlock(block, editable, onEditData, onEditConfig)}
         </Fragment>
       ))}
     </>
@@ -40,7 +43,12 @@ export function BlockRenderer({ blocks, editable, onEditBlock, onEditData }: Blo
 }
 
 /** 单个 Block 渲染 */
-function renderBlock(block: Block, editable?: boolean, onEditData?: (b: Block) => void): ReactNode {
+function renderBlock(
+  block: Block,
+  editable?: boolean,
+  onEditData?: (b: Block) => void,
+  onEditConfig?: (section: string) => void,
+): ReactNode {
   const header = block.showTitle
     ? <SectionHeader tag={block.sectionTag} title={block.sectionTitle} />
     : null
@@ -68,6 +76,8 @@ function renderBlock(block: Block, editable?: boolean, onEditData?: (b: Block) =
       return <FeaturedDataBlock {...props} />
     case "cta":
       return <CtaBlock {...props} />
+    case "contact_info":
+      return <ContactInfoBlock {...props} onEditConfig={onEditConfig} />
     default:
       return null
   }

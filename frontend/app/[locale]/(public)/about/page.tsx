@@ -1,6 +1,4 @@
 import { PageBanner } from "@/components/layout/PageBanner"
-import { HistorySection } from "@/components/about/AboutContent"
-import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { PageBlocksRenderer } from "@/components/blocks/PageBlocksRenderer"
 import { fetchPageBlocks } from "@/lib/page-api"
 import { getTranslations } from "next-intl/server"
@@ -13,8 +11,6 @@ export default async function AboutPage() {
   return (
     <>
       <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
-      <ContactInfoSection />
-      <HistorySection />
       <PageBlocksRenderer pageSlug="about" initialBlocks={blocks} />
     </>
   )

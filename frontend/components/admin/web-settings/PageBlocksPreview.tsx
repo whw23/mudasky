@@ -22,13 +22,11 @@ import { BlockDataEditor } from "./BlockDataEditor"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
-import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { HistorySection } from "@/components/about/AboutContent"
 
 interface PageBlocksPreviewProps {
   pageSlug: string
   onBannerEdit: (pageKey: string) => void
-  /** 关于页面联系信息/历史编辑回调 */
+  /** 全局配置字段编辑回调（联系信息等） */
   onEditConfig?: (section: string) => void
 }
 
@@ -156,6 +154,7 @@ export function PageBlocksPreview({
                             blocks={[block]}
                             editable
                             onEditData={handleEditData}
+                            onEditConfig={onEditConfig}
                           />
                         </BlockEditorOverlay>
                       </div>
@@ -219,26 +218,6 @@ function PageTopSection({
         onEditConfig={onEditConfig}
         onBannerEdit={onBannerEdit}
       />
-    )
-  }
-
-  // 关于页面有额外的联系信息和历史区块
-  if (pageSlug === "about") {
-    return (
-      <>
-        <EditableOverlay onClick={() => onBannerEdit("about")} label="编辑 Banner">
-          <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
-        </EditableOverlay>
-        <ContactInfoSection
-          editable
-          onEditField={(field) => onEditConfig?.(`contact_${field}`)}
-        />
-        <HistorySection
-          editable
-          onEditTitle={() => onEditConfig?.("about_history_title")}
-          onEdit={() => onEditConfig?.("about_history")}
-        />
-      </>
     )
   }
 

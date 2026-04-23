@@ -17,6 +17,7 @@ export type BlockType =
   | "case_grid"
   | "featured_data"
   | "cta"
+  | "contact_info"
 
 /** 页面区块 */
 export interface Block {

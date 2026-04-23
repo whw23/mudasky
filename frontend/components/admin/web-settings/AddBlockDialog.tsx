@@ -7,7 +7,7 @@
 
 import {
   FileText, LayoutGrid, ListOrdered, FileCheck,
-  Images, Newspaper, GraduationCap, Trophy, Star, Megaphone,
+  Images, Newspaper, GraduationCap, Trophy, Star, Megaphone, Contact,
   type LucideIcon,
 } from "lucide-react"
 import {
@@ -35,6 +35,7 @@ const BLOCK_REGISTRY: BlockRegistryItem[] = [
   { type: "case_grid", name: "案例网格", desc: "成功案例卡片", icon: Trophy },
   { type: "featured_data", name: "精选展示", desc: "精选院校或案例", icon: Star },
   { type: "cta", name: "行动号召", desc: "标题 + 描述 + 咨询按钮", icon: Megaphone },
+  { type: "contact_info", name: "联系方式", desc: "联系信息卡片（数据来自全局配置）", icon: Contact },
 ]
 
 interface AddBlockDialogProps {
