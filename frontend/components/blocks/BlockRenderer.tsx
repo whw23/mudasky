@@ -8,6 +8,16 @@
 import { Fragment, type ReactNode } from "react"
 import type { Block } from "@/types/block"
 import { SectionHeader } from "./SectionHeader"
+import { IntroBlock } from "./IntroBlock"
+import { CardGridBlock } from "./CardGridBlock"
+import { StepListBlock } from "./StepListBlock"
+import { DocListBlock } from "./DocListBlock"
+import { GalleryBlock } from "./GalleryBlock"
+import { CtaBlock } from "./CtaBlock"
+import { FeaturedDataBlock } from "./FeaturedDataBlock"
+import { ArticleListBlock } from "./ArticleListBlock"
+import { UniversityListBlock } from "./UniversityListBlock"
+import { CaseGridBlock } from "./CaseGridBlock"
 
 interface BlockRendererProps {
   blocks: Block[]
@@ -35,16 +45,30 @@ function renderBlock(block: Block, editable?: boolean, onEditData?: (b: Block) =
     ? <SectionHeader tag={block.sectionTag} title={block.sectionTitle} />
     : null
   const bg = block.bgColor === "gray" ? "bg-gray-50" : ""
+  const props = { block, header, bg, editable, onEdit: onEditData }
 
-  // Placeholder rendering — actual Block components will be plugged in Tasks 4-5
-  return (
-    <section className={`py-10 md:py-16 ${bg}`}>
-      <div className="mx-auto max-w-7xl px-4">
-        {header}
-        <div className="mt-8 rounded border border-dashed border-gray-300 p-8 text-center text-muted-foreground">
-          Block: {block.type}
-        </div>
-      </div>
-    </section>
-  )
+  switch (block.type) {
+    case "intro":
+      return <IntroBlock {...props} />
+    case "card_grid":
+      return <CardGridBlock {...props} />
+    case "step_list":
+      return <StepListBlock {...props} />
+    case "doc_list":
+      return <DocListBlock {...props} />
+    case "gallery":
+      return <GalleryBlock {...props} />
+    case "article_list":
+      return <ArticleListBlock {...props} />
+    case "university_list":
+      return <UniversityListBlock {...props} />
+    case "case_grid":
+      return <CaseGridBlock {...props} />
+    case "featured_data":
+      return <FeaturedDataBlock {...props} />
+    case "cta":
+      return <CtaBlock {...props} />
+    default:
+      return null
+  }
 }
