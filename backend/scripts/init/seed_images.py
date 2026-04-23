@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.db.config.models import SystemConfig
 from app.db.image.repository import create_image
@@ -62,6 +63,7 @@ async def init_seed_images(session) -> None:
 
     if updated:
         config.value = site_info
+        flag_modified(config, "value")
         await session.flush()
 
     # 办公环境图片和城市图片写入 page_blocks
@@ -89,6 +91,7 @@ async def _init_page_blocks_images(session) -> None:
 
     if updated:
         config.value = blocks
+        flag_modified(config, "value")
         await session.flush()
 
 
