@@ -32,7 +32,53 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   wechat_official_qr_url: '',
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
-  services_title: '',
+  // 首页
+  home_intro_title: '',
+  home_intro_content: '',
+  home_cta_title: '',
+  home_cta_desc: '',
+  // 关于页
+  about_cards: [],
+  about_cta_title: '',
+  about_cta_desc: '',
+  about_office_images: [],
+  // 院校页
+  universities_intro_title: '',
+  universities_intro_desc: '',
+  universities_cta_title: '',
+  universities_cta_desc: '',
+  // 案例页
+  cases_intro_title: '',
+  cases_intro_desc: '',
+  cases_cta_title: '',
+  cases_cta_desc: '',
+  // 出国留学
+  study_abroad_intro_title: '',
+  study_abroad_intro_desc: '',
+  study_abroad_cta_title: '',
+  study_abroad_cta_desc: '',
+  study_abroad_programs: [],
+  // 签证
+  visa_cta_title: '',
+  visa_cta_desc: '',
+  visa_process_steps: [],
+  visa_required_docs: [],
+  visa_timeline: [],
+  visa_tips: [],
+  // 申请条件
+  requirements_cta_title: '',
+  requirements_cta_desc: '',
+  requirements_countries: [],
+  requirements_languages: [],
+  requirements_docs: [],
+  requirements_steps: [],
+  // 留学生活
+  life_intro_title: '',
+  life_intro_desc: '',
+  life_cta_title: '',
+  life_cta_desc: '',
+  life_guide_cards: [],
+  life_city_cards: [],
 }
 
 /** 默认首页统计（兜底） */
@@ -45,6 +91,7 @@ const DEFAULT_HOMEPAGE_STATS: HomepageStat[] = [
 
 /** 默认关于我们（兜底） */
 const DEFAULT_ABOUT_INFO: AboutInfo = {
+  history_title: '',
   history: '',
   mission: '',
   vision: '',
@@ -147,7 +194,52 @@ interface LocalizedConfigType {
     wechat_official_qr_url: string
     company_name: string
     icp_filing: string
-    services_title: string
+    // 首页
+    home_intro_title: string
+    home_intro_content: string
+    home_cta_title: string
+    home_cta_desc: string
+    // 关于页
+    about_cta_title: string
+    about_cta_desc: string
+    about_office_images: { image_id: string; caption: string }[]
+    // 院校页
+    universities_intro_title: string
+    universities_intro_desc: string
+    universities_cta_title: string
+    universities_cta_desc: string
+    // 案例页
+    cases_intro_title: string
+    cases_intro_desc: string
+    cases_cta_title: string
+    cases_cta_desc: string
+    // 出国留学
+    study_abroad_intro_title: string
+    study_abroad_intro_desc: string
+    study_abroad_cta_title: string
+    study_abroad_cta_desc: string
+    study_abroad_programs: { name: string; country: string; desc: string; features: string[] }[]
+    // 签证
+    visa_cta_title: string
+    visa_cta_desc: string
+    visa_process_steps: { title: string; desc: string }[]
+    visa_required_docs: { text: string }[]
+    visa_timeline: { title: string; time: string; desc: string }[]
+    visa_tips: { text: string }[]
+    // 申请条件
+    requirements_cta_title: string
+    requirements_cta_desc: string
+    requirements_countries: { country: string; items: string[] }[]
+    requirements_languages: { language: string; items: string[] }[]
+    requirements_docs: { text: string }[]
+    requirements_steps: { title: string; desc: string }[]
+    // 留学生活
+    life_intro_title: string
+    life_intro_desc: string
+    life_cta_title: string
+    life_cta_desc: string
+    life_guide_cards: { icon: string; title: string; desc: string }[]
+    life_city_cards: { city: string; country: string; desc: string; image_id: string }[]
   }
   contactInfo: {
     address: string
@@ -158,6 +250,7 @@ interface LocalizedConfigType {
   }
   homepageStats: { value: string; label: string }[]
   aboutInfo: {
+    history_title: string
     history: string
     mission: string
     vision: string
@@ -167,18 +260,90 @@ interface LocalizedConfigType {
   pageBanners: PageBanners
 }
 
+/**
+ * 递归解析数组项中的多语言字段。
+ * 将 LocalizedField 解析为当前语言字符串，支持嵌套数组。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveArrayItems<T extends Record<string, any>>(items: T[], locale: string): any[] {
+  return items.map(item => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resolved: any = { ...item }
+    for (const [key, value] of Object.entries(resolved)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value) && 'zh' in value) {
+        resolved[key] = getLocalizedValue(value as Record<string, string>, locale)
+      }
+      if (Array.isArray(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolved[key] = value.map((v: any) =>
+          typeof v === 'object' && v !== null && !Array.isArray(v) && 'zh' in v
+            ? getLocalizedValue(v as Record<string, string>, locale)
+            : v
+        )
+      }
+    }
+    return resolved
+  })
+}
+
 /** 获取已解析为当前语言的配置（展示用） */
 export function useLocalizedConfig(): LocalizedConfigType {
   const config = useConfig()
   const locale = useLocale()
+  const { siteInfo } = config
 
   return {
     siteInfo: {
-      ...config.siteInfo,
-      brand_name: getLocalizedValue(config.siteInfo.brand_name, locale),
-      tagline: getLocalizedValue(config.siteInfo.tagline, locale),
-      hotline_contact: getLocalizedValue(config.siteInfo.hotline_contact, locale),
-      services_title: getLocalizedValue(config.siteInfo.services_title, locale),
+      ...siteInfo,
+      brand_name: getLocalizedValue(siteInfo.brand_name, locale),
+      tagline: getLocalizedValue(siteInfo.tagline, locale),
+      hotline_contact: getLocalizedValue(siteInfo.hotline_contact, locale),
+      // 首页
+      home_intro_title: getLocalizedValue(siteInfo.home_intro_title, locale),
+      home_intro_content: getLocalizedValue(siteInfo.home_intro_content, locale),
+      home_cta_title: getLocalizedValue(siteInfo.home_cta_title, locale),
+      home_cta_desc: getLocalizedValue(siteInfo.home_cta_desc, locale),
+      // 关于页
+      about_cta_title: getLocalizedValue(siteInfo.about_cta_title, locale),
+      about_cta_desc: getLocalizedValue(siteInfo.about_cta_desc, locale),
+      about_office_images: resolveArrayItems(siteInfo.about_office_images || [], locale),
+      // 院校页
+      universities_intro_title: getLocalizedValue(siteInfo.universities_intro_title, locale),
+      universities_intro_desc: getLocalizedValue(siteInfo.universities_intro_desc, locale),
+      universities_cta_title: getLocalizedValue(siteInfo.universities_cta_title, locale),
+      universities_cta_desc: getLocalizedValue(siteInfo.universities_cta_desc, locale),
+      // 案例页
+      cases_intro_title: getLocalizedValue(siteInfo.cases_intro_title, locale),
+      cases_intro_desc: getLocalizedValue(siteInfo.cases_intro_desc, locale),
+      cases_cta_title: getLocalizedValue(siteInfo.cases_cta_title, locale),
+      cases_cta_desc: getLocalizedValue(siteInfo.cases_cta_desc, locale),
+      // 出国留学
+      study_abroad_intro_title: getLocalizedValue(siteInfo.study_abroad_intro_title, locale),
+      study_abroad_intro_desc: getLocalizedValue(siteInfo.study_abroad_intro_desc, locale),
+      study_abroad_cta_title: getLocalizedValue(siteInfo.study_abroad_cta_title, locale),
+      study_abroad_cta_desc: getLocalizedValue(siteInfo.study_abroad_cta_desc, locale),
+      study_abroad_programs: resolveArrayItems(siteInfo.study_abroad_programs || [], locale),
+      // 签证
+      visa_cta_title: getLocalizedValue(siteInfo.visa_cta_title, locale),
+      visa_cta_desc: getLocalizedValue(siteInfo.visa_cta_desc, locale),
+      visa_process_steps: resolveArrayItems(siteInfo.visa_process_steps || [], locale),
+      visa_required_docs: resolveArrayItems(siteInfo.visa_required_docs || [], locale),
+      visa_timeline: resolveArrayItems(siteInfo.visa_timeline || [], locale),
+      visa_tips: resolveArrayItems(siteInfo.visa_tips || [], locale),
+      // 申请条件
+      requirements_cta_title: getLocalizedValue(siteInfo.requirements_cta_title, locale),
+      requirements_cta_desc: getLocalizedValue(siteInfo.requirements_cta_desc, locale),
+      requirements_countries: resolveArrayItems(siteInfo.requirements_countries || [], locale),
+      requirements_languages: resolveArrayItems(siteInfo.requirements_languages || [], locale),
+      requirements_docs: resolveArrayItems(siteInfo.requirements_docs || [], locale),
+      requirements_steps: resolveArrayItems(siteInfo.requirements_steps || [], locale),
+      // 留学生活
+      life_intro_title: getLocalizedValue(siteInfo.life_intro_title, locale),
+      life_intro_desc: getLocalizedValue(siteInfo.life_intro_desc, locale),
+      life_cta_title: getLocalizedValue(siteInfo.life_cta_title, locale),
+      life_cta_desc: getLocalizedValue(siteInfo.life_cta_desc, locale),
+      life_guide_cards: resolveArrayItems(siteInfo.life_guide_cards || [], locale),
+      life_city_cards: resolveArrayItems(siteInfo.life_city_cards || [], locale),
     },
     contactInfo: {
       ...config.contactInfo,
@@ -190,6 +355,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
       label: getLocalizedValue(s.label, locale),
     })),
     aboutInfo: {
+      history_title: getLocalizedValue(config.aboutInfo.history_title, locale),
       history: getLocalizedValue(config.aboutInfo.history, locale),
       mission: getLocalizedValue(config.aboutInfo.mission, locale),
       vision: getLocalizedValue(config.aboutInfo.vision, locale),

@@ -19,10 +19,12 @@ import { ManageToolbar } from "./ManageToolbar"
 import { ArticleEditDialog } from "./ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
-import { StudyAbroadIntro } from "@/components/study-abroad/StudyAbroadIntro"
-import { VisaIntro } from "@/components/visa/VisaIntro"
-import { RequirementsIntro } from "@/components/requirements/RequirementsIntro"
-import { LifeIntro } from "@/components/life/LifeIntro"
+import { PageIntroSection } from "@/components/common/PageIntroSection"
+import { StepListSection } from "@/components/common/StepListSection"
+import { DocListSection } from "@/components/common/DocListSection"
+import { CardGridSection } from "@/components/common/CardGridSection"
+import { CountryRequirementsSection } from "@/components/common/CountryRequirementsSection"
+import { FeaturedProgramSection } from "@/components/common/FeaturedProgramSection"
 
 interface Category {
   id: string
@@ -51,15 +53,25 @@ const SLUG_TO_I18N: Record<string, string> = {
   "news": "news",
 }
 
+const SLUG_TO_NS: Record<string, string> = {
+  "study-abroad": "StudyAbroad",
+  "requirements": "Requirements",
+  "visa": "Visa",
+  "life": "Life",
+  "news": "News",
+}
+
 interface ArticlePreviewPageProps {
   categorySlug: string
   onBannerEdit: (pageKey: string) => void
+  onEditConfig?: (section: string) => void
 }
 
 /** 文章预览页面 */
 export function ArticlePreviewPage({
   categorySlug,
   onBannerEdit,
+  onEditConfig,
 }: ArticlePreviewPageProps) {
   const p = useTranslations("Pages")
   const t = useTranslations("News")
@@ -132,7 +144,7 @@ export function ArticlePreviewPage({
       </EditableOverlay>
 
       {/* 页面介绍区 */}
-      <IntroSection slug={categorySlug} title={t("title")} />
+      <IntroSection slug={categorySlug} title={t("title")} onEditConfig={onEditConfig} />
 
       {/* 管理工具栏 */}
       <ManageToolbar>
@@ -170,7 +182,11 @@ export function ArticlePreviewPage({
       </section>
 
       {/* CTA */}
-      <CtaSection translationNamespace="News" />
+      <CtaSection
+        translationNamespace={SLUG_TO_NS[categorySlug] || "News"}
+        editable={!!onEditConfig}
+        onEdit={() => onEditConfig?.(`${categorySlug.replace(/-/g, "_")}_cta`)}
+      />
 
       {/* 编辑弹窗 */}
       {categoryId && (
@@ -200,16 +216,281 @@ export function ArticlePreviewPage({
 }
 
 /** 页面介绍区 — 根据 slug 渲染不同的 Intro */
-function IntroSection({ slug, title }: { slug: string; title: string }) {
+function IntroSection({
+  slug,
+  title,
+  onEditConfig,
+}: {
+  slug: string
+  title: string
+  onEditConfig?: (section: string) => void
+}) {
+  const editable = !!onEditConfig
+  const tStudyAbroad = useTranslations("StudyAbroad")
+  const tVisa = useTranslations("Visa")
+  const tRequirements = useTranslations("Requirements")
+  const tLife = useTranslations("Life")
+
   switch (slug) {
-    case "study-abroad":
-      return <StudyAbroadIntro />
-    case "visa":
-      return <VisaIntro />
-    case "requirements":
-      return <RequirementsIntro />
-    case "life":
-      return <LifeIntro />
+    case "study-abroad": {
+      const fallbackPrograms = [
+        {
+          name: tStudyAbroad("german.title"), desc: tStudyAbroad("german.desc"),
+          features: [tStudyAbroad("german.f1"), tStudyAbroad("german.f2"), tStudyAbroad("german.f3"), tStudyAbroad("german.f4")],
+          highlight: true,
+        },
+        {
+          name: tStudyAbroad("japanese.title"), desc: tStudyAbroad("japanese.desc"),
+          features: [tStudyAbroad("japanese.f1"), tStudyAbroad("japanese.f2"), tStudyAbroad("japanese.f3")],
+          highlight: false,
+        },
+        {
+          name: tStudyAbroad("singapore.title"), desc: tStudyAbroad("singapore.desc"),
+          features: [tStudyAbroad("singapore.f1"), tStudyAbroad("singapore.f2"), tStudyAbroad("singapore.f3")],
+          highlight: false,
+        },
+      ]
+      return (
+        <>
+          <PageIntroSection
+            titleKey="study_abroad_intro_title"
+            contentKey="study_abroad_intro_desc"
+            titleFallback={tStudyAbroad("overviewTitle")}
+            contentFallback={tStudyAbroad("overviewContent")}
+            sectionTag="Overview"
+            editable={editable}
+            onEditTitle={() => onEditConfig?.("study_abroad_intro_title")}
+            onEditContent={() => onEditConfig?.("study_abroad_intro_desc")}
+          />
+          <FeaturedProgramSection
+            sectionTag="Featured Program"
+            sectionTitle={tStudyAbroad("germanFocusTitle")}
+            fallbackTitle={tStudyAbroad("germanFocusName")}
+            fallbackDesc={tStudyAbroad("germanFocusDesc")}
+            fallbackFeatures={[
+              tStudyAbroad("germanFocusF1"), tStudyAbroad("germanFocusF2"),
+              tStudyAbroad("germanFocusF3"), tStudyAbroad("germanFocusF4"),
+              tStudyAbroad("germanFocusF5"), tStudyAbroad("germanFocusF6"),
+            ]}
+            editable={editable}
+            onEdit={() => onEditConfig?.("study_abroad_programs")}
+          />
+          <CardGridSection
+            configKey="study_abroad_programs"
+            sectionTag="Programs"
+            sectionTitle={tStudyAbroad("programsTitle")}
+            fallbackCards={fallbackPrograms}
+            columns="md:grid-cols-2"
+            bgColor="bg-white"
+            cardType="program"
+            editable={editable}
+            onEdit={() => onEditConfig?.("study_abroad_programs")}
+          />
+        </>
+      )
+    }
+    case "visa": {
+      const fallbackSteps = [
+        { title: tVisa("step1.title"), desc: tVisa("step1.desc") },
+        { title: tVisa("step2.title"), desc: tVisa("step2.desc") },
+        { title: tVisa("step3.title"), desc: tVisa("step3.desc") },
+        { title: tVisa("step4.title"), desc: tVisa("step4.desc") },
+        { title: tVisa("step5.title"), desc: tVisa("step5.desc") },
+      ]
+      const fallbackDocs = [
+        tVisa("doc1"), tVisa("doc2"), tVisa("doc3"), tVisa("doc4"),
+        tVisa("doc5"), tVisa("doc6"), tVisa("doc7"), tVisa("doc8"),
+      ]
+      const fallbackTimeline = [
+        { title: tVisa("timeline1.title"), time: tVisa("timeline1.time"), desc: tVisa("timeline1.desc") },
+        { title: tVisa("timeline2.title"), time: tVisa("timeline2.time"), desc: tVisa("timeline2.desc") },
+        { title: tVisa("timeline3.title"), time: tVisa("timeline3.time"), desc: tVisa("timeline3.desc") },
+      ]
+      const fallbackTips = [
+        tVisa("tip1"), tVisa("tip2"), tVisa("tip3"), tVisa("tip4"), tVisa("tip5"),
+      ]
+      return (
+        <>
+          <StepListSection
+            configKey="visa_process_steps"
+            sectionTag="Process"
+            sectionTitle={tVisa("processTitle")}
+            fallbackSteps={fallbackSteps}
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_process_steps")}
+          />
+          <DocListSection
+            configKey="visa_required_docs"
+            sectionTag="Documents"
+            sectionTitle={tVisa("docsTitle")}
+            fallbackDocs={fallbackDocs}
+            bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_required_docs")}
+          />
+          <CardGridSection
+            configKey="visa_timeline"
+            sectionTag="Timeline"
+            sectionTitle={tVisa("timelineTitle")}
+            fallbackCards={fallbackTimeline}
+            columns="md:grid-cols-3"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_timeline")}
+            cardType="timeline"
+          />
+          <DocListSection
+            configKey="visa_tips"
+            sectionTag="Tips"
+            sectionTitle={tVisa("tipsTitle")}
+            fallbackDocs={fallbackTips}
+            iconName="AlertTriangle"
+            bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("visa_tips")}
+          />
+        </>
+      )
+    }
+    case "requirements": {
+      const fallbackCountries = [
+        {
+          label: tRequirements("germany.title"),
+          items: [
+            tRequirements("germany.r1"),
+            tRequirements("germany.r2"),
+            tRequirements("germany.r3"),
+            tRequirements("germany.r4"),
+          ],
+        },
+        {
+          label: tRequirements("japan.title"),
+          items: [
+            tRequirements("japan.r1"),
+            tRequirements("japan.r2"),
+            tRequirements("japan.r3"),
+          ],
+        },
+        {
+          label: tRequirements("singapore.title"),
+          items: [
+            tRequirements("singapore.r1"),
+            tRequirements("singapore.r2"),
+            tRequirements("singapore.r3"),
+          ],
+        },
+      ]
+      const fallbackLanguages = [
+        {
+          title: tRequirements("langGerman.title"),
+          desc: tRequirements("langGerman.desc"),
+        },
+        {
+          title: tRequirements("langJapanese.title"),
+          desc: tRequirements("langJapanese.desc"),
+        },
+      ]
+      const fallbackDocs = [
+        tRequirements("doc1"), tRequirements("doc2"), tRequirements("doc3"), tRequirements("doc4"),
+        tRequirements("doc5"), tRequirements("doc6"), tRequirements("doc7"), tRequirements("doc8"),
+      ]
+      const fallbackSteps = [
+        { title: tRequirements("step1.title"), desc: tRequirements("step1.desc") },
+        { title: tRequirements("step2.title"), desc: tRequirements("step2.desc") },
+        { title: tRequirements("step3.title"), desc: tRequirements("step3.desc") },
+        { title: tRequirements("step4.title"), desc: tRequirements("step4.desc") },
+        { title: tRequirements("step5.title"), desc: tRequirements("step5.desc") },
+        { title: tRequirements("step6.title"), desc: tRequirements("step6.desc") },
+      ]
+      return (
+        <>
+          <CountryRequirementsSection
+            configKey="requirements_countries"
+            sectionTag="Requirements"
+            sectionTitle={tRequirements("overviewTitle")}
+            labelKey="country"
+            fallbackData={fallbackCountries}
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_countries")}
+          />
+          <CardGridSection
+            configKey="requirements_languages"
+            sectionTag="Language"
+            sectionTitle={tRequirements("langTitle")}
+            fallbackCards={fallbackLanguages}
+            columns="md:grid-cols-2"
+            bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_languages")}
+            cardType="language"
+          />
+          <DocListSection
+            configKey="requirements_docs"
+            sectionTag="Documents"
+            sectionTitle={tRequirements("docsTitle")}
+            fallbackDocs={fallbackDocs}
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_docs")}
+          />
+          <StepListSection
+            configKey="requirements_steps"
+            sectionTag="Timeline"
+            sectionTitle={tRequirements("timelineTitle")}
+            fallbackSteps={fallbackSteps}
+            bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("requirements_steps")}
+          />
+        </>
+      )
+    }
+    case "life": {
+      const fallbackGuideCards = [
+        { icon: "Home", title: tLife("housing.title"), desc: tLife("housing.desc") },
+        { icon: "Bus", title: tLife("transport.title"), desc: tLife("transport.desc") },
+        { icon: "UtensilsCrossed", title: tLife("food.title"), desc: tLife("food.desc") },
+        { icon: "Palette", title: tLife("culture.title"), desc: tLife("culture.desc") },
+      ]
+      const fallbackCityCards = [
+        { city: tLife("munich.name"), country: "德国", desc: tLife("munich.desc"), image_id: null },
+        { city: tLife("berlin.name"), country: "德国", desc: tLife("berlin.desc"), image_id: null },
+        { city: tLife("hamburg.name"), country: "德国", desc: tLife("hamburg.desc"), image_id: null },
+      ]
+      return (
+        <>
+          <PageIntroSection
+            titleKey="life_intro_title"
+            contentKey="life_intro_desc"
+            titleFallback={tLife("guideTitle")}
+            contentFallback={tLife("guideIntro")}
+            sectionTag="Living Guide"
+            editable={editable}
+            onEditTitle={() => onEditConfig?.("life_intro_title")}
+            onEditContent={() => onEditConfig?.("life_intro_desc")}
+          />
+          <CardGridSection
+            configKey="life_guide_cards"
+            sectionTag="Daily Life"
+            sectionTitle="生活板块"
+            fallbackCards={fallbackGuideCards}
+            columns="md:grid-cols-2"
+            bgColor="bg-gray-50"
+            editable={editable}
+            onEdit={() => onEditConfig?.("life_guide_cards")}
+            cardType="guide"
+          />
+          <CardGridSection
+            configKey="life_city_cards"
+            sectionTag="City Guides"
+            sectionTitle={tLife("cityTitle")}
+            fallbackCards={fallbackCityCards}
+            columns="md:grid-cols-3"
+            editable={editable}
+            onEdit={() => onEditConfig?.("life_city_cards")}
+            cardType="city"
+          />
+        </>
+      )
+    }
     case "news":
       return (
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">

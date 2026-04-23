@@ -236,6 +236,18 @@ async def get_article_by_slug(
     return result.scalar_one_or_none()
 
 
+async def get_article_by_title(
+    session: AsyncSession, title: str, category_id: str,
+) -> Article | None:
+    """根据标题和分类查询文章（导入时按标题匹配）。"""
+    stmt = select(Article).where(
+        Article.title == title,
+        Article.category_id == category_id,
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
 async def list_articles_by_category(
     session: AsyncSession, category_id: str
 ) -> list[Article]:

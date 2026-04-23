@@ -1,19 +1,20 @@
 import { PageBanner } from "@/components/layout/PageBanner"
-import {
-  HistorySection,
-  MissionVisionSection,
-  PartnershipSection,
-  AboutStatsSection,
-} from "@/components/about/AboutContent"
+import { HistorySection } from "@/components/about/AboutContent"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { TeamSection } from "@/components/about/TeamSection"
+import { CardGridSection } from "@/components/common/CardGridSection"
+import { OfficeGallery } from "@/components/about/OfficeGallery"
 import { CtaSection } from "@/components/common/CtaSection"
 import { getTranslations } from "next-intl/server"
+
+const ABOUT_CARDS_FALLBACK = [
+  { icon: "Target", title: "我们的使命", desc: "让学生上理想的好大学。" },
+  { icon: "Eye", title: "我们的愿景", desc: "实现学生接受优质高等教育的梦想，并依靠点点滴滴契而不舍的艰苦追求，成为最专业的国际教育资源咨询服务企业。" },
+  { icon: "Heart", title: "我们的价值观", desc: "无条件让学生和家长满意、团队精神、团队互助、持续学习。" },
+]
 
 /** 关于我们页面 */
 export default async function AboutPage() {
   const p = await getTranslations("Pages")
-  const t = await getTranslations("About")
 
   return (
     <>
@@ -23,34 +24,20 @@ export default async function AboutPage() {
       <ContactInfoSection />
 
       {/* 公司简介 */}
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Our Story
-          </h2>
-          <h3 className="mt-2 text-2xl md:text-3xl font-bold">
-            {t("historyTitle")}
-          </h3>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <HistorySection />
-      </section>
+      <HistorySection />
 
       {/* 使命愿景 */}
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <MissionVisionSection />
-        </div>
-      </section>
+      <CardGridSection
+        configKey="about_cards"
+        sectionTag="About Us"
+        sectionTitle="使命与愿景"
+        fallbackCards={ABOUT_CARDS_FALLBACK}
+        cardType="guide"
+        bgColor="bg-gray-50"
+      />
 
-      {/* 慕尼黑大学语言中心合作 */}
-      <PartnershipSection withWrapper />
-
-      {/* 数据统计 */}
-      <AboutStatsSection />
-
-      {/* 团队介绍 */}
-      <TeamSection />
+      {/* 办公环境 */}
+      <OfficeGallery />
 
       {/* CTA */}
       <CtaSection translationNamespace="About" />

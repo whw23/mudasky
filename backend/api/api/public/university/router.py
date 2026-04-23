@@ -55,7 +55,7 @@ async def list_universities(
     )
     result = build_paginated(universities, total, params, UniversityResponse)
     seed = f"uni:list:{page}:{page_size}:{country}:{city}:{is_featured}:{search}:{program}:{discipline_category_id}:{discipline_id}:{total}"
-    if set_cache_headers(response, seed, 0, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
@@ -74,7 +74,7 @@ async def list_countries(
     svc = UniversityService(session)
     countries = await svc.get_distinct_countries()
     seed = f"uni:countries:{','.join(countries)}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return countries
 
@@ -94,7 +94,7 @@ async def list_provinces(
     svc = UniversityService(session)
     provinces = await svc.get_distinct_provinces(country)
     seed = f"uni:provinces:{country}:{','.join(provinces)}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return provinces
 
@@ -114,7 +114,7 @@ async def list_cities(
     svc = UniversityService(session)
     cities = await svc.get_distinct_cities(country)
     seed = f"uni:cities:{country}:{','.join(cities)}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return cities
 
@@ -172,6 +172,6 @@ async def get_university(
     )
     ts = uni.updated_at.isoformat() if uni.updated_at else ""
     seed = f"uni:{university_id}:{ts}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result

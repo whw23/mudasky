@@ -185,18 +185,40 @@
     "pageInfo": "Page {page} of {totalPages}"
   },
   "Editor": {
+    "heading1": "Heading 1",
     "heading2": "Heading 2",
     "heading3": "Heading 3",
+    "heading4": "Heading 4",
     "bold": "Bold",
     "italic": "Italic",
+    "underline": "Underline",
+    "strikethrough": "Strikethrough",
+    "textColor": "Text Color",
+    "highlight": "Highlight",
     "bulletList": "Bullet List",
     "orderedList": "Ordered List",
+    "taskList": "Task List",
     "quote": "Quote",
+    "codeBlock": "Code Block",
+    "horizontalRule": "Horizontal Rule",
+    "alignLeft": "Align Left",
+    "alignCenter": "Align Center",
+    "alignRight": "Align Right",
+    "alignJustify": "Justify",
+    "superscript": "Superscript",
+    "subscript": "Subscript",
     "insertImage": "Insert Image",
     "insertLink": "Insert Link",
+    "insertVideo": "Insert Video",
+    "insertTable": "Insert Table",
     "imagePrompt": "Enter image URL",
     "linkPrompt": "Enter link URL",
+    "videoPrompt": "Enter video URL (YouTube / Bilibili)",
     "placeholder": "Start typing...",
+    "undo": "Undo",
+    "redo": "Redo",
+    "sourceCode": "Source Code",
+    "preview": "Preview",
     "markdownSource": "Source",
     "markdownSplit": "Split",
     "markdownPreview": "Preview"
@@ -480,11 +502,12 @@
   },
   "About": {
     "historyTitle": "15 Years of International Education",
-    "historyContent": "Founded in 2011, MUTU International Education has been dedicated to foreign language study abroad programs for 15 years. As the only designated enrollment center for the Munich University Language Center in Jiangsu Province, we have always upheld our service philosophy of 'Professionalism, Integrity, and Efficiency,' helping hundreds of students achieve their dreams of studying at prestigious overseas universities. From initial German language training to comprehensive multilingual study abroad services covering German, Japanese, French, and Korean, we continue to expand our offerings and strive to become a leading international education service provider in China.",
+    "historyContent": "Founded in 2011, MUTU International Education has been dedicated to foreign language study abroad programs for 15 years. As the only designated enrollment center for the Munich University Language Center in Jiangsu Province, we have always upheld our service philosophy of 'Professionalism, Integrity, and Efficiency,' helping hundreds of students achieve their dreams of studying at prestigious overseas universities. From initial German language training to comprehensive multilingual study abroad services covering German, Japanese, and English, we continue to expand our offerings and strive to become a leading international education service provider in China.",
     "missionTitle": "Our Mission",
     "missionContent": "To provide every student with a dream of studying abroad with professional, caring one-stop services, helping students find the most suitable overseas institutions and achieve a leap in life value.",
     "visionTitle": "Our Vision",
     "visionContent": "To become China's most trusted international education service brand, bridging the gap between Chinese students and world-class universities, and promoting cross-cultural educational exchange and integration.",
+    "officeTitle": "Office Environment",
     "partnershipTitle": "Munich University Language Center Partnership",
     "partnershipContent": "MUTU International is the only officially designated enrollment center for the Munich University Language Center (Sprachenzentrum der LMU München) in Jiangsu Province. The Munich University Language Center is one of Germany's most authoritative German language training institutions, with globally recognized German courses. Through our deep partnership, we provide students with authentic German language instruction, examination certification, and a fast track to prestigious German universities.",
     "partnerBadge1": "Official Enrollment Center",
@@ -514,7 +537,7 @@
   },
   "StudyAbroad": {
     "overviewTitle": "Multi-Country Study Programs",
-    "overviewContent": "MUTU International offers study abroad services for Germany, Japan, France, South Korea, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
+    "overviewContent": "MUTU International offers study abroad services for Germany, Japan, Singapore, and more. We create customized study plans based on each student's academic background, language proficiency, and career goals. Whether you're a high school graduate or university student, we have matching programs for you.",
     "germanFocusTitle": "German Language Program (Featured)",
     "germanFocusName": "Munich University Language Center Direct Program",
     "germanFocusDesc": "Leveraging our official partnership with the Munich University Language Center, we provide students with a complete pathway from German language learning to enrollment at prestigious German universities. This is our core program and has helped hundreds of students enter top German universities.",
@@ -548,12 +571,12 @@
       "f2": "Low tuition at public universities",
       "f3": "Rich cultural and artistic resources"
     },
-    "korean": {
-      "title": "Study in South Korea",
-      "desc": "High educational standards with moderate study costs and close proximity to China. Strong K-culture appeal, ideal for students interested in Korean language and culture.",
-      "f1": "Relatively low study costs",
-      "f2": "Close geographical proximity",
-      "f3": "Rich Korean language courses"
+    "singapore": {
+      "title": "Study in Singapore",
+      "desc": "Asia's top education system with a bilingual environment (English + Chinese) and a global finance and tech hub. Excellent safety, ideal for students seeking high-quality English-taught education.",
+      "f1": "English + Chinese bilingual environment",
+      "f2": "World-class universities (NUS, NTU)",
+      "f3": "Broad career prospects after graduation"
     },
     "ctaTitle": "Choose the Right Program for You",
     "ctaDesc": "Every student is unique — let us help you find the best matching study abroad plan",
@@ -644,11 +667,11 @@
       "r2": "JLPT N2+ or EJU score",
       "r3": "Proof of financial support"
     },
-    "korea": {
-      "title": "Study in South Korea",
+    "singapore": {
+      "title": "Study in Singapore",
       "r1": "High school diploma or above",
-      "r2": "TOPIK Level 3+",
-      "r3": "Bank deposit certificate"
+      "r2": "IELTS 6.0+ or TOEFL 80+",
+      "r3": "Financial guarantee certificate"
     },
     "langTitle": "Language Proficiency Requirements",
     "langGerman": {
@@ -734,9 +757,9 @@
     },
     "s6": {
       "name": "Student Liu",
-      "uni": "Seoul National University",
+      "uni": "National University of Singapore",
       "program": "BSc International Trade",
-      "quote": "From consultation to enrollment took only half a year, very efficient. I can still reach out to the teachers for any questions after arriving in Korea."
+      "quote": "From consultation to enrollment took only half a year, very efficient. I can still reach out to the teachers for any questions after arriving in Singapore."
     },
     "ctaTitle": "You Could Be Our Next Success Story",
     "ctaDesc": "Every successful study abroad story begins with a professional consultation",

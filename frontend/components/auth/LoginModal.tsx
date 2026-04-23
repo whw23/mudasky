@@ -151,7 +151,7 @@ export function LoginModal() {
   if (twoFaStep) {
     return (
       <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" enableFullscreen={false}>
           <DialogHeader>
             <DialogTitle>{t('twoFaTitle')}</DialogTitle>
           </DialogHeader>
@@ -173,7 +173,7 @@ export function LoginModal() {
   /* 主登录视图 */
   return (
     <Dialog open={authModal === 'login'} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" enableFullscreen={false}>
         <DialogHeader>
           <DialogTitle>
             {activeTab === 'sms' ? t('loginOrRegister') : t('loginTitle')}

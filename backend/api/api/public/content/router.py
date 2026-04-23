@@ -52,7 +52,7 @@ async def list_published_articles(
         articles, total, params, ArticleResponse
     )
     seed = f"article:list:{page}:{page_size}:{category_id}:{total}"
-    if set_cache_headers(response, seed, 0, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
@@ -78,7 +78,7 @@ async def get_published_article(
     result = ArticleResponse.model_validate(article)
     ts = article.updated_at.isoformat() if article.updated_at else ""
     seed = f"article:{article_id}:{ts}"
-    if set_cache_headers(response, seed, 600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result
 
@@ -97,6 +97,6 @@ async def list_categories(
     svc = ContentService(session)
     categories = await _category_list_with_counts(svc)
     seed = f"categories:{len(categories)}:{','.join(c.id for c in categories)}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return categories

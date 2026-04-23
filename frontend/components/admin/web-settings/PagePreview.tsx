@@ -8,28 +8,27 @@
  */
 
 import { useTranslations } from "next-intl"
+import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
-import { StatsSection } from "@/components/home/StatsSection"
-import { AboutIntroSection } from "@/components/home/AboutIntroSection"
-import { ServicesSection } from "@/components/home/ServicesSection"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
-import { NewsSection } from "@/components/home/NewsSection"
 import { CtaSection } from "@/components/common/CtaSection"
-import {
-  HistorySection,
-  MissionVisionSection,
-  PartnershipSection,
-  AboutStatsSection,
-} from "@/components/about/AboutContent"
+import { HistorySection } from "@/components/about/AboutContent"
+import { CardGridSection } from "@/components/common/CardGridSection"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
-import { TeamSection } from "@/components/about/TeamSection"
+import { OfficeGallery } from "@/components/about/OfficeGallery"
 import { UniversitiesPreviewPage } from "./UniversitiesPreviewPage"
 import { CasesPreviewPage } from "./CasesPreviewPage"
 import { ArticlePreviewPage } from "./ArticlePreviewPage"
+
+const ABOUT_CARDS_FALLBACK = [
+  { icon: "Target", title: "我们的使命", desc: "让学生上理想的好大学。" },
+  { icon: "Eye", title: "我们的愿景", desc: "实现学生接受优质高等教育的梦想，并依靠点点滴滴契而不舍的艰苦追求，成为最专业的国际教育资源咨询服务企业。" },
+  { icon: "Heart", title: "我们的价值观", desc: "无条件让学生和家长满意、团队精神、团队互助、持续学习。" },
+]
 
 interface PagePreviewProps {
   activePage: string
@@ -43,13 +42,13 @@ export function PagePreview({ activePage, onEditConfig, onBannerEdit }: PagePrev
     case "home":
       return <HomePreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     case "universities":
-      return <UniversitiesPreviewPage onBannerEdit={onBannerEdit} />
+      return <UniversitiesPreviewPage onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
     case "cases":
-      return <CasesPreviewPage onBannerEdit={onBannerEdit} />
+      return <CasesPreviewPage onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
     case "about":
       return <AboutPreview onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
     default:
-      return <ArticlePreviewPage categorySlug={activePage} onBannerEdit={onBannerEdit} />
+      return <ArticlePreviewPage categorySlug={activePage} onBannerEdit={onBannerEdit} onEditConfig={onEditConfig} />
   }
 }
 
@@ -58,17 +57,9 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
   return (
     <>
       <HomeBanner editable onEditConfig={onEditConfig} onBannerEdit={onBannerEdit} />
-      <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
-        <StatsSection />
-      </EditableOverlay>
-      <AboutIntroSection />
-      <ServicesSection editable onEditTitle={() => onEditConfig("services_title")} />
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <FeaturedUniversities />
-        <FeaturedCases />
-      </section>
-      <NewsSection />
-      <CtaSection translationNamespace="Home" variant="border-t" />
+      <FeaturedUniversities />
+      <FeaturedCases />
+      <CtaSection translationNamespace="Home" variant="border-t" editable onEdit={() => onEditConfig("home_cta")} />
     </>
   )
 }
@@ -77,35 +68,26 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
 function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
   const t = useTranslations("About")
   const p = useTranslations("Pages")
+  const { aboutInfo } = useLocalizedConfig()
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("about")} label="编辑 Banner">
         <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
       </EditableOverlay>
       <ContactInfoSection editable onEditField={(field) => onEditConfig(`contact_${field}`)} />
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Our Story</h2>
-          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("historyTitle")}</h3>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <HistorySection editable onEdit={() => onEditConfig("about_history")} />
-      </section>
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <MissionVisionSection
-            editable
-            onEditMission={() => onEditConfig("about_mission")}
-            onEditVision={() => onEditConfig("about_vision")}
-          />
-        </div>
-      </section>
-      <PartnershipSection withWrapper editable onEdit={() => onEditConfig("about_partnership")} />
-      <EditableOverlay onClick={() => onEditConfig("stats")} label="编辑统计">
-        <AboutStatsSection />
-      </EditableOverlay>
-      <TeamSection />
-      <CtaSection translationNamespace="About" />
+      <HistorySection editable onEditTitle={() => onEditConfig("about_history_title")} onEdit={() => onEditConfig("about_history")} />
+      <CardGridSection
+        configKey="about_cards"
+        sectionTag="About Us"
+        sectionTitle="使命与愿景"
+        fallbackCards={ABOUT_CARDS_FALLBACK}
+        cardType="guide"
+        bgColor="bg-gray-50"
+        editable
+        onEdit={() => onEditConfig("about_cards")}
+      />
+      <OfficeGallery editable />
+      <CtaSection translationNamespace="About" editable onEdit={() => onEditConfig("about_cta")} />
     </>
   )
 }

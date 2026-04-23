@@ -25,6 +25,6 @@ async def list_disciplines(
     svc = DisciplinePublicService(session)
     tree = await svc.get_discipline_tree()
     seed = f"disc:tree:{len(tree)}"
-    if set_cache_headers(response, seed, 3600, if_none_match):
+    if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return tree

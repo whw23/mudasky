@@ -2,9 +2,9 @@
 
 支持 ZIP（包含 Excel + content/）和纯 Excel 两种格式。
 Excel 格式：单个 sheet，横向表
-  标题 | Slug | 内容类型 | 正文文件名 | 摘要 | 封面图文件名 | 状态 | 是否置顶
+  标题 | 内容类型 | 正文文件名 | 摘要 | 封面图文件名 | 状态 | 是否置顶
 
-导入策略：merge（slug 为主键，非空字段覆盖）。
+导入策略：merge（标题+分类为主键，非空字段覆盖），slug 从标题自动生成。
 特点：
 - category_id 通过 query param 传入，不在 Excel 中
 - author_id 使用当前登录用户 ID（从请求头 X-User-Id 获取）
@@ -21,7 +21,10 @@ from app.core.exceptions import BadRequestException
 from app.db.content import repository
 from app.db.content.models import Article
 from app.db.image import repository as image_repo
+from app.utils.html_images import base64_to_urls
+from app.utils.slug import generate_unique_slug
 from app.utils.excel_io import (
+    create_placeholder_image,
     create_zip,
     extract_zip,
     load_workbook_from_bytes,
@@ -44,7 +47,7 @@ class ArticleImportService:
 
         返回格式：
         {
-          "items": [{"row": 2, "slug": "study-guide", "status": "new|update|unchanged", "changed_fields": [...], "data": {...}}],
+          "items": [{"row": 2, "title": "...", "status": "new|update|unchanged", "changed_fields": [...], "data": {...}}],
           "errors": [{"row": 3, "error": "..."}],
           "summary": {"new": 1, "update": 2, "unchanged": 0, "error": 1},
           "available_files": ["content/study-in-germany.html", "content/cover1.jpg"]
@@ -142,7 +145,6 @@ class ArticleImportService:
         ws.title = "文章"
         headers = [
             "标题",
-            "Slug",
             "内容类型",
             "正文文件名",
             "摘要",
@@ -155,7 +157,6 @@ class ArticleImportService:
         ws.append(
             [
                 "德国留学完整指南",
-                "study-in-germany",
                 "html",
                 "study-in-germany.html",
                 "本文介绍德国留学的各个方面...",
@@ -167,7 +168,6 @@ class ArticleImportService:
         ws.append(
             [
                 "签证申请注意事项",
-                "visa-checklist",
                 "file",
                 "visa-checklist.pdf",
                 "签证申请流程和材料清单",
@@ -182,7 +182,9 @@ class ArticleImportService:
         # 创建 ZIP
         files = {
             "articles.xlsx": excel_bytes,
-            "content/.gitkeep": b"",  # 占位符
+            "content/study-in-germany.html": b"<h1>Study in Germany</h1><p>Placeholder content.</p>",
+            "content/cover1.jpg": create_placeholder_image(800, 450, "Cover 1"),
+            "content/cover2.jpg": create_placeholder_image(800, 450, "Cover 2"),
         }
         return create_zip(files)
 
@@ -216,10 +218,10 @@ class ArticleImportService:
         返回格式：
         {
           "row": 2,
-          "slug": "study-guide",
+          "title": "...",
           "status": "new|update|unchanged",
           "changed_fields": ["title", "content"],
-          "data": {"title": "...", "slug": "...", ...},
+          "data": {"title": "...", ...},
           "content_filename": "study-guide.html",
           "cover_image_filename": "cover1.jpg",
         }
@@ -228,38 +230,34 @@ class ArticleImportService:
         if not title:
             raise ValueError("标题不能为空")
 
-        slug = str(row[1]).strip() if row[1] else ""
-        if not slug:
-            raise ValueError("Slug 不能为空")
-
-        content_type = str(row[2]).strip().lower() if row[2] else "html"
+        content_type = str(row[1]).strip().lower() if row[1] else "html"
         if content_type not in ["html", "file"]:
             raise ValueError(f"行 {row_num}: 内容类型必须为 html 或 file")
 
-        content_filename = str(row[3]).strip() if row[3] else None
-        excerpt = str(row[4]).strip() if row[4] else ""
-        cover_image_filename = str(row[5]).strip() if row[5] else None
+        content_filename = str(row[2]).strip() if row[2] else None
+        excerpt = str(row[3]).strip() if row[3] else ""
+        cover_image_filename = str(row[4]).strip() if row[4] else None
 
         status = "draft"
-        if row[6]:
-            val = str(row[6]).strip().lower()
+        if row[5]:
+            val = str(row[5]).strip().lower()
             if val in ["published", "已发布"]:
                 status = "published"
 
         is_pinned = False
-        if row[7]:
-            val = str(row[7]).strip().lower()
+        if row[6]:
+            val = str(row[6]).strip().lower()
             is_pinned = val in ["是", "true", "1", "yes"]
 
-        # 必填字段校验
         if not content_filename:
             raise ValueError(f"行 {row_num}: 正文文件名不能为空")
 
-        # 查询数据库判断 new/update/unchanged
-        existing = await repository.get_article_by_slug(self.session, slug)
+        # 按标题匹配已有文章
+        existing = await repository.get_article_by_title(
+            self.session, title, category_id,
+        )
         data = {
             "title": title,
-            "slug": slug,
             "content_type": content_type,
             "excerpt": excerpt,
             "category_id": category_id,
@@ -270,7 +268,7 @@ class ArticleImportService:
         if not existing:
             return {
                 "row": row_num,
-                "slug": slug,
+                "title": title,
                 "status": "new",
                 "changed_fields": [],
                 "data": data,
@@ -278,22 +276,18 @@ class ArticleImportService:
                 "cover_image_filename": cover_image_filename,
             }
 
-        # 判断是否有变化（merge 策略：非空字段覆盖）
         changed_fields = []
         for key, new_val in data.items():
-            if key in ["slug", "category_id"]:
-                continue  # slug 是主键，category_id 外部控制
+            if key in ["category_id"]:
+                continue
             if new_val is None or new_val == "":
-                continue  # 空值不覆盖
+                continue
             old_val = getattr(existing, key, None)
             if new_val != old_val:
                 changed_fields.append(key)
 
-        # 检查内容文件是否变化
         if content_filename:
             changed_fields.append("content")
-
-        # 检查封面图是否变化
         if cover_image_filename:
             changed_fields.append("cover_image")
 
@@ -301,7 +295,7 @@ class ArticleImportService:
 
         return {
             "row": row_num,
-            "slug": slug,
+            "title": title,
             "status": status_result,
             "changed_fields": changed_fields,
             "data": data,
@@ -325,6 +319,7 @@ class ArticleImportService:
             content_path = f"content/{content_filename}"
             if content_path in file_map:
                 content_text = file_map[content_path].decode("utf-8")
+                content_text = await base64_to_urls(self.session, content_text)
             else:
                 raise ValueError(f"未找到 HTML 文件: {content_filename}")
         else:  # file (PDF)
@@ -359,9 +354,12 @@ class ArticleImportService:
                 )
                 cover_image_url = f"/api/public/images/detail?id={image.id}"
 
+        slug = await generate_unique_slug(
+            self.session, data["title"], Article,
+        )
         article = Article(
             title=data["title"],
-            slug=data["slug"],
+            slug=slug,
             content_type=data["content_type"],
             content=content_text,
             file_id=file_id,
@@ -378,16 +376,16 @@ class ArticleImportService:
         self, item: dict, file_map: dict[str, bytes]
     ) -> Article:
         """更新文章（merge 策略）。"""
-        slug = item["slug"]
-        existing = await repository.get_article_by_slug(self.session, slug)
-        if not existing:
-            raise ValueError(f"文章 {slug} 不存在")
-
-        # Merge 字段（非空覆盖）
         data = item["data"]
+        existing = await repository.get_article_by_title(
+            self.session, data["title"], data["category_id"],
+        )
+        if not existing:
+            raise ValueError(f"文章「{data['title']}」不存在")
+
         for key, new_val in data.items():
-            if key in ["slug", "category_id"]:
-                continue  # slug 不可修改，category_id 外部控制
+            if key in ["category_id"]:
+                continue
             if new_val is None or new_val == "":
                 continue  # 空值不覆盖
             setattr(existing, key, new_val)
@@ -398,7 +396,9 @@ class ArticleImportService:
             if existing.content_type == "html":
                 content_path = f"content/{content_filename}"
                 if content_path in file_map:
-                    existing.content = file_map[content_path].decode("utf-8")
+                    existing.content = await base64_to_urls(
+                        self.session, file_map[content_path].decode("utf-8")
+                    )
             else:  # file (PDF)
                 content_path = f"content/{content_filename}"
                 if content_path in file_map:

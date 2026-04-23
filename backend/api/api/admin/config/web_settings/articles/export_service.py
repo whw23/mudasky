@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.content import repository
 from app.db.image import repository as image_repo
 from app.utils.excel_io import create_zip, workbook_to_bytes, write_sheet_header
+from app.utils.html_images import urls_to_base64
 
 
 class ArticleExportService:
@@ -33,7 +34,6 @@ class ArticleExportService:
         ws.title = "文章"
         headers = [
             "标题",
-            "Slug",
             "内容类型",
             "正文文件名",
             "摘要",
@@ -51,7 +51,8 @@ class ArticleExportService:
             content_filename = None
             if article.content_type == "html":
                 content_filename = f"{article.slug}.html"
-                content_files[f"content/{content_filename}"] = article.content.encode(
+                html_content = await urls_to_base64(self.session, article.content)
+                content_files[f"content/{content_filename}"] = html_content.encode(
                     "utf-8"
                 )
             else:  # file (PDF)
@@ -86,7 +87,6 @@ class ArticleExportService:
             ws.append(
                 [
                     article.title,
-                    article.slug,
                     article.content_type,
                     content_filename,
                     article.excerpt,

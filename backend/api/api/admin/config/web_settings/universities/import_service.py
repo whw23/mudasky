@@ -23,6 +23,7 @@ from app.db.university import program_repository as prog_repo
 from app.db.university.image_models import UniversityImage
 from app.db.university.models import University
 from app.utils.excel_io import (
+    create_placeholder_image,
     create_zip,
     extract_zip,
     load_workbook_from_bytes,
@@ -217,7 +218,9 @@ class ImportService:
         # 创建 ZIP
         files = {
             "universities.xlsx": excel_bytes,
-            "images/.gitkeep": b"",  # 占位符
+            "images/哈佛大学_logo.jpg": create_placeholder_image(200, 200, "Logo", "#6366f1"),
+            "images/哈佛大学_1.jpg": create_placeholder_image(800, 450, "Photo 1"),
+            "images/哈佛大学_2.jpg": create_placeholder_image(800, 450, "Photo 2"),
         }
         return create_zip(files)
 

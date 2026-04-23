@@ -7,11 +7,12 @@ import hashlib
 
 from fastapi import Response
 
+from app.core.config import settings
+
 
 def set_cache_headers(
     response: Response,
     etag_seed: str,
-    max_age: int,
     if_none_match: str | None = None,
 ) -> bool:
     """设置缓存响应头，返回是否命中 304。
@@ -19,7 +20,6 @@ def set_cache_headers(
     Args:
         response: FastAPI Response 对象
         etag_seed: 用于生成 ETag 的种子字符串
-        max_age: Cache-Control max-age 秒数
         if_none_match: 客户端传入的 If-None-Match 头
 
     Returns:
@@ -32,6 +32,7 @@ def set_cache_headers(
         response.status_code = 304
         return True
 
+    max_age = settings.CACHE_MAX_AGE
     if max_age > 0:
         response.headers["Cache-Control"] = f"public, max-age={max_age}"
     else:

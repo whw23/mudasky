@@ -15,7 +15,24 @@ interface SafeHtmlProps {
 
 /** 安全渲染 HTML 内容 */
 export function SafeHtml({ html, className }: SafeHtmlProps) {
-  const clean = useMemo(() => DOMPurify.sanitize(html), [html])
+  const clean = useMemo(
+    () =>
+      DOMPurify.sanitize(html, {
+        ADD_TAGS: ['iframe'],
+        ADD_ATTR: [
+          'allow',
+          'allowfullscreen',
+          'frameborder',
+          'scrolling',
+          'data-video-url',
+          'style',
+          'class',
+          'target',
+        ],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|data):)/i,
+      }),
+    [html],
+  )
 
   return (
     <div

@@ -2,7 +2,7 @@
 
 /**
  * 文章编辑弹窗。
- * 用于创建和编辑文章，支持标题、slug、摘要、内容、状态等字段。
+ * 用于创建和编辑文章，支持标题、摘要、内容、状态等字段。
  */
 
 import { useState, useEffect } from "react"
@@ -60,7 +60,6 @@ export function ArticleEditDialog({
   const isEdit = !!article
 
   const [title, setTitle] = useState("")
-  const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
   const [content, setContent] = useState("")
   const [status, setStatus] = useState("draft")
@@ -73,7 +72,6 @@ export function ArticleEditDialog({
   useEffect(() => {
     if (open && article) {
       setTitle(article.title)
-      setSlug(article.slug)
       setExcerpt(article.excerpt)
       setContent(article.content)
       setStatus(article.status)
@@ -81,7 +79,6 @@ export function ArticleEditDialog({
       setFileId(article.file_id || null)
     } else if (open && !article) {
       setTitle("")
-      setSlug("")
       setExcerpt("")
       setContent("")
       setStatus("draft")
@@ -122,9 +119,8 @@ export function ArticleEditDialog({
   /** 提交表单 */
   async function handleSubmit(): Promise<void> {
     const trimmedTitle = title.trim()
-    const trimmedSlug = slug.trim()
-    if (!trimmedTitle || !trimmedSlug) {
-      toast.error("标题和 slug 不能为空")
+    if (!trimmedTitle) {
+      toast.error("标题不能为空")
       return
     }
 
@@ -134,7 +130,6 @@ export function ArticleEditDialog({
         await api.post("/admin/web-settings/articles/list/detail/edit", {
           article_id: article.id,
           title: trimmedTitle,
-          slug: trimmedSlug,
           excerpt: excerpt.trim(),
           content_type: contentType,
           content: contentType === "html" ? content : "",
@@ -145,7 +140,6 @@ export function ArticleEditDialog({
       } else {
         await api.post("/admin/web-settings/articles/list/create", {
           title: trimmedTitle,
-          slug: trimmedSlug,
           excerpt: excerpt.trim(),
           content_type: contentType,
           content: contentType === "html" ? content : "",
@@ -184,15 +178,6 @@ export function ArticleEditDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="文章标题"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="article-slug">Slug</Label>
-              <Input
-                id="article-slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="url-slug"
               />
             </div>
           </div>

@@ -14,6 +14,7 @@ from app.db.content.models import Article
 from app.db.image import repository as image_repo
 from app.db.image.repository import MAX_IMAGE_SIZE
 from app.db.model_utils import apply_updates
+from app.utils.slug import generate_unique_slug
 
 from .schemas import (
     ArticleCreate,
@@ -31,7 +32,10 @@ class ArticleService:
     async def create_article(
         self, data: ArticleCreate, author_id: str
     ) -> Article:
-        """创建文章。"""
+        """创建文章，slug 从标题自动生成。"""
+        slug = await generate_unique_slug(
+            self.session, data.title, Article,
+        )
         published_at = (
             datetime.now(timezone.utc)
             if data.status == "published"
@@ -39,7 +43,7 @@ class ArticleService:
         )
         article = Article(
             title=data.title,
-            slug=data.slug,
+            slug=slug,
             content=data.content,
             content_type=data.content_type,
             file_id=data.file_id,
@@ -68,7 +72,7 @@ class ArticleService:
     ) -> Article:
         """更新文章（不检查权限，由调用方负责）。"""
         article = await self.get_article(article_id)
-        self._apply_article_update(article, data)
+        await self._apply_article_update(article, data)
         return await repository.update_article(
             self.session, article
         )
@@ -118,12 +122,18 @@ class ArticleService:
         await repository.update_article(self.session, article)
         return image.id
 
-    def _apply_article_update(
+    async def _apply_article_update(
         self, article: Article, data: ArticleUpdate
     ) -> None:
         """将更新数据应用到文章模型。"""
         old_status = article.status
+        old_title = article.title
         apply_updates(article, data)
+        if data.title and data.title != old_title:
+            article.slug = await generate_unique_slug(
+                self.session, data.title, Article,
+                exclude_id=article.id,
+            )
         # 发布时设置发布时间
         if (
             article.status == "published"
