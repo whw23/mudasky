@@ -3,6 +3,7 @@
 /**
  * 文档列表区块。
  * 渲染图标 + 文本的网格列表。
+ * 图标名称参考：https://lucide.dev/icons/
  */
 
 import { useLocale } from "next-intl"
@@ -25,6 +26,7 @@ interface BlockProps {
 function getDocGridClass(count: number, maxColumns?: number): string {
   const cols = Math.min(count, maxColumns ?? 2)
   if (cols <= 1) return "grid-cols-1"
+  if (cols >= 4) return "sm:grid-cols-2 lg:grid-cols-4"
   if (cols >= 3) return "sm:grid-cols-2 lg:grid-cols-3"
   return "sm:grid-cols-2"
 }
