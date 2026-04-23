@@ -508,9 +508,30 @@ CONFIGS = [
         "about_info",
         "关于我们",
         lambda: {
-            "history": "",
-            "mission": "",
-            "vision": "",
+            "history_title": {
+                "zh": "15年专注国际教育",
+                "en": "15 Years of International Education",
+                "ja": "国際教育に15年間専念",
+                "de": "15 Jahre Internationale Bildung",
+            },
+            "history": {
+                "zh": "慕大国际教育成立于2011年，专注于小语种留学项目运营已15年。作为慕尼黑大学语言中心江苏省唯一指定招生考点，我们始终秉承\"专业、诚信、高效\"的服务理念，为数百位学子成功圆梦海外名校。从最初的德语培训到如今涵盖德语、日语、英语等多语种留学服务，我们不断拓展业务版图，致力于成为中国领先的国际教育服务机构。",
+                "en": "Founded in 2011, MUTU International Education has been dedicated to foreign language study abroad programs for 15 years. As the only designated enrollment center for the Munich University Language Center in Jiangsu Province, we have always upheld the service philosophy of \"professionalism, integrity, and efficiency\", helping hundreds of students achieve their dreams of studying at prestigious overseas universities.",
+                "ja": "2011年設立、慕大国際教育は15年間小語種留学プロジェクトの運営に専念してきました。ミュンヘン大学言語センター江蘇省唯一の指定入試拠点として、「専門性、誠実さ、効率性」のサービス理念を堅持し、数百名の学生の海外名門大学進学をサポートしてきました。",
+                "de": "MUTU International Education wurde 2011 gegründet und widmet sich seit 15 Jahren dem Betrieb von Fremdsprachen-Studienprogrammen im Ausland. Als einziger designierter Einschreibungsort des Sprachenzentrums der Ludwig-Maximilians-Universität München in der Provinz Jiangsu haben wir stets die Servicephilosophie \"Professionalität, Integrität und Effizienz\" hochgehalten.",
+            },
+            "mission": {
+                "zh": "让每一位学子都能获得优质的国际教育资源，开启精彩的留学人生。",
+                "en": "To provide every student with access to quality international education resources and an exciting study abroad experience.",
+                "ja": "すべての学生に質の高い国際教育資源を提供し、素晴らしい留学生活を開くこと。",
+                "de": "Jedem Studenten Zugang zu hochwertigen internationalen Bildungsressourcen zu ermöglichen.",
+            },
+            "vision": {
+                "zh": "成为中国最受信赖的国际教育服务机构，架起中外教育交流的桥梁。",
+                "en": "To become China's most trusted international education service provider, bridging educational exchanges between China and the world.",
+                "ja": "中国で最も信頼される国際教育サービス機関となり、中外教育交流の架け橋となること。",
+                "de": "Das vertrauenswürdigste internationale Bildungsdienstleistungsunternehmen Chinas zu werden.",
+            },
             "partnership": "",
         },
     ),

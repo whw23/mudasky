@@ -98,6 +98,7 @@ export interface HomepageStat {
 
 /** 关于我们页面内容 */
 export interface AboutInfo {
+  history_title: LocalizedField
   history: LocalizedField
   mission: LocalizedField
   vision: LocalizedField

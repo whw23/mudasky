@@ -90,6 +90,7 @@ const DEFAULT_HOMEPAGE_STATS: HomepageStat[] = [
 
 /** 默认关于我们（兜底） */
 const DEFAULT_ABOUT_INFO: AboutInfo = {
+  history_title: '',
   history: '',
   mission: '',
   vision: '',
@@ -248,6 +249,7 @@ interface LocalizedConfigType {
   }
   homepageStats: { value: string; label: string }[]
   aboutInfo: {
+    history_title: string
     history: string
     mission: string
     vision: string
@@ -352,6 +354,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
       label: getLocalizedValue(s.label, locale),
     })),
     aboutInfo: {
+      history_title: getLocalizedValue(config.aboutInfo.history_title, locale),
       history: getLocalizedValue(config.aboutInfo.history, locale),
       mission: getLocalizedValue(config.aboutInfo.mission, locale),
       vision: getLocalizedValue(config.aboutInfo.vision, locale),

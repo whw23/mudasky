@@ -393,6 +393,16 @@ export default function WebSettingsPage() {
           data: rawConfig.siteInfo,
         })
         break
+      case 'about_history_title':
+        setDialogState({
+          open: true,
+          title: '编辑公司历史标题',
+          fields: [{ key: 'history_title', label: '标题', type: 'text' as const, localized: true }],
+          configKey: 'about_info',
+          data: rawConfig.aboutInfo,
+          defaultValues: { history_title: tAbout("historyTitle") },
+        })
+        break
       case 'about_history':
         setDialogState({
           open: true,

@@ -8,6 +8,7 @@
  */
 
 import { useTranslations } from "next-intl"
+import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 
 import { PageBanner } from "@/components/layout/PageBanner"
@@ -63,20 +64,14 @@ function HomePreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string)
 function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string) => void; onBannerEdit: (k: string) => void }) {
   const t = useTranslations("About")
   const p = useTranslations("Pages")
+  const { aboutInfo } = useLocalizedConfig()
   return (
     <>
       <EditableOverlay onClick={() => onBannerEdit("about")} label="编辑 Banner">
         <PageBanner pageKey="about" title={p("about")} subtitle={p("aboutSubtitle")} />
       </EditableOverlay>
       <ContactInfoSection editable onEditField={(field) => onEditConfig(`contact_${field}`)} />
-      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
-        <div className="text-center">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Our Story</h2>
-          <h3 className="mt-2 text-2xl md:text-3xl font-bold">{t("historyTitle")}</h3>
-          <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
-        </div>
-        <HistorySection editable onEdit={() => onEditConfig("about_history")} />
-      </section>
+      <HistorySection editable onEditTitle={() => onEditConfig("about_history_title")} onEdit={() => onEditConfig("about_history")} />
       <section className="bg-gray-50 py-10 md:py-16">
         <div className="mx-auto max-w-7xl px-4">
           <MissionVisionSection
