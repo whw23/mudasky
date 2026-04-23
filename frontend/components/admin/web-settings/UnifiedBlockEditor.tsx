@@ -112,7 +112,7 @@ export function UnifiedBlockEditor({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-16">
             <div>
               <DialogTitle>编辑 {typeName}</DialogTitle>
               <DialogDescription>修改区块的显示配置和内容</DialogDescription>
