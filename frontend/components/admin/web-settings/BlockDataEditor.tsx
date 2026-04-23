@@ -5,6 +5,7 @@
  * 根据 Block.type 打开对应的编辑弹窗（ArrayEditDialog 或 ConfigEditDialog）。
  */
 
+import { useEffect } from "react"
 import { ArrayEditDialog } from "@/components/admin/ArrayEditDialog"
 import { ConfigEditDialog } from "@/components/admin/ConfigEditDialog"
 import type { Block } from "@/types/block"
@@ -136,7 +137,7 @@ export function BlockDataEditor({ block, onClose, onSave }: BlockDataEditorProps
     )
   }
 
-  // API 驱动型（article_list, university_list, case_grid, featured_data）无数据编辑
-  onClose()
+  // API 驱动型（article_list, university_list, case_grid, featured_data, contact_info）无数据编辑
+  useEffect(() => { onClose() }, [onClose])
   return null
 }
