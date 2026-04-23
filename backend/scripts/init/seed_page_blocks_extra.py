@@ -195,9 +195,9 @@ def build_requirements_blocks() -> list[dict]:
             section_title={"zh": "各国申请条件", "en": "Country Requirements", "ja": "各国の申請条件", "de": "Länderanforderungen"},
             options={"cardType": "checklist"},
             data=[
-                {"country": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"}, "items": [{"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"}, {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"}, {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"}, {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"}]},
-                {"country": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"}, "items": [{"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"}, {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"}, {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"}]},
-                {"country": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"}, "items": [{"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"}, {"zh": "雅思6.0以上或托福80以上", "en": "IELTS 6.0+ or TOEFL 80+", "ja": "IELTS 6.0以上またはTOEFL 80以上", "de": "IELTS 6.0+ oder TOEFL 80+"}, {"zh": "资金担保证明", "en": "Financial guarantee certificate", "ja": "資金保証証明書", "de": "Finanzgarantiezertifikat"}]},
+                {"label": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"}, "items": [{"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"}, {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"}, {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"}, {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"}]},
+                {"label": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"}, "items": [{"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"}, {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"}, {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"}]},
+                {"label": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"}, "items": [{"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"}, {"zh": "雅思6.0以上或托福80以上", "en": "IELTS 6.0+ or TOEFL 80+", "ja": "IELTS 6.0以上またはTOEFL 80以上", "de": "IELTS 6.0+ oder TOEFL 80+"}, {"zh": "资金担保证明", "en": "Financial guarantee certificate", "ja": "資金保証証明書", "de": "Finanzgarantiezertifikat"}]},
             ],
         ),
         _block(
@@ -206,8 +206,32 @@ def build_requirements_blocks() -> list[dict]:
             section_title={"zh": "语言要求", "en": "Language Requirements", "ja": "語学要件", "de": "Sprachanforderungen"},
             options={"cardType": "checklist"},
             data=[
-                {"language": {"zh": "德语等级要求", "en": "German Language Requirements", "ja": "ドイツ語レベル要件", "de": "Deutschsprachanforderungen"}, "items": [{"zh": "大多数德语授课项目要求德福（TestDaF）4x4或DSH-2。预科项目通常要求B1水平。我们与慕尼黑大学语言中心合作，提供从零基础到B2的完整德语培训课程。", "en": "Most German-taught programs require TestDaF 4x4 or DSH-2. Foundation programs typically require B1 level. We partner with the Munich University Language Center to offer complete German training courses from beginner to B2.", "ja": "ほとんどのドイツ語で教える科目はTestDaF 4x4またはDSH-2を必要とします。予備コースは通常B1レベルを必要とします。私たちはミュンヘン大学言語センターと提携し、初心者からB2までの完全なドイツ語トレーニングコースを提供しています。", "de": "Die meisten deutschsprachigen Programme erfordern TestDaF 4x4 oder DSH-2. Studienvorbereitung erfordert in der Regel B1-Niveau. Wir arbeiten mit dem Sprachenzentrum der LMU München zusammen und bieten komplette Deutschkurse von Anfänger bis B2."}]},
-                {"language": {"zh": "日语等级要求", "en": "Japanese Language Requirements", "ja": "日本語レベル要件", "de": "Japanischsprachanforderungen"}, "items": [{"zh": "语言学校通常要求N5-N4水平，本科直申需要N2以上，研究生申请建议N1水平。我们提供配套的日语培训和考试辅导服务。", "en": "Language schools typically require N5-N4 level, direct undergraduate applications need N2+, and graduate applications recommend N1 level. We offer supplementary Japanese training and exam preparation.", "ja": "語学学校は通常N5-N4レベルを必要とし、学部への直接出願にはN2以上が必要で、大学院出願にはN1レベルを推奨します。私たちは補完的な日本語トレーニングと試験準備を提供しています。", "de": "Sprachschulen erfordern in der Regel N5-N4-Niveau, direkte Bachelor-Bewerbungen benötigen N2+ und Master-Bewerbungen empfehlen N1-Niveau. Wir bieten ergänzendes Japanisch-Training und Prüfungsvorbereitung."}]},
+                {
+                    "label": {"zh": "德语等级要求", "en": "German Language", "ja": "ドイツ語", "de": "Deutsch"},
+                    "items": [
+                        {"zh": "德语授课项目：德福（TestDaF）4x4 或 DSH-2", "en": "German-taught programs: TestDaF 4x4 or DSH-2", "ja": "ドイツ語授業科目：TestDaF 4x4 または DSH-2", "de": "Deutschsprachige Programme: TestDaF 4x4 oder DSH-2"},
+                        {"zh": "预科项目：德语 B1 水平", "en": "Foundation programs: German B1 level", "ja": "予備コース：ドイツ語 B1 レベル", "de": "Studienvorbereitung: Deutsch B1-Niveau"},
+                        {"zh": "英语授课项目：雅思 6.0-6.5 或托福 80-90", "en": "English-taught programs: IELTS 6.0-6.5 or TOEFL 80-90", "ja": "英語授業科目：IELTS 6.0-6.5 または TOEFL 80-90", "de": "Englischsprachige Programme: IELTS 6.0-6.5 oder TOEFL 80-90"},
+                        {"zh": "慕大合作培训：零基础到 B2 完整课程", "en": "Muda training: Complete courses from beginner to B2", "ja": "慕大提携トレーニング：初心者から B2 までの完全コース", "de": "Muda-Training: Komplette Kurse von Anfänger bis B2"},
+                    ],
+                },
+                {
+                    "label": {"zh": "日语等级要求", "en": "Japanese Language", "ja": "日本語", "de": "Japanisch"},
+                    "items": [
+                        {"zh": "语言学校：N5-N4 水平", "en": "Language schools: JLPT N5-N4", "ja": "語学学校：N5-N4 レベル", "de": "Sprachschulen: JLPT N5-N4"},
+                        {"zh": "本科直申：N2 以上", "en": "Direct undergraduate: JLPT N2+", "ja": "学部直接出願：N2 以上", "de": "Direkte Bachelor-Bewerbung: JLPT N2+"},
+                        {"zh": "研究生申请：建议 N1 水平", "en": "Graduate applications: N1 recommended", "ja": "大学院出願：N1 レベル推奨", "de": "Master-Bewerbung: N1 empfohlen"},
+                        {"zh": "EJU（日本留学考试）成绩可替代部分语言要求", "en": "EJU scores may substitute some language requirements", "ja": "EJU（日本留学試験）のスコアで一部の語学要件を代替可能", "de": "EJU-Ergebnisse können einige Sprachanforderungen ersetzen"},
+                    ],
+                },
+                {
+                    "label": {"zh": "英语等级要求", "en": "English Language", "ja": "英語", "de": "Englisch"},
+                    "items": [
+                        {"zh": "雅思（IELTS）：总分 6.0 以上，单项不低于 5.5", "en": "IELTS: Overall 6.0+, no band below 5.5", "ja": "IELTS：総合 6.0 以上、各バンド 5.5 以上", "de": "IELTS: Gesamt 6.0+, kein Band unter 5.5"},
+                        {"zh": "托福（TOEFL）：总分 80 以上", "en": "TOEFL: Total score 80+", "ja": "TOEFL：総合スコア 80 以上", "de": "TOEFL: Gesamtpunktzahl 80+"},
+                        {"zh": "部分新加坡院校接受大学英语四六级成绩", "en": "Some Singapore universities accept CET-4/6 scores", "ja": "一部のシンガポールの大学は CET-4/6 のスコアを受け入れます", "de": "Einige Universitäten in Singapur akzeptieren CET-4/6-Ergebnisse"},
+                    ],
+                },
             ],
         ),
         _block(
