@@ -89,4 +89,7 @@ Router → Service → Repository → Models
 - **种子图片**：`backend/scripts/init/seed_images.py` 从 `assets/` 目录读取 Logo/Favicon/客服微信二维码，写入 Image 表并更新 site_info 配置
 - **联系信息位置**：ContactInfoSection 在关于我们页面 Banner 之后（最顶部）；"立即咨询"按钮跳转到 `/about`，未登录时同时弹出登录弹窗
 
+- **术语规范**：面板（Panel）= admin/portal；模块（Module）= 面板下的业务模块（用户管理、网页设置等）；模组（Block）= 页面内可组合的内容积木
+- **模组化页面构建**：所有公开页面由 Block 数组组成，每个页面的 Block 列表存储在 `page_blocks` 配置中，管理员可增删排序 Block；Banner 固定在顶部，不作为 Block
+
 新功能开发遵循面板化组织结构，认证相关改动在网关层处理。
