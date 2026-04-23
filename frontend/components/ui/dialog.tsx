@@ -11,7 +11,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Maximize, Minimize, X } from "lucide-react"
+import { Maximize, Minimize, SquareX } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return (
@@ -98,7 +98,7 @@ function DialogContent({
                 <button className="text-muted-foreground hover:text-foreground transition-colors" />
               }
             >
-              <X className="size-4" />
+              <SquareX className="size-4" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           )}
