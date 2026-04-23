@@ -7,8 +7,9 @@ import { CtaSection } from "@/components/common/CtaSection"
 import { getTranslations } from "next-intl/server"
 
 const ABOUT_CARDS_FALLBACK = [
-  { icon: "Award", title: "我们的使命", desc: "让每一位留学梦想的学子都能获得专业、贴心的一站式留学服务，帮助学生找到最适合自己的海外学府，实现人生价值的飞跃。" },
-  { icon: "Globe", title: "我们的愿景", desc: "成为中国最值得信赖的国际教育服务品牌，打通中国学子与世界名校之间的桥梁，推动中外教育文化交流与融合。" },
+  { icon: "Target", title: "我们的使命", desc: "让学生上理想的好大学。" },
+  { icon: "Eye", title: "我们的愿景", desc: "实现学生接受优质高等教育的梦想，并依靠点点滴滴契而不舍的艰苦追求，成为最专业的国际教育资源咨询服务企业。" },
+  { icon: "Heart", title: "我们的价值观", desc: "无条件让学生和家长满意、团队精神、团队互助、持续学习。" },
 ]
 
 /** 关于我们页面 */

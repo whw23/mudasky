@@ -81,14 +81,19 @@ CONFIGS = [
             # 关于我们 - 办公室图片
             "about_cards": [
                 {
-                    "icon": "Award",
+                    "icon": "Target",
                     "title": {"zh": "我们的使命", "en": "Our Mission", "ja": "私たちの使命", "de": "Unsere Mission"},
-                    "desc": {"zh": "让每一位留学梦想的学子都能获得专业、贴心的一站式留学服务，帮助学生找到最适合自己的海外学府，实现人生价值的飞跃。", "en": "To provide every student with professional, personalized one-stop study abroad services.", "ja": "すべての留学を夢見る学生に専門的で心のこもったワンストップ留学サービスを提供すること。", "de": "Jedem Studenten einen professionellen, personalisierten Studienberatungsservice aus einer Hand zu bieten."},
+                    "desc": {"zh": "让学生上理想的好大学。", "en": "To help every student get into their ideal university.", "ja": "学生が理想の大学に入学できるようにすること。", "de": "Jedem Studenten den Zugang zur idealen Universität zu ermöglichen."},
                 },
                 {
-                    "icon": "Globe",
+                    "icon": "Eye",
                     "title": {"zh": "我们的愿景", "en": "Our Vision", "ja": "私たちのビジョン", "de": "Unsere Vision"},
-                    "desc": {"zh": "成为中国最值得信赖的国际教育服务品牌，打通中国学子与世界名校之间的桥梁，推动中外教育文化交流与融合。", "en": "To become China's most trusted international education brand, bridging Chinese students and world-class universities.", "ja": "中国で最も信頼される国際教育サービスブランドとなること。", "de": "Die vertrauenswürdigste internationale Bildungsmarke Chinas zu werden."},
+                    "desc": {"zh": "实现学生接受优质高等教育的梦想，并依靠点点滴滴契而不舍的艰苦追求，成为最专业的国际教育资源咨询服务企业。", "en": "To fulfill students' dreams of quality higher education, and through persistent dedication, become the most professional international education consulting enterprise.", "ja": "学生の質の高い高等教育を受ける夢を実現し、たゆまぬ努力により、最も専門的な国際教育コンサルティング企業となること。", "de": "Die Träume der Studenten von hochwertiger Hochschulbildung zu verwirklichen und durch beharrliches Engagement das professionellste internationale Bildungsberatungsunternehmen zu werden."},
+                },
+                {
+                    "icon": "Heart",
+                    "title": {"zh": "我们的价值观", "en": "Our Values", "ja": "私たちの価値観", "de": "Unsere Werte"},
+                    "desc": {"zh": "无条件让学生和家长满意、团队精神、团队互助、持续学习。", "en": "Unconditional student and parent satisfaction, team spirit, mutual support, and continuous learning.", "ja": "学生と保護者の無条件の満足、チームスピリット、チームの助け合い、継続的な学習。", "de": "Bedingungslose Zufriedenheit von Studenten und Eltern, Teamgeist, gegenseitige Unterstützung und kontinuierliches Lernen."},
                 },
             ],
             "about_office_images": [],
