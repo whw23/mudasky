@@ -37,30 +37,68 @@ interface Block {
   sectionTag: string            // 英文小标签（如 "OUR STORY"）
   sectionTitle: LocalizedField  // 标题（多语言）
   bgColor: "white" | "gray"    // 背景色
-  options: Record<string, any>  // 类型特有配置
+  options: Record<string, any>  // 类型特有显示配置（cardType、maxColumns 等）
+  data: any                     // Block 自包含的内容数据
 }
 ```
 
+每个 Block 是**完全自包含的单元**——类型 + 显示配置 + 内容数据都在一起。增删 Block 不会在 site_info 中产生孤儿数据。
+
 ### Block 类型清单
 
-| type | 显示名称 | 说明 | options |
-|------|---------|------|---------|
-| `intro` | 介绍 | 标题 + 描述段落 | `{ titleKey: string, contentKey: string }` |
-| `card_grid` | 卡片网格 | 多种卡片类型的网格 | `{ cardType: "guide"\|"timeline"\|"city"\|"program"\|"checklist", configKey: string, maxColumns: 2\|3\|4 }` |
-| `step_list` | 步骤列表 | 编号步骤纵向列表 | `{ configKey: string }` |
-| `doc_list` | 文档清单 | 图标 + 文本列表 | `{ configKey: string, iconName: string }` |
-| `gallery` | 图片墙 | 水平滚动图片廊 | `{ configKey: string }` |
-| `article_list` | 文章列表 | 分类文章列表 + 分页 | `{ categorySlug: string }` |
-| `university_list` | 院校列表 | 搜索 + 筛选 + 院校卡片 | `{}` |
-| `case_grid` | 案例网格 | 案例卡片网格 | `{}` |
-| `featured_data` | 精选展示 | 从 API 拉取精选数据 | `{ dataType: "universities"\|"cases", maxItems: number }` |
-| `cta` | 行动号召 | 标题 + 描述 + 咨询按钮 | `{ variant: "border-t"\|"bg-gray-50" }` |
+| type | 显示名称 | 说明 | options | data 结构 |
+|------|---------|------|---------|-----------|
+| `intro` | 介绍 | 标题 + 描述段落 | — | `{ title: LocalizedField, content: LocalizedField }` |
+| `card_grid` | 卡片网格 | 多种卡片类型的网格 | `{ cardType, maxColumns }` | 卡片数组（结构随 cardType 变化） |
+| `step_list` | 步骤列表 | 编号步骤纵向列表 | — | `[{ title: LF, desc: LF }]` |
+| `doc_list` | 文档清单 | 图标 + 文本列表 | `{ iconName }` | `[{ text: LF }]` |
+| `gallery` | 图片墙 | 水平滚动图片廊 | — | `[{ image_id, caption: LF }]` |
+| `article_list` | 文章列表 | 分类文章列表 + 分页 | `{ categorySlug }` | — (从 API 拉取) |
+| `university_list` | 院校列表 | 搜索 + 筛选 + 院校卡片 | — | — (从 API 拉取) |
+| `case_grid` | 案例网格 | 案例卡片网格 | — | — (从 API 拉取) |
+| `featured_data` | 精选展示 | 从 API 拉取精选数据 | `{ dataType, maxItems }` | — (从 API 拉取) |
+| `cta` | 行动号召 | 标题 + 描述 + 咨询按钮 | `{ variant }` | `{ title: LF, desc: LF }` |
 
-### 数据分层
+LF = LocalizedField。API 驱动的 Block（article_list、university_list、case_grid、featured_data）无 data 字段，数据从后端 API 实时获取。
 
-- `page_blocks`：页面结构骨架（哪些 Block、什么顺序、显示配置）
-- `site_info`：内容填充（Block 通过 `options.configKey` / `options.titleKey` 等引用 site_info 中的具体数据）
+### card_grid 的 data 结构（随 cardType 变化）
+
+| cardType | data 数组每项结构 |
+|----------|------------------|
+| `guide` | `{ icon: string, title: LF, desc: LF }` |
+| `timeline` | `{ title: LF, time: LF, desc: LF }` |
+| `city` | `{ city: LF, country: LF, desc: LF, image_id: string }` |
+| `program` | `{ name: LF, country: LF, desc: LF, features: LF[] }` |
+| `checklist` | `{ label: LF, items: LF[] }` |
+
+### 数据架构
+
+- `page_blocks`：每个页面的 Block 数组，Block 自包含结构+数据
+- `site_info`：回归简洁，只保留全局配置（品牌名、标语、热线、联系方式、Logo/Favicon URL、公司名、ICP 等）
+- `about_info`：保留（公司历史标题/内容、使命、愿景——这些被 Block 的 data 替代后可逐步清理）
 - Banner 不作为 Block，固定在每个页面顶部，由 `page_banners` 配置控制
+
+### site_info 清理
+
+以下字段从 `site_info` 迁移到 `page_blocks` 中对应 Block 的 data 字段，然后从 `site_info` 删除：
+
+| 原 site_info 字段 | 迁移到 |
+|-------------------|--------|
+| `home_intro_title` / `home_intro_content` | home 页的 intro Block.data |
+| `home_cta_title` / `home_cta_desc` | home 页的 cta Block.data |
+| `about_cards` | about 页的 card_grid Block.data |
+| `about_cta_title` / `about_cta_desc` | about 页的 cta Block.data |
+| `about_office_images` | about 页的 gallery Block.data |
+| `universities_intro_*` / `universities_cta_*` | universities 页对应 Block.data |
+| `cases_intro_*` / `cases_cta_*` | cases 页对应 Block.data |
+| `study_abroad_intro_*` / `study_abroad_cta_*` / `study_abroad_programs` | study-abroad 页对应 Block.data |
+| `visa_cta_*` / `visa_process_steps` / `visa_required_docs` / `visa_timeline` / `visa_tips` | visa 页对应 Block.data |
+| `requirements_cta_*` / `requirements_countries` / `requirements_languages` / `requirements_docs` / `requirements_steps` | requirements 页对应 Block.data |
+| `life_intro_*` / `life_cta_*` / `life_guide_cards` / `life_city_cards` | life 页对应 Block.data |
+
+### about_info 清理
+
+`about_info` 的 `mission`、`vision`、`partnership` 字段被 about 页的 card_grid Block.data 替代。保留 `history_title` 和 `history` 字段（公司简介仍在 HistorySection 使用，也可迁移到 intro Block）。
 
 ## 页面渲染
 
@@ -178,17 +216,46 @@ export default function VisaPage() {
 
 ## 种子数据
 
-删库重建（`docker compose down -v`）。`seed_config.py` 中**新增** `page_blocks` 配置键，将现有各页面的硬编码结构转为 Block 数组。`site_info` 中已有的所有内容数据（`visa_process_steps`、`about_cards`、`life_guide_cards`、`home_intro_title` 等）全部保留不动——Block 通过 `configKey` 引用它们。
+删库重建（`docker compose down -v`）。`seed_config.py` 中：
+
+1. **新增** `page_blocks` 配置键，将现有各页面的种子内容搬进对应 Block 的 `data` 字段
+2. **精简** `site_info`，删除已迁移到 Block 中的页面级字段（`visa_process_steps`、`about_cards` 等）
+3. **保留** `site_info` 中的全局字段（品牌名、标语、热线、联系方式等）
 
 示例（签证页）：
 ```python
 "visa": [
-    {"id": uuid4(), "type": "step_list", "showTitle": True, "sectionTag": "Process", "sectionTitle": {"zh": "签证流程", "en": "Visa Process"}, "bgColor": "white", "options": {"configKey": "visa_process_steps"}},
-    {"id": uuid4(), "type": "doc_list", "showTitle": True, "sectionTag": "Documents", "sectionTitle": {"zh": "所需材料", "en": "Required Documents"}, "bgColor": "gray", "options": {"configKey": "visa_required_docs", "iconName": "FileText"}},
-    {"id": uuid4(), "type": "card_grid", "showTitle": True, "sectionTag": "Timeline", "sectionTitle": {"zh": "办理周期", "en": "Processing Time"}, "bgColor": "white", "options": {"cardType": "timeline", "configKey": "visa_timeline", "maxColumns": 3}},
-    {"id": uuid4(), "type": "doc_list", "showTitle": True, "sectionTag": "Tips", "sectionTitle": {"zh": "注意事项", "en": "Important Notes"}, "bgColor": "gray", "options": {"configKey": "visa_tips", "iconName": "AlertTriangle"}},
-    {"id": uuid4(), "type": "article_list", "showTitle": False, "sectionTag": "", "sectionTitle": "", "bgColor": "white", "options": {"categorySlug": "visa"}},
-    {"id": uuid4(), "type": "cta", "showTitle": False, "sectionTag": "", "sectionTitle": "", "bgColor": "white", "options": {"variant": "border-t"}},
+    {
+        "id": uuid4(), "type": "step_list", "showTitle": True,
+        "sectionTag": "Process", "sectionTitle": {"zh": "签证流程", "en": "Visa Process"},
+        "bgColor": "white", "options": {},
+        "data": [
+            {"title": {"zh": "材料准备"}, "desc": {"zh": "准备所需的签证申请材料"}},
+            {"title": {"zh": "预约递签"}, "desc": {"zh": "在线预约签证中心递签时间"}},
+            # ... 所有步骤
+        ],
+    },
+    {
+        "id": uuid4(), "type": "doc_list", "showTitle": True,
+        "sectionTag": "Documents", "sectionTitle": {"zh": "所需材料", "en": "Required Documents"},
+        "bgColor": "gray", "options": {"iconName": "FileText"},
+        "data": [
+            {"text": {"zh": "护照原件及复印件"}},
+            {"text": {"zh": "签证申请表"}},
+            # ... 所有材料
+        ],
+    },
+    {
+        "id": uuid4(), "type": "card_grid", "showTitle": True,
+        "sectionTag": "Timeline", "sectionTitle": {"zh": "办理周期", "en": "Processing Time"},
+        "bgColor": "white", "options": {"cardType": "timeline", "maxColumns": 3},
+        "data": [
+            {"title": {"zh": "材料准备"}, "time": {"zh": "2-4周"}, "desc": {"zh": "收集和准备材料"}},
+            # ...
+        ],
+    },
+    {"id": uuid4(), "type": "article_list", "showTitle": False, "sectionTag": "", "sectionTitle": "", "bgColor": "white", "options": {"categorySlug": "visa"}, "data": None},
+    {"id": uuid4(), "type": "cta", "showTitle": False, "sectionTag": "", "sectionTitle": "", "bgColor": "white", "options": {"variant": "border-t"}, "data": {"title": {"zh": "签证无忧"}, "desc": {"zh": "98%通过率"}}},
 ]
 ```
 
