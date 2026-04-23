@@ -19,7 +19,8 @@ import {
   DialogTitle, DialogDescription, DialogBody, DialogFooter,
 } from "@/components/ui/dialog"
 import type { Block } from "@/types/block"
-import { getLocalizedValue } from "@/lib/i18n-config"
+import type { LocalizedField } from "@/lib/i18n-config"
+import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { TypeSpecificFields } from "./BlockTypeFields"
 
 /** 区块类型中文名 */
@@ -52,7 +53,7 @@ export function BlockEditDialog({
 }: BlockEditDialogProps) {
   const [showTitle, setShowTitle] = useState(true)
   const [sectionTag, setSectionTag] = useState("")
-  const [sectionTitle, setSectionTitle] = useState("")
+  const [sectionTitle, setSectionTitle] = useState<Record<string, string>>({})
   const [bgColor, setBgColor] = useState<"white" | "gray">("white")
   const [options, setOptions] = useState<Record<string, any>>({})
 
@@ -61,11 +62,7 @@ export function BlockEditDialog({
     if (block) {
       setShowTitle(block.showTitle)
       setSectionTag(block.sectionTag)
-      setSectionTitle(
-        typeof block.sectionTitle === "string"
-          ? block.sectionTitle
-          : getLocalizedValue(block.sectionTitle, "zh") || ""
-      )
+      setSectionTitle(normalizeLocalized(block.sectionTitle))
       setBgColor(block.bgColor)
       setOptions({ ...block.options })
     }
@@ -83,7 +80,7 @@ export function BlockEditDialog({
       ...block,
       showTitle,
       sectionTag,
-      sectionTitle: { zh: sectionTitle },
+      sectionTitle,
       bgColor,
       options,
     })
@@ -135,6 +132,13 @@ export function BlockEditDialog({
   )
 }
 
+/** 将 LocalizedField 标准化为 Record */
+function normalizeLocalized(field: LocalizedField | undefined): Record<string, string> {
+  if (!field) return { zh: "", en: "", ja: "", de: "" }
+  if (typeof field === "string") return { zh: field, en: "", ja: "", de: "" }
+  return { zh: "", en: "", ja: "", de: "", ...field }
+}
+
 /** 通用配置字段 */
 function CommonFields({
   showTitle,
@@ -150,8 +154,8 @@ function CommonFields({
   onShowTitleChange: (v: boolean) => void
   sectionTag: string
   onSectionTagChange: (v: string) => void
-  sectionTitle: string
-  onSectionTitleChange: (v: string) => void
+  sectionTitle: Record<string, string>
+  onSectionTitleChange: (v: Record<string, string>) => void
   bgColor: "white" | "gray"
   onBgColorChange: (v: "white" | "gray") => void
 }) {
@@ -177,16 +181,12 @@ function CommonFields({
         />
       </div>
 
-      {/* 中文标题 */}
-      <div className="space-y-1.5">
-        <Label htmlFor="block-section-title">中文标题</Label>
-        <Input
-          id="block-section-title"
-          value={sectionTitle}
-          onChange={(e) => onSectionTitleChange(e.target.value)}
-          placeholder="如 关于我们"
-        />
-      </div>
+      {/* 多语言标题 */}
+      <LocalizedInput
+        value={sectionTitle}
+        onChange={onSectionTitleChange}
+        label="板块标题"
+      />
 
       {/* 背景色 */}
       <div className="space-y-1.5">
