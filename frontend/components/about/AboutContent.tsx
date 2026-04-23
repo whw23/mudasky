@@ -2,24 +2,17 @@
 
 /**
  * 关于页面动态内容区块。
- * 从系统配置获取公司历史、使命、愿景和合作内容。
- * 编辑模式下支持点击编辑各区块。
+ * 从系统配置获取公司历史内容。
+ * 编辑模式下支持点击编辑。
  */
 
 import { useTranslations } from 'next-intl'
-import { Award, Globe } from 'lucide-react'
 import { useLocalizedConfig } from '@/contexts/ConfigContext'
 import { EditableOverlay } from '@/components/admin/EditableOverlay'
 
 interface EditableProps {
   editable?: boolean
   onEdit?: () => void
-}
-
-interface MissionVisionProps {
-  editable?: boolean
-  onEditMission?: () => void
-  onEditVision?: () => void
 }
 
 /** 公司历史区块 */
@@ -52,44 +45,4 @@ export function HistorySection({ editable, onEdit, onEditTitle }: EditableProps 
   )
 }
 
-/** 使命愿景区块 */
-export function MissionVisionSection({ editable, onEditMission, onEditVision }: MissionVisionProps) {
-  const t = useTranslations('About')
-  const { aboutInfo } = useLocalizedConfig()
-
-  const missionContent = (
-    <div className="rounded-lg border bg-white p-8">
-      <Award className="h-10 w-10 text-primary" />
-      <h3 className="mt-4 text-xl font-bold">{t('missionTitle')}</h3>
-      <p className="mt-3 leading-relaxed text-muted-foreground">
-        {aboutInfo.mission || t('missionContent')}
-      </p>
-    </div>
-  )
-
-  const visionContent = (
-    <div className="rounded-lg border bg-white p-8">
-      <Globe className="h-10 w-10 text-primary" />
-      <h3 className="mt-4 text-xl font-bold">{t('visionTitle')}</h3>
-      <p className="mt-3 leading-relaxed text-muted-foreground">
-        {aboutInfo.vision || t('visionContent')}
-      </p>
-    </div>
-  )
-
-  return (
-    <div className="grid gap-8 md:grid-cols-2">
-      {editable ? (
-        <EditableOverlay onClick={() => onEditMission?.()} label="编辑使命">
-          {missionContent}
-        </EditableOverlay>
-      ) : missionContent}
-      {editable ? (
-        <EditableOverlay onClick={() => onEditVision?.()} label="编辑愿景">
-          {visionContent}
-        </EditableOverlay>
-      ) : visionContent}
-    </div>
-  )
-}
 
