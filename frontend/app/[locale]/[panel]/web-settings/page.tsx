@@ -18,7 +18,6 @@ import { PreviewContainer } from '@/components/admin/PreviewContainer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
-import { ArrayEditDialog } from '@/components/admin/ArrayEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
 import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
@@ -66,22 +65,15 @@ interface RawConfig {
 const DEFAULT_RAW: RawConfig = {
   siteInfo: {
     brand_name: '', tagline: '', hotline: '', hotline_contact: '',
-    logo_url: '', favicon_url: '', wechat_service_qr_url: '', wechat_official_qr_url: '', company_name: '', icp_filing: '',
-    home_intro_title: '', home_intro_content: '', home_cta_title: '', home_cta_desc: '',
-    about_cta_title: '', about_cta_desc: '', about_office_images: [],
-    universities_intro_title: '', universities_intro_desc: '', universities_cta_title: '', universities_cta_desc: '',
-    cases_intro_title: '', cases_intro_desc: '', cases_cta_title: '', cases_cta_desc: '',
-    study_abroad_intro_title: '', study_abroad_intro_desc: '', study_abroad_cta_title: '', study_abroad_cta_desc: '', study_abroad_programs: [],
-    visa_cta_title: '', visa_cta_desc: '', visa_process_steps: [], visa_required_docs: [], visa_timeline: [], visa_tips: [],
-    requirements_cta_title: '', requirements_cta_desc: '', requirements_countries: [], requirements_languages: [], requirements_docs: [], requirements_steps: [],
-    life_intro_title: '', life_intro_desc: '', life_cta_title: '', life_cta_desc: '', life_guide_cards: [], life_city_cards: [],
+    logo_url: '', favicon_url: '', wechat_service_qr_url: '',
+    wechat_official_qr_url: '', company_name: '', icp_filing: '',
   },
   contactInfo: {
     address: '', phone: '', email: '', wechat: '', registered_address: '',
   },
   homepageStats: [],
   aboutInfo: {
-    history: '', mission: '', vision: '', partnership: '',
+    history_title: '', history: '',
   },
   pageBanners: {},
 }
@@ -97,15 +89,6 @@ export default function WebSettingsPage() {
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
   const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
-  const [arrayDialogState, setArrayDialogState] = useState<{
-    open: boolean
-    title: string
-    description?: React.ReactNode
-    siteInfoKey: string
-    fields: { key: string; label: string; type: 'text' | 'textarea' | 'nested-items' | 'radio' | 'image'; localized: boolean; rows?: number }[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any[]
-  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [faviconUploading, setFaviconUploading] = useState(false)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -149,17 +132,6 @@ export default function WebSettingsPage() {
     toast.success('保存成功')
     await fetchAllConfigs(true)
     refreshConfig()
-  }
-
-  /** 数组字段保存处理 */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function handleArraySave(data: any[]): Promise<void> {
-    if (!arrayDialogState) return
-    const updated = { ...rawConfig.siteInfo, [arrayDialogState.siteInfoKey]: data }
-    await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-    await fetchAllConfigs(true)
-    refreshConfig()
-    setArrayDialogState(null)
   }
 
   /** 处理 Header 编辑区域点击 */
@@ -333,7 +305,7 @@ export default function WebSettingsPage() {
     })
   }
 
-  /** 处理页面预览中的配置编辑 */
+  /** 处理页面预览中的配置编辑（仅保留 Header/统计/历史/联系信息） */
   function handleEditConfig(section: string): void {
     switch (section) {
       case 'brand_name':
@@ -363,36 +335,6 @@ export default function WebSettingsPage() {
           data: rawConfig.homepageStats[0] ?? { value: '', label: '' },
         })
         break
-      case 'home_intro_title':
-        setDialogState({
-          open: true,
-          title: '编辑公司简介标题',
-          fields: [{ key: 'home_intro_title', label: '简介标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'home_intro_content':
-        setDialogState({
-          open: true,
-          title: '编辑公司简介内容',
-          fields: [{ key: 'home_intro_content', label: '简介内容', type: 'textarea' as const, localized: true, rows: 5 }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'home_cta':
-        setDialogState({
-          open: true,
-          title: '编辑首页 CTA',
-          fields: [
-            { key: 'home_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'home_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
       case 'about_history_title':
         setDialogState({
           open: true,
@@ -413,333 +355,8 @@ export default function WebSettingsPage() {
           defaultValues: { history: tAbout("historyContent") },
         })
         break
-      case 'about_mission':
-        setDialogState({
-          open: true,
-          title: '编辑使命',
-          fields: [{ key: 'mission', label: '使命', type: 'textarea' as const, localized: true, rows: 5 }],
-          configKey: 'about_info',
-          data: rawConfig.aboutInfo,
-          defaultValues: { mission: tAbout("missionContent") },
-        })
-        break
-      case 'about_vision':
-        setDialogState({
-          open: true,
-          title: '编辑愿景',
-          fields: [{ key: 'vision', label: '愿景', type: 'textarea' as const, localized: true, rows: 5 }],
-          configKey: 'about_info',
-          data: rawConfig.aboutInfo,
-          defaultValues: { vision: tAbout("visionContent") },
-        })
-        break
-      case 'about_partnership':
-        setDialogState({
-          open: true,
-          title: '编辑合作介绍',
-          fields: [{ key: 'partnership', label: '合作介绍', type: 'textarea' as const, localized: true, rows: 5 }],
-          configKey: 'about_info',
-          data: rawConfig.aboutInfo,
-          defaultValues: { partnership: tAbout("partnershipContent") },
-        })
-        break
-      case 'about_cards':
-        setArrayDialogState({
-          open: true, title: '编辑使命与愿景',
-          description: <>编辑卡片，拖动排序。图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a></>,
-          siteInfoKey: 'about_cards',
-          fields: [
-            { key: 'icon', label: '图标名称', type: 'text', localized: false },
-            { key: 'title', label: '标题', type: 'text', localized: true },
-            { key: 'desc', label: '描述', type: 'textarea', localized: true, rows: 3 },
-          ],
-          data: rawConfig.siteInfo.about_cards || [],
-        })
-        break
-      case 'about_cta':
-        setDialogState({
-          open: true,
-          title: '编辑关于页 CTA',
-          fields: [
-            { key: 'about_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'about_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'universities_intro_title':
-        setDialogState({
-          open: true,
-          title: '编辑院校页介绍标题',
-          fields: [{ key: 'universities_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'universities_intro_desc':
-        setDialogState({
-          open: true,
-          title: '编辑院校页介绍描述',
-          fields: [{ key: 'universities_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'universities_cta':
-        setDialogState({
-          open: true,
-          title: '编辑院校页 CTA',
-          fields: [
-            { key: 'universities_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'universities_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'cases_intro_title':
-        setDialogState({
-          open: true,
-          title: '编辑案例页介绍标题',
-          fields: [{ key: 'cases_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'cases_intro_desc':
-        setDialogState({
-          open: true,
-          title: '编辑案例页介绍描述',
-          fields: [{ key: 'cases_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'cases_cta':
-        setDialogState({
-          open: true,
-          title: '编辑案例页 CTA',
-          fields: [
-            { key: 'cases_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'cases_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'study_abroad_intro_title':
-        setDialogState({
-          open: true,
-          title: '编辑出国留学介绍标题',
-          fields: [{ key: 'study_abroad_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'study_abroad_intro_desc':
-        setDialogState({
-          open: true,
-          title: '编辑出国留学介绍描述',
-          fields: [{ key: 'study_abroad_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'study_abroad_cta':
-        setDialogState({
-          open: true,
-          title: '编辑出国留学 CTA',
-          fields: [
-            { key: 'study_abroad_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'study_abroad_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'study_abroad_programs':
-        setArrayDialogState({
-          open: true, title: '编辑留学项目',
-          siteInfoKey: 'study_abroad_programs',
-          fields: [
-            { key: 'featured', label: '主推', type: 'radio', localized: false },
-            { key: 'name', label: '项目名称', type: 'text', localized: true },
-            { key: 'country', label: '国家', type: 'text', localized: true },
-            { key: 'desc', label: '项目描述', type: 'textarea', localized: true, rows: 3 },
-            { key: 'features', label: '特色', type: 'nested-items', localized: false },
-          ],
-          data: rawConfig.siteInfo.study_abroad_programs || [],
-        })
-        break
-      case 'visa_cta':
-        setDialogState({
-          open: true,
-          title: '编辑签证页 CTA',
-          fields: [
-            { key: 'visa_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'visa_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'visa_process_steps':
-        setArrayDialogState({
-          open: true, title: '编辑签证流程',
-          siteInfoKey: 'visa_process_steps',
-          fields: [
-            { key: 'title', label: '步骤标题', type: 'text', localized: true },
-            { key: 'desc', label: '步骤描述', type: 'textarea', localized: true, rows: 2 },
-          ],
-          data: rawConfig.siteInfo.visa_process_steps || [],
-        })
-        break
-      case 'visa_required_docs':
-        setArrayDialogState({
-          open: true, title: '编辑签证所需材料',
-          siteInfoKey: 'visa_required_docs',
-          fields: [
-            { key: 'text', label: '材料名称', type: 'text', localized: true },
-          ],
-          data: rawConfig.siteInfo.visa_required_docs || [],
-        })
-        break
-      case 'visa_timeline':
-        setArrayDialogState({
-          open: true, title: '编辑办理周期',
-          siteInfoKey: 'visa_timeline',
-          fields: [
-            { key: 'title', label: '阶段名称', type: 'text', localized: true },
-            { key: 'time', label: '时间', type: 'text', localized: true },
-            { key: 'desc', label: '说明', type: 'text', localized: true },
-          ],
-          data: rawConfig.siteInfo.visa_timeline || [],
-        })
-        break
-      case 'visa_tips':
-        setArrayDialogState({
-          open: true, title: '编辑签证注意事项',
-          siteInfoKey: 'visa_tips',
-          fields: [
-            { key: 'text', label: '注意事项', type: 'text', localized: true },
-          ],
-          data: rawConfig.siteInfo.visa_tips || [],
-        })
-        break
-      case 'requirements_cta':
-        setDialogState({
-          open: true,
-          title: '编辑申请条件页 CTA',
-          fields: [
-            { key: 'requirements_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'requirements_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'requirements_countries':
-        setArrayDialogState({
-          open: true, title: '编辑各国申请条件',
-          siteInfoKey: 'requirements_countries',
-          fields: [
-            { key: 'country', label: '国家', type: 'text', localized: true },
-            { key: 'items', label: '条件', type: 'nested-items', localized: false },
-          ],
-          data: rawConfig.siteInfo.requirements_countries || [],
-        })
-        break
-      case 'requirements_languages':
-        setArrayDialogState({
-          open: true, title: '编辑语言要求',
-          siteInfoKey: 'requirements_languages',
-          fields: [
-            { key: 'language', label: '语言', type: 'text', localized: true },
-            { key: 'items', label: '要求', type: 'nested-items', localized: false },
-          ],
-          data: rawConfig.siteInfo.requirements_languages || [],
-        })
-        break
-      case 'requirements_docs':
-        setArrayDialogState({
-          open: true, title: '编辑材料清单',
-          siteInfoKey: 'requirements_docs',
-          fields: [
-            { key: 'text', label: '材料名称', type: 'text', localized: true },
-          ],
-          data: rawConfig.siteInfo.requirements_docs || [],
-        })
-        break
-      case 'requirements_steps':
-        setArrayDialogState({
-          open: true, title: '编辑申请流程',
-          siteInfoKey: 'requirements_steps',
-          fields: [
-            { key: 'title', label: '步骤标题', type: 'text', localized: true },
-            { key: 'desc', label: '步骤描述', type: 'textarea', localized: true, rows: 2 },
-          ],
-          data: rawConfig.siteInfo.requirements_steps || [],
-        })
-        break
-      case 'life_intro_title':
-        setDialogState({
-          open: true,
-          title: '编辑留学生活介绍标题',
-          fields: [{ key: 'life_intro_title', label: '介绍标题', type: 'text' as const, localized: true }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'life_intro_desc':
-        setDialogState({
-          open: true,
-          title: '编辑留学生活介绍描述',
-          fields: [{ key: 'life_intro_desc', label: '介绍描述', type: 'textarea' as const, localized: true, rows: 3 }],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'life_cta':
-        setDialogState({
-          open: true,
-          title: '编辑留学生活页 CTA',
-          fields: [
-            { key: 'life_cta_title', label: 'CTA 标题', type: 'text' as const, localized: true },
-            { key: 'life_cta_desc', label: 'CTA 描述', type: 'text' as const, localized: true },
-          ],
-          configKey: 'site_info',
-          data: rawConfig.siteInfo,
-        })
-        break
-      case 'life_guide_cards':
-        setArrayDialogState({
-          open: true, title: '编辑生活指南板块',
-          description: <>编辑列表项，拖动排序。图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a></>,
-          siteInfoKey: 'life_guide_cards',
-          fields: [
-            { key: 'icon', label: '图标名称', type: 'text', localized: false },
-            { key: 'title', label: '板块标题', type: 'text', localized: true },
-            { key: 'desc', label: '板块描述', type: 'textarea', localized: true, rows: 2 },
-          ],
-          data: rawConfig.siteInfo.life_guide_cards || [],
-        })
-        break
-      case 'life_city_cards':
-        setArrayDialogState({
-          open: true, title: '编辑城市指南',
-          siteInfoKey: 'life_city_cards',
-          fields: [
-            { key: 'city', label: '城市名称', type: 'text', localized: true },
-            { key: 'country', label: '国家', type: 'text', localized: true },
-            { key: 'desc', label: '城市描述', type: 'textarea', localized: true, rows: 2 },
-            { key: 'image_id', label: '城市图片', type: 'image', localized: false },
-          ],
-          data: rawConfig.siteInfo.life_city_cards || [],
-        })
-        break
       default:
-        // contact_* prefix handles individual contact fields
+        // contact_* 前缀处理联系信息字段
         if (section.startsWith('contact_')) {
           const field = section.replace('contact_', '')
           const fieldDefs: Record<string, { label: string; localized: boolean; defaultKey?: string }> = {
@@ -869,19 +486,6 @@ export default function WebSettingsPage() {
           pageKey={bannerDialogState.pageKey}
           imageIds={rawConfig.pageBanners[bannerDialogState.pageKey]?.image_ids || []}
           onUpdate={() => { fetchAllConfigs(true); refreshConfig() }}
-        />
-      )}
-
-      {/* 数组字段编辑弹窗 */}
-      {arrayDialogState && (
-        <ArrayEditDialog
-          open={arrayDialogState.open}
-          onOpenChange={(open) => { if (!open) setArrayDialogState(null) }}
-          title={arrayDialogState.title}
-          description={arrayDialogState.description}
-          fields={arrayDialogState.fields}
-          data={arrayDialogState.data}
-          onSave={handleArraySave}
         />
       )}
 
