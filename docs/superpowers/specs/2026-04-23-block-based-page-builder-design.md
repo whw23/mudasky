@@ -141,19 +141,37 @@ function renderBlock(block: Block, editable: boolean, onEditContent: Fn) {
 预设页面（home、about、universities 等）保留各自的 `page.tsx`，但渲染逻辑统一：
 
 ```tsx
-export default function VisaPage() {
+export default async function VisaPage() {
+  const blocks = await fetchPageBlocks("visa")
   return (
     <>
       <PageBanner pageKey="visa" ... />
-      <PageBlocksRenderer pageSlug="visa" />
+      <PageBlocksRenderer pageSlug="visa" initialBlocks={blocks} />
     </>
   )
 }
 ```
 
-`PageBlocksRenderer` 从 ConfigContext 读 `pageBlocks["visa"]`，调用 BlockRenderer 渲染。
+`PageBlocksRenderer` 接收服务端预取的 `initialBlocks` 用于 SSR 首屏渲染。客户端水合后切换到 ConfigContext 实时数据（编辑后即时刷新）。
 
 自定义页面通过动态路由 `[slug]/page.tsx` 渲染，同样使用 `PageBlocksRenderer`。
+
+### 服务端预取（SEO + 性能）
+
+所有页面数据在 Server Component 中预取，确保：
+- **SEO**：HTML 直出完整内容，搜索引擎可索引
+- **首屏性能**：无需等待客户端 JS 加载 → API 请求 → 二次渲染
+- **低延迟**：服务端调后端 API 是容器间通信（<1ms），比客户端完整链路快
+
+```tsx
+// lib/page-api.ts（服务端工具函数）
+export async function fetchPageBlocks(slug: string): Promise<Block[]> {
+  const res = await fetch(`${INTERNAL_API}/public/config/page-blocks?slug=${slug}`, { next: { tags: ['config'] } })
+  return res.json()
+}
+```
+
+客户端 ConfigContext 仅在 web-settings 预览中使用（编辑后 `refreshConfig()` 触发实时更新）。公开页面不依赖 ConfigContext 获取 Block 数据。
 
 ### web-settings 预览
 
