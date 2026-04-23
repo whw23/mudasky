@@ -18,6 +18,7 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer"
 import { BlockEditorOverlay } from "./BlockEditorOverlay"
 import { AddBlockDialog } from "./AddBlockDialog"
 import { BlockEditDialog } from "./BlockEditDialog"
+import { BlockDataEditor } from "./BlockDataEditor"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
@@ -43,6 +44,7 @@ export function PageBlocksPreview({
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [addInsertIndex, setAddInsertIndex] = useState(0)
   const [editBlock, setEditBlock] = useState<Block | null>(null)
+  const [dataEditBlock, setDataEditBlock] = useState<Block | null>(null)
 
   /** 保存区块列表到后端 */
   const saveBlocks = useCallback(async (updatedBlocks: Block[]) => {
@@ -94,6 +96,20 @@ export function PageBlocksPreview({
     setEditBlock(block)
   }
 
+  /** 点击 Block 内容触发数据编辑 */
+  function handleEditData(block: Block): void {
+    setDataEditBlock(block)
+  }
+
+  /** 保存 Block 数据 */
+  async function handleDataSave(blockId: string, newData: any): Promise<void> {
+    const newBlocks = blocks.map((b) =>
+      b.id === blockId ? { ...b, data: newData } : b,
+    )
+    await saveBlocks(newBlocks)
+    setDataEditBlock(null)
+  }
+
   /** 保存区块配置 */
   function handleEditSave(updated: Block): void {
     const newBlocks = blocks.map((b) =>
@@ -139,6 +155,7 @@ export function PageBlocksPreview({
                           <BlockRenderer
                             blocks={[block]}
                             editable
+                            onEditData={handleEditData}
                           />
                         </BlockEditorOverlay>
                       </div>
@@ -169,6 +186,15 @@ export function PageBlocksPreview({
         block={editBlock}
         onSave={handleEditSave}
       />
+
+      {/* 区块数据编辑弹窗 */}
+      {dataEditBlock && (
+        <BlockDataEditor
+          block={dataEditBlock}
+          onClose={() => setDataEditBlock(null)}
+          onSave={handleDataSave}
+        />
+      )}
     </>
   )
 }
