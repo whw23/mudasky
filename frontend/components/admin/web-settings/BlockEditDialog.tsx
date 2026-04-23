@@ -95,7 +95,7 @@ export function BlockEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" enableFullscreen={false}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>编辑区块配置</DialogTitle>
           <DialogDescription>

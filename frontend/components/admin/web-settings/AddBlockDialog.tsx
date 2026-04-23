@@ -53,7 +53,7 @@ export function AddBlockDialog({ open, onOpenChange, onSelect }: AddBlockDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" enableFullscreen={false}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>添加区块</DialogTitle>
           <DialogDescription>选择要添加的区块类型</DialogDescription>
