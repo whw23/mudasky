@@ -43,11 +43,12 @@ function renderCard(cardType: CardType, card: Record<string, any>, locale: strin
   }
 }
 
-/** 根据数据量计算网格样式 */
+/** 根据数据量和最大列数计算网格样式 */
 function getGridClass(count: number, maxColumns: number): string {
-  if (count === 1) return "mx-auto grid max-w-lg grid-cols-1 gap-6"
-  if (count === 2) return "mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2"
-  if (maxColumns === 4) return "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+  const cols = Math.min(count, maxColumns)
+  if (cols <= 1) return "mx-auto grid max-w-lg grid-cols-1 gap-6"
+  if (cols === 2) return "mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2"
+  if (cols === 4) return "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
   return "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
 }
 

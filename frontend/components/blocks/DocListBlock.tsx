@@ -20,6 +20,14 @@ interface BlockProps {
   onEdit?: (block: Block) => void
 }
 
+/** 根据数据量和最大列数计算网格样式 */
+function getDocGridClass(count: number, maxColumns?: number): string {
+  const cols = Math.min(count, maxColumns ?? 2)
+  if (cols <= 1) return "grid-cols-1"
+  if (cols >= 3) return "sm:grid-cols-2 lg:grid-cols-3"
+  return "sm:grid-cols-2"
+}
+
 /** 文档列表区块 */
 export function DocListBlock({ block, header, bg, editable, onEdit }: BlockProps) {
   const locale = useLocale()
@@ -33,7 +41,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit }: BlockProps
     <section className={`py-10 md:py-16 ${bg}`}>
       <div className="mx-auto max-w-7xl px-4">
         {header}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className={`mt-8 grid gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
           {items.map((item, i) => (
             <div key={i} className="flex items-start gap-3 rounded-lg border p-4">
               <Icon className="mt-0.5 size-5 shrink-0 text-primary" />

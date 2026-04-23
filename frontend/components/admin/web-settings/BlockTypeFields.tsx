@@ -38,9 +38,43 @@ export function TypeSpecificFields({
       return <FeaturedDataFields options={options} onUpdate={onUpdateOption} />
     case "cta":
       return <CtaFields options={options} onUpdate={onUpdateOption} />
+    case "contact_info":
+      return <MaxColumnsField options={options} onUpdate={onUpdateOption} label="联系信息选项" />
     default:
       return null
   }
+}
+
+/** 最大列数选择器（复用） */
+function MaxColumnsSelect({ options, onUpdate }: FieldsProps) {
+  return (
+    <div className="space-y-1.5">
+      <Label>最大列数</Label>
+      <Select
+        value={String(options.maxColumns || 3)}
+        onValueChange={(v) => onUpdate("maxColumns", Number(v))}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="2">2 列</SelectItem>
+          <SelectItem value="3">3 列</SelectItem>
+          <SelectItem value="4">4 列</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+/** 仅 maxColumns 配置 */
+function MaxColumnsField({ options, onUpdate, label }: FieldsProps & { label: string }) {
+  return (
+    <div className="space-y-3 border-t pt-3">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <MaxColumnsSelect options={options} onUpdate={onUpdate} />
+    </div>
+  )
 }
 
 /** card_grid 类型配置 */
@@ -68,22 +102,7 @@ function CardGridFields({ options, onUpdate }: FieldsProps) {
         </Select>
       </div>
 
-      <div className="space-y-1.5">
-        <Label>最大列数</Label>
-        <Select
-          value={String(options.maxColumns || 3)}
-          onValueChange={(v) => onUpdate("maxColumns", Number(v))}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="2">2 列</SelectItem>
-            <SelectItem value="3">3 列</SelectItem>
-            <SelectItem value="4">4 列</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -102,6 +121,7 @@ function DocListFields({ options, onUpdate }: FieldsProps) {
           placeholder="Lucide 图标名，如 FileText"
         />
       </div>
+      <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -157,6 +177,8 @@ function FeaturedDataFields({ options, onUpdate }: FieldsProps) {
           onChange={(e) => onUpdate("maxItems", Number(e.target.value))}
         />
       </div>
+
+      <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
   )
 }

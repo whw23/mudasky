@@ -42,11 +42,13 @@ function QrPopover({ url, alt }: { url: string; alt: string }) {
 interface ContactInfoSectionProps {
   editable?: boolean
   onEditField?: (field: string) => void
+  maxColumns?: number
 }
 
 export function ContactInfoSection({
   editable,
   onEditField,
+  maxColumns = 3,
 }: ContactInfoSectionProps) {
   const t = useTranslations("Contact")
   const { contactInfo, siteInfo } = useLocalizedConfig()
@@ -87,7 +89,7 @@ export function ContactInfoSection({
   return (
     <section id="contact-info" className="py-10 md:py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-6 sm:grid-cols-2 ${maxColumns >= 3 ? "lg:grid-cols-3" : ""}`}>
           {items.map((item) => {
             const isWechat = item.field === "wechat"
             const qrUrl = isWechat ? siteInfo.wechat_service_qr_url : ""

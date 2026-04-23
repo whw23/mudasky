@@ -27,6 +27,7 @@ export function ContactInfoBlock({ header, bg, editable, onEditConfig }: BlockPr
       {header && <div className="mx-auto max-w-7xl px-4 pt-10">{header}</div>}
       <ContactInfoSection
         editable={editable}
+        maxColumns={block.options?.maxColumns}
         onEditField={onEditConfig
           ? (field) => onEditConfig(`contact_${field}`)
           : undefined}

@@ -56,10 +56,17 @@ export function FeaturedDataBlock({ block, header, bg, editable, onEdit }: Block
       .catch(() => setData([]))
   }, [dataType, maxItems])
 
+  const maxCols = block.options?.maxColumns ?? 3
+  const gridCls = maxCols === 4
+    ? "mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+    : maxCols === 2
+      ? "mt-8 grid gap-6 sm:grid-cols-2"
+      : "mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+
   const content = dataType === "universities" ? (
-    <UniversityGrid items={data as UniversityItem[]} />
+    <UniversityGrid items={data as UniversityItem[]} gridCls={gridCls} />
   ) : (
-    <CaseGrid items={data as CaseItem[]} />
+    <CaseGrid items={data as CaseItem[]} gridCls={gridCls} />
   )
 
   const moreLink = dataType === "universities" ? "/universities" : "/cases"
@@ -98,9 +105,9 @@ export function FeaturedDataBlock({ block, header, bg, editable, onEdit }: Block
 }
 
 /** 院校网格 */
-function UniversityGrid({ items }: { items: UniversityItem[] }) {
+function UniversityGrid({ items, gridCls }: { items: UniversityItem[]; gridCls: string }) {
   return (
-    <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className={gridCls}>
       {items.map((uni) => {
         const latestRanking = uni.qs_rankings?.sort((a, b) => b.year - a.year)[0]
         return (
@@ -151,9 +158,9 @@ function UniversityGrid({ items }: { items: UniversityItem[] }) {
 }
 
 /** 案例网格 */
-function CaseGrid({ items }: { items: CaseItem[] }) {
+function CaseGrid({ items, gridCls }: { items: CaseItem[]; gridCls: string }) {
   return (
-    <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className={gridCls}>
       {items.map((c) => (
         <Link
           key={c.id}
