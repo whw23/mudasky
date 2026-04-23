@@ -95,7 +95,7 @@ function DialogContent({
             <DialogPrimitive.Close
               data-slot="dialog-close"
               render={
-                <button className="text-muted-foreground hover:text-foreground transition-colors" />
+                <button className="text-muted-foreground hover:text-destructive transition-colors" />
               }
             >
               <CircleX className="size-4" />
