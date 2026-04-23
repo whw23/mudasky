@@ -3,27 +3,21 @@
 /**
  * 指南卡片。
  * 显示动态图标 + 标题 + 描述。
+ * 图标名称参考：https://lucide.dev/icons/
  */
 
 import { icons } from "lucide-react"
 import { getLocalizedValue } from "@/lib/i18n-config"
+import { resolveIcon } from "@/lib/icon-utils"
 
 interface GuideCardProps {
   card: Record<string, any>
   locale: string
 }
 
-/** 按名称查找图标（支持 PascalCase 和 kebab-case） */
-function resolveIcon(name: string) {
-  if (!name) return icons.Info
-  if (icons[name as keyof typeof icons]) return icons[name as keyof typeof icons]
-  const pascal = name.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join("")
-  return icons[pascal as keyof typeof icons] || icons.Info
-}
-
 /** 图标 + 标题 + 描述 卡片 */
 export function GuideCard({ card, locale }: GuideCardProps) {
-  const Icon = resolveIcon(card.icon)
+  const Icon = resolveIcon(card.icon, icons.Info)!
   const title = getLocalizedValue(card.title, locale)
   const desc = getLocalizedValue(card.desc, locale)
 

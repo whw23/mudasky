@@ -118,7 +118,7 @@ function DocListFields({ options, onUpdate }: FieldsProps) {
           id="block-icon-name"
           value={options.iconName || ""}
           onChange={(e) => onUpdate("iconName", e.target.value)}
-          placeholder="Lucide 图标名，如 FileText"
+          placeholder="如 FileText 或 file-text，参考 lucide.dev/icons"
         />
       </div>
       <MaxColumnsSelect options={options} onUpdate={onUpdate} />
@@ -202,6 +202,15 @@ function CtaFields({ options, onUpdate }: FieldsProps) {
             <SelectItem value="bg-gray-50">灰色背景</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="block-cta-link">按钮链接</Label>
+        <Input
+          id="block-cta-link"
+          value={options.link || ""}
+          onChange={(e) => onUpdate("link", e.target.value)}
+          placeholder="默认 /about"
+        />
       </div>
     </div>
   )

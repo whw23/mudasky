@@ -11,6 +11,7 @@ import type { Block } from "@/types/block"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { icons } from "lucide-react"
+import { resolveIcon } from "@/lib/icon-utils"
 
 interface BlockProps {
   block: Block
@@ -33,9 +34,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit }: BlockProps
   const locale = useLocale()
   const items: Array<{ text: any }> = Array.isArray(block.data) ? block.data : []
 
-  // 从 options 中动态解析图标
-  const iconName = block.options?.iconName as string | undefined
-  const Icon = icons[(iconName as keyof typeof icons)] || icons.FileText
+  const Icon = resolveIcon(block.options?.iconName, icons.FileText)!
 
   const el = (
     <section className={`py-10 md:py-16 ${bg}`}>

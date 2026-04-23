@@ -110,8 +110,10 @@ export function BlockContentTab({ block, locale, data, onDataChange }: BlockCont
   }
 
   const fields = getArrayFields(block)
-  const description = block.type === "card_grid" && (block.options?.cardType || "guide") === "guide"
-    ? <>图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a></>
+  const cardType = block.type === "card_grid" ? (block.options?.cardType || "guide") : ""
+  const hasIconField = cardType === "guide" || cardType === "checklist"
+  const description = hasIconField
+    ? <>图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a>，支持 PascalCase 和 kebab-case</>
     : null
 
   return (
