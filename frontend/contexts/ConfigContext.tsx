@@ -38,6 +38,7 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   home_cta_title: '',
   home_cta_desc: '',
   // 关于页
+  about_cards: [],
   about_cta_title: '',
   about_cta_desc: '',
   about_office_images: [],

@@ -443,6 +443,19 @@ export default function WebSettingsPage() {
           defaultValues: { partnership: tAbout("partnershipContent") },
         })
         break
+      case 'about_cards':
+        setArrayDialogState({
+          open: true, title: '编辑使命与愿景',
+          description: <>编辑卡片，拖动排序。图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a></>,
+          siteInfoKey: 'about_cards',
+          fields: [
+            { key: 'icon', label: '图标名称', type: 'text', localized: false },
+            { key: 'title', label: '标题', type: 'text', localized: true },
+            { key: 'desc', label: '描述', type: 'textarea', localized: true, rows: 3 },
+          ],
+          data: rawConfig.siteInfo.about_cards || [],
+        })
+        break
       case 'about_cta':
         setDialogState({
           open: true,

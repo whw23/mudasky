@@ -42,6 +42,7 @@ export interface SiteInfo {
   home_cta_desc: LocalizedField
 
   // --- 关于页 ---
+  about_cards: { icon: string; title: LocalizedField; desc: LocalizedField }[]
   about_cta_title: LocalizedField
   about_cta_desc: LocalizedField
   about_office_images: { image_id: string; caption: LocalizedField }[]

@@ -79,6 +79,18 @@ CONFIGS = [
                 "de": "Unser professionelles Team erstellt maßgeschneiderte Studienpläne und begleitet Sie von der Schulauswahl bis zur Visabearbeitung",
             },
             # 关于我们 - 办公室图片
+            "about_cards": [
+                {
+                    "icon": "Award",
+                    "title": {"zh": "我们的使命", "en": "Our Mission", "ja": "私たちの使命", "de": "Unsere Mission"},
+                    "desc": {"zh": "让每一位留学梦想的学子都能获得专业、贴心的一站式留学服务，帮助学生找到最适合自己的海外学府，实现人生价值的飞跃。", "en": "To provide every student with professional, personalized one-stop study abroad services.", "ja": "すべての留学を夢見る学生に専門的で心のこもったワンストップ留学サービスを提供すること。", "de": "Jedem Studenten einen professionellen, personalisierten Studienberatungsservice aus einer Hand zu bieten."},
+                },
+                {
+                    "icon": "Globe",
+                    "title": {"zh": "我们的愿景", "en": "Our Vision", "ja": "私たちのビジョン", "de": "Unsere Vision"},
+                    "desc": {"zh": "成为中国最值得信赖的国际教育服务品牌，打通中国学子与世界名校之间的桥梁，推动中外教育文化交流与融合。", "en": "To become China's most trusted international education brand, bridging Chinese students and world-class universities.", "ja": "中国で最も信頼される国際教育サービスブランドとなること。", "de": "Die vertrauenswürdigste internationale Bildungsmarke Chinas zu werden."},
+                },
+            ],
             "about_office_images": [],
             # 院校选择页面
             "universities_intro_title": {

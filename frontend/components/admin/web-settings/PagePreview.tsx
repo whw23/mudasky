@@ -16,15 +16,18 @@ import { HomeBanner } from "@/components/home/HomeBanner"
 import { FeaturedUniversities } from "@/components/home/FeaturedUniversities"
 import { FeaturedCases } from "@/components/home/FeaturedCases"
 import { CtaSection } from "@/components/common/CtaSection"
-import {
-  HistorySection,
-  MissionVisionSection,
-} from "@/components/about/AboutContent"
+import { HistorySection } from "@/components/about/AboutContent"
+import { CardGridSection } from "@/components/common/CardGridSection"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { OfficeGallery } from "@/components/about/OfficeGallery"
 import { UniversitiesPreviewPage } from "./UniversitiesPreviewPage"
 import { CasesPreviewPage } from "./CasesPreviewPage"
 import { ArticlePreviewPage } from "./ArticlePreviewPage"
+
+const ABOUT_CARDS_FALLBACK = [
+  { icon: "Award", title: "我们的使命", desc: "让每一位留学梦想的学子都能获得专业、贴心的一站式留学服务，帮助学生找到最适合自己的海外学府，实现人生价值的飞跃。" },
+  { icon: "Globe", title: "我们的愿景", desc: "成为中国最值得信赖的国际教育服务品牌，打通中国学子与世界名校之间的桥梁，推动中外教育文化交流与融合。" },
+]
 
 interface PagePreviewProps {
   activePage: string
@@ -72,15 +75,16 @@ function AboutPreview({ onEditConfig, onBannerEdit }: { onEditConfig: (s: string
       </EditableOverlay>
       <ContactInfoSection editable onEditField={(field) => onEditConfig(`contact_${field}`)} />
       <HistorySection editable onEditTitle={() => onEditConfig("about_history_title")} onEdit={() => onEditConfig("about_history")} />
-      <section className="bg-gray-50 py-10 md:py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <MissionVisionSection
-            editable
-            onEditMission={() => onEditConfig("about_mission")}
-            onEditVision={() => onEditConfig("about_vision")}
-          />
-        </div>
-      </section>
+      <CardGridSection
+        configKey="about_cards"
+        sectionTag="About Us"
+        sectionTitle="使命与愿景"
+        fallbackCards={ABOUT_CARDS_FALLBACK}
+        cardType="guide"
+        bgColor="bg-gray-50"
+        editable
+        onEdit={() => onEditConfig("about_cards")}
+      />
       <OfficeGallery editable />
       <CtaSection translationNamespace="About" editable onEdit={() => onEditConfig("about_cta")} />
     </>
