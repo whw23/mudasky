@@ -6,7 +6,33 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+/** 从 React children 树中提取 SelectItem 的 value→label 映射 */
+function extractLabels(children: React.ReactNode): Record<string, string> {
+  const map: Record<string, string> = {}
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+    const props = child.props as Record<string, any>
+    if (props.value != null && typeof props.children === "string") {
+      map[String(props.value)] = props.children
+    }
+    if (props.children) {
+      Object.assign(map, extractLabels(props.children))
+    }
+  })
+  return map
+}
+
+/** value→label Context，解决 Dialog Portal 内 Select 显示 value 的问题 */
+const LabelMapContext = React.createContext<Record<string, string>>({})
+
+function Select({ children, ...props }: SelectPrimitive.Root.Props) {
+  const labels = React.useMemo(() => extractLabels(children), [children])
+  return (
+    <LabelMapContext value={labels}>
+      <SelectPrimitive.Root {...props}>{children}</SelectPrimitive.Root>
+    </LabelMapContext>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -19,12 +45,18 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
 }
 
 function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+  const labels = React.useContext(LabelMapContext)
+  const hasLabels = Object.keys(labels).length > 0
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
       className={cn("flex flex-1 text-left", className)}
       {...props}
-    />
+    >
+      {hasLabels
+        ? (value: any) => (value != null ? labels[String(value)] ?? String(value) : props.placeholder ?? "")
+        : undefined}
+    </SelectPrimitive.Value>
   )
 }
 
