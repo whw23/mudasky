@@ -125,10 +125,9 @@ async def _init_office_images(session, blocks: dict) -> bool:
         image = await create_image(
             session, file_data, filepath.name, mime_type,
         )
-        caption = filepath.stem.replace("-", " ").replace("_", " ")
         office_images.append({
             "image_id": str(image.id),
-            "caption": {"zh": caption, "en": caption},
+            "caption": {"zh": "", "en": "", "ja": "", "de": ""},
         })
         logger.info("办公环境图片已导入: %s", filepath.name)
 
