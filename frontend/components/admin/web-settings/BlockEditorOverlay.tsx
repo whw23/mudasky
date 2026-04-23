@@ -38,7 +38,7 @@ interface BlockEditorOverlayProps {
   block: Block
   children: ReactNode
   onDelete: (blockId: string) => void
-  onEditConfig: (block: Block) => void
+  onEditConfig: (block: Block, defaultTab?: "config" | "content") => void
   dragHandleProps?: Record<string, any>
 }
 
@@ -78,7 +78,7 @@ export function BlockEditorOverlay({
               variant="ghost"
               size="icon-xs"
               className="text-white hover:bg-white/20 hover:text-white"
-              onClick={() => onEditConfig(block)}
+              onClick={() => onEditConfig(block, "config")}
             >
               <Settings className="size-3.5" />
             </Button>

@@ -17,8 +17,7 @@ import type { Block, BlockType } from "@/types/block"
 import { BlockRenderer } from "@/components/blocks/BlockRenderer"
 import { BlockEditorOverlay } from "./BlockEditorOverlay"
 import { AddBlockDialog } from "./AddBlockDialog"
-import { BlockEditDialog } from "./BlockEditDialog"
-import { BlockDataEditor } from "./BlockDataEditor"
+import { UnifiedBlockEditor } from "./UnifiedBlockEditor"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
@@ -41,8 +40,8 @@ export function PageBlocksPreview({
 
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [addInsertIndex, setAddInsertIndex] = useState(0)
-  const [editBlock, setEditBlock] = useState<Block | null>(null)
-  const [dataEditBlock, setDataEditBlock] = useState<Block | null>(null)
+  const [editingBlock, setEditingBlock] = useState<Block | null>(null)
+  const [editingTab, setEditingTab] = useState<"config" | "content">("content")
 
   /** 保存区块列表到后端 */
   const saveBlocks = useCallback(async (updatedBlocks: Block[]) => {
@@ -89,31 +88,25 @@ export function PageBlocksPreview({
     saveBlocks(updated)
   }
 
-  /** 编辑区块配置 */
-  function handleEditConfig(block: Block): void {
-    setEditBlock(block)
+  /** 编辑区块（齿轮按钮或内容点击） */
+  function handleEditConfig(block: Block, defaultTab?: "config" | "content"): void {
+    setEditingBlock(block)
+    setEditingTab(defaultTab || "config")
   }
 
-  /** 点击 Block 内容触发数据编辑 */
+  /** 点击 Block 内容触发编辑 */
   function handleEditData(block: Block): void {
-    setDataEditBlock(block)
+    setEditingBlock(block)
+    setEditingTab("content")
   }
 
-  /** 保存 Block 数据 */
-  async function handleDataSave(blockId: string, newData: any): Promise<void> {
-    const newBlocks = blocks.map((b) =>
-      b.id === blockId ? { ...b, data: newData } : b,
-    )
-    await saveBlocks(newBlocks)
-    setDataEditBlock(null)
-  }
-
-  /** 保存区块配置 */
+  /** 保存区块（配置 + 内容统一保存） */
   function handleEditSave(updated: Block): void {
     const newBlocks = blocks.map((b) =>
       b.id === updated.id ? updated : b,
     )
     saveBlocks(newBlocks)
+    setEditingBlock(null)
   }
 
   return (
@@ -178,22 +171,14 @@ export function PageBlocksPreview({
         onSelect={handleAddBlock}
       />
 
-      {/* 区块配置编辑弹窗 */}
-      <BlockEditDialog
-        open={!!editBlock}
-        onOpenChange={(open) => { if (!open) setEditBlock(null) }}
-        block={editBlock}
+      {/* 统一区块编辑弹窗 */}
+      <UnifiedBlockEditor
+        open={!!editingBlock}
+        onOpenChange={(open) => { if (!open) setEditingBlock(null) }}
+        block={editingBlock}
+        defaultTab={editingTab}
         onSave={handleEditSave}
       />
-
-      {/* 区块数据编辑弹窗 */}
-      {dataEditBlock && (
-        <BlockDataEditor
-          block={dataEditBlock}
-          onClose={() => setDataEditBlock(null)}
-          onSave={handleDataSave}
-        />
-      )}
     </>
   )
 }
