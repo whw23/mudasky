@@ -154,7 +154,7 @@ function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="dialog-body"
       className={cn(
         "px-5 py-4",
-        "[[data-fullscreen]_&]:flex-1 [[data-fullscreen]_&]:overflow-y-auto",
+        "[[data-fullscreen]_&]:flex-1 [[data-fullscreen]_&]:overflow-y-auto [[data-fullscreen]_&]:max-h-none",
         className,
       )}
       {...props}
