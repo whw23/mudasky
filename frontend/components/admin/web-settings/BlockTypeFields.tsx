@@ -118,8 +118,11 @@ function DocListFields({ options, onUpdate }: FieldsProps) {
           id="block-icon-name"
           value={options.iconName || ""}
           onChange={(e) => onUpdate("iconName", e.target.value)}
-          placeholder="如 FileText 或 file-text，参考 lucide.dev/icons"
+          placeholder="如 FileText 或 file-text"
         />
+        <p className="text-xs text-muted-foreground">
+          图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a>，支持 PascalCase 和 kebab-case
+        </p>
       </div>
       <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
