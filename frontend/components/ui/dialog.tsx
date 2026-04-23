@@ -11,7 +11,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Maximize, Minimize, XIcon } from "lucide-react"
+import { Scan, Minimize2, XIcon } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return (
@@ -88,7 +88,7 @@ function DialogContent({
               className="text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setFullscreen((f) => !f)}
             >
-              {fullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+              {fullscreen ? <Minimize2 className="size-4" /> : <Scan className="size-4" />}
             </button>
           )}
           {showCloseButton && (
