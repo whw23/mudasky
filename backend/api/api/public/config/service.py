@@ -36,7 +36,7 @@ class ConfigService:
         self,
     ) -> tuple[dict, datetime]:
         """获取首页所需的全部配置，返回 (数据, 最大更新时间)。"""
-        keys = ["contact_info", "site_info", "homepage_stats", "about_info", "page_banners"]
+        keys = ["contact_info", "site_info", "homepage_stats", "about_info", "page_banners", "page_blocks"]
         result = {}
         max_updated = datetime.min.replace(tzinfo=timezone.utc)
         for key in keys:

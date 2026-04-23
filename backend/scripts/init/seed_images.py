@@ -1,6 +1,6 @@
 """初始化种子图片。
 
-将 assets/ 下的占位图片写入 Image 表，更新 site_info 配置引用。
+将 assets/ 下的占位图片写入 Image 表，更新 site_info 和 page_blocks 配置引用。
 """
 
 import logging
@@ -60,24 +60,49 @@ async def init_seed_images(session) -> None:
         updated = True
         logger.info("种子图片已导入: %s → %s", filename, config_field)
 
-    if await _init_office_images(session, site_info):
-        updated = True
-
-    if await _init_city_images(session, site_info):
-        updated = True
-
     if updated:
         config.value = site_info
         await session.flush()
 
+    # 办公环境图片和城市图片写入 page_blocks
+    await _init_page_blocks_images(session)
+
     print("  + 种子图片已初始化")
 
 
-async def _init_office_images(session, site_info: dict) -> bool:
-    """导入 office/ 目录下的办公环境图片到 about_office_images。"""
-    existing = site_info.get("about_office_images") or []
+async def _init_page_blocks_images(session) -> None:
+    """导入办公环境图片和城市图片到 page_blocks 配置。"""
+    stmt = select(SystemConfig).where(SystemConfig.key == "page_blocks")
+    result = await session.execute(stmt)
+    config = result.scalar_one_or_none()
+    if not config:
+        logger.warning("page_blocks 配置不存在，跳过图片初始化")
+        return
+
+    blocks = dict(config.value)
+    updated = False
+
+    if await _init_office_images(session, blocks):
+        updated = True
+    if await _init_city_images(session, blocks):
+        updated = True
+
+    if updated:
+        config.value = blocks
+        await session.flush()
+
+
+async def _init_office_images(session, blocks: dict) -> bool:
+    """导入 office/ 目录下的办公环境图片到 about 页面的 gallery 区块。"""
+    about_blocks = blocks.get("about") or []
+    gallery = next((b for b in about_blocks if b.get("type") == "gallery"), None)
+    if not gallery:
+        logger.debug("about 页面无 gallery 区块，跳过")
+        return False
+
+    existing = gallery.get("data") or []
     if existing:
-        logger.debug("about_office_images 已有数据，跳过")
+        logger.debug("gallery 已有数据，跳过")
         return False
 
     if not OFFICE_DIR.exists():
@@ -104,19 +129,30 @@ async def _init_office_images(session, site_info: dict) -> bool:
         })
         logger.info("办公环境图片已导入: %s", filepath.name)
 
-    site_info["about_office_images"] = office_images
+    gallery["data"] = office_images
     return True
 
 
-async def _init_city_images(session, site_info: dict) -> bool:
-    """导入 cities/ 目录下的城市占位图片到 life_city_cards。"""
-    cards = site_info.get("life_city_cards") or []
+async def _init_city_images(session, blocks: dict) -> bool:
+    """导入 cities/ 目录下的城市占位图片到 life 页面的 city card_grid 区块。"""
+    life_blocks = blocks.get("life") or []
+    city_block = next(
+        (b for b in life_blocks
+         if b.get("type") == "card_grid"
+         and b.get("options", {}).get("cardType") == "city"),
+        None,
+    )
+    if not city_block:
+        logger.debug("life 页面无 city card_grid 区块，跳过")
+        return False
+
+    cards = city_block.get("data") or []
     if not cards:
         return False
 
     has_images = any(c.get("image_id") for c in cards)
     if has_images:
-        logger.debug("life_city_cards 已有图片，跳过")
+        logger.debug("city cards 已有图片，跳过")
         return False
 
     if not CITIES_DIR.exists():
@@ -138,5 +174,5 @@ async def _init_city_images(session, site_info: dict) -> bool:
         logger.info("城市图片已导入: %s", filename)
 
     if updated:
-        site_info["life_city_cards"] = cards
+        city_block["data"] = cards
     return updated
