@@ -178,7 +178,7 @@ export default function VisaPage() {
 
 ## 种子数据
 
-删库重建（`docker compose down -v`）。`seed_config.py` 生成完整的 `page_blocks`，将现有各页面的硬编码结构转为 Block 数组。
+删库重建（`docker compose down -v`）。`seed_config.py` 中**新增** `page_blocks` 配置键，将现有各页面的硬编码结构转为 Block 数组。`site_info` 中已有的所有内容数据（`visa_process_steps`、`about_cards`、`life_guide_cards`、`home_intro_title` 等）全部保留不动——Block 通过 `configKey` 引用它们。
 
 示例（签证页）：
 ```python
