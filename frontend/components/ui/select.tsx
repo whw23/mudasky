@@ -22,16 +22,13 @@ function extractLabels(children: React.ReactNode): Record<string, string> {
   return map
 }
 
-/** value→label Context，解决 Dialog Portal 内 Select 显示 value 的问题 */
-const LabelMapContext = React.createContext<Record<string, string>>({})
-
-function Select({ children, ...props }: SelectPrimitive.Root.Props) {
-  const labels = React.useMemo(() => extractLabels(children), [children])
-  return (
-    <LabelMapContext value={labels}>
-      <SelectPrimitive.Root {...props}>{children}</SelectPrimitive.Root>
-    </LabelMapContext>
-  )
+/** 包装 Select.Root，自动提取 items 映射解决 Portal 内 SelectValue 显示问题 */
+function Select<V, M extends boolean | undefined = false>(
+  props: SelectPrimitive.Root.Props<V, M>,
+) {
+  const autoLabels = React.useMemo(() => extractLabels(props.children), [props.children])
+  const items = props.items ?? (Object.keys(autoLabels).length > 0 ? autoLabels : undefined)
+  return <SelectPrimitive.Root {...props} items={items as any} />
 }
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
@@ -45,18 +42,12 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
 }
 
 function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
-  const labels = React.useContext(LabelMapContext)
-  const hasLabels = Object.keys(labels).length > 0
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
       className={cn("flex flex-1 text-left", className)}
       {...props}
-    >
-      {hasLabels
-        ? (value: any) => (value != null ? labels[String(value)] ?? String(value) : props.placeholder ?? "")
-        : undefined}
-    </SelectPrimitive.Value>
+    />
   )
 }
 
