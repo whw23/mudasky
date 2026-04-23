@@ -195,9 +195,9 @@ def build_requirements_blocks() -> list[dict]:
             section_title={"zh": "各国申请条件", "en": "Country Requirements", "ja": "各国の申請条件", "de": "Länderanforderungen"},
             options={"cardType": "checklist"},
             data=[
-                {"label": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"}, "items": [{"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"}, {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"}, {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"}, {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"}]},
-                {"label": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"}, "items": [{"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"}, {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"}, {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"}]},
-                {"label": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"}, "items": [{"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"}, {"zh": "雅思6.0以上或托福80以上", "en": "IELTS 6.0+ or TOEFL 80+", "ja": "IELTS 6.0以上またはTOEFL 80以上", "de": "IELTS 6.0+ oder TOEFL 80+"}, {"zh": "资金担保证明", "en": "Financial guarantee certificate", "ja": "資金保証証明書", "de": "Finanzgarantiezertifikat"}]},
+                {"icon": "GraduationCap", "label": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"}, "items": [{"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"}, {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"}, {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"}, {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"}]},
+                {"icon": "BookOpen", "label": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"}, "items": [{"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"}, {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"}, {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"}]},
+                {"icon": "Globe", "label": {"zh": "新加坡留学", "en": "Study in Singapore", "ja": "シンガポール留学", "de": "Studium in Singapur"}, "items": [{"zh": "高中及以上学历", "en": "High school diploma or above", "ja": "高校以上の学歴", "de": "Abitur oder höher"}, {"zh": "雅思6.0以上或托福80以上", "en": "IELTS 6.0+ or TOEFL 80+", "ja": "IELTS 6.0以上またはTOEFL 80以上", "de": "IELTS 6.0+ oder TOEFL 80+"}, {"zh": "资金担保证明", "en": "Financial guarantee certificate", "ja": "資金保証証明書", "de": "Finanzgarantiezertifikat"}]},
             ],
         ),
         _block(
@@ -207,6 +207,7 @@ def build_requirements_blocks() -> list[dict]:
             options={"cardType": "checklist"},
             data=[
                 {
+                    "icon": "Languages",
                     "label": {"zh": "德语等级要求", "en": "German Language", "ja": "ドイツ語", "de": "Deutsch"},
                     "items": [
                         {"zh": "德语授课项目：德福（TestDaF）4x4 或 DSH-2", "en": "German-taught programs: TestDaF 4x4 or DSH-2", "ja": "ドイツ語授業科目：TestDaF 4x4 または DSH-2", "de": "Deutschsprachige Programme: TestDaF 4x4 oder DSH-2"},
@@ -216,6 +217,7 @@ def build_requirements_blocks() -> list[dict]:
                     ],
                 },
                 {
+                    "icon": "BookText",
                     "label": {"zh": "日语等级要求", "en": "Japanese Language", "ja": "日本語", "de": "Japanisch"},
                     "items": [
                         {"zh": "语言学校：N5-N4 水平", "en": "Language schools: JLPT N5-N4", "ja": "語学学校：N5-N4 レベル", "de": "Sprachschulen: JLPT N5-N4"},
@@ -225,6 +227,7 @@ def build_requirements_blocks() -> list[dict]:
                     ],
                 },
                 {
+                    "icon": "MessageCircle",
                     "label": {"zh": "英语等级要求", "en": "English Language", "ja": "英語", "de": "Englisch"},
                     "items": [
                         {"zh": "雅思（IELTS）：总分 6.0 以上，单项不低于 5.5", "en": "IELTS: Overall 6.0+, no band below 5.5", "ja": "IELTS：総合 6.0 以上、各バンド 5.5 以上", "de": "IELTS: Gesamt 6.0+, kein Band unter 5.5"},

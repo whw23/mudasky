@@ -86,6 +86,7 @@ const CARD_TYPE_FIELDS: Record<string, ArrayFieldDef[]> = {
     { key: "features", label: "特点列表", type: "nested-items", localized: true },
   ],
   checklist: [
+    { key: "icon", label: "图标名称", type: "text", localized: false },
     { key: "label", label: "标签", type: "text", localized: true },
     { key: "items", label: "条目列表", type: "nested-items", localized: true },
   ],
