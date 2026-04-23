@@ -12,15 +12,21 @@ import { useRouter } from "@/i18n/navigation"
 interface ConsultButtonProps {
   className?: string
   children: React.ReactNode
+  href?: string
 }
 
 /** 立即咨询按钮 */
-export function ConsultButton({ className, children }: ConsultButtonProps) {
+export function ConsultButton({ className, children, href }: ConsultButtonProps) {
   const { isLoggedIn, showLoginModal } = useAuth()
   const router = useRouter()
 
   const handleClick = () => {
-    router.push("/about")
+    const target = href || "/about"
+    if (target.startsWith("http")) {
+      window.open(target, "_blank", "noopener,noreferrer")
+    } else {
+      router.push(target)
+    }
     if (!isLoggedIn) {
       showLoginModal()
     }
