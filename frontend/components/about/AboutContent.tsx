@@ -41,7 +41,7 @@ export function HistorySection({ editable, onEdit, onEditTitle }: EditableProps 
       <div className="text-center">
         <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Our Story</h2>
         {editable && onEditTitle ? (
-          <EditableOverlay onClick={onEditTitle} label="编辑标题" inline>{titleEl}</EditableOverlay>
+          <EditableOverlay onClick={onEditTitle} label="编辑标题">{titleEl}</EditableOverlay>
         ) : titleEl}
         <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
       </div>
