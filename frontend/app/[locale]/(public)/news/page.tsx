@@ -22,7 +22,7 @@ export default async function NewsPage() {
           <div className="mx-auto mt-3 h-0.5 w-12 bg-primary" />
         </div>
 
-        <ArticleListClient />
+        <ArticleListClient categorySlug="news" />
       </section>
     </>
   )
