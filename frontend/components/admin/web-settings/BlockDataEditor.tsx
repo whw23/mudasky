@@ -76,9 +76,8 @@ const CARD_TYPE_FIELDS: Record<string, any[]> = {
 /** 简单字段 Block 的 ConfigEditDialog 字段定义 */
 const SIMPLE_FIELDS: Record<string, { title: string; fields: any[] }> = {
   intro: {
-    title: "编辑介绍",
+    title: "编辑介绍内容",
     fields: [
-      { key: "title", label: "标题", type: "text", localized: true },
       { key: "content", label: "内容", type: "textarea", localized: true, rows: 5 },
     ],
   },

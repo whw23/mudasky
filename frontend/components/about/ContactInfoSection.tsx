@@ -85,11 +85,8 @@ export function ContactInfoSection({
   ]
 
   return (
-    <section id="contact-info" className="bg-gray-50 py-10 md:py-16">
+    <section id="contact-info" className="py-10 md:py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <h2 className="mb-8 text-center text-2xl font-bold">
-          {t("infoTitle")}
-        </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => {
             const isWechat = item.field === "wechat"

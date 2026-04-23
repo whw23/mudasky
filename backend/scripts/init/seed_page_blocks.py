@@ -107,7 +107,15 @@ def build_about_blocks() -> list[dict]:
     return [
         _block(
             "contact_info",
-            show_title=False,
+            show_title=True,
+            section_tag="Contact",
+            section_title={
+                "zh": "联系信息",
+                "en": "Contact Information",
+                "ja": "お問い合わせ",
+                "de": "Kontaktinformationen",
+            },
+            bg_color="gray",
         ),
         _block(
             "intro",
