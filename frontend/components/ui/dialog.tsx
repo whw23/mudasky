@@ -11,7 +11,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Maximize, Minimize, SquareX } from "lucide-react"
+import { Expand, Shrink, X } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return (
@@ -88,7 +88,7 @@ function DialogContent({
               className="text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setFullscreen((f) => !f)}
             >
-              {fullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+              {fullscreen ? <Shrink className="size-4" /> : <Expand className="size-4" />}
             </button>
           )}
           {showCloseButton && (
@@ -98,7 +98,7 @@ function DialogContent({
                 <button className="text-muted-foreground hover:text-foreground transition-colors" />
               }
             >
-              <SquareX className="size-4" />
+              <X className="size-4" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           )}
