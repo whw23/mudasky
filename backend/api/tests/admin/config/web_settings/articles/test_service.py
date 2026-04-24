@@ -21,6 +21,10 @@ from app.core.exceptions import BadRequestException, NotFoundException
 
 
 REPO = "api.admin.config.web_settings.articles.service.repository"
+SLUG_FN = (
+    "api.admin.config.web_settings.articles"
+    ".service.generate_unique_slug"
+)
 
 
 def _make_article(
@@ -110,8 +114,11 @@ async def test_get_article_not_found(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(SLUG_FN, new_callable=AsyncMock, return_value="test-slug")
 @patch(REPO)
-async def test_create_article_success(mock_repo, service):
+async def test_create_article_success(
+    mock_repo, _mock_slug, service
+):
     """创建文章成功，设置 author_id。"""
     article = _make_article()
     mock_repo.create_article = AsyncMock(return_value=article)
@@ -133,9 +140,10 @@ async def test_create_article_success(mock_repo, service):
 
 
 @pytest.mark.asyncio
+@patch(SLUG_FN, new_callable=AsyncMock, return_value="new-slug")
 @patch(REPO)
 async def test_update_own_article_success(
-    mock_repo, service
+    mock_repo, _mock_slug, service
 ):
     """管理员更新文章成功。"""
     article = _make_article(author_id="user-1")
@@ -226,9 +234,10 @@ async def test_update_article_sets_published_at(
 
 
 @pytest.mark.asyncio
+@patch(SLUG_FN, new_callable=AsyncMock, return_value="new-slug")
 @patch(REPO)
 async def test_update_article_already_published_no_change(
-    mock_repo, service
+    mock_repo, _mock_slug, service
 ):
     """已发布文章更新标题不改变 published_at。"""
     from datetime import datetime, timezone
@@ -260,9 +269,10 @@ async def test_update_article_already_published_no_change(
 
 
 @pytest.mark.asyncio
+@patch(SLUG_FN, new_callable=AsyncMock, return_value="test-slug")
 @patch(REPO)
 async def test_create_article_published_sets_published_at(
-    mock_repo, service
+    mock_repo, _mock_slug, service
 ):
     """创建已发布状态的文章时设置 published_at。"""
     article = _make_article()
@@ -282,9 +292,10 @@ async def test_create_article_published_sets_published_at(
 
 
 @pytest.mark.asyncio
+@patch(SLUG_FN, new_callable=AsyncMock, return_value="test-slug")
 @patch(REPO)
 async def test_create_article_draft_no_published_at(
-    mock_repo, service
+    mock_repo, _mock_slug, service
 ):
     """创建草稿文章时不设置 published_at。"""
     article = _make_article(status="draft")

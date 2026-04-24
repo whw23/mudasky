@@ -165,8 +165,6 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/mudasky-db:latest
 
   test-backend-unit:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -176,8 +174,6 @@ jobs:
         run: uv run --project backend/api --extra dev python -m pytest backend/api/tests/ -v --ignore=backend/api/tests/e2e
 
   test-frontend-unit:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
