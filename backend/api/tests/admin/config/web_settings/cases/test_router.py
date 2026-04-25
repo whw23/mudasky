@@ -411,3 +411,5 @@ class TestAdminUploadOffer:
         )
 
         assert resp.status_code == 422
+
+

@@ -207,3 +207,28 @@ class TestAdminDisciplines:
             json={"name": "计算机科学", "sort_order": 0},
         )
         assert resp.status_code == 422
+
+    async def test_update_discipline_success(self, client, superuser_headers):
+        """编辑学科返回 200。"""
+        self.mock_svc.update_discipline.return_value = _make_discipline(
+            name="新名称"
+        )
+        resp = await client.post(
+            "/admin/web-settings/disciplines/list/detail/edit",
+            headers=superuser_headers,
+            json={"discipline_id": "disc-1", "name": "新名称"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["name"] == "新名称"
+
+    async def test_update_discipline_not_found(self, client, superuser_headers):
+        """编辑不存在的学科返回 404。"""
+        self.mock_svc.update_discipline.side_effect = NotFoundException(
+            message="学科不存在", code="DISCIPLINE_NOT_FOUND"
+        )
+        resp = await client.post(
+            "/admin/web-settings/disciplines/list/detail/edit",
+            headers=superuser_headers,
+            json={"discipline_id": "nonexistent", "name": "新名称"},
+        )
+        assert resp.status_code == 404
