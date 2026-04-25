@@ -142,23 +142,45 @@ CONFIGS = [
         lambda: build_page_blocks(),
     ),
     (
-        "contact_info",
-        "联系方式",
-        lambda: {
-            "address": os.environ.get(
-                "CONTACT_ADDRESS", ""
-            ),
-            "phone": os.environ.get(
-                "CONTACT_PHONE", ""
-            ),
-            "email": os.environ.get(
-                "CONTACT_EMAIL", ""
-            ),
-            "wechat": os.environ.get("CONTACT_WECHAT", ""),
-            "registered_address": os.environ.get(
-                "CONTACT_REGISTERED_ADDRESS", ""
-            ),
-        },
+        "contact_items",
+        "联系信息列表",
+        lambda: [
+            {
+                "icon": "phone",
+                "label": {"zh": "服务热线", "en": "Hotline"},
+                "content": {"zh": "189-1268-6656"},
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "icon": "mail",
+                "label": {"zh": "邮箱", "en": "Email"},
+                "content": {"zh": "info@mudasky.com"},
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "icon": "message-circle",
+                "label": {"zh": "微信咨询", "en": "WeChat"},
+                "content": {"zh": "扫码添加客服微信"},
+                "image_id": None,
+                "hover_zoom": True,
+            },
+            {
+                "icon": "map-pin",
+                "label": {"zh": "公司地址", "en": "Address"},
+                "content": {"zh": "苏州市工业园区"},
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "icon": "building",
+                "label": {"zh": "注册地址", "en": "Registered Address"},
+                "content": {"zh": "苏州市工业园区"},
+                "image_id": None,
+                "hover_zoom": False,
+            },
+        ],
     ),
 ]
 
