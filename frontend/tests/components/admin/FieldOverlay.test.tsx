@@ -31,8 +31,10 @@ describe("FieldOverlay", () => {
     expect(screen.getByText("内容").closest("[data-field]")).toBeTruthy()
   })
 
-  it("使用 fit-content 宽度", () => {
-    render(<FieldOverlay onClick={() => {}}>内容</FieldOverlay>)
-    expect(screen.getByText("内容").closest("[data-field]")).toHaveClass("w-fit")
+  it("支持自定义 className", () => {
+    render(<FieldOverlay onClick={() => {}} className="mx-auto w-fit">内容</FieldOverlay>)
+    const el = screen.getByText("内容").closest("[data-field]")
+    expect(el).toHaveClass("mx-auto")
+    expect(el).toHaveClass("w-fit")
   })
 })
