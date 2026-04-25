@@ -15,8 +15,14 @@ from app.db.auth.repository import (
     create_sms_code,
     delete_expired_refresh_tokens,
     delete_expired_sms_codes,
+    delete_refresh_tokens_by_user,
+    delete_sms_codes_by_phone,
     get_latest_sms_code,
     get_refresh_token_by_hash,
+    list_user_refresh_tokens,
+    revoke_other_refresh_tokens,
+    revoke_refresh_token_by_hash,
+    revoke_refresh_token_by_id,
     revoke_user_refresh_tokens,
     save_refresh_token,
     verify_sms_code,
@@ -220,3 +226,109 @@ async def test_revoke_user_refresh_tokens(session):
 
     session.execute.assert_awaited_once()
     session.commit.assert_awaited_once()
+
+
+# ---- delete_sms_codes_by_phone ----
+
+
+async def test_delete_sms_codes_by_phone(session):
+    """删除指定手机号所有验证码。"""
+    await delete_sms_codes_by_phone(session, "+86-13800138000")
+
+    session.execute.assert_awaited_once()
+
+
+# ---- delete_refresh_tokens_by_user ----
+
+
+async def test_delete_refresh_tokens_by_user(session):
+    """删除用户所有刷新令牌（不 commit）。"""
+    await delete_refresh_tokens_by_user(session, "user-1")
+
+    session.execute.assert_awaited_once()
+    session.commit.assert_not_awaited()
+
+
+# ---- revoke_refresh_token_by_hash ----
+
+
+async def test_revoke_refresh_token_by_hash(session):
+    """根据令牌哈希撤销单个刷新令牌。"""
+    await revoke_refresh_token_by_hash(session, "hash-to-revoke")
+
+    session.execute.assert_awaited_once()
+    session.commit.assert_awaited_once()
+
+
+# ---- revoke_other_refresh_tokens ----
+
+
+async def test_revoke_other_refresh_tokens(session):
+    """撤销除当前令牌外的所有刷新令牌。"""
+    await revoke_other_refresh_tokens(
+        session, "user-1", "current-hash"
+    )
+
+    session.execute.assert_awaited_once()
+    session.commit.assert_awaited_once()
+
+
+# ---- list_user_refresh_tokens ----
+
+
+async def test_list_user_refresh_tokens(session):
+    """列出用户所有未过期的刷新令牌。"""
+    tokens = [MagicMock(spec=RefreshToken)]
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = tokens
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    result = await list_user_refresh_tokens(session, "user-1")
+
+    assert len(result) == 1
+    session.execute.assert_awaited_once()
+
+
+async def test_list_user_refresh_tokens_empty(session):
+    """用户无未过期令牌返回空列表。"""
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = []
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    result = await list_user_refresh_tokens(session, "user-no-tokens")
+
+    assert result == []
+
+
+# ---- revoke_refresh_token_by_id ----
+
+
+async def test_revoke_refresh_token_by_id_success(session):
+    """根据令牌 ID 撤销成功。"""
+    mock_result = MagicMock()
+    mock_result.rowcount = 1
+    session.execute.return_value = mock_result
+
+    success = await revoke_refresh_token_by_id(
+        session, "token-1", "user-1"
+    )
+
+    assert success is True
+    session.commit.assert_awaited_once()
+
+
+async def test_revoke_refresh_token_by_id_not_found(session):
+    """令牌不存在时返回 False。"""
+    mock_result = MagicMock()
+    mock_result.rowcount = 0
+    session.execute.return_value = mock_result
+
+    success = await revoke_refresh_token_by_id(
+        session, "nonexistent", "user-1"
+    )
+
+    assert success is False

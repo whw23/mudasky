@@ -14,10 +14,14 @@ from app.db.content.repository import (
     create_article,
     create_category,
     delete_article,
+    delete_articles_by_category,
     delete_category,
     get_article_by_id,
+    get_article_by_slug,
+    get_article_by_title,
     get_category_by_id,
     list_all_articles,
+    list_articles_by_category,
     list_by_author,
     list_categories,
     list_published,
@@ -290,3 +294,121 @@ async def test_list_all_articles_with_status(session):
 
     assert total == 0
     assert len(result_articles) == 0
+
+
+# ---- delete_articles_by_category ----
+
+
+async def test_delete_articles_by_category(session):
+    """删除指定分类下所有文章。"""
+    articles = [MagicMock(spec=Article), MagicMock(spec=Article)]
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = articles
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    await delete_articles_by_category(session, "cat-1")
+
+    assert session.delete.await_count == 2
+    session.commit.assert_awaited_once()
+
+
+async def test_delete_articles_by_category_empty(session):
+    """分类下无文章时只 commit。"""
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = []
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    await delete_articles_by_category(session, "empty-cat")
+
+    session.delete.assert_not_awaited()
+    session.commit.assert_awaited_once()
+
+
+# ---- get_article_by_slug ----
+
+
+async def test_get_article_by_slug_found(session):
+    """根据 slug 查询文章。"""
+    article = MagicMock(spec=Article)
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = article
+    session.execute.return_value = mock_result
+
+    result = await get_article_by_slug(session, "test-article")
+
+    assert result == article
+
+
+async def test_get_article_by_slug_not_found(session):
+    """slug 不存在返回 None。"""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = None
+    session.execute.return_value = mock_result
+
+    result = await get_article_by_slug(session, "nonexistent")
+
+    assert result is None
+
+
+# ---- get_article_by_title ----
+
+
+async def test_get_article_by_title_found(session):
+    """根据标题和分类查询文章。"""
+    article = MagicMock(spec=Article)
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = article
+    session.execute.return_value = mock_result
+
+    result = await get_article_by_title(
+        session, "测试文章", "cat-1"
+    )
+
+    assert result == article
+
+
+async def test_get_article_by_title_not_found(session):
+    """标题不存在返回 None。"""
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = None
+    session.execute.return_value = mock_result
+
+    result = await get_article_by_title(
+        session, "不存在", "cat-1"
+    )
+
+    assert result is None
+
+
+# ---- list_articles_by_category ----
+
+
+async def test_list_articles_by_category(session):
+    """查询指定分类下所有文章。"""
+    articles = [MagicMock(spec=Article), MagicMock(spec=Article)]
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = articles
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    result = await list_articles_by_category(session, "cat-1")
+
+    assert len(result) == 2
+
+
+async def test_list_articles_by_category_empty(session):
+    """分类下无文章返回空列表。"""
+    mock_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = []
+    mock_result.scalars.return_value = mock_scalars
+    session.execute.return_value = mock_result
+
+    result = await list_articles_by_category(session, "empty-cat")
+
+    assert result == []

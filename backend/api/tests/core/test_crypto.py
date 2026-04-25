@@ -9,9 +9,14 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
 from app.utils.crypto import (
-    get_public_key_pem,
-    generate_nonce,
+    _cleanup_expired,
+    _issued_nonces,
+    _MAX_NONCES,
+    _nonce_lock,
+    _used_nonces,
     decrypt_password,
+    generate_nonce,
+    get_public_key_pem,
     _private_key,
 )
 
@@ -110,3 +115,79 @@ class TestDecryptPassword:
         })
         with pytest.raises(Exception):
             decrypt_password(encrypted_b64_2, nonce)
+
+    def test_missing_password_field(self):
+        """缺少 password 字段应拒绝。"""
+        nonce = generate_nonce()
+        encrypted_b64 = self._encrypt({
+            "nonce": nonce,
+            "timestamp": int(time.time()),
+        })
+        with pytest.raises(Exception):
+            decrypt_password(encrypted_b64, nonce)
+
+    def test_missing_nonce_field(self):
+        """缺少 nonce 字段应拒绝。"""
+        nonce = generate_nonce()
+        encrypted_b64 = self._encrypt({
+            "password": "test",
+            "timestamp": int(time.time()),
+        })
+        with pytest.raises(Exception):
+            decrypt_password(encrypted_b64, nonce)
+
+    def test_missing_timestamp_field(self):
+        """缺少 timestamp 字段应拒绝。"""
+        nonce = generate_nonce()
+        encrypted_b64 = self._encrypt({
+            "password": "test",
+            "nonce": nonce,
+        })
+        with pytest.raises(Exception):
+            decrypt_password(encrypted_b64, nonce)
+
+    def test_invalid_base64(self):
+        """无效 base64 应拒绝。"""
+        nonce = generate_nonce()
+        with pytest.raises(Exception):
+            decrypt_password("not-valid-base64!!!", nonce)
+
+    def test_nonce_in_payload_mismatch(self):
+        """密文中的 nonce 与请求参数不一致应拒绝。"""
+        nonce1 = generate_nonce()
+        nonce2 = generate_nonce()
+        encrypted_b64 = self._encrypt({
+            "password": "test",
+            "nonce": nonce1,
+            "timestamp": int(time.time()),
+        })
+        with pytest.raises(Exception):
+            decrypt_password(encrypted_b64, nonce2)
+
+
+class TestCleanupExpired:
+    """过期 nonce 清理测试。"""
+
+    def test_expired_nonces_removed(self):
+        """过期的 nonce 被清除。"""
+        now = time.time()
+        with _nonce_lock:
+            _issued_nonces["old-nonce"] = now - 120
+            _used_nonces["old-used"] = now - 120
+            _cleanup_expired(now)
+
+        assert "old-nonce" not in _issued_nonces
+        assert "old-used" not in _used_nonces
+
+    def test_overflow_eviction(self):
+        """超过 MAX_NONCES 限制时淘汰最旧的。"""
+        now = time.time()
+        with _nonce_lock:
+            _issued_nonces.clear()
+            _used_nonces.clear()
+            # 添加超过限制数量的 nonce
+            for i in range(_MAX_NONCES + 5):
+                _issued_nonces[f"nonce-{i}"] = now
+            _cleanup_expired(now)
+
+        assert len(_issued_nonces) <= _MAX_NONCES

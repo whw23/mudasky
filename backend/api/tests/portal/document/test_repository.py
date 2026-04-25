@@ -12,6 +12,7 @@ from app.db.document.models import Document
 from app.db.document.repository import (
     create,
     delete,
+    delete_by_user,
     get_by_hash,
     get_by_id,
     get_user_storage_used,
@@ -130,3 +131,21 @@ async def test_delete_document(session):
 
     session.delete.assert_awaited_once_with(doc)
     session.commit.assert_awaited_once()
+
+
+# ---- delete_by_user ----
+
+
+async def test_delete_by_user(session):
+    """删除用户所有文档（不 commit）。"""
+    await delete_by_user(session, "user-1")
+
+    session.execute.assert_awaited_once()
+    session.commit.assert_not_awaited()
+
+
+async def test_delete_by_user_different_user(session):
+    """删除不同用户的文档。"""
+    await delete_by_user(session, "user-2")
+
+    session.execute.assert_awaited_once()
