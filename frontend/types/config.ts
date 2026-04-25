@@ -13,13 +13,13 @@ export interface CountryCode {
   enabled: boolean
 }
 
-/** 联系方式配置 */
-export interface ContactInfo {
-  address: LocalizedField
-  phone: string
-  email: string
-  wechat: string
-  registered_address: LocalizedField
+/** 联系信息条目 */
+export interface ContactItem {
+  icon: string
+  label: LocalizedField
+  content: LocalizedField
+  image_id: string | null
+  hover_zoom: boolean
 }
 
 /** 品牌信息配置（仅全局品牌/联系字段，页面级内容已迁移到 Block） */
