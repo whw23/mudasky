@@ -106,7 +106,7 @@ def build_about_blocks() -> list[dict]:
     """关于我们页面区块。"""
     return [
         _block(
-            "contact_items",
+            "contact_info",
             show_title=True,
             section_tag="Contact",
             section_title={
