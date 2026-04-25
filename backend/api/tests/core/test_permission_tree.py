@@ -372,6 +372,32 @@ class TestBuildTreeFromRoutes:
             "dashboard": {"description": "管理仪表盘"},
         }
 
+    def test_existing_branch_without_children_key(self):
+        """分支节点已存在但无 children 键时自动补充。"""
+        app = MagicMock()
+        app.routes = [
+            self._make_route(
+                "/admin/web-settings/articles/list",
+                "文章列表",
+            ),
+            self._make_route(
+                "/admin/web-settings/articles/list/create",
+                "创建文章",
+            ),
+        ]
+        label_map = {
+            "/admin": "管理后台",
+            "/portal": "用户面板",
+            "/admin/web-settings": "网站设置",
+            "/admin/web-settings/articles": "文章管理",
+        }
+        result = _build_tree_from_routes(app, label_map)
+        ws = result["admin"]["children"]["web-settings"]
+        articles = ws["children"]["articles"]
+        # 两个叶子节点都存在
+        assert "list" in articles["children"]
+        assert "list/create" in articles["children"]
+
 
 # ---- build_permission_tree ----
 

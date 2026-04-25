@@ -122,6 +122,65 @@ class TestArticleImportExport:
         )
         assert resp.status_code == 422
 
+    async def test_confirm_import_success(self):
+        """确认导入函数正确调用 service.confirm。"""
+        from api.admin.config.web_settings.articles.router import (
+            confirm_import,
+        )
+
+        self.mock_import_svc.confirm.return_value = {
+            "imported": 2,
+            "updated": 1,
+            "skipped": 0,
+        }
+
+        file = AsyncMock()
+        file.read = AsyncMock(return_value=b"fake-zip")
+        file.filename = "articles.zip"
+
+        session = AsyncMock()
+        result = await confirm_import(
+            category_id="cat-1",
+            items=[],
+            user_id="admin-1",
+            session=session,
+            file=file,
+        )
+
+        assert result["imported"] == 2
+        assert result["updated"] == 1
+        self.mock_import_svc.confirm.assert_awaited_once()
+
+    async def test_confirm_import_xlsx(self):
+        """确认导入 Excel 文件识别非 zip 格式。"""
+        from api.admin.config.web_settings.articles.router import (
+            confirm_import,
+        )
+
+        self.mock_import_svc.confirm.return_value = {
+            "imported": 1,
+            "updated": 0,
+            "skipped": 0,
+        }
+
+        file = AsyncMock()
+        file.read = AsyncMock(return_value=b"fake-excel")
+        file.filename = "articles.xlsx"
+
+        session = AsyncMock()
+        result = await confirm_import(
+            category_id="cat-1",
+            items=[],
+            user_id="admin-1",
+            session=session,
+            file=file,
+        )
+
+        assert result["imported"] == 1
+        # 验证 is_zip=False
+        call_args = self.mock_import_svc.confirm.call_args
+        assert call_args[1].get("is_zip", call_args[0][-1]) is False
+
     async def test_confirm_import_missing_file(
         self, client, superuser_headers
     ):

@@ -55,3 +55,31 @@ class TestGetImage:
         """缺少 id 参数返回 422。"""
         resp = await client.get("/public/images/detail")
         assert resp.status_code == 422
+
+    async def test_get_image_etag_cache_hit(self, client):
+        """ETag 命中返回 304（缓存分支）。"""
+        import hashlib
+
+        self.mock_svc.get_image.return_value = (
+            b"\x89PNG\r\n\x1a\n",
+            "image/png",
+        )
+        etag_seed = "img:img-cache"
+        etag = f'"{hashlib.md5(etag_seed.encode()).hexdigest()}"'
+        resp = await client.get(
+            "/public/images/detail?id=img-cache",
+            headers={"If-None-Match": etag},
+        )
+        assert resp.status_code == 304
+
+    async def test_get_image_etag_mismatch(self, client):
+        """ETag 不匹配返回 200 正常数据。"""
+        self.mock_svc.get_image.return_value = (
+            b"\x89PNG\r\n\x1a\n",
+            "image/png",
+        )
+        resp = await client.get(
+            "/public/images/detail?id=img-1",
+            headers={"If-None-Match": '"wrong-etag"'},
+        )
+        assert resp.status_code == 200

@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.core.exceptions import (
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     NotFoundException,
@@ -96,6 +97,38 @@ async def test_upload_document_success(
 
     assert result.id == "doc-1"
     mock_doc_repo.create.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_upload_document_invalid_mime_type():
+    """不支持的文件类型抛出 BadRequestException。"""
+    session = AsyncMock()
+    file = _make_upload_file(
+        data=b"data",
+        filename="test.exe",
+        content_type="application/x-msdownload",
+    )
+
+    with pytest.raises(BadRequestException):
+        await doc_service.upload_document(
+            session, "user-1", file, DocumentCategory.OTHER
+        )
+
+
+@pytest.mark.asyncio
+async def test_upload_document_octet_stream_rejected():
+    """application/octet-stream 不在允许列表中。"""
+    session = AsyncMock()
+    file = _make_upload_file(
+        data=b"data",
+        filename="test.bin",
+        content_type="application/octet-stream",
+    )
+
+    with pytest.raises(BadRequestException):
+        await doc_service.upload_document(
+            session, "user-1", file, DocumentCategory.OTHER
+        )
 
 
 @pytest.mark.asyncio
