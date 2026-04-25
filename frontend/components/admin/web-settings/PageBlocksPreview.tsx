@@ -181,7 +181,6 @@ export function PageBlocksPreview({
       />
 
       {/* 统一区块编辑弹窗 */}
-      {/* @ts-expect-error defaultFieldIndex 将在 Task 9 中添加到 UnifiedBlockEditor */}
       <UnifiedBlockEditor
         open={!!editingBlock}
         onOpenChange={(open) => { if (!open) { setEditingBlock(null); setEditingFieldIndex(null) } }}

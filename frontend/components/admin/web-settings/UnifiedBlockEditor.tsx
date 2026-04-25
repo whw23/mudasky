@@ -23,6 +23,7 @@ import type { ConfigLocale, LocalizedField } from "@/lib/i18n-config"
 import { LanguageCapsule } from "@/components/admin/LanguageCapsule"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { TypeSpecificFields } from "./BlockTypeFields"
+import api from "@/lib/api"
 import { BlockContentTab, getBlockEditType } from "./BlockContentTab"
 
 /** 区块类型中文名 */
@@ -47,6 +48,7 @@ interface UnifiedBlockEditorProps {
   onOpenChange: (open: boolean) => void
   block: Block | null
   defaultTab?: EditorTab
+  defaultFieldIndex?: number | null
   onSave: (updated: Block) => void
 }
 
@@ -56,6 +58,7 @@ export function UnifiedBlockEditor({
   onOpenChange,
   block,
   defaultTab,
+  defaultFieldIndex,
   onSave,
 }: UnifiedBlockEditorProps) {
   const [locale, setLocale] = useState<ConfigLocale>("zh")
@@ -79,7 +82,13 @@ export function UnifiedBlockEditor({
     setSectionTitle(normalizeLocalized(block.sectionTitle))
     setBgColor(block.bgColor)
     setOptions({ ...block.options })
-    setData(JSON.parse(JSON.stringify(block.data ?? null)))
+    if (block.type === "contact_info") {
+      api.get("/public/config/all").then((res) => {
+        setData(res.data.contact_items ?? [])
+      })
+    } else {
+      setData(JSON.parse(JSON.stringify(block.data ?? null)))
+    }
     setLocale("zh")
 
     const editType = getBlockEditType(block.type)
@@ -159,6 +168,7 @@ export function UnifiedBlockEditor({
               locale={locale}
               data={data}
               onDataChange={setData}
+              defaultFieldIndex={defaultFieldIndex}
             />
           )}
         </DialogBody>

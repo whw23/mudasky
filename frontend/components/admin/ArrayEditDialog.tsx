@@ -27,7 +27,7 @@ import { ArrayFieldRenderer } from "./ArrayFieldRenderer"
 export interface ArrayFieldDef {
   key: string
   label: string
-  type: "text" | "textarea" | "nested-items" | "radio" | "image"
+  type: "text" | "textarea" | "nested-items" | "radio" | "image" | "switch"
   localized: boolean
   rows?: number
 }

@@ -5,6 +5,7 @@
  * 根据 Block 类型渲染简单字段表单或数组条目列表。
  */
 
+import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
@@ -22,7 +23,7 @@ export type BlockEditType = "simple" | "array" | "api"
 /** 判断 Block 类型的编辑方式 */
 export function getBlockEditType(type: BlockType): BlockEditType {
   if (type === "intro" || type === "cta") return "simple"
-  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery") return "array"
+  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery" || type === "contact_info") return "array"
   return "api"
 }
 
@@ -58,6 +59,13 @@ const ARRAY_FIELDS: Record<string, ArrayFieldDef[]> = {
   gallery: [
     { key: "image_id", label: "图片", type: "image", localized: false },
     { key: "caption", label: "说明", type: "text", localized: true },
+  ],
+  contact_info: [
+    { key: "icon", label: "图标名称", type: "text", localized: false },
+    { key: "label", label: "标签", type: "text", localized: true },
+    { key: "content", label: "内容", type: "text", localized: true },
+    { key: "image_id", label: "图片", type: "image", localized: false },
+    { key: "hover_zoom", label: "悬浮放大", type: "switch", localized: false },
   ],
 }
 
@@ -97,10 +105,11 @@ interface BlockContentTabProps {
   locale: ConfigLocale
   data: any
   onDataChange: (data: any) => void
+  defaultFieldIndex?: number | null
 }
 
 /** Block 内容编辑 Tab */
-export function BlockContentTab({ block, locale, data, onDataChange }: BlockContentTabProps) {
+export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
   if (editType === "api") return null
 
@@ -123,6 +132,7 @@ export function BlockContentTab({ block, locale, data, onDataChange }: BlockCont
       locale={locale}
       onChange={onDataChange}
       description={description}
+      defaultFieldIndex={defaultFieldIndex}
     />
   )
 }
@@ -174,13 +184,23 @@ function ArrayItemsForm({
   locale,
   onChange,
   description,
+  defaultFieldIndex,
 }: {
   fields: ArrayFieldDef[]
   items: Record<string, unknown>[]
   locale: ConfigLocale
   onChange: (items: Record<string, unknown>[]) => void
   description: React.ReactNode
+  defaultFieldIndex?: number | null
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (defaultFieldIndex != null && scrollRef.current) {
+      const target = scrollRef.current.querySelector(`[data-item-index="${defaultFieldIndex}"]`)
+      target?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }, [defaultFieldIndex])
   /** 更新指定条目的指定字段 */
   function updateItem(index: number, key: string, value: unknown) {
     const next = [...items]
@@ -212,7 +232,7 @@ function ArrayItemsForm({
   }
 
   return (
-    <div className="space-y-3">
+    <div ref={scrollRef} className="space-y-3">
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
@@ -227,6 +247,7 @@ function ArrayItemsForm({
                     <div
                       ref={dragProvided.innerRef}
                       {...dragProvided.draggableProps}
+                      data-item-index={index}
                       style={dragProvided.draggableProps.style}
                       className={`rounded-lg border p-4 transition-shadow ${snapshot.isDragging ? "shadow-md" : ""}`}
                     >
