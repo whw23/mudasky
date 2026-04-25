@@ -3,13 +3,14 @@
 /**
  * 首页 Banner（含搜索框）。
  * 从配置读取首页 Banner 背景图，渲染标题和搜索框。
- * 支持编辑模式：editable 时显示 EditableOverlay。
+ * 支持编辑模式：editable 时显示 SpotlightOverlay 和 FieldOverlay。
  */
 
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { useTranslations } from "next-intl"
 import { Banner } from "@/components/layout/Banner"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
+import { FieldOverlay } from "@/components/admin/FieldOverlay"
 import { SearchBar } from "@/components/common/SearchBar"
 
 interface HomeBannerProps {
@@ -34,22 +35,20 @@ export function HomeBanner({ editable, onEditConfig, onBannerEdit }: HomeBannerP
   if (!editable) return banner
 
   return (
-    <div className="relative">
-      <EditableOverlay onClick={() => onBannerEdit?.("home")} label="编辑 Banner 背景">
-        {banner}
-      </EditableOverlay>
+    <SpotlightOverlay onClick={() => onBannerEdit?.("home")} label="编辑 Banner 背景">
+      {banner}
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
-        <EditableOverlay onClick={() => onEditConfig?.("brand_name")} label="编辑品牌名称" inline>
+        <FieldOverlay onClick={() => onEditConfig?.("brand_name")} label="编辑品牌名称">
           <span className="pointer-events-auto text-2xl md:text-5xl font-bold tracking-wide text-transparent select-none">
             【{title}】
           </span>
-        </EditableOverlay>
-        <EditableOverlay onClick={() => onEditConfig?.("tagline")} label="编辑标语" inline>
+        </FieldOverlay>
+        <FieldOverlay onClick={() => onEditConfig?.("tagline")} label="编辑标语">
           <span className="pointer-events-auto text-xs md:text-sm tracking-[0.3em] text-transparent select-none">
             {subtitle}
           </span>
-        </EditableOverlay>
+        </FieldOverlay>
       </div>
-    </div>
+    </SpotlightOverlay>
   )
 }
