@@ -2,45 +2,18 @@
 
 /**
  * 联系信息面板。
- * 从系统配置获取联系方式，若配置为空则回退到 i18n 翻译。
+ * 从 ConfigContext 读取 contactItems 数组动态渲染。
  */
 
 import { useTranslations } from 'next-intl'
-import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'
+import { MapPin, icons } from 'lucide-react'
 import { useLocalizedConfig } from '@/contexts/ConfigContext'
+import { resolveIcon } from '@/lib/icon-utils'
 
 /** 联系信息面板 */
 export function ContactInfoPanel() {
   const t = useTranslations('Contact')
-  const { contactInfo } = useLocalizedConfig()
-
-  const infoItems = [
-    {
-      icon: MapPin,
-      label: t('addressLabel'),
-      value: contactInfo.address || t('address'),
-    },
-    {
-      icon: Phone,
-      label: t('phoneLabel'),
-      value: contactInfo.phone || t('phone'),
-    },
-    {
-      icon: Mail,
-      label: t('emailLabel'),
-      value: contactInfo.email || t('email'),
-    },
-    {
-      icon: MessageCircle,
-      label: t('wechatLabel'),
-      value: contactInfo.wechat || t('wechat'),
-    },
-    {
-      icon: Clock,
-      label: t('hoursLabel'),
-      value: contactInfo.registered_address || t('hours'),
-    },
-  ]
+  const { contactItems } = useLocalizedConfig()
 
   return (
     <div>
@@ -50,19 +23,22 @@ export function ContactInfoPanel() {
         {t('infoDesc')}
       </p>
       <div className="mt-8 space-y-5">
-        {infoItems.map((item) => (
-          <div key={item.label} className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <item.icon className="h-5 w-5 text-primary" />
+        {contactItems.map((item, index) => {
+          const Icon = resolveIcon(item.icon, icons.Info)!
+          return (
+            <div key={index} className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{item.label}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {item.content}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium">{item.label}</p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {item.value}
-              </p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* 地图占位 */}

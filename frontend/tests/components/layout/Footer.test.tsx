@@ -27,13 +27,10 @@ vi.mock("@/components/admin/EditableOverlay", () => ({
 import { Footer } from "@/components/layout/Footer"
 
 let mockConfig = {
-  contactInfo: {
-    phone: "189-1234-5678",
-    email: "test@example.com",
-    address: "",
-    wechat: "",
-    registered_address: "",
-  },
+  contactItems: [
+    { icon: "phone", label: "咨询热线", content: "189-1234-5678", image_id: null, hover_zoom: false },
+    { icon: "mail", label: "电子邮箱", content: "test@example.com", image_id: null, hover_zoom: false },
+  ],
   siteInfo: {
     brand_name: "测试品牌",
     tagline: "测试标语",
@@ -129,5 +126,18 @@ describe("Footer", () => {
     expect(img).toBeInTheDocument()
 
     mockConfig.siteInfo.wechat_service_qr_url = original
+  })
+
+  it("contactItems 为空时显示翻译键兜底", () => {
+    const original = mockConfig.contactItems
+    mockConfig.contactItems = []
+
+    render(<Footer />)
+
+    /* phone/email 未找到，回退到 t("phone") / t("email") */
+    expect(screen.getByText("phone")).toBeInTheDocument()
+    expect(screen.getByText("email")).toBeInTheDocument()
+
+    mockConfig.contactItems = original
   })
 })

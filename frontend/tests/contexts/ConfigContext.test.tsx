@@ -26,7 +26,7 @@ function ConfigConsumer() {
     <div>
       <span data-testid="brand">{config.siteInfo.brand_name as string}</span>
       <span data-testid="stats">{config.homepageStats.length}</span>
-      <span data-testid="phone">{config.contactInfo.phone}</span>
+      <span data-testid="items">{config.contactItems.length}</span>
     </div>
   )
 }
@@ -57,6 +57,7 @@ describe("ConfigContext", () => {
 
     expect(screen.getByTestId("brand").textContent).toBe("慕大国际教育")
     expect(screen.getByTestId("stats").textContent).toBe("4")
+    expect(screen.getByTestId("items").textContent).toBe("0")
   })
 
   it("/config/all 成功后更新配置", async () => {
@@ -64,7 +65,9 @@ describe("ConfigContext", () => {
       if (url === "/public/config/all") {
         return Promise.resolve({
           data: {
-            contact_info: { phone: "123-456", email: "test@test.com", address: "", wechat: "", registered_address: "" },
+            contact_items: [
+              { icon: "phone", label: "电话", content: "123-456", image_id: null, hover_zoom: false },
+            ],
             site_info: {
               brand_name: "新品牌",
               tagline: "新标语",
@@ -90,7 +93,7 @@ describe("ConfigContext", () => {
     await waitFor(() => {
       expect(screen.getByTestId("brand").textContent).toBe("新品牌")
       expect(screen.getByTestId("stats").textContent).toBe("1")
-      expect(screen.getByTestId("phone").textContent).toBe("123-456")
+      expect(screen.getByTestId("items").textContent).toBe("1")
     })
   })
 
@@ -110,7 +113,7 @@ describe("ConfigContext", () => {
       if (url === "/public/config/all") {
         return Promise.resolve({
           data: {
-            contact_info: { phone: "", email: "", address: "", wechat: "", registered_address: "" },
+            contact_items: [],
             site_info: {
               brand_name: { zh: "中文品牌", en: "English Brand" },
               tagline: "标语",

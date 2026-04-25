@@ -1,6 +1,6 @@
 /**
  * ContactInfoPanel 联系信息面板测试。
- * 验证联系方式（地址、电话、邮件、微信、办公时间）的渲染和配置回退。
+ * 验证联系方式从 contactItems 数组动态渲染。
  */
 
 import { describe, it, expect, vi } from "vitest"
@@ -10,17 +10,21 @@ vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => `t:${key}`,
 }))
 
-let mockContactInfo = {
-  address: "苏州市工业园区",
-  phone: "189-1268-6656",
-  email: "info@mudasky.com",
-  wechat: "mudasky_wechat",
-  registered_address: "周一至周五 9:00-18:00",
-}
+vi.mock("@/lib/icon-utils", () => ({
+  resolveIcon: () => (props: any) => <svg data-testid="lucide-icon" {...props} />,
+}))
+
+let mockContactItems = [
+  { icon: "map-pin", label: "办公地址", content: "苏州市工业园区", image_id: null, hover_zoom: false },
+  { icon: "phone", label: "咨询热线", content: "189-1268-6656", image_id: null, hover_zoom: false },
+  { icon: "mail", label: "电子邮箱", content: "info@mudasky.com", image_id: null, hover_zoom: false },
+  { icon: "message-circle", label: "微信咨询", content: "mudasky_wechat", image_id: null, hover_zoom: false },
+  { icon: "clock", label: "办公时间", content: "周一至周五 9:00-18:00", image_id: null, hover_zoom: false },
+]
 
 vi.mock("@/contexts/ConfigContext", () => ({
   useLocalizedConfig: () => ({
-    contactInfo: mockContactInfo,
+    contactItems: mockContactItems,
   }),
 }))
 
@@ -42,35 +46,35 @@ describe("ContactInfoPanel", () => {
   it("渲染地址信息", () => {
     render(<ContactInfoPanel />)
 
-    expect(screen.getByText("t:addressLabel")).toBeInTheDocument()
+    expect(screen.getByText("办公地址")).toBeInTheDocument()
     expect(screen.getByText("苏州市工业园区")).toBeInTheDocument()
   })
 
   it("渲染电话信息", () => {
     render(<ContactInfoPanel />)
 
-    expect(screen.getByText("t:phoneLabel")).toBeInTheDocument()
+    expect(screen.getByText("咨询热线")).toBeInTheDocument()
     expect(screen.getByText("189-1268-6656")).toBeInTheDocument()
   })
 
   it("渲染邮箱信息", () => {
     render(<ContactInfoPanel />)
 
-    expect(screen.getByText("t:emailLabel")).toBeInTheDocument()
+    expect(screen.getByText("电子邮箱")).toBeInTheDocument()
     expect(screen.getByText("info@mudasky.com")).toBeInTheDocument()
   })
 
   it("渲染微信信息", () => {
     render(<ContactInfoPanel />)
 
-    expect(screen.getByText("t:wechatLabel")).toBeInTheDocument()
+    expect(screen.getByText("微信咨询")).toBeInTheDocument()
     expect(screen.getByText("mudasky_wechat")).toBeInTheDocument()
   })
 
   it("渲染办公时间", () => {
     render(<ContactInfoPanel />)
 
-    expect(screen.getByText("t:hoursLabel")).toBeInTheDocument()
+    expect(screen.getByText("办公时间")).toBeInTheDocument()
     expect(screen.getByText("周一至周五 9:00-18:00")).toBeInTheDocument()
   })
 
@@ -80,43 +84,29 @@ describe("ContactInfoPanel", () => {
     expect(screen.getByText("t:mapPlaceholder")).toBeInTheDocument()
   })
 
-  it("配置为空时回退到翻译值", () => {
-    mockContactInfo = {
-      address: "",
-      phone: "",
-      email: "",
-      wechat: "",
-      registered_address: "",
-    }
+  it("contactItems 为空时不渲染条目", () => {
+    const original = mockContactItems
+    mockContactItems = []
 
     render(<ContactInfoPanel />)
 
-    /* 空字符串 falsy → 回退到 t(key) */
-    expect(screen.getByText("t:address")).toBeInTheDocument()
-    expect(screen.getByText("t:phone")).toBeInTheDocument()
-    expect(screen.getByText("t:email")).toBeInTheDocument()
-    expect(screen.getByText("t:wechat")).toBeInTheDocument()
-    expect(screen.getByText("t:hours")).toBeInTheDocument()
+    /* 标题和描述仍然渲染 */
+    expect(screen.getByText("t:infoTitle")).toBeInTheDocument()
+    /* 无联系条目 */
+    expect(screen.queryByText("办公地址")).not.toBeInTheDocument()
 
-    /* 恢复 */
-    mockContactInfo = {
-      address: "苏州市工业园区",
-      phone: "189-1268-6656",
-      email: "info@mudasky.com",
-      wechat: "mudasky_wechat",
-      registered_address: "周一至周五 9:00-18:00",
-    }
+    mockContactItems = original
   })
 
-  it("渲染 5 个联系方式项", () => {
+  it("渲染所有联系方式条目", () => {
     render(<ContactInfoPanel />)
 
     const labels = [
-      "t:addressLabel",
-      "t:phoneLabel",
-      "t:emailLabel",
-      "t:wechatLabel",
-      "t:hoursLabel",
+      "办公地址",
+      "咨询热线",
+      "电子邮箱",
+      "微信咨询",
+      "办公时间",
     ]
     labels.forEach((label) => {
       expect(screen.getByText(label)).toBeInTheDocument()

@@ -19,7 +19,7 @@ import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
-import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
+import type { SiteInfo, ContactItem, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 统计项编辑字段定义 */
 const STAT_FIELDS = [
@@ -55,7 +55,7 @@ interface BannerDialogState {
 /** 原始配置数据类型 */
 interface RawConfig {
   siteInfo: SiteInfo
-  contactInfo: ContactInfo
+  contactItems: ContactItem[]
   homepageStats: HomepageStat[]
   aboutInfo: AboutInfo
   pageBanners: PageBanners
@@ -68,9 +68,7 @@ const DEFAULT_RAW: RawConfig = {
     logo_url: '', favicon_url: '', wechat_service_qr_url: '',
     wechat_official_qr_url: '', company_name: '', icp_filing: '',
   },
-  contactInfo: {
-    address: '', phone: '', email: '', wechat: '', registered_address: '',
-  },
+  contactItems: [],
   homepageStats: [],
   aboutInfo: {
     history_title: '', history: '',
@@ -82,7 +80,6 @@ export default function WebSettingsPage() {
   const { refreshConfig } = useConfig()
   const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
-  const tContact = useTranslations("Contact")
 
   const [activeTab, setActiveTab] = useState<'preview' | 'advanced'>('preview')
   const [activePage, setActivePage] = useState('home')
@@ -104,7 +101,7 @@ export default function WebSettingsPage() {
 
       setRawConfig({
         siteInfo: findValue('site_info') ?? DEFAULT_RAW.siteInfo,
-        contactInfo: findValue('contact_info') ?? DEFAULT_RAW.contactInfo,
+        contactItems: findValue('contact_items') ?? DEFAULT_RAW.contactItems,
         homepageStats: findValue('homepage_stats') ?? DEFAULT_RAW.homepageStats,
         aboutInfo: findValue('about_info') ?? DEFAULT_RAW.aboutInfo,
         pageBanners: findValue('page_banners') ?? DEFAULT_RAW.pageBanners,
@@ -256,24 +253,50 @@ export default function WebSettingsPage() {
           defaultValues: { brand_name: tHeader("brandName") },
         })
         break
-      case 'phone':
-        setDialogState({
-          open: true,
-          title: '编辑电话',
-          fields: [{ key: 'phone', label: '电话', type: 'text' as const, localized: false }],
-          configKey: 'contact_info',
-          data: rawConfig.contactInfo,
-        })
+      case 'phone': {
+        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'phone')
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑电话',
+            fields: [{ key: 'content', label: '电话', type: 'text' as const, localized: false }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
-      case 'email':
-        setDialogState({
-          open: true,
-          title: '编辑邮箱',
-          fields: [{ key: 'email', label: '邮箱', type: 'text' as const, localized: false }],
-          configKey: 'contact_info',
-          data: rawConfig.contactInfo,
-        })
+      }
+      case 'email': {
+        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'mail')
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑邮箱',
+            fields: [{ key: 'content', label: '邮箱', type: 'text' as const, localized: false }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
+      }
       case 'company':
         setDialogState({
           open: true,
@@ -336,25 +359,28 @@ export default function WebSettingsPage() {
         })
         break
       default:
-        // contact_* 前缀处理联系信息字段
-        if (section.startsWith('contact_')) {
-          const field = section.replace('contact_', '')
-          const fieldDefs: Record<string, { label: string; localized: boolean; defaultKey?: string }> = {
-            address: { label: '办公地址', localized: true, defaultKey: 'address' },
-            phone: { label: '咨询热线', localized: false, defaultKey: 'phone' },
-            email: { label: '电子邮箱', localized: false, defaultKey: 'email' },
-            wechat: { label: '微信咨询', localized: false, defaultKey: 'wechat' },
-            registered_address: { label: '注册地址', localized: true, defaultKey: 'registeredAddress' },
-          }
-          const def = fieldDefs[field]
-          if (def) {
+        // contact_item_N 前缀处理联系信息条目
+        if (section.startsWith('contact_item_')) {
+          const idx = parseInt(section.replace('contact_item_', ''), 10)
+          const item = rawConfig.contactItems[idx]
+          if (item) {
             setDialogState({
               open: true,
-              title: `编辑${def.label}`,
-              fields: [{ key: field, label: def.label, type: 'text' as const, localized: def.localized }],
-              configKey: 'contact_info',
-              data: rawConfig.contactInfo,
-              defaultValues: def.defaultKey ? { [field]: tContact(def.defaultKey) } : undefined,
+              title: `编辑联系信息`,
+              fields: [
+                { key: 'label', label: '标签', type: 'text' as const, localized: true },
+                { key: 'content', label: '内容', type: 'text' as const, localized: true },
+              ],
+              configKey: 'contact_items',
+              data: item,
+              customSave: async (data) => {
+                const updated = [...rawConfig.contactItems]
+                updated[idx] = { ...item, ...data }
+                await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
             })
           }
         }
