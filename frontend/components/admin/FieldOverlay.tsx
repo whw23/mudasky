@@ -8,13 +8,14 @@ interface FieldOverlayProps {
   children: React.ReactNode
   onClick: () => void
   label?: string
+  className?: string
 }
 
-export function FieldOverlay({ children, onClick, label }: FieldOverlayProps) {
+export function FieldOverlay({ children, onClick, label, className }: FieldOverlayProps) {
   return (
     <div
       data-field
-      className="group/field relative w-fit cursor-pointer"
+      className={`group/field relative w-fit cursor-pointer ${className ?? ""}`}
       onClick={(e) => {
         e.stopPropagation()
         onClick()

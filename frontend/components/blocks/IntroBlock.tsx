@@ -43,8 +43,8 @@ export function IntroBlock({ block, header, bg, editable, onEdit, onFieldEdit }:
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
-            <FieldOverlay onClick={() => onFieldEdit?.(block, "content")} label="编辑内容">
-              <p className="mx-auto mt-8 max-w-3xl text-center leading-relaxed text-muted-foreground">
+            <FieldOverlay onClick={() => onFieldEdit?.(block, "content")} label="编辑内容" className="mx-auto mt-8 max-w-3xl">
+              <p className="text-center leading-relaxed text-muted-foreground">
                 {content}
               </p>
             </FieldOverlay>

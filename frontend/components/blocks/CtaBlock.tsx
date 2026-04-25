@@ -55,13 +55,13 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: B
           <div className="mx-auto max-w-7xl px-4 text-center">
             {header}
             {title && (
-              <FieldOverlay onClick={() => onFieldEdit?.(block, "title")} label="编辑标题">
-                <h3 className="mt-6 text-2xl font-bold">{title}</h3>
+              <FieldOverlay onClick={() => onFieldEdit?.(block, "title")} label="编辑标题" className="mx-auto mt-6">
+                <h3 className="text-2xl font-bold">{title}</h3>
               </FieldOverlay>
             )}
             {desc && (
-              <FieldOverlay onClick={() => onFieldEdit?.(block, "desc")} label="编辑描述">
-                <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">{desc}</p>
+              <FieldOverlay onClick={() => onFieldEdit?.(block, "desc")} label="编辑描述" className="mx-auto mt-4 max-w-2xl">
+                <p className="text-muted-foreground">{desc}</p>
               </FieldOverlay>
             )}
             <ConsultButton className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
