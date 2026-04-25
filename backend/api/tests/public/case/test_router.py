@@ -99,6 +99,66 @@ class TestListCases:
         assert data["page"] == 2
         assert data["page_size"] == 5
 
+    async def test_list_cases_with_university(self, client):
+        """案例关联院校时返回院校摘要信息。"""
+        case = MagicMock(
+            spec=[
+                "id", "student_name", "university", "program",
+                "year", "testimonial", "avatar_url", "is_featured",
+                "sort_order", "university_id", "avatar_image_id",
+                "offer_image_id", "created_at", "updated_at"
+            ],
+            id="case-001", student_name="张三",
+            university="测试大学", program="计算机",
+            year=2025, testimonial="很棒",
+            avatar_url=None, is_featured=False,
+            sort_order=0, university_id="uni-001",
+            avatar_image_id=None, offer_image_id=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=None,
+        )
+        self.mock_svc.list_cases.return_value = ([case], 1)
+
+        uni = MagicMock()
+        uni.id = "uni-001"
+        uni.name = "测试大学"
+        uni.logo_image_id = "img-1"
+        self.mock_get_uni.return_value = uni
+
+        resp = await client.get("/public/cases/list")
+        assert resp.status_code == 200
+        data = resp.json()
+        item = data["items"][0]
+        assert item["related_university"]["id"] == "uni-001"
+        assert item["related_university"]["name"] == "测试大学"
+
+    async def test_list_cases_university_not_found(self, client):
+        """案例有 university_id 但院校不存在时不返回院校信息。"""
+        case = MagicMock(
+            spec=[
+                "id", "student_name", "university", "program",
+                "year", "testimonial", "avatar_url", "is_featured",
+                "sort_order", "university_id", "avatar_image_id",
+                "offer_image_id", "created_at", "updated_at"
+            ],
+            id="case-002", student_name="李四",
+            university="某大学", program="数学",
+            year=2024, testimonial=None,
+            avatar_url=None, is_featured=False,
+            sort_order=0, university_id="uni-missing",
+            avatar_image_id=None, offer_image_id=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=None,
+        )
+        self.mock_svc.list_cases.return_value = ([case], 1)
+        self.mock_get_uni.return_value = None
+
+        resp = await client.get("/public/cases/list")
+        assert resp.status_code == 200
+        data = resp.json()
+        item = data["items"][0]
+        assert item["related_university"] is None
+
 
 class TestGetCase:
     """获取成功案例详情端点测试。"""
@@ -204,3 +264,61 @@ class TestGetCase:
         self.mock_get_uni.return_value = None
         resp = await client.get("/public/cases/detail/case-002")
         assert resp.status_code == 200
+
+    async def test_get_case_with_related_university(self, client):
+        """案例关联院校时详情返回院校摘要。"""
+        case = MagicMock(
+            spec=[
+                "id", "student_name", "university", "program",
+                "year", "testimonial", "avatar_url", "is_featured",
+                "sort_order", "university_id", "avatar_image_id",
+                "offer_image_id", "created_at", "updated_at"
+            ],
+            id="case-001", student_name="张三",
+            university="测试大学", program="计算机",
+            year=2025, testimonial="很棒",
+            avatar_url=None, is_featured=False,
+            sort_order=0, university_id="uni-001",
+            avatar_image_id=None, offer_image_id=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        )
+        self.mock_svc.get_case.return_value = case
+
+        uni = MagicMock()
+        uni.id = "uni-001"
+        uni.name = "测试大学"
+        uni.logo_image_id = "img-1"
+        self.mock_get_uni.return_value = uni
+
+        resp = await client.get("/public/cases/detail/case-001")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["related_university"]["id"] == "uni-001"
+        assert data["related_university"]["name"] == "测试大学"
+
+    async def test_get_case_university_id_but_not_found(self, client):
+        """案例有 university_id 但院校不存在时不附带院校信息。"""
+        case = MagicMock(
+            spec=[
+                "id", "student_name", "university", "program",
+                "year", "testimonial", "avatar_url", "is_featured",
+                "sort_order", "university_id", "avatar_image_id",
+                "offer_image_id", "created_at", "updated_at"
+            ],
+            id="case-003", student_name="王五",
+            university="已关闭大学", program="物理",
+            year=2023, testimonial=None,
+            avatar_url=None, is_featured=False,
+            sort_order=0, university_id="uni-deleted",
+            avatar_image_id=None, offer_image_id=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime(2026, 2, 1, tzinfo=timezone.utc),
+        )
+        self.mock_svc.get_case.return_value = case
+        self.mock_get_uni.return_value = None
+
+        resp = await client.get("/public/cases/detail/case-003")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["related_university"] is None
