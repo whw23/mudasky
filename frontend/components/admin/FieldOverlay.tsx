@@ -15,7 +15,7 @@ export function FieldOverlay({ children, onClick, label, className }: FieldOverl
   return (
     <div
       data-field
-      className={`group/field relative w-fit cursor-pointer ${className ?? ""}`}
+      className={`group/field relative cursor-pointer ${className ?? ""}`}
       onClick={(e) => {
         e.stopPropagation()
         onClick()
