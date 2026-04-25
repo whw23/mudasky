@@ -269,3 +269,308 @@ async def test_login_2fa_required(
 
     assert result_user == user
     assert step == "2fa_required"
+
+
+# ---- login: phone auto register ----
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_login_phone_auto_register(
+    mock_repo, mock_user_repo, service, sample_user
+):
+    """手机号未注册时自动创建用户。"""
+    mock_repo.verify_sms_code = AsyncMock()
+    mock_user_repo.get_by_phone = AsyncMock(return_value=None)
+    new_user = sample_user(phone="+86-13900139000")
+    mock_user_repo.create = AsyncMock(return_value=new_user)
+
+    with patch.object(
+        service, "_get_visitor_role", return_value=None
+    ), patch("api.auth.service.settings") as mock_settings:
+        mock_settings.default_storage_quota_bytes = 104857600
+        result_user, step = await service.login(
+            phone="+86-13900139000", code="123456"
+        )
+
+    assert result_user == new_user
+    assert step is None
+    mock_user_repo.create.assert_awaited_once()
+
+
+# ---- login: password not set ----
+
+
+@pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="anypassword")
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_login_password_not_set(
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
+):
+    """用户未设置密码时应抛出 UnauthorizedException。"""
+    user = sample_user(password_hash=None)
+    mock_user_repo.get_by_username = AsyncMock(return_value=user)
+
+    with pytest.raises(UnauthorizedException) as exc_info:
+        await service.login(
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
+        )
+    assert exc_info.value.code == "PASSWORD_NOT_SET"
+
+
+# ---- send_code: hourly limit ----
+
+
+@pytest.mark.asyncio
+@patch(AUTH_REPO)
+async def test_send_code_hourly_limit(mock_repo, service):
+    """每小时第 5 次发送应抛出 TooManyRequestsException。"""
+    mock_repo.get_latest_sms_code = AsyncMock(return_value=None)
+    mock_repo.count_recent_sms = AsyncMock(return_value=5)
+
+    with pytest.raises(TooManyRequestsException) as exc_info:
+        await service.send_code("+86-13800138000")
+    assert exc_info.value.code == "SMS_CODE_LIMIT_REACHED"
+
+
+# ---- 2FA: TOTP valid / invalid ----
+
+
+@pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="correct")
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_login_2fa_totp_valid(
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
+):
+    """二步验证 TOTP 码正确时登录成功。"""
+    user = sample_user(
+        two_factor_enabled=True,
+        two_factor_method="totp",
+        totp_secret="JBSWY3DPEHPK3PXP",
+        password_hash="hashed",
+    )
+    mock_user_repo.get_by_username = AsyncMock(return_value=user)
+
+    with patch(
+        "api.auth.service.verify_password", return_value=True
+    ), patch("api.auth.service.pyotp") as mock_pyotp:
+        mock_totp = MagicMock()
+        mock_totp.verify.return_value = True
+        mock_pyotp.TOTP.return_value = mock_totp
+
+        result_user, step = await service.login(
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
+            totp="123456",
+        )
+
+    assert result_user == user
+    assert step is None
+
+
+@pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="correct")
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_login_2fa_totp_invalid(
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
+):
+    """二步验证 TOTP 码错误时应抛出 UnauthorizedException。"""
+    user = sample_user(
+        two_factor_enabled=True,
+        two_factor_method="totp",
+        totp_secret="JBSWY3DPEHPK3PXP",
+        password_hash="hashed",
+    )
+    mock_user_repo.get_by_username = AsyncMock(return_value=user)
+
+    with patch(
+        "api.auth.service.verify_password", return_value=True
+    ), patch("api.auth.service.pyotp") as mock_pyotp:
+        mock_totp = MagicMock()
+        mock_totp.verify.return_value = False
+        mock_pyotp.TOTP.return_value = mock_totp
+
+        with pytest.raises(UnauthorizedException) as exc_info:
+            await service.login(
+                username="testuser",
+                encrypted_password="enc",
+                nonce="n",
+                totp="000000",
+            )
+        assert exc_info.value.code == "TOTP_CODE_INCORRECT"
+
+
+# ---- 2FA: SMS valid ----
+
+
+@pytest.mark.asyncio
+@patch(DECRYPT_PW, return_value="correct")
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_login_2fa_sms_valid(
+    mock_repo, mock_user_repo, mock_decrypt, service, sample_user
+):
+    """二步验证短信验证码正确时登录成功。"""
+    user = sample_user(
+        two_factor_enabled=True,
+        two_factor_method="sms",
+        password_hash="hashed",
+    )
+    mock_user_repo.get_by_username = AsyncMock(return_value=user)
+    mock_repo.verify_sms_code = AsyncMock()
+
+    with patch(
+        "api.auth.service.verify_password", return_value=True
+    ):
+        result_user, step = await service.login(
+            username="testuser",
+            encrypted_password="enc",
+            nonce="n",
+            sms_code_2fa="654321",
+        )
+
+    assert result_user == user
+    assert step is None
+    mock_repo.verify_sms_code.assert_awaited_once()
+
+
+# ---- refresh ----
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_refresh_invalid_token(
+    mock_repo, mock_user_repo, service
+):
+    """无效刷新令牌应抛出 UnauthorizedException。"""
+    mock_repo.get_refresh_token_by_hash = AsyncMock(
+        return_value=None
+    )
+
+    with pytest.raises(UnauthorizedException) as exc_info:
+        await service.refresh("bad-hash")
+    assert exc_info.value.code == "REFRESH_TOKEN_INVALID"
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_refresh_expired_token(
+    mock_repo, mock_user_repo, service
+):
+    """已过期刷新令牌应抛出 UnauthorizedException。"""
+    expired_token = MagicMock()
+    expired_token.expires_at = datetime(
+        2020, 1, 1, tzinfo=timezone.utc
+    )
+    mock_repo.get_refresh_token_by_hash = AsyncMock(
+        return_value=expired_token
+    )
+
+    with pytest.raises(UnauthorizedException) as exc_info:
+        await service.refresh("expired-hash")
+    assert exc_info.value.code == "REFRESH_TOKEN_EXPIRED"
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_refresh_disabled_user(
+    mock_repo, mock_user_repo, service, sample_user
+):
+    """已禁用用户续签应抛出 UnauthorizedException。"""
+    valid_token = MagicMock()
+    valid_token.expires_at = datetime(
+        2099, 1, 1, tzinfo=timezone.utc
+    )
+    valid_token.user_id = "user-001"
+    mock_repo.get_refresh_token_by_hash = AsyncMock(
+        return_value=valid_token
+    )
+    disabled_user = sample_user(is_active=False)
+    mock_user_repo.get_by_id = AsyncMock(
+        return_value=disabled_user
+    )
+
+    with pytest.raises(UnauthorizedException) as exc_info:
+        await service.refresh("valid-hash")
+    assert exc_info.value.code == "USER_NOT_FOUND_OR_DISABLED"
+
+
+# ---- save_refresh_token_hash ----
+
+
+@pytest.mark.asyncio
+@patch(AUTH_REPO)
+async def test_save_refresh_token_hash(mock_repo, service):
+    """保存刷新令牌哈希成功。"""
+    mock_repo.save_refresh_token = AsyncMock()
+
+    await service.save_refresh_token_hash(
+        user_id="user-001",
+        token_hash="abc123",
+        expire_days=30,
+        user_agent="TestBrowser/1.0",
+        ip_address="127.0.0.1",
+    )
+
+    mock_repo.save_refresh_token.assert_awaited_once()
+    saved = mock_repo.save_refresh_token.call_args[0][1]
+    assert saved.user_id == "user-001"
+    assert saved.token_hash == "abc123"
+    assert saved.user_agent == "TestBrowser/1.0"
+    assert saved.ip_address == "127.0.0.1"
+
+
+# ---- logout_current_device ----
+
+
+@pytest.mark.asyncio
+@patch(AUTH_REPO)
+async def test_logout_current_device(mock_repo, service):
+    """登出当前设备应撤销指定令牌。"""
+    mock_repo.revoke_refresh_token_by_hash = AsyncMock()
+
+    await service.logout_current_device("token-hash-123")
+
+    mock_repo.revoke_refresh_token_by_hash.assert_awaited_once_with(
+        service.session, "token-hash-123"
+    )
+
+
+# ---- build_user_response ----
+
+
+@pytest.mark.asyncio
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+@patch(AUTH_REPO)
+async def test_build_user_response(
+    mock_repo, mock_user_repo, mock_rbac_repo, service, sample_user
+):
+    """构建用户响应包含权限和角色信息。"""
+    user = sample_user(role_id="role-001")
+    mock_role = MagicMock()
+    mock_role.name = "student"
+    mock_rbac_repo.get_permissions_by_role = AsyncMock(
+        return_value=["portal/*"]
+    )
+    mock_rbac_repo.get_role_by_id = AsyncMock(
+        return_value=mock_role
+    )
+
+    result = await service.build_user_response(user)
+
+    assert result.id == user.id
+    assert result.phone == user.phone
+    assert result.permissions == ["portal/*"]
+    assert result.role_name == "student"
+    assert result.role_id == "role-001"

@@ -69,6 +69,23 @@ class TestListStudents:
         data = resp.json()
         assert data["total"] == 0
 
+    async def test_list_students_with_advisor_filter(
+        self, client, superuser_headers
+    ):
+        """按顾问 ID 筛选学生列表。"""
+        self.mock_svc.list_students.return_value = (
+            [_make_student(advisor_id="advisor-001")],
+            1,
+        )
+        resp = await client.get(
+            "/admin/students/list"
+            "?advisor_id=advisor-001&my_students=false",
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+
 
 class TestGetStudentDetail:
     """学生详情端点测试。"""
@@ -139,6 +156,22 @@ class TestEditStudent:
         )
         assert resp.status_code == 200
 
+    async def test_edit_student_not_found(
+        self, client, superuser_headers
+    ):
+        """编辑不存在的学生返回 404。"""
+        from app.core.exceptions import NotFoundException
+
+        self.mock_svc.edit_student.side_effect = (
+            NotFoundException(message="学生不存在")
+        )
+        resp = await client.post(
+            "/admin/students/list/detail/edit",
+            json={"user_id": "nonexistent", "is_active": False},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 404
+
 
 class TestAssignAdvisor:
     """指定顾问端点测试。"""
@@ -163,6 +196,41 @@ class TestAssignAdvisor:
             json={
                 "user_id": "student-001",
                 "advisor_id": "advisor-001",
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "顾问已分配"
+
+    async def test_assign_advisor_not_found(
+        self, client, superuser_headers
+    ):
+        """指定顾问时学生不存在返回 404。"""
+        from app.core.exceptions import NotFoundException
+
+        self.mock_svc.assign_advisor.side_effect = (
+            NotFoundException(message="学生不存在")
+        )
+        resp = await client.post(
+            "/admin/students/list/detail/assign-advisor",
+            json={
+                "user_id": "nonexistent",
+                "advisor_id": "advisor-001",
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 404
+
+    async def test_assign_advisor_clear(
+        self, client, superuser_headers
+    ):
+        """清除顾问分配返回 200。"""
+        self.mock_svc.assign_advisor.return_value = None
+        resp = await client.post(
+            "/admin/students/list/detail/assign-advisor",
+            json={
+                "user_id": "student-001",
+                "advisor_id": None,
             },
             headers=superuser_headers,
         )

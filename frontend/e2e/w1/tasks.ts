@@ -631,6 +631,20 @@ export const tasks: Task[] = [
 
   /* ── 用户管理：高级操作 ── */
   {
+    id: "w1_delete_temp_user",
+    worker: "w1",
+    name: "删除临时账号",
+    requires: ["w1_enable_temp"],
+    fn: deleteUser,
+    fnArgs: { keyword: PHONES.w7_disabled },
+    coverage: {
+      routes: ["/admin/users"],
+      api: ["/api/admin/users/list/detail/delete"],
+      components: [["UserExpandPanel", "删除确认"]],
+      security: [],
+    },
+  },
+  {
     id: "w1_user_reset_password",
     worker: "w1",
     name: "重置用户密码",

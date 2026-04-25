@@ -161,12 +161,7 @@ run_unit() {
 }
 
 run_gateway() {
-  local version
-  version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
-  if [ -z "$version" ]; then
-    echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
-    return 1
-  fi
+  [ "${SKIP_CONTAINER_CHECK:-}" != "1" ] && { check_container dev || return 1; }
   load_env
   run_and_log "gateway.log" \
     uv run --project backend/api python -m pytest backend/api/tests/e2e/ -v \
@@ -185,22 +180,76 @@ run_vitest() {
   return $rc
 }
 
-check_prod_container() {
+# 检查容器状态
+# 用法: check_container <expected_type>
+#   "dev" = 仅接受开发容器, "prod" = 仅接受生产容器
+check_container() {
+  local expected="$1"
+
+  # 1. 网关可达性
   local version
-  version=$(curl -sf http://localhost/api/version 2>/dev/null || echo "")
+  version=$(curl -sf --max-time 5 http://localhost/api/version 2>/dev/null || echo "")
   if [ -z "$version" ]; then
-    echo -e "${RED}错误: localhost 无法访问，请先启动容器${NC}"
+    echo -e "${RED}错误: localhost/api/version 无法访问${NC}"
+    if [ "$expected" = "prod" ]; then
+      echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
+    else
+      echo "  ./scripts/dev.sh start   启动开发容器"
+    fi
+    return 1
+  fi
+
+  # 2. JSON 合法性
+  if ! echo "$version" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
+    echo -e "${RED}错误: /api/version 返回了非 JSON 响应${NC}"
+    echo "  响应内容: $version"
+    return 1
+  fi
+
+  # 3. 提取各服务版本
+  local gw_ver api_ver fe_ver db_ver
+  read -r gw_ver api_ver fe_ver db_ver < <(
+    echo "$version" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+print(d.get('gateway',''), d.get('api',''), d.get('frontend',''), d.get('db',''))
+" 2>/dev/null
+  )
+
+  # 4. 逐服务校验
+  local has_error=0
+  for pair in "gateway:$gw_ver" "api:$api_ver" "frontend:$fe_ver" "db:$db_ver"; do
+    local svc="${pair%%:*}" ver="${pair#*:}"
+    if [ -z "$ver" ] || [ "$ver" = "unknown" ]; then
+      echo -e "${RED}  ✗ $svc 未就绪 (version=${ver:-空})${NC}"
+      has_error=1
+    fi
+  done
+  if [ "$has_error" -eq 1 ]; then
+    echo -e "${RED}错误: 部分服务未就绪，请检查容器状态${NC}"
+    echo "  docker compose ps        查看容器状态"
+    echo "  docker compose logs -f    查看日志"
+    return 1
+  fi
+
+  # 5. 容器类型校验
+  local is_dev=0
+  [ "$fe_ver" = "dev" ] && is_dev=1
+
+  if [ "$expected" = "prod" ] && [ "$is_dev" -eq 1 ]; then
+    echo -e "${RED}错误: 当前运行的是开发容器（frontend=dev），E2E 需要生产容器${NC}"
     echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
     return 1
   fi
-  if echo "$version" | grep -q '"frontend":"dev"'; then
-    echo -e "${RED}错误: 当前运行的是开发容器（version=dev），E2E 需要生产容器${NC}"
-    echo "  ./scripts/dev.sh --prod  构建并启动生产容器"
+  if [ "$expected" = "dev" ] && [ "$is_dev" -eq 0 ]; then
+    echo -e "${RED}错误: 当前运行的是生产容器（frontend=$fe_ver），网关测试需要开发容器${NC}"
+    echo "  ./scripts/dev.sh start   启动开发容器"
     return 1
   fi
-  local fe_version
-  fe_version=$(echo "$version" | python3 -c "import sys,json; print(json.load(sys.stdin).get('frontend',''))" 2>/dev/null || echo "")
-  echo -e "${GREEN}✓ 生产容器已就绪 (version=$fe_version)${NC}"
+
+  local container_type="生产"
+  [ "$is_dev" -eq 1 ] && container_type="开发"
+  echo -e "${GREEN}✓ ${container_type}容器已就绪 (gw=$gw_ver api=$api_ver fe=$fe_ver db=$db_ver)${NC}"
 }
 
 export E2E_OUTPUT_DIR="../../$RESULTS_DIR/e2e-artifacts"
@@ -209,7 +258,7 @@ export E2E_RUNTIME_DIR="$(pwd)/$RESULTS_DIR/e2e-runtime"
 export E2E_SIGNAL_DIR="$(pwd)/$RESULTS_DIR/e2e-signals"
 
 run_e2e() {
-  check_prod_container || return 1
+  [ "${SKIP_CONTAINER_CHECK:-}" != "1" ] && { check_container prod || return 1; }
   load_env
   run_and_log "e2e.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
@@ -219,7 +268,7 @@ run_e2e() {
 }
 
 run_e2e_lnp() {
-  check_prod_container || return 1
+  [ "${SKIP_CONTAINER_CHECK:-}" != "1" ] && { check_container prod || return 1; }
   load_env
   LAST_NOT_PASS=1 run_and_log "e2e-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
@@ -228,12 +277,18 @@ run_e2e_lnp() {
   return $rc
 }
 
-run_e2e_prod() {
+check_production_host() {
   load_env
   if [ -z "${PRODUCTION_HOST:-}" ]; then
     echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
     return 1
   fi
+  echo -e "${GREEN}✓ 线上环境已配置 (PRODUCTION_HOST=$PRODUCTION_HOST)${NC}"
+}
+
+run_e2e_prod() {
+  [ "${SKIP_CONTAINER_CHECK:-}" != "1" ] && { check_production_host || return 1; }
+  load_env
   TEST_ENV=production run_and_log "e2e-prod.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
   local rc=$?
@@ -242,11 +297,8 @@ run_e2e_prod() {
 }
 
 run_e2e_prod_lnp() {
+  [ "${SKIP_CONTAINER_CHECK:-}" != "1" ] && { check_production_host || return 1; }
   load_env
-  if [ -z "${PRODUCTION_HOST:-}" ]; then
-    echo -e "${RED}错误: env/backend.env 中未设置 PRODUCTION_HOST${NC}"
-    return 1
-  fi
   LAST_NOT_PASS=1 TEST_ENV=production run_and_log "e2e-prod-lnp.log" \
     pnpm --prefix frontend exec playwright test --config e2e/playwright.config.ts
   local rc=$?
@@ -295,6 +347,8 @@ case "${1:-}" in
     run_timed "e2e-prod-lnp" run_e2e_prod_lnp
     ;;
   all)
+    check_container prod || exit 1
+    export SKIP_CONTAINER_CHECK=1
     header "后端单元测试 (pytest)"
     run_timed "unit" run_unit
     header "前端单元测试 (vitest)"
@@ -305,6 +359,8 @@ case "${1:-}" in
     run_timed "e2e" run_e2e
     ;;
   all:prod)
+    check_production_host || exit 1
+    export SKIP_CONTAINER_CHECK=1
     header "后端单元测试 (pytest)"
     run_timed "unit" run_unit
     header "前端单元测试 (vitest)"

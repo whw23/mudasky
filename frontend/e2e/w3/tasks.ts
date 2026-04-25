@@ -18,6 +18,8 @@ import {
   viewStudentList,
   toggleMyStudentsFilter,
   editStudentNote,
+  viewStudentDocumentDetail,
+  downloadStudentDocument,
 } from "../fns/students"
 import {
   viewStudentDocuments,
@@ -27,6 +29,7 @@ import {
   expandContact,
   markContactStatus,
   addContactNote,
+  upgradeContactToStudent,
 } from "../fns/contacts"
 import {
   verifyPermissionAllowed,
@@ -153,6 +156,37 @@ export const tasks: Task[] = [
     },
   },
 
+  {
+    id: "w3_view_student_doc_detail",
+    worker: "w3",
+    name: "查看学生文档详情",
+    requires: ["w3_student_docs_view"],
+    fn: viewStudentDocumentDetail,
+    fnArgs: {},
+    backupWorkers: ["w1"],
+    coverage: {
+      routes: ["/admin/students"],
+      api: ["/api/admin/students/list/detail/documents/list/detail"],
+      components: [["StudentExpandPanel", "文档列表"]],
+      security: [],
+    },
+  },
+  {
+    id: "w3_download_student_doc",
+    worker: "w3",
+    name: "下载学生文档",
+    requires: ["w3_view_student_doc_detail"],
+    fn: downloadStudentDocument,
+    fnArgs: {},
+    backupWorkers: ["w1"],
+    coverage: {
+      routes: ["/admin/students"],
+      api: ["/api/admin/students/list/detail/documents/list/detail/download"],
+      components: [["StudentExpandPanel", "文档列表"]],
+      security: [],
+    },
+  },
+
   /* ── 联系人管理 ── */
   {
     id: "w3_contacts_view",
@@ -214,6 +248,21 @@ export const tasks: Task[] = [
       routes: ["/admin/contacts"],
       api: ["/admin/contacts/list/detail/note"],
       components: ["ContactDetailPanel"],
+      security: [],
+    },
+  },
+
+  {
+    id: "w3_upgrade_contact",
+    worker: "w3",
+    name: "升级联系人为学生",
+    requires: ["w3_contacts_add_note"],
+    fn: upgradeContactToStudent,
+    fnArgs: {},
+    coverage: {
+      routes: ["/admin/contacts"],
+      api: ["/api/admin/contacts/list/detail/upgrade"],
+      components: [["ContactExpandPanel", "升级取消"]],
       security: [],
     },
   },

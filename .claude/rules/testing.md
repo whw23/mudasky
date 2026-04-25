@@ -27,17 +27,19 @@
 
 功能开发完成后通过 `scripts/test.sh` 验证：
 
-| 阶段 | 命令 | 说明 |
-|------|------|------|
-| 1. 后端单元测试 | `./scripts/test.sh unit` | mock 验证逻辑 + 覆盖率 |
-| 2. 前端单元测试 | `./scripts/test.sh vitest` | 组件/hooks/工具函数 |
-| 3. 后端网关测试 | `./scripts/test.sh gateway` | `localhost:80` 走 gateway |
-| 4. 前端 E2E（本地） | `./scripts/test.sh e2e` | 生产容器，自动检查版本 |
-| 5. 前端 E2E（线上） | `./scripts/test.sh e2e:prod` | 部署后验证 |
-| 全部（本地） | `./scripts/test.sh all` | 1-4 依次执行 |
-| 全部（线上） | `./scripts/test.sh all:prod` | 1+2+5 |
+| 阶段 | 命令 | 容器要求 | 说明 |
+|------|------|----------|------|
+| 1. 后端单元测试 | `./scripts/test.sh unit` | 无需容器 | mock 验证逻辑 + 覆盖率 |
+| 2. 前端单元测试 | `./scripts/test.sh vitest` | 无需容器 | 组件/hooks/工具函数 |
+| 3. 后端网关测试 | `./scripts/test.sh gateway` | 仅开发容器 | `localhost:80` 走 gateway |
+| 4. 前端 E2E（本地） | `./scripts/test.sh e2e` | 仅生产容器 | 生产容器，自动检查版本 |
+| 5. 前端 E2E（线上） | `./scripts/test.sh e2e:prod` | 无需容器 | 部署后验证，需 PRODUCTION_HOST |
+| 全部（本地） | `./scripts/test.sh all` | 仅生产容器 | 1-4 依次执行 |
+| 全部（线上） | `./scripts/test.sh all:prod` | 无需容器 | 1+2+5 |
 
-- 本地 E2E 必须用生产容器（`./scripts/dev.sh --prod` 构建），脚本自动检查
+- 脚本通过 `GET /api/version` 校验容器状态（gateway/api/frontend/db 四个服务版本）
+- `gateway` 单独运行时拒绝生产容器，`all` 运行时跳过此限制（网关层在两种容器下行为一致）
+- `e2e` 拒绝开发容器（`frontend=dev`），必须用生产容器（`./scripts/dev.sh --prod` 构建）
 - 环境变量由脚本从 `env/backend.env` 自动加载，无需手动输入
 
 ### 测试覆盖要求
@@ -51,26 +53,29 @@
 
 所有覆盖率指标目标 **100%**。
 
-| 维度 | 工具 | 清单文件 | 命令 |
+| 维度 | 工具 | 基准来源 | 命令 |
 |------|------|----------|------|
 | 后端代码 | `pytest-cov`（行级） | — | `uv run --project backend/api python -m pytest --cov=api --cov-report=term-missing` |
 | 前端代码 | `@vitest/coverage-v8` | — | `pnpm --prefix frontend test --coverage` |
-| API 端点 | fixture 拦截 | `e2e/helpers/api-endpoints.json` | E2E 跑完自动输出 |
-| 页面路由 | fixture 拦截 | `e2e/helpers/page-routes.json` | E2E 跑完自动输出 |
-| 交互组件 | fixture 拦截 | `e2e/helpers/components.json` | E2E 跑完自动输出 |
-| 安全场景 | fixture 拦截 | `e2e/helpers/security-scenarios.json` | E2E 跑完自动输出 |
-| JS 代码 | `page.coverage` + istanbul | — | `E2E_COVERAGE=1` 时启用 |
+| API 端点 | `page.on("response")` 拦截 | 动态扫描 `GET /api/meta/routes` | E2E 跑完自动输出 |
+| 页面路由 | 任务 `coverage.routes` 声明 | 动态扫描 `app/[locale]/**/page.tsx` + `PanelGuard` | E2E 跑完自动输出 |
+| 交互组件 | 任务 `coverage.components` 声明 | `e2e/helpers/components.json`（35 组件 / 137 元素） | E2E 跑完自动输出 |
+| 安全场景 | 任务 `coverage.security` 声明 | `e2e/helpers/security-scenarios.json`（33 场景） | E2E 跑完自动输出 |
 
-覆盖率清单文件使用 JSON 格式，`global-teardown` 直接 `JSON.parse` 读取，与测试运行时收集的数据对比输出未覆盖项。
+覆盖率基准在 `global-setup` 中动态扫描（API 端点和页面路由），或从静态 JSON 读取（组件和安全场景）。`global-teardown` 汇总所有已通过任务的覆盖率声明，与基准对比输出未覆盖项。
 
 #### 覆盖率六维度
 
-1. **API 端点**：后端每个 router 端点必须被 E2E 触发
-2. **页面路由**：前端每个 `page.tsx` 路由必须被访问
-3. **交互组件**：每个可交互元素（按钮、输入框、下拉框、checkbox、tab、弹窗、展开面板）必须被操作
-4. **安全场景**：JWT 篡改/过期/缺失、IDOR 越权、跨角色访问、禁用用户、文件上传安全、Token 轮换
-5. **正反例**：每个测试目标至少 2 正例 + 2 反例
-6. **通过率**：0 failed, 0 skipped, 0 flaky（首次就通过，不依赖 retry）
+| # | 维度 | 基准来源 | 收集方式 | 当前数据 |
+|---|------|----------|----------|----------|
+| 1 | **API 端点** | 动态扫描 `/api/meta/routes` | `page.on("response")` 自动拦截 | ~93 端点（含 4 个 SSR Only） |
+| 2 | **页面路由** | 扫描 `page.tsx` + `PanelGuard` | 任务 `coverage.routes` 声明 | ~36 路由 |
+| 3 | **交互组件** | `e2e/helpers/components.json` | 任务 `coverage.components` 声明 | 35 组件 / 137 元素 |
+| 4 | **安全场景** | `e2e/helpers/security-scenarios.json` | 任务 `coverage.security` 声明 | 11 分类 / 33 场景 |
+| 5 | **正反例** | — | 每个 worker 同时做正向（有权限）和反向（无权限/被拒）测试 | 每个测试目标 ≥2 正例 + ≥2 反例 |
+| 6 | **通过率** | — | `global-teardown` 汇总 pass/fail/breaker/timeout | 0 failed, 0 skipped, 0 flaky（首次通过，不依赖 retry） |
+
+SSR Only API（Server Component 内部调用，Playwright 无法拦截）：`cases/list`、`cases/detail`、`content/article`、`universities/detail`
 
 ### 后端单元测试
 
@@ -121,7 +126,7 @@
 每个任务声明前置条件，worker 循环遍历找能做的任务：
 1. 遍历自己的任务，找前置条件已满足的 → 执行
 2. 自己的任务做完了 → 查看 backupWorkers 包含自己的其他任务 → 抢占执行
-3. 没有能做的 → sleep(2s) → 重新遍历
+3. 没有能做的 → sleep(200ms) → 重新遍历
 4. 所有任务完成/熔断 → 退出
 5. 总超时 10 分钟，超时后 pending 任务标记 timeout
 
@@ -148,14 +153,14 @@
 
 从任务定义的 `coverage` 声明汇总，四维度：
 
-| 维度 | 收集方式 |
-|------|----------|
-| API 端点 | 自动：`page.on("response")` 拦截 |
-| 页面路由 | 自动：`page.on("framenavigated")` 拦截 |
-| 组件交互 | 手动：任务 coverage.components 声明 |
-| 安全场景 | 手动：任务 coverage.security 声明 |
+| 维度 | 基准 total | 覆盖 covered | 对比方式 |
+|------|-----------|-------------|----------|
+| API 端点 | 动态：`GET /api/meta/routes` | 自动：`page.on("response")` 拦截 | 模板匹配（支持 `{param}`） |
+| 页面路由 | 动态：扫描 `page.tsx` + `PanelGuard` | 手动：任务 `coverage.routes` 声明 | 精确匹配 |
+| 组件交互 | 静态：`e2e/helpers/components.json` | 手动：任务 `coverage.components` 声明 | `[组件, 元素]` 元组匹配 |
+| 安全场景 | 静态：`e2e/helpers/security-scenarios.json` | 手动：任务 `coverage.security` 声明 | `[分类, 场景]` 元组匹配 |
 
-覆盖率计算脚本在 `framework/coverage.ts`，global-teardown 中执行。
+覆盖率计算脚本在 `framework/coverage.ts`，global-teardown 中执行。global-setup 阶段拦截的 API 调用（预热/登录）也自动计入 covered。
 
 #### 测试约定
 
@@ -179,13 +184,12 @@
 #### 测试结果
 
 ```
-[Test Results] 194 pass / 0 fail / 0 breaker / 0 timeout (total: 194)
+[Test Results] 193 pass / 0 fail / 0 breaker / 0 timeout (total: 193)
 ```
 
+- 7 个 worker 共 193 个任务（W1:50 W2:27 W3:16 W4:37 W5:25 W6:18 W7:20）
 - 0 failed（含 breaker 和 timeout）为通过标准
-- 不重试，首次通过
-- API 覆盖率 69/93 (74.2%)，Route 36/36 (100%)，Component ~99%，Security ~100%
-- 6 个 API 端点前端不调用（backend-only），4 个 SSR Only（Playwright 拦截不到）
+- 不重试（`retries: 0`），首次通过
 
 #### E2E 测试目录结构
 

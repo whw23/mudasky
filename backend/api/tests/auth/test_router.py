@@ -363,3 +363,147 @@ class TestRefresh:
         """缺少 token hash 头返回 422。"""
         resp = await client.post("/auth/refresh")
         assert resp.status_code == 422
+
+    async def test_refresh_invalid_token(self, client):
+        """无效刷新令牌返回 401。"""
+        from app.core.exceptions import UnauthorizedException
+
+        self.mock_svc.refresh.side_effect = (
+            UnauthorizedException(
+                message="刷新令牌无效",
+                code="REFRESH_TOKEN_INVALID",
+            )
+        )
+        resp = await client.post(
+            "/auth/refresh",
+            headers={
+                "X-Refresh-Token-Hash": "bad-hash"
+            },
+        )
+        assert resp.status_code == 401
+
+    async def test_refresh_expired_token(self, client):
+        """已过期刷新令牌返回 401。"""
+        from app.core.exceptions import UnauthorizedException
+
+        self.mock_svc.refresh.side_effect = (
+            UnauthorizedException(
+                message="刷新令牌已过期",
+                code="REFRESH_TOKEN_EXPIRED",
+            )
+        )
+        resp = await client.post(
+            "/auth/refresh",
+            headers={
+                "X-Refresh-Token-Hash": "expired"
+            },
+        )
+        assert resp.status_code == 401
+
+
+class TestSendSmsRateLimit:
+    """短信发送限流测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 AuthService。"""
+        with patch(
+            "api.auth.router.AuthService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_send_sms_rate_limit(self, client):
+        """发送频率超限返回 429。"""
+        from app.core.exceptions import (
+            TooManyRequestsException,
+        )
+
+        self.mock_svc.send_code.side_effect = (
+            TooManyRequestsException(
+                message="验证码发送过于频繁",
+                code="SMS_CODE_TOO_FREQUENT",
+            )
+        )
+        resp = await client.post(
+            "/auth/sms-code",
+            json={"phone": "+86-13800138000"},
+        )
+        assert resp.status_code == 429
+
+
+class TestLoginExtended:
+    """登录端点扩展测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 AuthService。"""
+        with patch(
+            "api.auth.router.AuthService"
+        ) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_login_phone_password(self, client):
+        """手机号+密码登录成功返回 200。"""
+        user = _make_user()
+        self.mock_svc.login.return_value = (user, None)
+        self.mock_svc.build_user_response.return_value = (
+            _make_user_response()
+        )
+        resp = await client.post(
+            "/auth/login",
+            json={
+                "phone": "+86-13800138000",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "user" in data
+        assert data["step"] is None
+
+    async def test_login_missing_credentials(self, client):
+        """空请求体（无凭据）返回 401。"""
+        from app.core.exceptions import UnauthorizedException
+
+        self.mock_svc.login.side_effect = (
+            UnauthorizedException(
+                message="请提供有效的登录凭据",
+                code="INVALID_CREDENTIALS",
+            )
+        )
+        resp = await client.post(
+            "/auth/login", json={}
+        )
+        assert resp.status_code == 401
+
+    async def test_login_2fa_sms(self, client):
+        """登录需要短信二步验证时返回 2fa_required。"""
+        user = _make_user(
+            two_factor_enabled=True,
+            totp_secret=None,
+        )
+        self.mock_svc.login.return_value = (
+            user,
+            "2fa_required",
+        )
+        self.mock_svc.build_user_response.return_value = (
+            _make_user_response()
+        )
+        resp = await client.post(
+            "/auth/login",
+            json={
+                "phone": "+86-13800138000",
+                "encrypted_password": "enc_data",
+                "nonce": "test_nonce",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["step"] == "2fa_required"
+        assert data["two_fa_methods"]["has_totp"] is False
+        assert data["two_fa_methods"]["has_phone"] is True

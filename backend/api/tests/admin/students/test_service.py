@@ -279,3 +279,93 @@ async def test_get_student_document_not_found(
 
     with pytest.raises(NotFoundException):
         await service.get_student_document("nonexistent")
+
+
+# ---- 反向测试: not found / 边界 ----
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_edit_student_not_found(
+    mock_user_repo, service
+):
+    """编辑不存在的学生抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.edit_student("nonexistent", is_active=False)
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_assign_advisor_not_found(
+    mock_user_repo, service
+):
+    """指定顾问时学生不存在抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.assign_advisor("nonexistent", "advisor-1")
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_downgrade_not_found(
+    mock_user_repo, service
+):
+    """降为访客时学生不存在抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.downgrade_to_visitor("nonexistent")
+
+
+@pytest.mark.asyncio
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_downgrade_no_visitor_role(
+    mock_user_repo, mock_rbac_repo, service, sample_user
+):
+    """visitor 角色不存在时不更新 role_id。"""
+    user = sample_user(id="s1", role_id="role-student")
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    mock_user_repo.update = AsyncMock(return_value=user)
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=None
+    )
+
+    await service.downgrade_to_visitor("s1")
+
+    assert user.role_id == "role-student"
+    assert user.advisor_id is None
+    mock_user_repo.update.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_list_students_with_advisor_id(
+    mock_user_repo, mock_rbac_repo, service
+):
+    """按顾问 ID 筛选学生列表。"""
+    role_mock = MagicMock()
+    role_mock.id = "role-student"
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=role_mock
+    )
+    student = MagicMock()
+    student.id = "s1"
+    student.advisor_id = "advisor-1"
+    mock_user_repo.list_by_role_and_advisor = AsyncMock(
+        return_value=([student], 1)
+    )
+
+    students, total = await service.list_students(
+        0, 20, advisor_id="advisor-1"
+    )
+
+    assert total == 1
+    assert len(students) == 1
+    mock_user_repo.list_by_role_and_advisor.assert_awaited_once_with(
+        service.session, "role-student", 0, 20, "advisor-1"
+    )

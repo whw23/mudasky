@@ -165,3 +165,89 @@ async def test_upgrade_to_student(
     assert user.role_id == "role-student"
     mock_user_repo.update.assert_awaited_once()
     mock_contact_repo.create_record.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_mark_status_not_found(
+    mock_user_repo, service
+):
+    """标记状态时访客不存在抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.mark_status(
+            "nonexistent", "contacted", "staff-1"
+        )
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_add_note_not_found(
+    mock_user_repo, service
+):
+    """添加备注时访客不存在抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.add_note(
+            "nonexistent", "备注内容", "staff-1"
+        )
+
+
+@pytest.mark.asyncio
+@patch(CONTACT_REPO)
+async def test_get_history_empty(
+    mock_contact_repo, service
+):
+    """无联系记录时返回空列表。"""
+    mock_contact_repo.list_by_user = AsyncMock(
+        return_value=[]
+    )
+
+    result = await service.get_history("no-history-user")
+
+    assert result == []
+    mock_contact_repo.list_by_user.assert_awaited_once_with(
+        service.session, "no-history-user"
+    )
+
+
+@pytest.mark.asyncio
+@patch(USER_REPO)
+async def test_upgrade_not_found(
+    mock_user_repo, service
+):
+    """升为学员时访客不存在抛出异常。"""
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    with pytest.raises(NotFoundException):
+        await service.upgrade_to_student(
+            "nonexistent", "staff-1"
+        )
+
+
+@pytest.mark.asyncio
+@patch(CONTACT_REPO)
+@patch(RBAC_REPO)
+@patch(USER_REPO)
+async def test_upgrade_no_role(
+    mock_user_repo,
+    mock_rbac_repo,
+    mock_contact_repo,
+    service,
+    sample_user,
+):
+    """student 角色不存在时不更新 role_id。"""
+    user = sample_user(id="c1", role_id="role-visitor")
+    mock_user_repo.get_by_id = AsyncMock(return_value=user)
+    mock_user_repo.update = AsyncMock(return_value=user)
+    mock_rbac_repo.get_role_by_name = AsyncMock(
+        return_value=None
+    )
+    mock_contact_repo.create_record = AsyncMock()
+
+    await service.upgrade_to_student("c1", "staff-1")
+
+    assert user.role_id == "role-visitor"
+    mock_contact_repo.create_record.assert_awaited_once()
