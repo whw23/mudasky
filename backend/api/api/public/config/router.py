@@ -16,7 +16,7 @@ async def get_all_config(
     response: Response,
     if_none_match: str | None = Header(None),
 ):
-    """一次返回首页所需的全部配置（contact_info, site_info, homepage_stats, about_info）。"""
+    """一次返回首页所需的全部配置（contact_items, site_info, homepage_stats, about_info）。"""
     svc = ConfigService(session)
     data, max_updated = await svc.get_all_homepage_config()
 

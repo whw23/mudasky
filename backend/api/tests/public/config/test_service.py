@@ -111,8 +111,18 @@ async def test_get_all_homepage_config_all_keys(
     ts_nav = datetime(2026, 4, 1, tzinfo=timezone.utc)
 
     configs = {
-        "contact_info": _make_config(
-            "contact_info", {"phone": "123"}, "联系方式"
+        "contact_items": _make_config(
+            "contact_items",
+            [
+                {
+                    "icon": "phone",
+                    "label": {"zh": "热线"},
+                    "content": {"zh": "123"},
+                    "image_id": None,
+                    "hover_zoom": False,
+                }
+            ],
+            "联系信息列表",
         ),
         "site_info": _make_config(
             "site_info", {"name": "站点"}, "站点信息"
@@ -129,7 +139,7 @@ async def test_get_all_homepage_config_all_keys(
             "导航",
         ),
     }
-    configs["contact_info"].updated_at = ts1
+    configs["contact_items"].updated_at = ts1
     configs["site_info"].updated_at = ts2
     configs["homepage_stats"].updated_at = ts3
     configs["about_info"].updated_at = ts4
@@ -144,7 +154,15 @@ async def test_get_all_homepage_config_all_keys(
 
     data, max_ts = await service.get_all_homepage_config()
 
-    assert data["contact_info"] == {"phone": "123"}
+    assert data["contact_items"] == [
+        {
+            "icon": "phone",
+            "label": {"zh": "热线"},
+            "content": {"zh": "123"},
+            "image_id": None,
+            "hover_zoom": False,
+        }
+    ]
     assert data["site_info"] == {"name": "站点"}
     assert data["homepage_stats"] == {"count": 10}
     assert data["about_info"] == {"text": "关于"}
@@ -162,12 +180,22 @@ async def test_get_all_homepage_config_partial_keys(
     """部分 key 不存在时返回空 dict。"""
     ts = datetime(2026, 1, 15, tzinfo=timezone.utc)
     contact = _make_config(
-        "contact_info", {"phone": "456"}, "联系方式"
+        "contact_items",
+        [
+            {
+                "icon": "phone",
+                "label": {"zh": "热线"},
+                "content": {"zh": "456"},
+                "image_id": None,
+                "hover_zoom": False,
+            }
+        ],
+        "联系信息列表",
     )
     contact.updated_at = ts
 
     async def side_effect(session, key):
-        if key == "contact_info":
+        if key == "contact_items":
             return contact
         return None
 
@@ -177,7 +205,15 @@ async def test_get_all_homepage_config_partial_keys(
 
     data, max_ts = await service.get_all_homepage_config()
 
-    assert data["contact_info"] == {"phone": "456"}
+    assert data["contact_items"] == [
+        {
+            "icon": "phone",
+            "label": {"zh": "热线"},
+            "content": {"zh": "456"},
+            "image_id": None,
+            "hover_zoom": False,
+        }
+    ]
     assert data["site_info"] == {}
     assert data["homepage_stats"] == {}
     assert data["about_info"] == {}
@@ -195,7 +231,7 @@ async def test_get_all_homepage_config_all_missing(
 
     data, max_ts = await service.get_all_homepage_config()
 
-    assert data["contact_info"] == {}
+    assert data["contact_items"] == []
     assert data["site_info"] == {}
     assert data["homepage_stats"] == {}
     assert data["about_info"] == {}

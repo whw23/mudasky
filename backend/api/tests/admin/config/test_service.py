@@ -199,22 +199,22 @@ async def test_update_value_with_model_validator_no_to_list(
 ):
     """带验证器但无 to_list 的配置项正常验证存储。"""
     config = _make_config(
-        key="contact_info",
+        key="site_info",
         value={},
-        description="联系方式",
+        description="网站基本信息",
     )
     mock_repo.get_by_key = AsyncMock(return_value=config)
     mock_repo.update_value = AsyncMock()
 
     valid_value = {
-        "address": "北京市",
-        "phone": "010-12345678",
-        "email": "test@test.com",
+        "brand_name": "测试站点",
+        "tagline": "测试标语",
+        "hotline": "010-12345678",
     }
 
-    result = await service.update_value("contact_info", valid_value)
+    result = await service.update_value("site_info", valid_value)
 
-    assert result.key == "contact_info"
+    assert result.key == "site_info"
     mock_repo.update_value.assert_awaited_once()
 
 
