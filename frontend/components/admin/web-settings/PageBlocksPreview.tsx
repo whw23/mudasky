@@ -42,6 +42,7 @@ export function PageBlocksPreview({
   const [addInsertIndex, setAddInsertIndex] = useState(0)
   const [editingBlock, setEditingBlock] = useState<Block | null>(null)
   const [editingTab, setEditingTab] = useState<"config" | "content">("content")
+  const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null)
 
   /** 保存区块列表到后端 */
   const saveBlocks = useCallback(async (updatedBlocks: Block[]) => {
@@ -100,6 +101,13 @@ export function PageBlocksPreview({
     setEditingTab("content")
   }
 
+  /** 字段级编辑回调 */
+  function handleFieldEdit(block: Block, fieldKey: string, fieldIndex?: number): void {
+    setEditingBlock(block)
+    setEditingTab("content")
+    setEditingFieldIndex(fieldIndex ?? null)
+  }
+
   /** 保存区块（配置 + 内容统一保存） */
   function handleEditSave(updated: Block): void {
     const newBlocks = blocks.map((b) =>
@@ -148,6 +156,7 @@ export function PageBlocksPreview({
                             editable
                             onEditData={handleEditData}
                             onEditConfig={onEditConfig}
+                            onFieldEdit={handleFieldEdit}
                           />
                         </BlockEditorOverlay>
                       </div>
@@ -172,11 +181,13 @@ export function PageBlocksPreview({
       />
 
       {/* 统一区块编辑弹窗 */}
+      {/* @ts-expect-error defaultFieldIndex 将在 Task 9 中添加到 UnifiedBlockEditor */}
       <UnifiedBlockEditor
         open={!!editingBlock}
-        onOpenChange={(open) => { if (!open) setEditingBlock(null) }}
+        onOpenChange={(open) => { if (!open) { setEditingBlock(null); setEditingFieldIndex(null) } }}
         block={editingBlock}
         defaultTab={editingTab}
+        defaultFieldIndex={editingFieldIndex}
         onSave={handleEditSave}
       />
     </>
