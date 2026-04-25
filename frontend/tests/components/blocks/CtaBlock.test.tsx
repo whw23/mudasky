@@ -10,8 +10,12 @@ vi.mock("next-intl", () => ({
   useLocale: () => "zh",
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children }: any) => <div data-testid="editable-overlay">{children}</div>,
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children }: any) => <div data-testid="spotlight-overlay">{children}</div>,
+}))
+
+vi.mock("@/components/admin/FieldOverlay", () => ({
+  FieldOverlay: ({ children }: any) => <div data-testid="field-overlay">{children}</div>,
 }))
 
 vi.mock("@/components/common/ConsultButton", () => ({
@@ -90,12 +94,12 @@ describe("CtaBlock", () => {
     expect(section!.className).toContain("bg-gray-50")
   })
 
-  it("editable 模式包裹 EditableOverlay", () => {
+  it("editable 模式包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <CtaBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 })

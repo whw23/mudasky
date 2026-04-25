@@ -23,9 +23,9 @@ vi.mock("@/components/public/ArticleListClient", () => ({
   ),
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children, label }: any) => (
-    <div data-testid="editable-overlay" data-label={label}>{children}</div>
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children, label }: any) => (
+    <div data-testid="spotlight-overlay" data-label={label}>{children}</div>
   ),
 }))
 
@@ -91,17 +91,17 @@ describe("ArticleListBlock", () => {
     render(<ArticleListBlock block={makeBlock()} header={null} bg="" />)
 
     expect(screen.queryByTestId("manage-toolbar")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("editable-overlay")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
-  it("editable 模式渲染管理工具栏和 EditableOverlay", () => {
+  it("editable 模式渲染管理工具栏和 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <ArticleListBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
     expect(screen.getByTestId("manage-toolbar")).toBeInTheDocument()
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 
   it("无 categorySlug 时 ArticleListClient 仍渲染", () => {

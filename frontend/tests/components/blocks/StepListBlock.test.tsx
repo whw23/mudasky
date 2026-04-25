@@ -10,8 +10,12 @@ vi.mock("next-intl", () => ({
   useLocale: () => "zh",
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children }: any) => <div data-testid="editable-overlay">{children}</div>,
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children }: any) => <div data-testid="spotlight-overlay">{children}</div>,
+}))
+
+vi.mock("@/components/admin/FieldOverlay", () => ({
+  FieldOverlay: ({ children }: any) => <div data-testid="field-overlay">{children}</div>,
 }))
 
 import { StepListBlock } from "@/components/blocks/StepListBlock"
@@ -89,12 +93,12 @@ describe("StepListBlock", () => {
     expect(screen.getByText("申请步骤")).toBeInTheDocument()
   })
 
-  it("editable 模式包裹 EditableOverlay", () => {
+  it("editable 模式包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <StepListBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 })

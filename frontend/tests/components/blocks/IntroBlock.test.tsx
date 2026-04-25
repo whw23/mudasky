@@ -10,8 +10,12 @@ vi.mock("next-intl", () => ({
   useLocale: () => "zh",
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children }: any) => <div data-testid="editable-overlay">{children}</div>,
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children }: any) => <div data-testid="spotlight-overlay">{children}</div>,
+}))
+
+vi.mock("@/components/admin/FieldOverlay", () => ({
+  FieldOverlay: ({ children }: any) => <div data-testid="field-overlay">{children}</div>,
 }))
 
 import { IntroBlock } from "@/components/blocks/IntroBlock"
@@ -86,7 +90,7 @@ describe("IntroBlock", () => {
     expect(section!.className).toContain("bg-gray-50")
   })
 
-  it("editable 模式下包裹 EditableOverlay", () => {
+  it("editable 模式下包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <IntroBlock
@@ -98,12 +102,12 @@ describe("IntroBlock", () => {
       />,
     )
 
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 
-  it("非 editable 模式下不包裹 EditableOverlay", () => {
+  it("非 editable 模式下不包裹 SpotlightOverlay", () => {
     render(<IntroBlock block={makeBlock()} header={null} bg="" />)
 
-    expect(screen.queryByTestId("editable-overlay")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 })
