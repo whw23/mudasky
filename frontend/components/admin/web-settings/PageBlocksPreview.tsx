@@ -231,18 +231,22 @@ function PageTopSection({
   )
 }
 
-/** 区块之间的插入按钮 */
+/** 区块之间的插入分隔线（零高度，hover 时浮出） */
 function InsertButton({ onClick }: { onClick: () => void }) {
   return (
-    <div className="group flex items-center justify-center py-1" data-editable>
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex items-center gap-1 rounded-full border border-dashed border-transparent px-3 py-1 text-xs text-muted-foreground/0 transition-all group-hover:border-blue-300 group-hover:text-blue-500 hover:bg-blue-50"
-      >
-        <Plus className="size-3" />
-        添加模组
-      </button>
+    <div className="group relative z-10 -my-2 flex h-4 items-center" data-editable>
+      <div className="pointer-events-none absolute inset-x-8 flex items-center opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+        <div className="h-px flex-1 bg-blue-300" />
+        <button
+          type="button"
+          onClick={onClick}
+          className="pointer-events-auto flex shrink-0 items-center gap-1 rounded-full border border-blue-300 bg-white px-3 py-0.5 text-xs text-blue-500 shadow-sm hover:bg-blue-50"
+        >
+          <Plus className="size-3" />
+          添加模组
+        </button>
+        <div className="h-px flex-1 bg-blue-300" />
+      </div>
     </div>
   )
 }
