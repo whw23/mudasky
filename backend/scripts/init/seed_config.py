@@ -5,6 +5,7 @@
 
 import logging
 import os
+from uuid import uuid4
 
 from sqlalchemy import select
 
@@ -146,6 +147,7 @@ CONFIGS = [
         "联系信息列表",
         lambda: [
             {
+                "id": str(uuid4()),
                 "icon": "phone",
                 "label": {"zh": "服务热线", "en": "Hotline"},
                 "content": {"zh": "189-1268-6656"},
@@ -153,6 +155,7 @@ CONFIGS = [
                 "hover_zoom": False,
             },
             {
+                "id": str(uuid4()),
                 "icon": "mail",
                 "label": {"zh": "邮箱", "en": "Email"},
                 "content": {"zh": "info@mudasky.com"},
@@ -160,6 +163,7 @@ CONFIGS = [
                 "hover_zoom": False,
             },
             {
+                "id": str(uuid4()),
                 "icon": "message-circle",
                 "label": {"zh": "微信咨询", "en": "WeChat"},
                 "content": {"zh": "扫码添加客服微信"},
@@ -167,6 +171,7 @@ CONFIGS = [
                 "hover_zoom": True,
             },
             {
+                "id": str(uuid4()),
                 "icon": "map-pin",
                 "label": {"zh": "公司地址", "en": "Address"},
                 "content": {"zh": "苏州市工业园区"},
@@ -174,6 +179,7 @@ CONFIGS = [
                 "hover_zoom": False,
             },
             {
+                "id": str(uuid4()),
                 "icon": "building",
                 "label": {"zh": "注册地址", "en": "Registered Address"},
                 "content": {"zh": "苏州市工业园区"},
