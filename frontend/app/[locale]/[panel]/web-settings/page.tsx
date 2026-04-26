@@ -452,7 +452,7 @@ export default function WebSettingsPage() {
             onImageUpload={handleSiteImageUpload}
             onImageClear={handleSiteImageClear}
           />
-          <div className="sticky top-0 z-20 bg-white shadow-sm">
+          <div className="sticky top-0 z-20 bg-white shadow-sm" data-editable>
             <NavEditor activePage={activePage} onPageChange={setActivePage} />
           </div>
           <PreviewContainer>
