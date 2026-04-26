@@ -11,6 +11,9 @@ import {
 } from "@hello-pangea/dnd"
 import { GripVertical, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { ArrayFieldRenderer } from "@/components/admin/ArrayFieldRenderer"
 import type { Block, BlockType } from "@/types/block"
@@ -31,7 +34,7 @@ export function getBlockEditType(type: BlockType): BlockEditType {
 interface SimpleFieldDef {
   key: string
   label: string
-  type: "text" | "textarea"
+  type: "text" | "textarea" | "switch"
   localized: boolean
   rows?: number
 }
@@ -164,17 +167,41 @@ function SimpleFieldsForm({
 }) {
   return (
     <div className="space-y-4">
-      {fields.map((field) => (
-        <LocalizedInput
-          key={field.key}
-          value={data[field.key] ?? ""}
-          onChange={(v) => onChange({ ...data, [field.key]: v })}
-          label={field.label}
-          multiline={field.type === "textarea"}
-          rows={field.rows}
-          locale={locale}
-        />
-      ))}
+      {fields.map((field) => {
+        if (field.type === "switch") {
+          return (
+            <div key={field.key} className="flex items-center justify-between">
+              <Label className="text-sm font-medium">{field.label}</Label>
+              <Switch
+                checked={!!data[field.key]}
+                onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
+              />
+            </div>
+          )
+        }
+        if (field.localized) {
+          return (
+            <LocalizedInput
+              key={field.key}
+              value={data[field.key] ?? ""}
+              onChange={(v) => onChange({ ...data, [field.key]: v })}
+              label={field.label}
+              multiline={field.type === "textarea"}
+              rows={field.rows}
+              locale={locale}
+            />
+          )
+        }
+        return (
+          <div key={field.key} className="space-y-2">
+            <Label className="text-sm font-medium">{field.label}</Label>
+            <Input
+              value={(data[field.key] ?? "") as string}
+              onChange={(e) => onChange({ ...data, [field.key]: e.target.value })}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
