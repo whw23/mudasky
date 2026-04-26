@@ -9,15 +9,19 @@ export function ScrollToTop() {
   const [visible, setVisible] = useState(false)
 
   const handleScroll = useCallback(() => {
-    const scrollY = window.scrollY
     const mainEl = document.querySelector("main")
-    const scrollTop = mainEl ? mainEl.scrollTop : scrollY
+    const scrollTop = Math.max(window.scrollY, mainEl?.scrollTop ?? 0)
     setVisible(scrollTop > 400)
   }, [])
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, true)
-    return () => window.removeEventListener("scroll", handleScroll, true)
+    const mainEl = document.querySelector("main")
+    window.addEventListener("scroll", handleScroll)
+    mainEl?.addEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      mainEl?.removeEventListener("scroll", handleScroll)
+    }
   }, [handleScroll])
 
   function scrollToTop() {
