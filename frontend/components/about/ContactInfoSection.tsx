@@ -104,10 +104,10 @@ export function ContactInfoSection({
                   {onDelete && (
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(index) }}
-                      className="absolute -left-2 -top-2 hidden size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 group-hover:flex"
-                      title="删除"
+                      className="pointer-events-none absolute top-1 left-1 z-10 rounded bg-red-500 p-1 text-white opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+                      title="移除"
                     >
-                      <Trash2 className="size-3.5" />
+                      <Trash2 className="size-3" />
                     </button>
                   )}
                 </div>
