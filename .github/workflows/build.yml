@@ -331,11 +331,12 @@ jobs:
           REPO_OWNER: ${{ github.repository_owner }}
           BUILD_TAG: ${{ steps.version.outputs.tag }}
           DB_EXTERNAL_PORT: ${{ secrets.DB_EXTERNAL_PORT }}
+          GATEWAY_PORT: ${{ secrets.GATEWAY_PORT }}
           SSH_DEST: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
           SSH_PORT: ${{ secrets.SERVER_PORT }}
         run: |
           ssh -p ${SSH_PORT} -i ~/.ssh/deploy_key ${SSH_DEST} \
-            "GHCR_PAT='${GHCR_PAT}' REPO_OWNER='${REPO_OWNER}' BUILD_TAG='${BUILD_TAG}' DB_EXTERNAL_PORT='${DB_EXTERNAL_PORT}'" \
+            "GHCR_PAT='${GHCR_PAT}' REPO_OWNER='${REPO_OWNER}' BUILD_TAG='${BUILD_TAG}' DB_EXTERNAL_PORT='${DB_EXTERNAL_PORT}' GATEWAY_PORT='${GATEWAY_PORT}'" \
             /bin/bash << 'DEPLOY_EOF'
             set -e
             cd ~/mudasky
@@ -359,6 +360,12 @@ jobs:
               grep -q '^DB_EXTERNAL_PORT=' .env 2>/dev/null \
                 && sed -i "s/^DB_EXTERNAL_PORT=.*/DB_EXTERNAL_PORT=${DB_EXTERNAL_PORT}/" .env \
                 || echo "DB_EXTERNAL_PORT=${DB_EXTERNAL_PORT}" >> .env
+            fi
+
+            if [ -n "${GATEWAY_PORT}" ]; then
+              grep -q '^GATEWAY_PORT=' .env 2>/dev/null \
+                && sed -i "s/^GATEWAY_PORT=.*/GATEWAY_PORT=${GATEWAY_PORT}/" .env \
+                || echo "GATEWAY_PORT=${GATEWAY_PORT}" >> .env
             fi
 
             # 滚动更新

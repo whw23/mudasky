@@ -5,6 +5,8 @@ services:
       context: ./gateway
       dockerfile: Dockerfile
     entrypoint: ["sh", "/usr/local/openresty/nginx/dev-entrypoint.sh"]
+    ports:
+      - "80:80"
     environment:
       - RATE_LIMIT_MULTIPLIER=10
     volumes:

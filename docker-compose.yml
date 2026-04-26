@@ -12,7 +12,7 @@ services:
         limits:
           memory: 64M
     ports:
-      - "80:80"
+      - "${GATEWAY_PORT:-80}:80"
     env_file: env/gateway.env
     depends_on:
       api:
