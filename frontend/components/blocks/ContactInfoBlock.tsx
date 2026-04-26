@@ -42,16 +42,18 @@ export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditCo
             maxColumns={block.options?.maxColumns}
             items={displayItems}
             onEditField={(index) => {
-              const itemDef = items?.[Number(index)]
+              const idx = Number(index)
+              const itemDef = items?.[idx]
               if (!itemDef || itemDef.type === "global") {
-                onEditConfig(`contact_item_global_${itemDef?.id ?? index}`)
+                const globalId = itemDef?.id ?? rawContactItems[idx]?.id
+                if (globalId) onEditConfig(`contact_item_global_${globalId}`)
               } else {
-                onEditConfig(`contact_item_custom_${block.id}_${index}`)
+                onEditConfig(`contact_item_custom_${block.id}_${idx}`)
               }
             }}
             onDelete={(index) => onEditConfig(`contact_item_delete_${block.id}_${index}`)}
           />
-          <div className="mx-auto max-w-7xl px-4 pb-6" data-editable>
+          <div className="mx-auto max-w-7xl px-4 pb-6" data-editable onClick={(e) => e.stopPropagation()}>
             <AddContactItemMenu
               block={block}
               items={items}

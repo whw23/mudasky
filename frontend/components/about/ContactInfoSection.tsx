@@ -103,7 +103,7 @@ export function ContactInfoSection({
                   </EditableOverlay>
                   {onDelete && (
                     <button
-                      onClick={() => onDelete(index)}
+                      onClick={(e) => { e.stopPropagation(); onDelete(index) }}
                       className="absolute -left-2 -top-2 hidden size-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 group-hover:flex"
                       title="删除"
                     >

@@ -425,8 +425,9 @@ export default function WebSettingsPage() {
           const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
           const currentBlocks = pageBlocks[activePage] ?? []
           const block = currentBlocks.find((b) => b.id === blockId)
-          if (block?.data?.items) {
-            const updatedItems = block.data.items.filter((_: any, i: number) => i !== itemIndex)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const updatedItems = currentItems.filter((_: any, i: number) => i !== itemIndex)
             const updatedBlock = { ...block, data: { items: updatedItems } }
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
