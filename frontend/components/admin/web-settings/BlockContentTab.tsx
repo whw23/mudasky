@@ -45,6 +45,7 @@ const SIMPLE_FIELDS: Record<string, SimpleFieldDef[]> = {
     { key: "title", label: "标题", type: "text", localized: true },
     { key: "desc", label: "描述", type: "text", localized: true },
     { key: "link", label: "按钮链接", type: "text", localized: false },
+    { key: "showLogin", label: "未登录时弹出登录弹窗", type: "switch", localized: false },
   ],
 }
 

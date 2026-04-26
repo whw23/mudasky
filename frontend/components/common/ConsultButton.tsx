@@ -13,21 +13,23 @@ interface ConsultButtonProps {
   className?: string
   children: React.ReactNode
   href?: string
+  showLogin?: boolean
 }
 
 /** 立即咨询按钮 */
-export function ConsultButton({ className, children, href }: ConsultButtonProps) {
+export function ConsultButton({ className, children, href, showLogin }: ConsultButtonProps) {
   const { isLoggedIn, showLoginModal } = useAuth()
   const router = useRouter()
 
   const handleClick = () => {
-    const target = href || "/about"
-    if (target.startsWith("http")) {
-      window.open(target, "_blank", "noopener,noreferrer")
-    } else {
-      router.push(target)
+    if (href) {
+      if (href.startsWith("http")) {
+        window.open(href, "_blank", "noopener,noreferrer")
+      } else {
+        router.push(href)
+      }
     }
-    if (!isLoggedIn) {
+    if (showLogin && !isLoggedIn) {
       showLoginModal()
     }
   }

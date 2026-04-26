@@ -98,6 +98,7 @@ def build_home_blocks() -> list[dict]:
                     "de": "15 Jahre internationale Bildung, professionelle Studienberatung",
                 },
                 "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
@@ -200,6 +201,7 @@ def build_about_blocks() -> list[dict]:
                     "de": "Unser professionelles Team erstellt maßgeschneiderte Studienpläne und begleitet Sie von der Schulauswahl bis zur Visabearbeitung",
                 },
                 "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
@@ -255,6 +257,7 @@ def build_universities_blocks() -> list[dict]:
                     "de": "Wir bieten kostenlose Hintergrundprüfungen, um Ihnen die beste Studienrichtung zu finden",
                 },
                 "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
@@ -310,6 +313,7 @@ def build_cases_blocks() -> list[dict]:
                     "de": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
                 },
                 "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
