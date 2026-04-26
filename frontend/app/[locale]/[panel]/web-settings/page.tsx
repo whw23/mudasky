@@ -414,7 +414,7 @@ export default function WebSettingsPage() {
 
       {/* 页面预览 tab */}
       {activeTab === 'preview' && (
-        <div className="isolate flex flex-col overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+        <div className="isolate flex h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
           {/* 模拟浏览器标签栏 */}
           <div className="bg-[#dee1e6] px-2 pt-1.5 pb-0">
             <div className="group inline-flex items-center gap-2 rounded-t-md bg-white px-3 py-1.5 min-w-[160px] max-w-[220px] relative">
@@ -452,13 +452,13 @@ export default function WebSettingsPage() {
             onImageUpload={handleSiteImageUpload}
             onImageClear={handleSiteImageClear}
           />
-          <PreviewContainer className="h-[100vh] overflow-y-auto">
+          <PreviewContainer className="min-h-0 flex-1 overflow-y-auto">
             <div className="sticky top-0 z-20 bg-white">
               <NavEditor activePage={activePage} onPageChange={setActivePage} />
             </div>
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
-            <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
           </PreviewContainer>
+          <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
         </div>
       )}
 
