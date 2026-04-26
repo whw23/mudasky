@@ -206,15 +206,6 @@ function CtaFields({ options, onUpdate }: FieldsProps) {
           </SelectContent>
         </Select>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="block-cta-link">按钮链接</Label>
-        <Input
-          id="block-cta-link"
-          value={options.link || ""}
-          onChange={(e) => onUpdate("link", e.target.value)}
-          placeholder="默认 /about"
-        />
-      </div>
     </div>
   )
 }

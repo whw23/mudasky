@@ -44,6 +44,7 @@ const SIMPLE_FIELDS: Record<string, SimpleFieldDef[]> = {
   cta: [
     { key: "title", label: "标题", type: "text", localized: true },
     { key: "desc", label: "描述", type: "text", localized: true },
+    { key: "link", label: "按钮链接", type: "text", localized: false },
   ],
 }
 
