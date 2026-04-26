@@ -97,6 +97,7 @@ def build_home_blocks() -> list[dict]:
                     "ja": "15年間国際教育に専念し、最もプロフェッショナルな留学コンサルティングサービスを提供します",
                     "de": "15 Jahre internationale Bildung, professionelle Studienberatung",
                 },
+                "link": "/about",
             },
         ),
     ]
@@ -198,6 +199,7 @@ def build_about_blocks() -> list[dict]:
                     "ja": "プロフェッショナルチームがあなたのためにカスタマイズされた留学プランを作成し、学校選択からビザ取得まで全力でサポートします",
                     "de": "Unser professionelles Team erstellt maßgeschneiderte Studienpläne und begleitet Sie von der Schulauswahl bis zur Visabearbeitung",
                 },
+                "link": "/about",
             },
         ),
     ]
@@ -252,6 +254,7 @@ def build_universities_blocks() -> list[dict]:
                     "ja": "無料のバックグラウンド評価サービスを提供し、最適な留学方向を見つけるお手伝いをします",
                     "de": "Wir bieten kostenlose Hintergrundprüfungen, um Ihnen die beste Studienrichtung zu finden",
                 },
+                "link": "/about",
             },
         ),
     ]
@@ -306,6 +309,7 @@ def build_cases_blocks() -> list[dict]:
                     "ja": "すべての成功した留学物語はプロフェッショナルな相談から始まります",
                     "de": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
                 },
+                "link": "/about",
             },
         ),
     ]

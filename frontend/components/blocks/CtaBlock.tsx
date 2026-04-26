@@ -28,6 +28,7 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: B
   const locale = useLocale()
   const title = getLocalizedValue(block.data?.title, locale) || ""
   const desc = getLocalizedValue(block.data?.desc, locale) || ""
+  const link = (block.data?.link as string) || "/about"
 
   const variant = block.options?.variant || "bg-gray-50"
   const bgClass = variant === "border-t" ? "border-t bg-white" : "bg-gray-50"
@@ -40,7 +41,7 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: B
         {desc && (
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">{desc}</p>
         )}
-        <ConsultButton className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+        <ConsultButton href={link} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
           立即咨询
           <ArrowRight className="size-4" />
         </ConsultButton>
@@ -64,7 +65,7 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: B
                 <p className="text-muted-foreground">{desc}</p>
               </FieldOverlay>
             )}
-            <ConsultButton className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <ConsultButton href={link} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
               立即咨询
               <ArrowRight className="size-4" />
             </ConsultButton>
