@@ -452,10 +452,8 @@ export default function WebSettingsPage() {
             onImageUpload={handleSiteImageUpload}
             onImageClear={handleSiteImageClear}
           />
+          <NavEditor activePage={activePage} onPageChange={setActivePage} />
           <PreviewContainer className="min-h-0 flex-1 overflow-y-auto">
-            <div className="sticky top-0 z-20 bg-white">
-              <NavEditor activePage={activePage} onPageChange={setActivePage} />
-            </div>
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
           </PreviewContainer>
           <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
