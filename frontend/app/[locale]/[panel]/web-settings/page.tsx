@@ -77,7 +77,7 @@ const DEFAULT_RAW: RawConfig = {
 }
 
 export default function WebSettingsPage() {
-  const { refreshConfig } = useConfig()
+  const { refreshConfig, pageBlocks } = useConfig()
   const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
 
@@ -329,7 +329,7 @@ export default function WebSettingsPage() {
   }
 
   /** 处理页面预览中的配置编辑（Header/统计/联系信息） */
-  function handleEditConfig(section: string): void {
+  async function handleEditConfig(section: string): Promise<void> {
     switch (section) {
       case 'brand_name':
         setDialogState({
@@ -359,14 +359,15 @@ export default function WebSettingsPage() {
         })
         break
       default:
-        // contact_item_N 前缀处理联系信息条目
-        if (section.startsWith('contact_item_')) {
-          const idx = parseInt(section.replace('contact_item_', ''), 10)
+        if (section.startsWith('contact_item_global_')) {
+          // 编辑全局条目
+          const globalId = section.replace('contact_item_global_', '')
+          const idx = rawConfig.contactItems.findIndex((i: any) => i.id === globalId)
           const item = rawConfig.contactItems[idx]
           if (item) {
             setDialogState({
               open: true,
-              title: `编辑联系信息`,
+              title: '编辑联系信息',
               fields: [
                 { key: 'label', label: '标签', type: 'text' as const, localized: true },
                 { key: 'content', label: '内容', type: 'text' as const, localized: true },
@@ -383,6 +384,105 @@ export default function WebSettingsPage() {
               },
             })
           }
+        } else if (section.startsWith('contact_item_custom_')) {
+          // 编辑自定义条目
+          const rest = section.replace('contact_item_custom_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block?.data?.items?.[itemIndex]?.type === 'custom') {
+            const customItem = block.data.items[itemIndex]
+            setDialogState({
+              open: true,
+              title: '编辑自定义条目',
+              fields: [
+                { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
+                { key: 'label', label: '标签', type: 'text' as const, localized: true },
+                { key: 'content', label: '内容', type: 'text' as const, localized: true },
+              ],
+              configKey: 'page_blocks',
+              data: customItem,
+              customSave: async (data) => {
+                const updatedItems = [...block.data.items]
+                updatedItems[itemIndex] = { ...customItem, ...data }
+                const updatedBlock = { ...block, data: { items: updatedItems } }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('contact_item_delete_')) {
+          // 删除条目
+          const rest = section.replace('contact_item_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block?.data?.items) {
+            const updatedItems = block.data.items.filter((_: any, i: number) => i !== itemIndex)
+            const updatedBlock = { ...block, data: { items: updatedItems } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已移除条目')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('contact_item_add_global_')) {
+          // 添加全局引用
+          const rest = section.replace('contact_item_add_global_', '')
+          const sepIdx = rest.indexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const globalId = rest.substring(sepIdx + 1)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const updatedItems = [...currentItems, { type: "global", id: globalId }]
+            const updatedBlock = { ...block, data: { items: updatedItems } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已添加条目')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('contact_item_add_custom_')) {
+          // 添加自定义条目
+          const blockId = section.replace('contact_item_add_custom_', '')
+          setDialogState({
+            open: true,
+            title: '添加自定义条目',
+            fields: [
+              { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
+              { key: 'label', label: '标签', type: 'text' as const, localized: true },
+              { key: 'content', label: '内容', type: 'text' as const, localized: true },
+            ],
+            configKey: 'page_blocks',
+            data: { icon: '', label: '', content: '', image_id: null, hover_zoom: false },
+            customSave: async (data) => {
+              const currentBlocks = pageBlocks[activePage] ?? []
+              const block = currentBlocks.find((b) => b.id === blockId)
+              if (!block) return
+              const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+              const newItem = { type: "custom" as const, icon: data.icon || 'info', ...data }
+              const updatedItems = [...currentItems, newItem]
+              const updatedBlock = { ...block, data: { items: updatedItems } }
+              const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+              const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+              await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+              toast.success('已添加自定义条目')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
         }
         break
     }
