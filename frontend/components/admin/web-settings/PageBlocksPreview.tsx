@@ -18,6 +18,7 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer"
 import { BlockEditorOverlay } from "./BlockEditorOverlay"
 import { AddBlockDialog } from "./AddBlockDialog"
 import { UnifiedBlockEditor } from "./UnifiedBlockEditor"
+import { getBlockEditType } from "./BlockContentTab"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
@@ -98,7 +99,8 @@ export function PageBlocksPreview({
   /** 点击 Block 内容触发编辑 */
   function handleEditData(block: Block): void {
     setEditingBlock(block)
-    setEditingTab("content")
+    const editType = getBlockEditType(block.type)
+    setEditingTab(editType === "api" ? "config" : "content")
   }
 
   /** 字段级编辑回调 */
