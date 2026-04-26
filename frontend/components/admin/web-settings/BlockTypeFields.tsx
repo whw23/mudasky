@@ -7,10 +7,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select, SelectTrigger, SelectValue,
-  SelectContent, SelectItem,
-} from "@/components/ui/select"
+import { SelectField } from "@/components/admin/SelectField"
 
 interface FieldsProps {
   options: Record<string, any>
@@ -45,25 +42,21 @@ export function TypeSpecificFields({
   }
 }
 
+const COLUMNS_OPTIONS = [
+  { value: "2", label: "2 列" },
+  { value: "3", label: "3 列" },
+  { value: "4", label: "4 列" },
+]
+
 /** 最大列数选择器（复用） */
 function MaxColumnsSelect({ options, onUpdate }: FieldsProps) {
   return (
-    <div className="space-y-1.5">
-      <Label>最大列数</Label>
-      <Select
-        value={String(options.maxColumns || 3)}
-        onValueChange={(v) => onUpdate("maxColumns", Number(v))}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="2">2 列</SelectItem>
-          <SelectItem value="3">3 列</SelectItem>
-          <SelectItem value="4">4 列</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <SelectField
+      label="最大列数"
+      value={String(options.maxColumns || 3)}
+      options={COLUMNS_OPTIONS}
+      onValueChange={(v) => onUpdate("maxColumns", Number(v))}
+    />
   )
 }
 
@@ -82,26 +75,18 @@ function CardGridFields({ options, onUpdate }: FieldsProps) {
   return (
     <div className="space-y-3 border-t pt-3">
       <p className="text-xs font-medium text-muted-foreground">卡片网格选项</p>
-
-      <div className="space-y-1.5">
-        <Label>卡片类型</Label>
-        <Select
-          value={options.cardType || "guide"}
-          onValueChange={(v) => onUpdate("cardType", v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="guide">指南卡片</SelectItem>
-            <SelectItem value="timeline">时间线</SelectItem>
-            <SelectItem value="city">城市指南</SelectItem>
-            <SelectItem value="program">专业卡片</SelectItem>
-            <SelectItem value="checklist">检查清单</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
+      <SelectField
+        label="卡片类型"
+        value={options.cardType || "guide"}
+        options={[
+          { value: "guide", label: "指南卡片" },
+          { value: "timeline", label: "时间线" },
+          { value: "city", label: "城市指南" },
+          { value: "program", label: "专业卡片" },
+          { value: "checklist", label: "检查清单" },
+        ]}
+        onValueChange={(v) => onUpdate("cardType", v)}
+      />
       <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
   )
@@ -152,23 +137,15 @@ function FeaturedDataFields({ options, onUpdate }: FieldsProps) {
   return (
     <div className="space-y-3 border-t pt-3">
       <p className="text-xs font-medium text-muted-foreground">精选展示选项</p>
-
-      <div className="space-y-1.5">
-        <Label>数据类型</Label>
-        <Select
-          value={options.dataType || "universities"}
-          onValueChange={(v) => onUpdate("dataType", v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="universities">院校</SelectItem>
-            <SelectItem value="cases">案例</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
+      <SelectField
+        label="数据类型"
+        value={options.dataType || "universities"}
+        options={[
+          { value: "universities", label: "院校" },
+          { value: "cases", label: "案例" },
+        ]}
+        onValueChange={(v) => onUpdate("dataType", v)}
+      />
       <div className="space-y-1.5">
         <Label htmlFor="block-max-items">最大数量</Label>
         <Input
@@ -180,7 +157,6 @@ function FeaturedDataFields({ options, onUpdate }: FieldsProps) {
           onChange={(e) => onUpdate("maxItems", Number(e.target.value))}
         />
       </div>
-
       <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>
   )
@@ -191,21 +167,15 @@ function CtaFields({ options, onUpdate }: FieldsProps) {
   return (
     <div className="space-y-3 border-t pt-3">
       <p className="text-xs font-medium text-muted-foreground">行动号召选项</p>
-      <div className="space-y-1.5">
-        <Label>样式</Label>
-        <Select
-          value={options.variant || "border-t"}
-          onValueChange={(v) => onUpdate("variant", v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="border-t">顶部边框</SelectItem>
-            <SelectItem value="bg-gray-50">灰色背景</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <SelectField
+        label="样式"
+        value={options.variant || "border-t"}
+        options={[
+          { value: "border-t", label: "顶部边框" },
+          { value: "bg-gray-50", label: "灰色背景" },
+        ]}
+        onValueChange={(v) => onUpdate("variant", v)}
+      />
     </div>
   )
 }

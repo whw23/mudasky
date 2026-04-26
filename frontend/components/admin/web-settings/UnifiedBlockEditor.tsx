@@ -10,10 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SwitchField } from "@/components/admin/SwitchField"
-import {
-  Select, SelectTrigger, SelectValue,
-  SelectContent, SelectItem,
-} from "@/components/ui/select"
+import { SelectField } from "@/components/admin/SelectField"
 import {
   Dialog, DialogContent, DialogHeader,
   DialogTitle, DialogDescription, DialogBody, DialogFooter,
@@ -274,21 +271,12 @@ function ConfigTabContent({
       />
 
       {/* 背景色 */}
-      <div className="space-y-1.5">
-        <Label>背景色</Label>
-        <Select
-          value={bgColor}
-          onValueChange={(v) => onBgColorChange((v ?? "white") as "white" | "gray")}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="white">白色</SelectItem>
-            <SelectItem value="gray">浅灰</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <SelectField
+        label="背景色"
+        value={bgColor}
+        options={[{ value: "white", label: "白色" }, { value: "gray", label: "浅灰" }]}
+        onValueChange={(v) => onBgColorChange(v as "white" | "gray")}
+      />
 
       {/* 类型特定选项 */}
       <TypeSpecificFields type={blockType} options={options} onUpdateOption={onUpdateOption} />
