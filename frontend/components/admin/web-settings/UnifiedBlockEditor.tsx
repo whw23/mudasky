@@ -245,24 +245,28 @@ function ConfigTabContent({
         onCheckedChange={onShowTitleChange}
       />
 
-      {/* 英文标签 */}
-      <div className="space-y-1.5">
-        <Label htmlFor="block-section-tag">英文标签</Label>
-        <Input
-          id="block-section-tag"
-          value={sectionTag}
-          onChange={(e) => onSectionTagChange(e.target.value)}
-          placeholder="如 OUR STORY"
-        />
-      </div>
+      {showTitle && (
+        <>
+          {/* 英文标签 */}
+          <div className="space-y-1.5">
+            <Label htmlFor="block-section-tag">英文标签</Label>
+            <Input
+              id="block-section-tag"
+              value={sectionTag}
+              onChange={(e) => onSectionTagChange(e.target.value)}
+              placeholder="如 OUR STORY"
+            />
+          </div>
 
-      {/* 板块标题 */}
-      <LocalizedInput
-        value={sectionTitle}
-        onChange={onSectionTitleChange}
-        label="板块标题"
-        locale={locale}
-      />
+          {/* 板块标题 */}
+          <LocalizedInput
+            value={sectionTitle}
+            onChange={onSectionTitleChange}
+            label="板块标题"
+            locale={locale}
+          />
+        </>
+      )}
 
       {/* 背景色 */}
       <SelectField
