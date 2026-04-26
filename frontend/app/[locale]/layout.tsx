@@ -7,6 +7,7 @@ import { LoginModal } from "@/components/auth/LoginModal"
 import { RegisterModal } from "@/components/auth/RegisterModal"
 import { Toaster } from "@/components/ui/sonner"
 import { FaviconHead } from "@/components/layout/FaviconHead"
+import { ScrollToTop } from "@/components/common/ScrollToTop"
 
 /** 生成元数据 */
 export async function generateMetadata({
@@ -42,6 +43,7 @@ export default async function LocaleLayout({
           <LoginModal />
           <RegisterModal />
           <Toaster />
+          <ScrollToTop />
         </ConfigProvider>
       </AuthProvider>
     </NextIntlClientProvider>
