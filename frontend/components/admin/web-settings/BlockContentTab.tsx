@@ -13,7 +13,7 @@ import { GripVertical, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import { SwitchField } from "@/components/admin/SwitchField"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { ArrayFieldRenderer } from "@/components/admin/ArrayFieldRenderer"
 import type { Block, BlockType } from "@/types/block"
@@ -170,15 +170,12 @@ function SimpleFieldsForm({
       {fields.map((field) => {
         if (field.type === "switch") {
           return (
-            <div key={field.key} className="space-y-2">
-              <Label className="text-sm font-medium">{field.label}</Label>
-              <div>
-                <Switch
-                  checked={!!data[field.key]}
-                  onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
-                />
-              </div>
-            </div>
+            <SwitchField
+              key={field.key}
+              label={field.label}
+              checked={!!data[field.key]}
+              onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
+            />
           )
         }
         if (field.localized) {

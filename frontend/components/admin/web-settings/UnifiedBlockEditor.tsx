@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import { SwitchField } from "@/components/admin/SwitchField"
 import {
   Select, SelectTrigger, SelectValue,
   SelectContent, SelectItem,
@@ -247,12 +247,12 @@ function ConfigTabContent({
   return (
     <div className="space-y-4">
       {/* 显示标题 */}
-      <div className="space-y-2">
-        <Label htmlFor="block-show-title">显示标题区域</Label>
-        <div>
-          <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
-        </div>
-      </div>
+      <SwitchField
+        id="block-show-title"
+        label="显示标题区域"
+        checked={showTitle}
+        onCheckedChange={onShowTitleChange}
+      />
 
       {/* 英文标签 */}
       <div className="space-y-1.5">

@@ -8,7 +8,7 @@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import { SwitchField } from "./SwitchField"
 import type { LocalizedField, ConfigLocale } from "@/lib/i18n-config"
 import { LocalizedInput } from "./LocalizedInput"
 import { NestedItemsField } from "./NestedItemsField"
@@ -31,12 +31,12 @@ export function ArrayFieldRenderer({ item, index, field, onUpdate, locale }: Arr
   /* 开关 */
   if (field.type === "switch") {
     return (
-      <div key={field.key} className="space-y-2">
-        <Label className="text-sm font-medium">{field.label}</Label>
-        <div>
-          <Switch checked={!!value} onCheckedChange={(v) => onUpdate(index, field.key, v)} />
-        </div>
-      </div>
+      <SwitchField
+        key={field.key}
+        label={field.label}
+        checked={!!value}
+        onCheckedChange={(v) => onUpdate(index, field.key, v)}
+      />
     )
   }
 
