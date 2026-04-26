@@ -170,12 +170,14 @@ function SimpleFieldsForm({
       {fields.map((field) => {
         if (field.type === "switch") {
           return (
-            <div key={field.key} className="flex items-center justify-between">
+            <div key={field.key} className="space-y-2">
               <Label className="text-sm font-medium">{field.label}</Label>
-              <Switch
-                checked={!!data[field.key]}
-                onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
-              />
+              <div>
+                <Switch
+                  checked={!!data[field.key]}
+                  onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
+                />
+              </div>
             </div>
           )
         }

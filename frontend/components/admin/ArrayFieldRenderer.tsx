@@ -31,9 +31,11 @@ export function ArrayFieldRenderer({ item, index, field, onUpdate, locale }: Arr
   /* 开关 */
   if (field.type === "switch") {
     return (
-      <div key={field.key} className="flex items-center justify-between">
+      <div key={field.key} className="space-y-2">
         <Label className="text-sm font-medium">{field.label}</Label>
-        <Switch checked={!!value} onCheckedChange={(v) => onUpdate(index, field.key, v)} />
+        <div>
+          <Switch checked={!!value} onCheckedChange={(v) => onUpdate(index, field.key, v)} />
+        </div>
       </div>
     )
   }
