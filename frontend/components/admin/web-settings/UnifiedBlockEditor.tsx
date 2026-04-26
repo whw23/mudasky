@@ -79,13 +79,7 @@ export function UnifiedBlockEditor({
     setSectionTitle(normalizeLocalized(block.sectionTitle))
     setBgColor(block.bgColor)
     setOptions({ ...block.options })
-    if (block.type === "contact_info") {
-      api.get("/public/config/all").then((res) => {
-        setData(res.data.contact_items ?? [])
-      })
-    } else {
-      setData(JSON.parse(JSON.stringify(block.data ?? null)))
-    }
+    setData(JSON.parse(JSON.stringify(block.data ?? null)))
     setLocale("zh")
 
     const editType = getBlockEditType(block.type)

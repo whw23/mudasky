@@ -26,7 +26,7 @@ export type BlockEditType = "simple" | "array" | "api"
 /** 判断 Block 类型的编辑方式 */
 export function getBlockEditType(type: BlockType): BlockEditType {
   if (type === "intro" || type === "cta") return "simple"
-  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery" || type === "contact_info") return "array"
+  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery") return "array"
   return "api"
 }
 
@@ -64,13 +64,6 @@ const ARRAY_FIELDS: Record<string, ArrayFieldDef[]> = {
   gallery: [
     { key: "image_id", label: "图片", type: "image", localized: false },
     { key: "caption", label: "说明", type: "text", localized: true },
-  ],
-  contact_info: [
-    { key: "icon", label: "图标名称", type: "text", localized: false },
-    { key: "label", label: "标签", type: "text", localized: true },
-    { key: "content", label: "内容", type: "text", localized: true },
-    { key: "image_id", label: "图片", type: "image", localized: false },
-    { key: "hover_zoom", label: "悬浮放大", type: "switch", localized: false },
   ],
 }
 
