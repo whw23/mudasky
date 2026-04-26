@@ -39,11 +39,11 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full border-dashed">
-          <Plus className="mr-1 size-4" />
-          添加条目
-        </Button>
+      <DropdownMenuTrigger
+        render={<Button variant="outline" size="sm" className="w-full border-dashed" />}
+      >
+        <Plus className="mr-1 size-4" />
+        添加条目
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-64">
         {availableGlobal.map((g) => {
