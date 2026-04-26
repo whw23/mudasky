@@ -247,9 +247,11 @@ function ConfigTabContent({
   return (
     <div className="space-y-4">
       {/* 显示标题 */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-2">
         <Label htmlFor="block-show-title">显示标题区域</Label>
-        <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
+        <div>
+          <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
+        </div>
       </div>
 
       {/* 英文标签 */}
