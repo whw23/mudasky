@@ -414,7 +414,7 @@ export default function WebSettingsPage() {
 
       {/* 页面预览 tab */}
       {activeTab === 'preview' && (
-        <div className="isolate [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+        <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
           {/* 模拟浏览器标签栏 */}
           <div className="bg-[#dee1e6] px-2 pt-1.5 pb-0">
             <div className="group inline-flex items-center gap-2 rounded-t-md bg-white px-3 py-1.5 min-w-[160px] max-w-[220px] relative">
