@@ -104,8 +104,14 @@ def build_home_blocks() -> list[dict]:
     ]
 
 
-def build_about_blocks() -> list[dict]:
+def build_about_blocks(contact_item_ids: list[str] | None = None) -> list[dict]:
     """关于我们页面区块。"""
+    contact_data = None
+    if contact_item_ids:
+        contact_data = {
+            "items": [{"type": "global", "id": cid} for cid in contact_item_ids],
+        }
+
     return [
         _block(
             "contact_info",
@@ -118,6 +124,7 @@ def build_about_blocks() -> list[dict]:
                 "de": "Kontaktinformationen",
             },
             bg_color="gray",
+            data=contact_data,
         ),
         _block(
             "intro",
@@ -319,7 +326,7 @@ def build_cases_blocks() -> list[dict]:
     ]
 
 
-def build_page_blocks() -> dict:
+def build_page_blocks(contact_item_ids: list[str] | None = None) -> dict:
     """构建所有页面的区块配置。"""
     from .seed_page_blocks_extra import (
         build_requirements_blocks,
@@ -330,7 +337,7 @@ def build_page_blocks() -> dict:
 
     return {
         "home": build_home_blocks(),
-        "about": build_about_blocks(),
+        "about": build_about_blocks(contact_item_ids),
         "universities": build_universities_blocks(),
         "cases": build_cases_blocks(),
         "study-abroad": build_study_abroad_blocks(),
