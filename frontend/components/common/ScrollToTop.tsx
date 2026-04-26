@@ -8,21 +8,15 @@ import { ArrowUp } from "lucide-react"
 export function ScrollToTop() {
   const [visible, setVisible] = useState(false)
 
-  const handleScroll = useCallback(() => {
-    const mainEl = document.querySelector("main")
-    const scrollTop = Math.max(window.scrollY, mainEl?.scrollTop ?? 0)
-    setVisible(scrollTop > 400)
-  }, [])
-
   useEffect(() => {
-    const mainEl = document.querySelector("main")
-    window.addEventListener("scroll", handleScroll)
-    mainEl?.addEventListener("scroll", handleScroll)
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      mainEl?.removeEventListener("scroll", handleScroll)
+    function onScroll() {
+      const mainEl = document.querySelector("main")
+      const scrollTop = Math.max(window.scrollY, mainEl?.scrollTop ?? 0)
+      setVisible(scrollTop > 400)
     }
-  }, [handleScroll])
+    document.addEventListener("scroll", onScroll, true)
+    return () => document.removeEventListener("scroll", onScroll, true)
+  }, [])
 
   function scrollToTop() {
     const mainEl = document.querySelector("main")
