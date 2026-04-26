@@ -395,7 +395,7 @@ export default function WebSettingsPage() {
   const faviconUrl = rawConfig.siteInfo.favicon_url
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div>
       <h1 className="mb-4 text-2xl font-bold">网页设置</h1>
 
       {/* 标签页 */}
