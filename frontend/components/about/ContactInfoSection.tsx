@@ -54,6 +54,7 @@ interface ContactInfoSectionProps {
   maxColumns?: number
   items?: ContactItem[]
   onDelete?: (index: number) => void
+  footer?: React.ReactNode
 }
 
 export function ContactInfoSection({
@@ -62,6 +63,7 @@ export function ContactInfoSection({
   maxColumns = 3,
   items,
   onDelete,
+  footer,
 }: ContactInfoSectionProps) {
   const { contactItems } = useLocalizedConfig()
   const displayItems = items ?? contactItems
@@ -115,6 +117,7 @@ export function ContactInfoSection({
             }
             return <div key={index}>{content}</div>
           })}
+          {footer}
         </div>
       </div>
     </section>

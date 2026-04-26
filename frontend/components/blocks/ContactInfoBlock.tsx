@@ -52,15 +52,17 @@ export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditCo
               }
             }}
             onDelete={(index) => onEditConfig(`contact_item_delete_${block.id}_${index}`)}
+            footer={
+              <div data-editable onClick={(e) => e.stopPropagation()}>
+                <AddContactItemMenu
+                  block={block}
+                  items={items}
+                  globalItems={rawContactItems}
+                  onEditConfig={onEditConfig}
+                />
+              </div>
+            }
           />
-          <div className="mx-auto max-w-7xl px-4 pb-6" data-editable onClick={(e) => e.stopPropagation()}>
-            <AddContactItemMenu
-              block={block}
-              items={items}
-              globalItems={rawContactItems}
-              onEditConfig={onEditConfig}
-            />
-          </div>
         </div>
       </SpotlightOverlay>
     )

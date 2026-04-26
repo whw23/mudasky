@@ -8,7 +8,6 @@
 import { Plus, PenLine } from "lucide-react"
 import { icons } from "lucide-react"
 import { useLocale } from "next-intl"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,9 +39,14 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant="outline" size="sm" className="w-full border-dashed" />}
+        render={
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 p-5 text-sm text-muted-foreground transition-colors hover:border-blue-400 hover:text-blue-500"
+          />
+        }
       >
-        <Plus className="mr-1 size-4" />
+        <Plus className="size-4" />
         添加条目
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-64">
