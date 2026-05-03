@@ -100,19 +100,21 @@ export function ItemEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {subtitle && <DialogDescription>{subtitle}</DialogDescription>}
+          <div className="flex items-center justify-between pr-16">
+            <div>
+              <DialogTitle>{title}</DialogTitle>
+              {subtitle && <DialogDescription>{subtitle}</DialogDescription>}
+            </div>
+            <LanguageCapsule value={locale} onChange={setLocale} />
+          </div>
         </DialogHeader>
 
         <DialogBody className="space-y-4">
-          <div className="flex items-center justify-between">
-            {sourceHint ? (
-              <div className="flex-1 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700">
-                {sourceHint}
-              </div>
-            ) : <div />}
-            <LanguageCapsule value={locale} onChange={setLocale} />
-          </div>
+          {sourceHint && (
+            <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700">
+              {sourceHint}
+            </div>
+          )}
           {fields.map((field) => {
             if (field.showWhen && !field.showWhen(mergedForCondition)) return null
             return (
