@@ -18,6 +18,7 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer"
 import { BlockEditorOverlay } from "./BlockEditorOverlay"
 import { AddBlockDialog } from "./AddBlockDialog"
 import { UnifiedBlockEditor } from "./UnifiedBlockEditor"
+import { getBlockEditType } from "./BlockContentTab"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { PageBanner } from "@/components/layout/PageBanner"
 import { HomeBanner } from "@/components/home/HomeBanner"
@@ -42,6 +43,7 @@ export function PageBlocksPreview({
   const [addInsertIndex, setAddInsertIndex] = useState(0)
   const [editingBlock, setEditingBlock] = useState<Block | null>(null)
   const [editingTab, setEditingTab] = useState<"config" | "content">("content")
+  const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null)
 
   /** 保存区块列表到后端 */
   const saveBlocks = useCallback(async (updatedBlocks: Block[]) => {
@@ -97,7 +99,15 @@ export function PageBlocksPreview({
   /** 点击 Block 内容触发编辑 */
   function handleEditData(block: Block): void {
     setEditingBlock(block)
+    const editType = getBlockEditType(block.type)
+    setEditingTab(editType === "api" ? "config" : "content")
+  }
+
+  /** 字段级编辑回调 */
+  function handleFieldEdit(block: Block, fieldKey: string, fieldIndex?: number): void {
+    setEditingBlock(block)
     setEditingTab("content")
+    setEditingFieldIndex(fieldIndex ?? null)
   }
 
   /** 保存区块（配置 + 内容统一保存） */
@@ -148,6 +158,7 @@ export function PageBlocksPreview({
                             editable
                             onEditData={handleEditData}
                             onEditConfig={onEditConfig}
+                            onFieldEdit={handleFieldEdit}
                           />
                         </BlockEditorOverlay>
                       </div>
@@ -174,10 +185,12 @@ export function PageBlocksPreview({
       {/* 统一区块编辑弹窗 */}
       <UnifiedBlockEditor
         open={!!editingBlock}
-        onOpenChange={(open) => { if (!open) setEditingBlock(null) }}
+        onOpenChange={(open) => { if (!open) { setEditingBlock(null); setEditingFieldIndex(null) } }}
         block={editingBlock}
         defaultTab={editingTab}
+        defaultFieldIndex={editingFieldIndex}
         onSave={handleEditSave}
+        onEditConfig={onEditConfig}
       />
     </>
   )
@@ -219,18 +232,22 @@ function PageTopSection({
   )
 }
 
-/** 区块之间的插入按钮 */
+/** 区块之间的插入分隔线（零高度，hover 时浮出） */
 function InsertButton({ onClick }: { onClick: () => void }) {
   return (
-    <div className="group flex items-center justify-center py-1" data-editable>
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex items-center gap-1 rounded-full border border-dashed border-transparent px-3 py-1 text-xs text-muted-foreground/0 transition-all group-hover:border-blue-300 group-hover:text-blue-500 hover:bg-blue-50"
-      >
-        <Plus className="size-3" />
-        添加模组
-      </button>
+    <div className="group relative z-10 -my-2 flex h-4 items-center" data-editable>
+      <div className="pointer-events-none absolute inset-x-8 flex items-center opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+        <div className="h-px flex-1 bg-blue-300" />
+        <button
+          type="button"
+          onClick={onClick}
+          className="pointer-events-auto flex shrink-0 items-center gap-1 rounded-full border border-blue-300 bg-white px-3 py-0.5 text-xs text-blue-500 shadow-sm hover:bg-blue-50"
+        >
+          <Plus className="size-3" />
+          添加模组
+        </button>
+        <div className="h-px flex-1 bg-blue-300" />
+      </div>
     </div>
   )
 }

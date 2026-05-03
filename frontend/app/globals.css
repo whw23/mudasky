@@ -179,3 +179,18 @@
     animation: none;
   }
 }
+
+/* 双层编辑 spotlight 效果 */
+.spotlight-overlay:has([data-field]:hover) .spotlight-border {
+  opacity: 0 !important;
+  border-color: transparent !important;
+}
+
+.spotlight-overlay:has([data-field]:hover) .spotlight-content > *:not(:has([data-field]:hover)) {
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+.spotlight-overlay:has([data-field]:hover) .spotlight-content > *:has([data-field]:hover) {
+  opacity: 1;
+}

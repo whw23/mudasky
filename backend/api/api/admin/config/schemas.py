@@ -52,14 +52,6 @@ class PhoneCountryCodesValue(BaseModel):
         return [item.model_dump() for item in self.items]
 
 
-class ContactInfoValue(BaseModel):
-    """联系方式配置值验证。"""
-
-    address: str = Field(..., description="地址")
-    phone: str = Field(..., description="电话")
-    email: str = Field(..., description="邮箱")
-    wechat: str = Field("", description="微信号")
-    registered_address: str = Field("", description="注册地")
 
 
 class SiteInfoValue(BaseModel):
@@ -128,7 +120,6 @@ class PageBannersValue(BaseModel):
 # 配置键 → 验证器映射
 CONFIG_VALIDATORS: dict[str, type[BaseModel]] = {
     "phone_country_codes": PhoneCountryCodesValue,
-    "contact_info": ContactInfoValue,
     "site_info": SiteInfoValue,
     "homepage_stats": HomepageStatsValue,
     "about_info": AboutInfoValue,

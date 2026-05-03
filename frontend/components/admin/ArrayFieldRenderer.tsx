@@ -8,6 +8,7 @@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { SwitchField } from "./SwitchField"
 import type { LocalizedField, ConfigLocale } from "@/lib/i18n-config"
 import { LocalizedInput } from "./LocalizedInput"
 import { NestedItemsField } from "./NestedItemsField"
@@ -26,6 +27,18 @@ interface ArrayFieldRendererProps {
 export function ArrayFieldRenderer({ item, index, field, onUpdate, locale }: ArrayFieldRendererProps) {
   if (field.type === "radio") return null
   const value = item[field.key]
+
+  /* 开关 */
+  if (field.type === "switch") {
+    return (
+      <SwitchField
+        key={field.key}
+        label={field.label}
+        checked={!!value}
+        onCheckedChange={(v) => onUpdate(index, field.key, v)}
+      />
+    )
+  }
 
   /* 图片上传 */
   if (field.type === "image") {

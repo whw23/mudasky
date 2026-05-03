@@ -16,8 +16,8 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children }: any) => <div data-testid="editable-overlay">{children}</div>,
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children }: any) => <div data-testid="spotlight-overlay">{children}</div>,
 }))
 
 const mockGet = vi.fn()
@@ -177,7 +177,7 @@ describe("FeaturedDataBlock", () => {
     })
   })
 
-  it("editable 模式包裹 EditableOverlay", async () => {
+  it("editable 模式包裹 SpotlightOverlay", async () => {
     mockGet.mockResolvedValue({ data: { items: MOCK_UNIVERSITIES } })
     const onEdit = vi.fn()
 
@@ -186,7 +186,7 @@ describe("FeaturedDataBlock", () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+      expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
     })
   })
 })

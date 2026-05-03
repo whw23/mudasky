@@ -36,7 +36,7 @@ class ConfigService:
         self,
     ) -> tuple[dict, datetime]:
         """获取首页所需的全部配置，返回 (数据, 最大更新时间)。"""
-        keys = ["contact_info", "site_info", "homepage_stats", "about_info", "page_banners", "page_blocks"]
+        keys = ["contact_items", "site_info", "homepage_stats", "about_info", "page_banners", "page_blocks"]
         result = {}
         max_updated = datetime.min.replace(tzinfo=timezone.utc)
         for key in keys:
@@ -46,7 +46,8 @@ class ConfigService:
                 if config.updated_at and config.updated_at > max_updated:
                     max_updated = config.updated_at
             else:
-                result[key] = {}
+                # contact_items 是数组类型，缺失时返回空数组
+                result[key] = [] if key == "contact_items" else {}
         # 导航栏配置
         nav = await repository.get_by_key(self.session, "nav_config")
         if nav:

@@ -12,11 +12,12 @@ user_invocable: true
 
 | 命令 | 说明 |
 |------|------|
-| `/clean-server` | 默认清理：容器 + 数据卷（保留镜像和 env） |
-| `/clean-server full` | 完整清理：容器 + 数据卷 + 镜像 + env |
+| `/clean-server` | 默认清理：容器 + 数据卷 + CI/CD 生成文件（保留镜像） |
+| `/clean-server full` | 完整清理：容器 + 数据卷 + CI/CD 生成文件 + 镜像 |
 | `/clean-server status` | 仅查看服务器当前状态，不做清理 |
 
 默认保留镜像，这样重新部署只需拉增量层（秒级），而非全量拉取（分钟级）。
+CI/CD 生成文件（docker-compose.yml、.env、env/、db/）每次部署都会重新 scp 覆盖，删除无影响。
 
 ## 执行前确认
 
@@ -45,18 +46,18 @@ ssh mudasky "
 ssh mudasky "cd ~/mudasky && docker compose down -v"
 ```
 
-### 3. 删除项目镜像（仅 full 模式）
+### 3. 删除 CI/CD 生成文件
+
+```bash
+ssh mudasky "rm -f ~/mudasky/docker-compose.yml ~/mudasky/.env && rm -rf ~/mudasky/env ~/mudasky/db"
+```
+
+### 4. 删除项目镜像（仅 full 模式）
 
 保留基础镜像和构建缓存，只删项目镜像：
 
 ```bash
 ssh mudasky "docker rmi ghcr.io/whw23/mudasky-gateway:latest ghcr.io/whw23/mudasky-api:latest ghcr.io/whw23/mudasky-frontend:latest ghcr.io/whw23/mudasky-db:latest 2>/dev/null; docker image prune -f"
-```
-
-### 4. 删除 env 文件（仅 full 模式）
-
-```bash
-ssh mudasky "rm -f ~/mudasky/env/*.env"
 ```
 
 ### 5. 验证清理结果

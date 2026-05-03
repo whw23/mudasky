@@ -36,3 +36,15 @@ export type PageBlocks = Record<string, Block[]>
 
 /** 卡片子类型 */
 export type CardType = "guide" | "timeline" | "city" | "program" | "checklist"
+
+/** ContactInfo Block 条目引用（全局引用或自定义） */
+export type ContactInfoBlockItem =
+  | { type: "global"; id: string }
+  | {
+      type: "custom"
+      icon: string
+      label: LocalizedField
+      content: LocalizedField
+      image_id: string | null
+      hover_zoom: boolean
+    }

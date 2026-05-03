@@ -29,7 +29,15 @@ class TestGetAllConfig:
         ts = datetime(2026, 1, 1, tzinfo=timezone.utc)
         self.mock_svc.get_all_homepage_config.return_value = (
             {
-                "contact_info": {"address": "北京"},
+                "contact_items": [
+                    {
+                        "icon": "map-pin",
+                        "label": {"zh": "地址"},
+                        "content": {"zh": "北京"},
+                        "image_id": None,
+                        "hover_zoom": False,
+                    }
+                ],
                 "site_info": {"brand_name": "测试"},
                 "homepage_stats": [],
                 "about_info": {},
@@ -39,14 +47,14 @@ class TestGetAllConfig:
         resp = await client.get("/public/config/all")
         assert resp.status_code == 200
         data = resp.json()
-        assert "contact_info" in data
+        assert "contact_items" in data
         assert "ETag" in resp.headers
 
     async def test_get_all_config_etag_match(self, client):
         """ETag 匹配时返回 304。"""
         ts = datetime(2026, 1, 1, tzinfo=timezone.utc)
         self.mock_svc.get_all_homepage_config.return_value = (
-            {"contact_info": {}, "site_info": {}},
+            {"contact_items": [], "site_info": {}},
             ts,
         )
         resp1 = await client.get("/public/config/all")

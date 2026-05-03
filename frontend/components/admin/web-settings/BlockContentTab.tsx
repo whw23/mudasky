@@ -5,14 +5,22 @@
  * 根据 Block 类型渲染简单字段表单或数组条目列表。
  */
 
+import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { SwitchField } from "@/components/admin/SwitchField"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { ArrayFieldRenderer } from "@/components/admin/ArrayFieldRenderer"
-import type { Block, BlockType } from "@/types/block"
+import { useConfig } from "@/contexts/ConfigContext"
+import { getLocalizedValue } from "@/lib/i18n-config"
+import { resolveIcon } from "@/lib/icon-utils"
+import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
+import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
 
@@ -22,7 +30,10 @@ export type BlockEditType = "simple" | "array" | "api"
 /** 判断 Block 类型的编辑方式 */
 export function getBlockEditType(type: BlockType): BlockEditType {
   if (type === "intro" || type === "cta") return "simple"
-  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery") return "array"
+  if (
+    type === "card_grid" || type === "step_list" ||
+    type === "doc_list" || type === "gallery" || type === "contact_info"
+  ) return "array"
   return "api"
 }
 
@@ -30,7 +41,7 @@ export function getBlockEditType(type: BlockType): BlockEditType {
 interface SimpleFieldDef {
   key: string
   label: string
-  type: "text" | "textarea"
+  type: "text" | "textarea" | "switch"
   localized: boolean
   rows?: number
 }
@@ -43,6 +54,8 @@ const SIMPLE_FIELDS: Record<string, SimpleFieldDef[]> = {
   cta: [
     { key: "title", label: "标题", type: "text", localized: true },
     { key: "desc", label: "描述", type: "text", localized: true },
+    { key: "link", label: "按钮链接", type: "text", localized: false },
+    { key: "showLogin", label: "未登录时弹出登录弹窗", type: "switch", localized: false },
   ],
 }
 
@@ -97,16 +110,23 @@ interface BlockContentTabProps {
   locale: ConfigLocale
   data: any
   onDataChange: (data: any) => void
+  defaultFieldIndex?: number | null
+  onEditConfig?: (section: string) => void
+  onClose?: () => void
 }
 
 /** Block 内容编辑 Tab */
-export function BlockContentTab({ block, locale, data, onDataChange }: BlockContentTabProps) {
+export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex, onEditConfig, onClose }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
   if (editType === "api") return null
 
   if (editType === "simple") {
     const fields = SIMPLE_FIELDS[block.type] || []
     return <SimpleFieldsForm fields={fields} data={data || {}} locale={locale} onChange={onDataChange} />
+  }
+
+  if (block.type === "contact_info" && onEditConfig) {
+    return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} />
   }
 
   const fields = getArrayFields(block)
@@ -123,8 +143,130 @@ export function BlockContentTab({ block, locale, data, onDataChange }: BlockCont
       locale={locale}
       onChange={onDataChange}
       description={description}
+      defaultFieldIndex={defaultFieldIndex}
     />
   )
+}
+
+/** 联系信息条目列表（支持拖动排序） */
+function ContactItemsList({
+  block, locale, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  onEditConfig: (section: string) => void
+}) {
+  const { contactItems, pageBlocks } = useConfig()
+  const currentBlock = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
+  const items: ContactInfoBlockItem[] | null = currentBlock?.data?.items ?? block.data?.items ?? null
+  const resolved = resolveContactItems(items, contactItems, locale, block.id)
+
+  function handleDragEnd(result: DropResult): void {
+    if (!result.destination || result.source.index === result.destination.index) return
+    onEditConfig(`contact_item_reorder_${block.id}_${result.source.index}_${result.destination.index}`)
+  }
+
+  /** 渲染条目行 */
+  function renderRow(item: typeof resolved[number], idx: number, dragHandleProps?: any) {
+    const Icon = resolveIcon(item.icon)
+    return (
+      <div className="flex items-center justify-between rounded-lg border bg-background p-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div {...(dragHandleProps ?? {})} className="cursor-grab text-muted-foreground">
+            <GripVertical className="size-4" />
+          </div>
+          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
+          <div className="min-w-0">
+            <div className="text-sm font-medium">{item.label}</div>
+            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
+          </div>
+          {item.source === "global" && (
+            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className="size-7 text-destructive hover:text-destructive"
+            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable
+          droppableId="contact-items"
+          renderClone={(provided, _snapshot, rubric) => (
+            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+              {renderRow(resolved[rubric.source.index], rubric.source.index)}
+            </div>
+          )}
+        >
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+              {resolved.map((item, idx) => (
+                <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
+                  {(dragProvided) => (
+                    <div ref={dragProvided.innerRef} {...dragProvided.draggableProps}>
+                      {renderRow(item, idx, dragProvided.dragHandleProps)}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      <AddContactItemMenu
+        block={block}
+        items={items}
+        globalItems={contactItems}
+        onEditConfig={onEditConfig}
+        compact
+      />
+    </div>
+  )
+}
+
+/** 解析联系条目到列表展示数据 */
+function resolveContactItems(
+  items: ContactInfoBlockItem[] | null,
+  globalItems: Array<{ id: string; icon: string; label: any; content: any }>,
+  locale: string,
+  blockId: string,
+): Array<{ icon: string; label: string; content: string; source: "global" | "custom"; editSection: string }> {
+  const source = items ?? globalItems.map((g) => ({ type: "global" as const, id: g.id }))
+  return source.map((item, idx) => {
+    if (item.type === "global") {
+      const g = globalItems.find((gi) => gi.id === item.id)
+      if (!g) return null
+      return {
+        icon: g.icon,
+        label: getLocalizedValue(g.label, locale),
+        content: getLocalizedValue(g.content, locale),
+        source: "global" as const,
+        editSection: `contact_item_global_${g.id}`,
+      }
+    }
+    return {
+      icon: item.icon,
+      label: getLocalizedValue(item.label, locale),
+      content: getLocalizedValue(item.content, locale),
+      source: "custom" as const,
+      editSection: `contact_item_custom_${blockId}_${idx}`,
+    }
+  }).filter(Boolean) as any[]
 }
 
 /** 获取数组类型 Block 的字段定义 */
@@ -152,17 +294,40 @@ function SimpleFieldsForm({
 }) {
   return (
     <div className="space-y-4">
-      {fields.map((field) => (
-        <LocalizedInput
-          key={field.key}
-          value={data[field.key] ?? ""}
-          onChange={(v) => onChange({ ...data, [field.key]: v })}
-          label={field.label}
-          multiline={field.type === "textarea"}
-          rows={field.rows}
-          locale={locale}
-        />
-      ))}
+      {fields.map((field) => {
+        if (field.type === "switch") {
+          return (
+            <SwitchField
+              key={field.key}
+              label={field.label}
+              checked={!!data[field.key]}
+              onCheckedChange={(v) => onChange({ ...data, [field.key]: v })}
+            />
+          )
+        }
+        if (field.localized) {
+          return (
+            <LocalizedInput
+              key={field.key}
+              value={data[field.key] ?? ""}
+              onChange={(v) => onChange({ ...data, [field.key]: v })}
+              label={field.label}
+              multiline={field.type === "textarea"}
+              rows={field.rows}
+              locale={locale}
+            />
+          )
+        }
+        return (
+          <div key={field.key} className="space-y-2">
+            <Label className="text-sm font-medium">{field.label}</Label>
+            <Input
+              value={(data[field.key] ?? "") as string}
+              onChange={(e) => onChange({ ...data, [field.key]: e.target.value })}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -174,13 +339,23 @@ function ArrayItemsForm({
   locale,
   onChange,
   description,
+  defaultFieldIndex,
 }: {
   fields: ArrayFieldDef[]
   items: Record<string, unknown>[]
   locale: ConfigLocale
   onChange: (items: Record<string, unknown>[]) => void
   description: React.ReactNode
+  defaultFieldIndex?: number | null
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (defaultFieldIndex != null && scrollRef.current) {
+      const target = scrollRef.current.querySelector(`[data-item-index="${defaultFieldIndex}"]`)
+      target?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }, [defaultFieldIndex])
   /** 更新指定条目的指定字段 */
   function updateItem(index: number, key: string, value: unknown) {
     const next = [...items]
@@ -212,7 +387,7 @@ function ArrayItemsForm({
   }
 
   return (
-    <div className="space-y-3">
+    <div ref={scrollRef} className="space-y-3">
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
@@ -227,6 +402,7 @@ function ArrayItemsForm({
                     <div
                       ref={dragProvided.innerRef}
                       {...dragProvided.draggableProps}
+                      data-item-index={index}
                       style={dragProvided.draggableProps.style}
                       className={`rounded-lg border p-4 transition-shadow ${snapshot.isDragging ? "shadow-md" : ""}`}
                     >

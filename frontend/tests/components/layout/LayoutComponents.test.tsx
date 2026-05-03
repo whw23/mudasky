@@ -45,6 +45,22 @@ vi.mock("@/components/admin/EditableOverlay", () => ({
   ),
 }))
 
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children, onClick, label }: any) => (
+    <div data-testid="spotlight-overlay" onClick={onClick} title={label}>
+      {children}
+    </div>
+  ),
+}))
+
+vi.mock("@/components/admin/FieldOverlay", () => ({
+  FieldOverlay: ({ children, onClick, label }: any) => (
+    <div data-testid="field-overlay" onClick={onClick} title={label}>
+      {children}
+    </div>
+  ),
+}))
+
 vi.mock("@/components/common/SearchBar", () => ({
   SearchBar: () => <div data-testid="search-bar" />,
 }))
@@ -177,10 +193,10 @@ describe("HomeBanner", () => {
     expect(screen.queryByTestId("search-bar")).not.toBeInTheDocument()
   })
 
-  it("editable 模式渲染 EditableOverlay", () => {
+  it("editable 模式渲染 SpotlightOverlay", () => {
     render(<HomeBanner editable />)
 
-    const overlays = screen.getAllByTestId("editable-overlay")
+    const overlays = screen.getAllByTestId("spotlight-overlay")
     expect(overlays.length).toBeGreaterThan(0)
   })
 

@@ -2,16 +2,17 @@
 
 import { useState, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
-import { MapPin, Phone, Mail, MessageCircle, Building } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { icons, Trash2 } from "lucide-react"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { resolveIcon } from "@/lib/icon-utils"
 
 /**
- * 关于我们页面的联系方式区块
- * 从 ConfigContext 读取联系信息
- * 支持字段级编辑（每个联系信息独立 EditableOverlay）
+ * 关于我们页面的联系方式区块。
+ * 支持两种数据来源：外部传入 items 或从 ConfigContext 读取 contactItems。
+ * 支持字段级编辑（每个条目独立 EditableOverlay）+ 删除按钮（可选）。
  */
+
 /** 二维码悬浮放大 */
 function QrPopover({ url, alt }: { url: string; alt: string }) {
   const [show, setShow] = useState(false)
@@ -39,90 +40,89 @@ function QrPopover({ url, alt }: { url: string; alt: string }) {
   )
 }
 
+interface ContactItem {
+  icon: string
+  label: string
+  content: string
+  image_id: string | null
+  hover_zoom: boolean
+}
+
 interface ContactInfoSectionProps {
   editable?: boolean
   onEditField?: (field: string) => void
   maxColumns?: number
+  items?: ContactItem[]
+  onDelete?: (index: number) => void
+  renderAddCard?: () => React.ReactNode
 }
 
 export function ContactInfoSection({
   editable,
   onEditField,
   maxColumns = 3,
+  items,
+  onDelete,
+  renderAddCard,
 }: ContactInfoSectionProps) {
-  const t = useTranslations("Contact")
-  const { contactInfo, siteInfo } = useLocalizedConfig()
-
-  const items = [
-    {
-      icon: MapPin,
-      label: t("addressLabel"),
-      value: contactInfo.address || t("address"),
-      field: "address",
-    },
-    {
-      icon: Phone,
-      label: t("phoneLabel"),
-      value: contactInfo.phone || t("phone"),
-      field: "phone",
-    },
-    {
-      icon: Mail,
-      label: t("emailLabel"),
-      value: contactInfo.email || t("email"),
-      field: "email",
-    },
-    {
-      icon: MessageCircle,
-      label: t("wechatLabel"),
-      value: contactInfo.wechat || t("wechat"),
-      field: "wechat",
-    },
-    {
-      icon: Building,
-      label: t("registeredAddressLabel"),
-      value: contactInfo.registered_address || t("registeredAddress"),
-      field: "registered_address",
-    },
-  ]
+  const { contactItems } = useLocalizedConfig()
+  const displayItems = items ?? contactItems
 
   return (
     <section id="contact-info" className="py-10 md:py-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className={`grid gap-6 sm:grid-cols-2 ${maxColumns >= 3 ? "lg:grid-cols-3" : ""}`}>
-          {items.map((item) => {
-            const isWechat = item.field === "wechat"
-            const qrUrl = isWechat ? siteInfo.wechat_service_qr_url : ""
+          {displayItems.map((item, index) => {
+            const Icon = resolveIcon(item.icon, icons.Info)!
+            const imageUrl = item.image_id ? `/api/public/images/detail?id=${item.image_id}` : ""
 
             const content = (
-              <div className="flex items-start gap-3 rounded-lg bg-white p-5">
-                <item.icon className="mt-0.5 size-5 shrink-0 text-primary" />
+              <div className="flex h-full items-start gap-3 rounded-lg bg-white p-5">
+                <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-muted-foreground">
                     {item.label}
                   </div>
-                  <div className="mt-1 text-sm text-foreground">
-                    {item.value}
+                  <div className="mt-1 line-clamp-2 text-sm text-foreground">
+                    {item.content}
                   </div>
                 </div>
-                {qrUrl && <QrPopover url={qrUrl} alt={item.label} />}
+                {imageUrl && item.hover_zoom && <QrPopover url={imageUrl} alt={item.label} />}
+                {imageUrl && !item.hover_zoom && (
+                  <img src={imageUrl} alt={item.label} className="size-16 rounded border object-contain" />
+                )}
               </div>
             )
 
             if (editable) {
               return (
-                <EditableOverlay
-                  key={item.field}
-                  onClick={() => onEditField?.(item.field)}
-                  label={`编辑${item.label}`}
-                >
-                  {content}
-                </EditableOverlay>
+                <div key={index} className="group relative h-full">
+                  <EditableOverlay
+                    onClick={() => onEditField?.(String(index))}
+                    label={`编辑${item.label}`}
+                    className="h-full"
+                  >
+                    {content}
+                  </EditableOverlay>
+                  {onDelete && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onDelete(index) }}
+                      className="pointer-events-none absolute top-1 left-1 z-10 rounded bg-red-500 p-1 text-white opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+                      title="移除"
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  )}
+                </div>
               )
             }
-
-            return <div key={item.field}>{content}</div>
+            return <div key={index}>{content}</div>
           })}
+          {editable && renderAddCard && (
+            <div className="hidden h-full group-hover/block:block" data-editable onClick={(e) => e.stopPropagation()}>
+              {renderAddCard()}
+            </div>
+          )}
         </div>
       </div>
     </section>

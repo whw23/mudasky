@@ -12,14 +12,15 @@ interface EditableOverlayProps {
   onClick: () => void
   label?: string
   inline?: boolean
+  className?: string
 }
 
 /** 可编辑区域高亮包装器 */
-export function EditableOverlay({ children, onClick, label, inline }: EditableOverlayProps) {
+export function EditableOverlay({ children, onClick, label, inline, className }: EditableOverlayProps) {
   const Tag = inline ? "span" : "div"
   return (
     <Tag
-      className={`group relative cursor-pointer ${inline ? "inline" : ""}`}
+      className={`group relative cursor-pointer ${inline ? "inline" : ""} ${className ?? ""}`}
       onClick={(e) => {
         e.stopPropagation()
         onClick()

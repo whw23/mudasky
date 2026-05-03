@@ -9,17 +9,8 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { useLocale } from 'next-intl'
 import api from '@/lib/api'
 import { getLocalizedValue } from '@/lib/i18n-config'
-import type { ContactInfo, SiteInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
+import type { ContactItem, SiteInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 import type { PageBlocks } from '@/types/block'
-
-/** 默认联系方式（兜底） */
-const DEFAULT_CONTACT_INFO: ContactInfo = {
-  address: '',
-  phone: '',
-  email: '',
-  wechat: '',
-  registered_address: '',
-}
 
 /** 默认品牌信息（兜底） */
 const DEFAULT_SITE_INFO: SiteInfo = {
@@ -72,8 +63,8 @@ const DEFAULT_NAV_CONFIG: NavConfig = {
 }
 
 interface ConfigContextType {
-  /** 联系方式配置 */
-  contactInfo: ContactInfo
+  /** 联系信息条目列表 */
+  contactItems: ContactItem[]
   /** 品牌信息配置 */
   siteInfo: SiteInfo
   /** 首页统计数字 */
@@ -91,7 +82,7 @@ interface ConfigContextType {
 }
 
 const ConfigContext = createContext<ConfigContextType>({
-  contactInfo: DEFAULT_CONTACT_INFO,
+  contactItems: [],
   siteInfo: DEFAULT_SITE_INFO,
   homepageStats: DEFAULT_HOMEPAGE_STATS,
   aboutInfo: DEFAULT_ABOUT_INFO,
@@ -103,7 +94,7 @@ const ConfigContext = createContext<ConfigContextType>({
 
 /** 系统配置 Provider */
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [contactInfo, setContactInfo] = useState<ContactInfo>(DEFAULT_CONTACT_INFO)
+  const [contactItems, setContactItems] = useState<ContactItem[]>([])
   const [siteInfo, setSiteInfo] = useState<SiteInfo>(DEFAULT_SITE_INFO)
   const [homepageStats, setHomepageStats] = useState<HomepageStat[]>(DEFAULT_HOMEPAGE_STATS)
   const [aboutInfo, setAboutInfo] = useState<AboutInfo>(DEFAULT_ABOUT_INFO)
@@ -115,7 +106,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     api.get('/public/config/all', bustCache ? { headers: { 'Cache-Control': 'no-cache' } } : {})
       .then((res) => {
         const data = res.data
-        if (data.contact_info) setContactInfo({ ...DEFAULT_CONTACT_INFO, ...data.contact_info })
+        if (Array.isArray(data.contact_items)) setContactItems(data.contact_items)
         if (data.site_info) setSiteInfo({ ...DEFAULT_SITE_INFO, ...data.site_info })
         if (Array.isArray(data.homepage_stats)) setHomepageStats(data.homepage_stats)
         if (data.about_info) setAboutInfo({ ...DEFAULT_ABOUT_INFO, ...data.about_info })
@@ -129,7 +120,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   useEffect(() => { fetchConfig() }, [fetchConfig])
 
   return (
-    <ConfigContext value={{ contactInfo, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, pageBlocks, refreshConfig: () => fetchConfig(true) }}>
+    <ConfigContext value={{ contactItems, siteInfo, homepageStats, aboutInfo, navConfig, pageBanners, pageBlocks, refreshConfig: () => fetchConfig(true) }}>
       {children}
     </ConfigContext>
   )
@@ -154,13 +145,13 @@ interface LocalizedConfigType {
     company_name: string
     icp_filing: string
   }
-  contactInfo: {
-    address: string
-    phone: string
-    email: string
-    wechat: string
-    registered_address: string
-  }
+  contactItems: Array<{
+    icon: string
+    label: string
+    content: string
+    image_id: string | null
+    hover_zoom: boolean
+  }>
   homepageStats: { value: string; label: string }[]
   aboutInfo: {
     history_title: string
@@ -184,11 +175,11 @@ export function useLocalizedConfig(): LocalizedConfigType {
       tagline: getLocalizedValue(siteInfo.tagline, locale),
       hotline_contact: getLocalizedValue(siteInfo.hotline_contact, locale),
     },
-    contactInfo: {
-      ...config.contactInfo,
-      address: getLocalizedValue(config.contactInfo.address, locale),
-      registered_address: getLocalizedValue(config.contactInfo.registered_address, locale),
-    },
+    contactItems: config.contactItems.map((item) => ({
+      ...item,
+      label: getLocalizedValue(item.label, locale),
+      content: getLocalizedValue(item.content, locale),
+    })),
     homepageStats: config.homepageStats.map((s) => ({
       ...s,
       label: getLocalizedValue(s.label, locale),

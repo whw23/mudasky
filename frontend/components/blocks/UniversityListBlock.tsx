@@ -14,7 +14,7 @@ import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import type { Block } from "@/types/block"
 import { UniversityList } from "@/components/public/UniversityList"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { UniversityEditDialog } from "@/components/admin/web-settings/UniversityEditDialog"
 import { DisciplineManageDialog } from "@/components/admin/web-settings/DisciplineManageDialog"
@@ -146,7 +146,7 @@ export function UniversityListBlock({ block, header, bg, editable, onEdit }: Blo
 
   if (editable && onEdit) {
     return (
-      <EditableOverlay onClick={() => onEdit(block)} label="编辑院校列表">
+      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑院校列表">
         {el}
 
         {/* 编辑弹窗 */}
@@ -171,7 +171,7 @@ export function UniversityListBlock({ block, header, bg, editable, onEdit }: Blo
           onConfirm={handleImportConfirm}
           columns={IMPORT_COLUMNS}
         />
-      </EditableOverlay>
+      </SpotlightOverlay>
     )
   }
   return el

@@ -101,7 +101,9 @@ interface FooterProps {
 export function Footer({ editable, onEdit, onImageUpload, onImageClear }: FooterProps) {
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
-  const { contactInfo, siteInfo } = useLocalizedConfig()
+  const { contactItems, siteInfo } = useLocalizedConfig()
+  const phoneItem = contactItems.find((i) => i.icon === "phone")
+  const emailItem = contactItems.find((i) => i.icon === "mail")
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string, inline?: boolean) {
@@ -133,7 +135,7 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
             <li className="flex items-center gap-2">
               <Phone className="size-4 shrink-0 text-primary" />
               {wrapEditable(
-                <span>{contactInfo.phone || t("phone")}</span>,
+                <span>{phoneItem?.content || t("phone")}</span>,
                 "phone",
                 "编辑电话",
                 true
@@ -142,7 +144,7 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0 text-primary" />
               {wrapEditable(
-                <span>{contactInfo.email || t("email")}</span>,
+                <span>{emailItem?.content || t("email")}</span>,
                 "email",
                 "编辑邮箱",
                 true

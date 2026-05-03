@@ -18,14 +18,39 @@ import { PreviewContainer } from '@/components/admin/PreviewContainer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
+import { ItemEditDialog, type FieldDefinition as ItemFieldDef } from '@/components/admin/ItemEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
-import type { SiteInfo, ContactInfo, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
+import type { SiteInfo, ContactItem, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
 /** 统计项编辑字段定义 */
 const STAT_FIELDS = [
   { key: 'value', label: '数值', type: 'text' as const, localized: false },
   { key: 'label', label: '标签', type: 'text' as const, localized: true },
 ]
+
+/** 联系条目编辑字段定义 */
+const CONTACT_ITEM_FIELDS: ItemFieldDef[] = [
+  { key: 'icon', label: '图标', type: 'icon', localized: false },
+  { key: 'label', label: '标签', type: 'text', localized: true, required: true },
+  { key: 'content', label: '内容', type: 'text', localized: true, required: true },
+  { key: 'image_id', label: '图片', type: 'image', localized: false, description: '如二维码图片' },
+  {
+    key: 'hover_zoom', label: '悬浮放大', type: 'switch', localized: false,
+    description: '鼠标 hover 时放大显示图片',
+    showWhen: (data) => !!data.image_id,
+  },
+]
+
+/** ItemEditDialog 弹窗状态 */
+interface ItemDialogState {
+  open: boolean
+  title: string
+  subtitle?: string
+  fields: ItemFieldDef[]
+  data: Record<string, unknown>
+  onSave: (data: Record<string, unknown>) => Promise<void>
+  sourceHint?: string
+}
 
 /** 弹窗状态类型 */
 interface DialogState {
@@ -55,7 +80,7 @@ interface BannerDialogState {
 /** 原始配置数据类型 */
 interface RawConfig {
   siteInfo: SiteInfo
-  contactInfo: ContactInfo
+  contactItems: ContactItem[]
   homepageStats: HomepageStat[]
   aboutInfo: AboutInfo
   pageBanners: PageBanners
@@ -68,9 +93,7 @@ const DEFAULT_RAW: RawConfig = {
     logo_url: '', favicon_url: '', wechat_service_qr_url: '',
     wechat_official_qr_url: '', company_name: '', icp_filing: '',
   },
-  contactInfo: {
-    address: '', phone: '', email: '', wechat: '', registered_address: '',
-  },
+  contactItems: [],
   homepageStats: [],
   aboutInfo: {
     history_title: '', history: '',
@@ -79,15 +102,15 @@ const DEFAULT_RAW: RawConfig = {
 }
 
 export default function WebSettingsPage() {
-  const { refreshConfig } = useConfig()
+  const { refreshConfig, pageBlocks } = useConfig()
   const { siteInfo: localizedSiteInfo } = useLocalizedConfig()
   const tHeader = useTranslations("Header")
-  const tContact = useTranslations("Contact")
 
   const [activeTab, setActiveTab] = useState<'preview' | 'advanced'>('preview')
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
+  const [itemDialogState, setItemDialogState] = useState<ItemDialogState | null>(null)
   const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
   const [loading, setLoading] = useState(true)
   const [faviconUploading, setFaviconUploading] = useState(false)
@@ -104,7 +127,7 @@ export default function WebSettingsPage() {
 
       setRawConfig({
         siteInfo: findValue('site_info') ?? DEFAULT_RAW.siteInfo,
-        contactInfo: findValue('contact_info') ?? DEFAULT_RAW.contactInfo,
+        contactItems: findValue('contact_items') ?? DEFAULT_RAW.contactItems,
         homepageStats: findValue('homepage_stats') ?? DEFAULT_RAW.homepageStats,
         aboutInfo: findValue('about_info') ?? DEFAULT_RAW.aboutInfo,
         pageBanners: findValue('page_banners') ?? DEFAULT_RAW.pageBanners,
@@ -129,6 +152,9 @@ export default function WebSettingsPage() {
     }
     if (!dialogState) return
     await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
+    if (dialogState.configKey === "site_info") {
+      await syncSiteInfoToContactItems(data)
+    }
     toast.success('保存成功')
     await fetchAllConfigs(true)
     refreshConfig()
@@ -221,6 +247,7 @@ export default function WebSettingsPage() {
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await syncQrIfNeeded(field, data.url)
       fetchAllConfigs(true)
       refreshConfig()
       toast.success("上传成功")
@@ -235,11 +262,88 @@ export default function WebSettingsPage() {
     try {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      await syncQrIfNeeded(field, "")
       await fetchAllConfigs(true)
       refreshConfig()
       toast.success("已清除")
     } catch {
       toast.error("清除失败")
+    }
+  }
+
+  /** site_info 字段 → contact_items 图标的映射（图片同步） */
+  const QR_SYNC_MAP: Record<string, string> = {
+    wechat_service_qr_url: "message-circle",
+    wechat_official_qr_url: "qr-code",
+  }
+
+  /** contact_items 图标 → site_info 字段的映射（内容/图片同步） */
+  const CONTACT_SITE_SYNC: Record<string, { content?: string; image?: string }> = {
+    phone: { content: "hotline" },
+    "message-circle": { image: "wechat_service_qr_url" },
+    "qr-code": { image: "wechat_official_qr_url" },
+  }
+
+  /** site_info 保存后同步到 contact_items */
+  async function syncSiteInfoToContactItems(newSiteInfo: Record<string, any>): Promise<void> {
+    let updated = [...rawConfig.contactItems]
+    let changed = false
+    // 热线同步
+    if (newSiteInfo.hotline !== rawConfig.siteInfo.hotline) {
+      updated = updated.map((ci: any) => {
+        if (ci.icon !== "phone") return ci
+        const content = typeof ci.content === "object" ? { ...ci.content } : { zh: ci.content ?? "" }
+        content.zh = newSiteInfo.hotline ?? ""
+        return { ...ci, content }
+      })
+      changed = true
+    }
+    // 二维码同步
+    for (const [urlField, iconName] of Object.entries(QR_SYNC_MAP)) {
+      if (newSiteInfo[urlField] !== (rawConfig.siteInfo as any)[urlField]) {
+        const imageId = newSiteInfo[urlField]?.includes("id=") ? newSiteInfo[urlField].split("id=")[1] : null
+        updated = updated.map((ci: any) => ci.icon === iconName ? { ...ci, image_id: imageId } : ci)
+        changed = true
+      }
+    }
+    if (changed) {
+      await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+    }
+  }
+
+  /** site_info 图片字段变更时同步到 contact_items */
+  async function syncQrIfNeeded(field: string, qrUrl: string): Promise<void> {
+    const iconName = QR_SYNC_MAP[field]
+    if (!iconName) return
+    const imageId = qrUrl?.includes("id=") ? qrUrl.split("id=")[1] : null
+    const updated = rawConfig.contactItems.map((ci: any) =>
+      ci.icon === iconName ? { ...ci, image_id: imageId } : ci,
+    )
+    await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+  }
+
+  /** 全局 contact_item 保存后同步到 site_info */
+  async function syncContactItemToSiteInfo(
+    icon: string,
+    newData: Record<string, unknown>,
+    oldData: Record<string, unknown>,
+  ): Promise<void> {
+    const sync = CONTACT_SITE_SYNC[icon]
+    if (!sync) return
+    const updates: Record<string, unknown> = {}
+    if (sync.content) {
+      const newContent = typeof newData.content === "object" ? (newData.content as any)?.zh : newData.content
+      const oldContent = typeof oldData.content === "object" ? (oldData.content as any)?.zh : oldData.content
+      if (newContent !== oldContent) updates[sync.content] = newContent ?? ""
+    }
+    if (sync.image && newData.image_id !== oldData.image_id) {
+      updates[sync.image] = newData.image_id ? `/api/public/images/detail?id=${newData.image_id}` : ""
+    }
+    if (Object.keys(updates).length > 0) {
+      await api.post("/admin/web-settings/list/edit", {
+        key: "site_info",
+        value: { ...rawConfig.siteInfo, ...updates },
+      })
     }
   }
 
@@ -256,24 +360,51 @@ export default function WebSettingsPage() {
           defaultValues: { brand_name: tHeader("brandName") },
         })
         break
-      case 'phone':
-        setDialogState({
-          open: true,
-          title: '编辑电话',
-          fields: [{ key: 'phone', label: '电话', type: 'text' as const, localized: false }],
-          configKey: 'contact_info',
-          data: rawConfig.contactInfo,
-        })
+      case 'phone': {
+        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'phone')
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑电话',
+            fields: [{ key: 'content', label: '电话号码', type: 'text' as const, localized: true }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              await syncContactItemToSiteInfo(item.icon, { ...item, ...data }, item)
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
-      case 'email':
-        setDialogState({
-          open: true,
-          title: '编辑邮箱',
-          fields: [{ key: 'email', label: '邮箱', type: 'text' as const, localized: false }],
-          configKey: 'contact_info',
-          data: rawConfig.contactInfo,
-        })
+      }
+      case 'email': {
+        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'mail')
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑邮箱',
+            fields: [{ key: 'content', label: '邮箱地址', type: 'text' as const, localized: true }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
+      }
       case 'company':
         setDialogState({
           open: true,
@@ -306,7 +437,7 @@ export default function WebSettingsPage() {
   }
 
   /** 处理页面预览中的配置编辑（Header/统计/联系信息） */
-  function handleEditConfig(section: string): void {
+  async function handleEditConfig(section: string): Promise<void> {
     switch (section) {
       case 'brand_name':
         setDialogState({
@@ -336,27 +467,142 @@ export default function WebSettingsPage() {
         })
         break
       default:
-        // contact_* 前缀处理联系信息字段
-        if (section.startsWith('contact_')) {
-          const field = section.replace('contact_', '')
-          const fieldDefs: Record<string, { label: string; localized: boolean; defaultKey?: string }> = {
-            address: { label: '办公地址', localized: true, defaultKey: 'address' },
-            phone: { label: '咨询热线', localized: false, defaultKey: 'phone' },
-            email: { label: '电子邮箱', localized: false, defaultKey: 'email' },
-            wechat: { label: '微信咨询', localized: false, defaultKey: 'wechat' },
-            registered_address: { label: '注册地址', localized: true, defaultKey: 'registeredAddress' },
-          }
-          const def = fieldDefs[field]
-          if (def) {
-            setDialogState({
+        if (section.startsWith('contact_item_global_')) {
+          // 编辑全局条目（共享数据）
+          const globalId = section.replace('contact_item_global_', '')
+          const idx = rawConfig.contactItems.findIndex((i: any) => i.id === globalId)
+          const item = rawConfig.contactItems[idx]
+          if (item) {
+            setItemDialogState({
               open: true,
-              title: `编辑${def.label}`,
-              fields: [{ key: field, label: def.label, type: 'text' as const, localized: def.localized }],
-              configKey: 'contact_info',
-              data: rawConfig.contactInfo,
-              defaultValues: def.defaultKey ? { [field]: tContact(def.defaultKey) } : undefined,
+              title: '编辑联系信息',
+              subtitle: '编辑配置项，中文字段为必填。',
+              fields: CONTACT_ITEM_FIELDS,
+              data: item,
+              sourceHint: '此条目为共享数据，修改将影响 Footer、关于我们等页面。',
+              onSave: async (data) => {
+                const updated = [...rawConfig.contactItems]
+                updated[idx] = { ...item, ...data }
+                await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+                await syncContactItemToSiteInfo(item.icon, data, item)
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
             })
           }
+        } else if (section.startsWith('contact_item_custom_')) {
+          // 编辑自定义条目
+          const rest = section.replace('contact_item_custom_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block?.data?.items?.[itemIndex]?.type === 'custom') {
+            const customItem = block.data.items[itemIndex]
+            setItemDialogState({
+              open: true,
+              title: '编辑自定义条目',
+              subtitle: '编辑配置项，中文字段为必填。',
+              fields: CONTACT_ITEM_FIELDS,
+              data: customItem,
+              onSave: async (data) => {
+                const updatedItems = [...block.data.items]
+                updatedItems[itemIndex] = { ...customItem, ...data }
+                const updatedBlock = { ...block, data: { items: updatedItems } }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('contact_item_delete_')) {
+          // 删除条目
+          const rest = section.replace('contact_item_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const updatedItems = currentItems.filter((_: any, i: number) => i !== itemIndex)
+            const updatedBlock = { ...block, data: { items: updatedItems } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已移除条目')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('contact_item_reorder_')) {
+          // 拖动排序
+          const parts = section.replace('contact_item_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const reordered = [...currentItems]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: { items: reordered } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('contact_item_add_global_')) {
+          // 添加全局引用
+          const rest = section.replace('contact_item_add_global_', '')
+          const sepIdx = rest.indexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const globalId = rest.substring(sepIdx + 1)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const updatedItems = [...currentItems, { type: "global", id: globalId }]
+            const updatedBlock = { ...block, data: { items: updatedItems } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已添加条目')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('contact_item_add_custom_')) {
+          // 添加自定义条目
+          const blockId = section.replace('contact_item_add_custom_', '')
+          setItemDialogState({
+            open: true,
+            title: '添加自定义条目',
+            subtitle: '填写新条目信息，中文字段为必填。',
+            fields: CONTACT_ITEM_FIELDS,
+            data: { icon: 'info', label: '', content: '', image_id: null, hover_zoom: false },
+            onSave: async (data) => {
+              const currentBlocks = pageBlocks[activePage] ?? []
+              const block = currentBlocks.find((b) => b.id === blockId)
+              if (!block) return
+              const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+              const newItem = { type: "custom" as const, icon: data.icon || 'info', ...data }
+              const updatedItems = [...currentItems, newItem]
+              const updatedBlock = { ...block, data: { items: updatedItems } }
+              const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+              const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+              await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+              toast.success('已添加自定义条目')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
         }
         break
     }
@@ -369,7 +615,7 @@ export default function WebSettingsPage() {
   const faviconUrl = rawConfig.siteInfo.favicon_url
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div>
       <h1 className="mb-4 text-2xl font-bold">网页设置</h1>
 
       {/* 标签页 */}
@@ -388,7 +634,7 @@ export default function WebSettingsPage() {
 
       {/* 页面预览 tab */}
       {activeTab === 'preview' && (
-        <div className="isolate overflow-hidden rounded-lg border bg-white shadow-sm [&_a]:pointer-events-none [&_.group]:pointer-events-auto">
+        <div className="isolate overflow-clip rounded-lg border bg-white shadow-sm">
           {/* 模拟浏览器标签栏 */}
           <div className="bg-[#dee1e6] px-2 pt-1.5 pb-0">
             <div className="group inline-flex items-center gap-2 rounded-t-md bg-white px-3 py-1.5 min-w-[160px] max-w-[220px] relative">
@@ -426,8 +672,10 @@ export default function WebSettingsPage() {
             onImageUpload={handleSiteImageUpload}
             onImageClear={handleSiteImageClear}
           />
-          <NavEditor activePage={activePage} onPageChange={setActivePage} />
-          <PreviewContainer className="max-h-[60vh] overflow-y-auto">
+          <div className="sticky top-0 z-20 bg-white shadow-sm">
+            <NavEditor activePage={activePage} onPageChange={setActivePage} />
+          </div>
+          <PreviewContainer>
             <PagePreview activePage={activePage} onEditConfig={handleEditConfig} onBannerEdit={handleBannerEdit} />
           </PreviewContainer>
           <Footer editable onEdit={handleFooterEdit} onImageUpload={handleSiteImageUpload} onImageClear={handleSiteImageClear} />
@@ -455,6 +703,20 @@ export default function WebSettingsPage() {
           data={dialogState.data}
           onSave={handleSave}
           defaultValues={dialogState.defaultValues}
+        />
+      )}
+
+      {/* 条目编辑弹窗（联系信息等） */}
+      {itemDialogState && (
+        <ItemEditDialog
+          open={itemDialogState.open}
+          onOpenChange={(open) => { if (!open) setItemDialogState(null) }}
+          title={itemDialogState.title}
+          subtitle={itemDialogState.subtitle}
+          fields={itemDialogState.fields}
+          data={itemDialogState.data}
+          onSave={itemDialogState.onSave}
+          sourceHint={itemDialogState.sourceHint}
         />
       )}
 

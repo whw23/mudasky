@@ -27,15 +27,17 @@ interface BlockRendererProps {
   onEditData?: (block: Block) => void
   /** 字段级配置编辑回调（contact_info 等全局配置字段） */
   onEditConfig?: (section: string) => void
+  /** 字段级编辑回调 */
+  onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
 }
 
 /** Block 列表渲染器 */
-export function BlockRenderer({ blocks, editable, onEditBlock, onEditData, onEditConfig }: BlockRendererProps) {
+export function BlockRenderer({ blocks, editable, onEditBlock, onEditData, onEditConfig, onFieldEdit }: BlockRendererProps) {
   return (
     <>
       {blocks.map((block) => (
         <Fragment key={block.id}>
-          {renderBlock(block, editable, onEditData, onEditConfig)}
+          {renderBlock(block, editable, onEditData, onEditConfig, onFieldEdit)}
         </Fragment>
       ))}
     </>
@@ -48,12 +50,13 @@ function renderBlock(
   editable?: boolean,
   onEditData?: (b: Block) => void,
   onEditConfig?: (section: string) => void,
+  onFieldEdit?: (b: Block, fieldKey: string, fieldIndex?: number) => void,
 ): ReactNode {
   const header = block.showTitle
     ? <SectionHeader tag={block.sectionTag} title={block.sectionTitle} />
     : null
   const bg = block.bgColor === "gray" ? "bg-gray-50" : ""
-  const props = { block, header, bg, editable, onEdit: onEditData }
+  const props = { block, header, bg, editable, onEdit: onEditData, onFieldEdit }
 
   switch (block.type) {
     case "intro":

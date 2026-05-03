@@ -97,13 +97,21 @@ def build_home_blocks() -> list[dict]:
                     "ja": "15年間国際教育に専念し、最もプロフェッショナルな留学コンサルティングサービスを提供します",
                     "de": "15 Jahre internationale Bildung, professionelle Studienberatung",
                 },
+                "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
 
 
-def build_about_blocks() -> list[dict]:
+def build_about_blocks(contact_item_ids: list[str] | None = None) -> list[dict]:
     """关于我们页面区块。"""
+    contact_data = None
+    if contact_item_ids:
+        contact_data = {
+            "items": [{"type": "global", "id": cid} for cid in contact_item_ids],
+        }
+
     return [
         _block(
             "contact_info",
@@ -116,6 +124,7 @@ def build_about_blocks() -> list[dict]:
                 "de": "Kontaktinformationen",
             },
             bg_color="gray",
+            data=contact_data,
         ),
         _block(
             "intro",
@@ -198,6 +207,8 @@ def build_about_blocks() -> list[dict]:
                     "ja": "プロフェッショナルチームがあなたのためにカスタマイズされた留学プランを作成し、学校選択からビザ取得まで全力でサポートします",
                     "de": "Unser professionelles Team erstellt maßgeschneiderte Studienpläne und begleitet Sie von der Schulauswahl bis zur Visabearbeitung",
                 },
+                "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
@@ -252,6 +263,8 @@ def build_universities_blocks() -> list[dict]:
                     "ja": "無料のバックグラウンド評価サービスを提供し、最適な留学方向を見つけるお手伝いをします",
                     "de": "Wir bieten kostenlose Hintergrundprüfungen, um Ihnen die beste Studienrichtung zu finden",
                 },
+                "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
@@ -306,12 +319,14 @@ def build_cases_blocks() -> list[dict]:
                     "ja": "すべての成功した留学物語はプロフェッショナルな相談から始まります",
                     "de": "Jede erfolgreiche Studiengeschichte beginnt mit einer professionellen Beratung",
                 },
+                "link": "/about",
+                "showLogin": True,
             },
         ),
     ]
 
 
-def build_page_blocks() -> dict:
+def build_page_blocks(contact_item_ids: list[str] | None = None) -> dict:
     """构建所有页面的区块配置。"""
     from .seed_page_blocks_extra import (
         build_requirements_blocks,
@@ -322,7 +337,7 @@ def build_page_blocks() -> dict:
 
     return {
         "home": build_home_blocks(),
-        "about": build_about_blocks(),
+        "about": build_about_blocks(contact_item_ids),
         "universities": build_universities_blocks(),
         "cases": build_cases_blocks(),
         "study-abroad": build_study_abroad_blocks(),

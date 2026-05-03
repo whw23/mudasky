@@ -14,7 +14,7 @@ import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import type { Block } from "@/types/block"
 import { CaseGrid } from "@/components/public/CaseGrid"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { CaseEditDialog } from "@/components/admin/web-settings/CaseEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
@@ -130,7 +130,7 @@ export function CaseGridBlock({ block, header, bg, editable, onEdit }: BlockProp
 
   if (editable && onEdit) {
     return (
-      <EditableOverlay onClick={() => onEdit(block)} label="编辑案例网格">
+      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑案例网格">
         {el}
 
         {/* 编辑弹窗 */}
@@ -149,7 +149,7 @@ export function CaseGridBlock({ block, header, bg, editable, onEdit }: BlockProp
           onConfirm={handleImportConfirm}
           columns={IMPORT_COLUMNS}
         />
-      </EditableOverlay>
+      </SpotlightOverlay>
     )
   }
   return el

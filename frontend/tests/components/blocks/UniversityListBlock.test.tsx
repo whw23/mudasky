@@ -23,9 +23,9 @@ vi.mock("@/components/public/UniversityList", () => ({
   ),
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children, label }: any) => (
-    <div data-testid="editable-overlay" data-label={label}>{children}</div>
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children, label }: any) => (
+    <div data-testid="spotlight-overlay" data-label={label}>{children}</div>
   ),
 }))
 
@@ -89,7 +89,7 @@ describe("UniversityListBlock", () => {
     render(<UniversityListBlock block={makeBlock()} header={null} bg="" />)
 
     expect(screen.queryByTestId("manage-toolbar")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("editable-overlay")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
   it("editable 模式渲染管理工具栏", () => {
@@ -101,21 +101,21 @@ describe("UniversityListBlock", () => {
     expect(screen.getByTestId("manage-toolbar")).toBeInTheDocument()
   })
 
-  it("editable + onEdit 模式包裹 EditableOverlay", () => {
+  it("editable + onEdit 模式包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <UniversityListBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 
-  it("editable 但无 onEdit 时不包裹 EditableOverlay", () => {
+  it("editable 但无 onEdit 时不包裹 SpotlightOverlay", () => {
     render(
       <UniversityListBlock block={makeBlock()} header={null} bg="" editable />,
     )
 
-    expect(screen.queryByTestId("editable-overlay")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
   it("应用灰色背景样式", () => {

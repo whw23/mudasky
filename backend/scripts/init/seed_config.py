@@ -5,12 +5,15 @@
 
 import logging
 import os
+from uuid import uuid4
 
 from sqlalchemy import select
 
 from app.db.config.models import SystemConfig
 
 from .seed_page_blocks import build_page_blocks
+
+CONTACT_ITEM_IDS = [str(uuid4()) for _ in range(6)]
 
 logger = logging.getLogger(__name__)
 
@@ -139,26 +142,115 @@ CONFIGS = [
     (
         "page_blocks",
         "页面模组配置",
-        lambda: build_page_blocks(),
+        lambda: build_page_blocks(CONTACT_ITEM_IDS),
     ),
     (
-        "contact_info",
-        "联系方式",
-        lambda: {
-            "address": os.environ.get(
-                "CONTACT_ADDRESS", ""
-            ),
-            "phone": os.environ.get(
-                "CONTACT_PHONE", ""
-            ),
-            "email": os.environ.get(
-                "CONTACT_EMAIL", ""
-            ),
-            "wechat": os.environ.get("CONTACT_WECHAT", ""),
-            "registered_address": os.environ.get(
-                "CONTACT_REGISTERED_ADDRESS", ""
-            ),
-        },
+        "contact_items",
+        "联系信息列表",
+        lambda: [
+            {
+                "id": CONTACT_ITEM_IDS[0],
+                "icon": "phone",
+                "label": {
+                    "zh": "服务热线",
+                    "en": "Hotline",
+                    "ja": "ホットライン",
+                    "de": "Hotline",
+                },
+                "content": {
+                    "zh": "189-1268-6656",
+                    "en": "189-1268-6656",
+                    "ja": "189-1268-6656",
+                    "de": "189-1268-6656",
+                },
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[1],
+                "icon": "mail",
+                "label": {
+                    "zh": "邮箱",
+                    "en": "Email",
+                    "ja": "メール",
+                    "de": "E-Mail",
+                },
+                "content": {
+                    "zh": "haoranxuexing@163.com",
+                    "en": "haoranxuexing@163.com",
+                    "ja": "haoranxuexing@163.com",
+                    "de": "haoranxuexing@163.com",
+                },
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[2],
+                "icon": "message-circle",
+                "label": {
+                    "zh": "微信咨询",
+                    "en": "WeChat",
+                    "ja": "WeChat",
+                    "de": "WeChat",
+                },
+                "content": {
+                    "zh": "扫码添加客服微信",
+                    "en": "Scan to add customer service",
+                    "ja": "QRコードをスキャンして追加",
+                    "de": "QR-Code scannen",
+                },
+                "image_id": None,
+                "hover_zoom": True,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[3],
+                "icon": "map-pin",
+                "label": {
+                    "zh": "办公地址",
+                    "en": "Office Address",
+                    "ja": "オフィス所在地",
+                    "de": "Büroadresse",
+                },
+                "content": {
+                    "zh": "苏州独墅湖大学城林泉街377号公共学院5号楼7楼",
+                },
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[4],
+                "icon": "building",
+                "label": {
+                    "zh": "注册地址",
+                    "en": "Registered Address",
+                    "ja": "登記住所",
+                    "de": "Eingetragene Adresse",
+                },
+                "content": {
+                    "zh": "中国(江苏)自由贸易试验区苏州片区苏州工业园区苏州大道东398号太平金融大厦5层5112室",
+                },
+                "image_id": None,
+                "hover_zoom": False,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[5],
+                "icon": "qr-code",
+                "label": {
+                    "zh": "微信公众号",
+                    "en": "WeChat Official",
+                    "ja": "WeChat公式",
+                    "de": "WeChat Offiziell",
+                },
+                "content": {
+                    "zh": "扫码关注公众号",
+                    "en": "Scan to follow",
+                    "ja": "QRコードをスキャンしてフォロー",
+                    "de": "QR-Code scannen zum Folgen",
+                },
+                "image_id": None,
+                "hover_zoom": True,
+            },
+        ],
     ),
 ]
 

@@ -9,7 +9,8 @@
 import { useLocale } from "next-intl"
 import type { ReactNode } from "react"
 import type { Block, CardType } from "@/types/block"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
+import { FieldOverlay } from "@/components/admin/FieldOverlay"
 import { GuideCard } from "./cards/GuideCard"
 import { TimelineCard } from "./cards/TimelineCard"
 import { CityCard } from "./cards/CityCard"
@@ -22,6 +23,7 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
 }
 
 /** 根据卡片类型渲染对应卡片组件 */
@@ -53,7 +55,7 @@ function getGridClass(count: number, maxColumns: number): string {
 }
 
 /** 卡片网格区块 */
-export function CardGridBlock({ block, header, bg, editable, onEdit }: BlockProps) {
+export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
   const locale = useLocale()
   const cards: Record<string, any>[] = Array.isArray(block.data) ? block.data : []
   const cardType: CardType = block.options?.cardType || "guide"
@@ -61,7 +63,30 @@ export function CardGridBlock({ block, header, bg, editable, onEdit }: BlockProp
 
   const gridClass = getGridClass(cards.length, maxColumns)
 
-  const el = (
+  if (editable && onEdit) {
+    return (
+      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑卡片">
+        <section className={`py-10 md:py-16 ${bg}`}>
+          <div className="mx-auto max-w-7xl px-4">
+            {header}
+            <div className={`mt-8 ${gridClass}`}>
+              {cards.map((card, i) => (
+                <FieldOverlay
+                  key={card.id || i}
+                  onClick={() => onFieldEdit?.(block, "item", i)}
+                  label={`编辑卡片 ${i + 1}`}
+                >
+                  {renderCard(cardType, card, locale, i)}
+                </FieldOverlay>
+              ))}
+            </div>
+          </div>
+        </section>
+      </SpotlightOverlay>
+    )
+  }
+
+  return (
     <section className={`py-10 md:py-16 ${bg}`}>
       <div className="mx-auto max-w-7xl px-4">
         {header}
@@ -71,13 +96,4 @@ export function CardGridBlock({ block, header, bg, editable, onEdit }: BlockProp
       </div>
     </section>
   )
-
-  if (editable && onEdit) {
-    return (
-      <EditableOverlay onClick={() => onEdit(block)} label="编辑卡片">
-        {el}
-      </EditableOverlay>
-    )
-  }
-  return el
 }

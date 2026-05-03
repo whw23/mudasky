@@ -10,8 +10,12 @@ vi.mock("next-intl", () => ({
   useLocale: () => "zh",
 }))
 
-vi.mock("@/components/admin/EditableOverlay", () => ({
-  EditableOverlay: ({ children }: any) => <div data-testid="editable-overlay">{children}</div>,
+vi.mock("@/components/admin/SpotlightOverlay", () => ({
+  SpotlightOverlay: ({ children }: any) => <div data-testid="spotlight-overlay">{children}</div>,
+}))
+
+vi.mock("@/components/admin/FieldOverlay", () => ({
+  FieldOverlay: ({ children }: any) => <div data-testid="field-overlay">{children}</div>,
 }))
 
 /* mock 所有卡片组件，避免深层依赖 */
@@ -117,12 +121,12 @@ describe("CardGridBlock", () => {
     expect(screen.queryByTestId("guide-card")).not.toBeInTheDocument()
   })
 
-  it("editable 模式包裹 EditableOverlay", () => {
+  it("editable 模式包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <CardGridBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("editable-overlay")).toBeInTheDocument()
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
   })
 })

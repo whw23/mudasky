@@ -14,7 +14,7 @@ import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import type { Block } from "@/types/block"
 import { ArticleListClient } from "@/components/public/ArticleListClient"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
@@ -155,7 +155,7 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit }: BlockP
 
   if (editable && onEdit) {
     return (
-      <EditableOverlay onClick={() => onEdit(block)} label="编辑文章列表">
+      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑文章列表">
         {el}
 
         {/* 编辑弹窗 */}
@@ -177,7 +177,7 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit }: BlockP
           onConfirm={handleImportConfirm}
           columns={IMPORT_COLUMNS}
         />
-      </EditableOverlay>
+      </SpotlightOverlay>
     )
   }
   return el

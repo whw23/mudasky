@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,6 +57,11 @@ class ConfigService:
                     value = validated.to_list()
             except ValidationError as e:
                 raise BadRequestException(message=str(e))
+
+        if key == "contact_items" and isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict) and not item.get("id"):
+                    item["id"] = str(uuid4())
 
         await repository.update_value(self.session, config, value)
         await self.session.commit()

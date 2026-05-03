@@ -9,11 +9,8 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import {
-  Select, SelectTrigger, SelectValue,
-  SelectContent, SelectItem,
-} from "@/components/ui/select"
+import { SwitchField } from "@/components/admin/SwitchField"
+import { SelectField } from "@/components/admin/SelectField"
 import {
   Dialog, DialogContent, DialogHeader,
   DialogTitle, DialogDescription, DialogBody, DialogFooter,
@@ -23,6 +20,7 @@ import type { ConfigLocale, LocalizedField } from "@/lib/i18n-config"
 import { LanguageCapsule } from "@/components/admin/LanguageCapsule"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { TypeSpecificFields } from "./BlockTypeFields"
+import api from "@/lib/api"
 import { BlockContentTab, getBlockEditType } from "./BlockContentTab"
 
 /** 区块类型中文名 */
@@ -47,7 +45,9 @@ interface UnifiedBlockEditorProps {
   onOpenChange: (open: boolean) => void
   block: Block | null
   defaultTab?: EditorTab
+  defaultFieldIndex?: number | null
   onSave: (updated: Block) => void
+  onEditConfig?: (section: string) => void
 }
 
 /** 统一 Block 编辑弹窗 */
@@ -56,7 +56,9 @@ export function UnifiedBlockEditor({
   onOpenChange,
   block,
   defaultTab,
+  defaultFieldIndex,
   onSave,
+  onEditConfig,
 }: UnifiedBlockEditorProps) {
   const [locale, setLocale] = useState<ConfigLocale>("zh")
   const [activeTab, setActiveTab] = useState<EditorTab>("content")
@@ -159,6 +161,8 @@ export function UnifiedBlockEditor({
               locale={locale}
               data={data}
               onDataChange={setData}
+              defaultFieldIndex={defaultFieldIndex}
+              onEditConfig={onEditConfig}
             />
           )}
         </DialogBody>
@@ -237,46 +241,43 @@ function ConfigTabContent({
   return (
     <div className="space-y-4">
       {/* 显示标题 */}
-      <div className="flex items-center justify-between">
-        <Label htmlFor="block-show-title">显示标题区域</Label>
-        <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
-      </div>
-
-      {/* 英文标签 */}
-      <div className="space-y-1.5">
-        <Label htmlFor="block-section-tag">英文标签</Label>
-        <Input
-          id="block-section-tag"
-          value={sectionTag}
-          onChange={(e) => onSectionTagChange(e.target.value)}
-          placeholder="如 OUR STORY"
-        />
-      </div>
-
-      {/* 板块标题 */}
-      <LocalizedInput
-        value={sectionTitle}
-        onChange={onSectionTitleChange}
-        label="板块标题"
-        locale={locale}
+      <SwitchField
+        id="block-show-title"
+        label="显示标题区域"
+        checked={showTitle}
+        onCheckedChange={onShowTitleChange}
       />
 
+      {showTitle && (
+        <>
+          {/* 英文标签 */}
+          <div className="space-y-1.5">
+            <Label htmlFor="block-section-tag">英文标签</Label>
+            <Input
+              id="block-section-tag"
+              value={sectionTag}
+              onChange={(e) => onSectionTagChange(e.target.value)}
+              placeholder="如 OUR STORY"
+            />
+          </div>
+
+          {/* 板块标题 */}
+          <LocalizedInput
+            value={sectionTitle}
+            onChange={onSectionTitleChange}
+            label="板块标题"
+            locale={locale}
+          />
+        </>
+      )}
+
       {/* 背景色 */}
-      <div className="space-y-1.5">
-        <Label>背景色</Label>
-        <Select
-          value={bgColor}
-          onValueChange={(v) => onBgColorChange((v ?? "white") as "white" | "gray")}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="white">白色</SelectItem>
-            <SelectItem value="gray">浅灰</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <SelectField
+        label="背景色"
+        value={bgColor}
+        options={[{ value: "white", label: "白色" }, { value: "gray", label: "浅灰" }]}
+        onValueChange={(v) => onBgColorChange(v as "white" | "gray")}
+      />
 
       {/* 类型特定选项 */}
       <TypeSpecificFields type={blockType} options={options} onUpdateOption={onUpdateOption} />

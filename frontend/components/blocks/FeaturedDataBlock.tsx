@@ -11,7 +11,7 @@ import { MapPin, Award, GraduationCap, Building2 } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import api from "@/lib/api"
 import type { Block } from "@/types/block"
-import { EditableOverlay } from "@/components/admin/EditableOverlay"
+import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 
 interface BlockProps {
   block: Block
@@ -96,9 +96,9 @@ export function FeaturedDataBlock({ block, header, bg, editable, onEdit }: Block
 
   if (editable && onEdit) {
     return (
-      <EditableOverlay onClick={() => onEdit(block)} label="编辑精选数据">
+      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑精选数据">
         {el}
-      </EditableOverlay>
+      </SpotlightOverlay>
     )
   }
   return el
