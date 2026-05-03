@@ -19,6 +19,7 @@ import { ArrayFieldRenderer } from "@/components/admin/ArrayFieldRenderer"
 import { useConfig } from "@/contexts/ConfigContext"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { resolveIcon } from "@/lib/icon-utils"
+import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
 import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
@@ -227,10 +228,12 @@ function ContactItemsList({
         </Droppable>
       </DragDropContext>
 
-      <Button variant="outline" className="w-full" onClick={() => onEditConfig(`contact_item_add_custom_${block.id}`)}>
-        <Plus className="mr-1 size-4" />
-        添加条目
-      </Button>
+      <AddContactItemMenu
+        block={block}
+        items={items}
+        globalItems={contactItems}
+        onEditConfig={onEditConfig}
+      />
     </div>
   )
 }
