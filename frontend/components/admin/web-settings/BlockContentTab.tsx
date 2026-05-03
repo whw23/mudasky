@@ -142,6 +142,18 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
     return <CardGridItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
   }
 
+  if (block.type === "step_list" && onEditConfig) {
+    return <StepListItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "doc_list" && onEditConfig) {
+    return <DocListItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "gallery" && onEditConfig) {
+    return <GalleryItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
   const fields = getArrayFields(block)
   const cardType = block.type === "card_grid" ? (block.options?.cardType || "guide") : ""
   const hasIconField = cardType === "guide" || cardType === "checklist"
@@ -239,6 +251,128 @@ function CardGridItemsList({
         >
           <Plus className="mr-1 size-4" />
           添加卡片
+        </Button>
+      }
+    />
+  )
+}
+
+/** step_list 步骤列表（支持拖动排序） */
+function StepListItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const steps: any[] = Array.isArray(data) ? data : []
+
+  return (
+    <BlockItemsList
+      items={steps}
+      onEditItem={(idx) => onEditConfig(`step_list_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`step_list_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`step_list_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const title = typeof item.title === 'object' ? (item.title[locale] || item.title.zh || '') : (item.title || '')
+        const desc = typeof item.desc === 'object' ? (item.desc[locale] || item.desc.zh || '') : (item.desc || '')
+        return {
+          label: title || `步骤 ${idx + 1}`,
+          content: desc || '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`step_list_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加步骤
+        </Button>
+      }
+    />
+  )
+}
+
+/** doc_list 文档列表（支持拖动排序） */
+function DocListItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const docs: any[] = Array.isArray(data) ? data : []
+
+  return (
+    <BlockItemsList
+      items={docs}
+      onEditItem={(idx) => onEditConfig(`doc_list_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`doc_list_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`doc_list_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const text = typeof item.text === 'object' ? (item.text[locale] || item.text.zh || '') : (item.text || '')
+        return {
+          icon: item.icon,
+          label: text || `文档 ${idx + 1}`,
+          content: '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`doc_list_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加文档
+        </Button>
+      }
+    />
+  )
+}
+
+/** gallery 图片列表（支持拖动排序） */
+function GalleryItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const items: any[] = Array.isArray(data) ? data : []
+
+  return (
+    <BlockItemsList
+      items={items}
+      onEditItem={(idx) => onEditConfig(`gallery_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`gallery_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`gallery_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const caption = typeof item.caption === 'object' ? (item.caption[locale] || item.caption.zh || '') : (item.caption || '')
+        return {
+          label: caption || `图片 ${idx + 1}`,
+          content: item.image_id ? `ID: ${item.image_id}` : '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`gallery_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加图片
         </Button>
       }
     />

@@ -19,6 +19,7 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  onEditConfig?: (section: string) => void
   blockLabel?: string
 }
 
@@ -28,7 +29,7 @@ interface GalleryItem {
 }
 
 /** 图片画廊区块 */
-export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
+export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const items: GalleryItem[] = Array.isArray(block.data) ? block.data : []
 
@@ -42,7 +43,7 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
               {items.map((item, i) => (
                 <FieldOverlay
                   key={i}
-                  onClick={() => onFieldEdit?.(block, "item", i)}
+                  onClick={() => onEditConfig?.(`gallery_item_${block.id}_${i}`)}
                   label={`编辑图片 ${i + 1}`}
                 >
                   <div className="shrink-0" style={{ width: 280 }}>

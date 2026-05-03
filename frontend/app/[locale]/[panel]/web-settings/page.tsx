@@ -89,6 +89,24 @@ const CARD_TYPE_LABELS: Record<string, string> = {
   program: "专业卡片", checklist: "检查清单",
 }
 
+/** step_list 字段定义 */
+const STEP_LIST_FIELDS: ItemFieldDef[] = [
+  { key: "title", label: "标题", type: "text", localized: true, required: true },
+  { key: "desc", label: "描述", type: "textarea", localized: true },
+]
+
+/** doc_list 字段定义 */
+const DOC_LIST_FIELDS: ItemFieldDef[] = [
+  { key: "icon", label: "图标", type: "icon", localized: false },
+  { key: "text", label: "文本", type: "text", localized: true, required: true },
+]
+
+/** gallery 字段定义 */
+const GALLERY_FIELDS: ItemFieldDef[] = [
+  { key: "image_id", label: "图片", type: "image", localized: false, required: true },
+  { key: "caption", label: "说明", type: "text", localized: true },
+]
+
 /** ItemEditDialog 弹窗状态 */
 interface ItemDialogState {
   open: boolean
@@ -843,6 +861,288 @@ export default function WebSettingsPage() {
                 const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
                 await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
                 toast.success('已添加卡片')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('step_list_item_')) {
+          // 编辑 step_list 步骤
+          const rest = section.replace('step_list_item_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const item = items[itemIndex] || {}
+            setItemDialogState({
+              open: true,
+              title: `编辑步骤 ${itemIndex + 1}`,
+              subtitle: '编辑步骤内容，中文字段为必填。',
+              fields: STEP_LIST_FIELDS,
+              data: item,
+              onSave: async (data) => {
+                const updatedItems = [...items]
+                updatedItems[itemIndex] = { ...item, ...data }
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('step_list_delete_')) {
+          // 删除 step_list 步骤
+          const rest = section.replace('step_list_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const updatedItems = items.filter((_, i) => i !== itemIndex)
+            const updatedBlock = { ...block, data: updatedItems }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已删除步骤')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('step_list_reorder_')) {
+          // step_list 拖动排序
+          const parts = section.replace('step_list_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const reordered = [...items]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: reordered }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('step_list_add_')) {
+          // 添加 step_list 步骤
+          const blockId = section.replace('step_list_add_', '')
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            setItemDialogState({
+              open: true,
+              title: '添加步骤',
+              subtitle: '填写步骤内容，中文字段为必填。',
+              fields: STEP_LIST_FIELDS,
+              data: {},
+              onSave: async (data) => {
+                const items: any[] = Array.isArray(block.data) ? block.data : []
+                const updatedItems = [...items, data]
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('已添加步骤')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('doc_list_item_')) {
+          // 编辑 doc_list 文档
+          const rest = section.replace('doc_list_item_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const item = items[itemIndex] || {}
+            setItemDialogState({
+              open: true,
+              title: `编辑文档 ${itemIndex + 1}`,
+              subtitle: '编辑文档内容，中文字段为必填。',
+              fields: DOC_LIST_FIELDS,
+              data: item,
+              onSave: async (data) => {
+                const updatedItems = [...items]
+                updatedItems[itemIndex] = { ...item, ...data }
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('doc_list_delete_')) {
+          // 删除 doc_list 文档
+          const rest = section.replace('doc_list_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const updatedItems = items.filter((_, i) => i !== itemIndex)
+            const updatedBlock = { ...block, data: updatedItems }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已删除文档')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('doc_list_reorder_')) {
+          // doc_list 拖动排序
+          const parts = section.replace('doc_list_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const reordered = [...items]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: reordered }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('doc_list_add_')) {
+          // 添加 doc_list 文档
+          const blockId = section.replace('doc_list_add_', '')
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            setItemDialogState({
+              open: true,
+              title: '添加文档',
+              subtitle: '填写文档内容，中文字段为必填。',
+              fields: DOC_LIST_FIELDS,
+              data: { icon: 'file-text' },
+              onSave: async (data) => {
+                const items: any[] = Array.isArray(block.data) ? block.data : []
+                const updatedItems = [...items, data]
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('已添加文档')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('gallery_item_')) {
+          // 编辑 gallery 图片
+          const rest = section.replace('gallery_item_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const item = items[itemIndex] || {}
+            setItemDialogState({
+              open: true,
+              title: `编辑图片 ${itemIndex + 1}`,
+              subtitle: '编辑图片内容，中文字段为必填。',
+              fields: GALLERY_FIELDS,
+              data: item,
+              onSave: async (data) => {
+                const updatedItems = [...items]
+                updatedItems[itemIndex] = { ...item, ...data }
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('gallery_delete_')) {
+          // 删除 gallery 图片
+          const rest = section.replace('gallery_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const updatedItems = items.filter((_, i) => i !== itemIndex)
+            const updatedBlock = { ...block, data: updatedItems }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已删除图片')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('gallery_reorder_')) {
+          // gallery 拖动排序
+          const parts = section.replace('gallery_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const items: any[] = Array.isArray(block.data) ? block.data : []
+            const reordered = [...items]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: reordered }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('gallery_add_')) {
+          // 添加 gallery 图片
+          const blockId = section.replace('gallery_add_', '')
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            setItemDialogState({
+              open: true,
+              title: '添加图片',
+              subtitle: '上传图片并填写说明，中文字段为必填。',
+              fields: GALLERY_FIELDS,
+              data: {},
+              onSave: async (data) => {
+                const items: any[] = Array.isArray(block.data) ? block.data : []
+                const updatedItems = [...items, data]
+                const updatedBlock = { ...block, data: updatedItems }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('已添加图片')
                 await fetchAllConfigs(true)
                 refreshConfig()
               },

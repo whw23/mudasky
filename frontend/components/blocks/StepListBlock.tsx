@@ -19,11 +19,12 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  onEditConfig?: (section: string) => void
   blockLabel?: string
 }
 
 /** 步骤列表区块 */
-export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
+export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const steps: Array<{ title: any; desc: any }> = Array.isArray(block.data) ? block.data : []
 
@@ -37,7 +38,7 @@ export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit
               {steps.map((step, i) => (
                 <FieldOverlay
                   key={i}
-                  onClick={() => onFieldEdit?.(block, "item", i)}
+                  onClick={() => onEditConfig?.(`step_list_item_${block.id}_${i}`)}
                   label={`编辑步骤 ${i + 1}`}
                 >
                   <div className="flex gap-4">
