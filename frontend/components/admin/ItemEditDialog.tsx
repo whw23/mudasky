@@ -169,7 +169,7 @@ function renderField(
   if (field.type === "image") {
     return (
       <ImageUploadField
-        label={field.label}
+        label=""
         imageId={(sharedData[field.key] as string) ?? ""}
         onChange={(imageId: string) => setSharedValue(field.key, imageId)}
       />
