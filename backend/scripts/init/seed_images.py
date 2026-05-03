@@ -66,10 +66,38 @@ async def init_seed_images(session) -> None:
         flag_modified(config, "value")
         await session.flush()
 
+    # 微信二维码同步到 contact_items
+    await _sync_wechat_qr_to_contact_items(session, site_info)
+
     # 办公环境图片和城市图片写入 page_blocks
     await _init_page_blocks_images(session)
 
     print("  + 种子图片已初始化")
+
+
+async def _sync_wechat_qr_to_contact_items(session, site_info: dict) -> None:
+    """将微信二维码图片 ID 同步到 contact_items 的微信咨询条目。"""
+    qr_url = site_info.get("wechat_service_qr_url", "")
+    if not qr_url or "id=" not in qr_url:
+        return
+
+    image_id = qr_url.split("id=")[-1]
+
+    stmt = select(SystemConfig).where(SystemConfig.key == "contact_items")
+    result = await session.execute(stmt)
+    config = result.scalar_one_or_none()
+    if not config:
+        return
+
+    items = list(config.value)
+    for item in items:
+        if item.get("icon") == "message-circle" and not item.get("image_id"):
+            item["image_id"] = image_id
+            config.value = items
+            flag_modified(config, "value")
+            await session.flush()
+            logger.info("微信二维码已同步到 contact_items")
+            return
 
 
 async def _init_page_blocks_images(session) -> None:
