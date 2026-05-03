@@ -133,8 +133,7 @@ export function UnifiedBlockEditor({
           <TabButton
             label="内容编辑"
             active={activeTab === "content"}
-            disabled={isApiDriven}
-            onClick={() => !isApiDriven && setActiveTab("content")}
+            onClick={() => setActiveTab("content")}
           />
         </div>
 

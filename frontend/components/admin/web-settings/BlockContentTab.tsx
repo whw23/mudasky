@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Info, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,7 @@ import { useConfig } from "@/contexts/ConfigContext"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { resolveIcon } from "@/lib/icon-utils"
 import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
+import { BlockItemsList } from "@/components/admin/web-settings/BlockItemsList"
 import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
@@ -118,7 +119,15 @@ interface BlockContentTabProps {
 /** Block 内容编辑 Tab */
 export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex, onEditConfig, onClose }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
-  if (editType === "api") return null
+  if (editType === "api") {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+        <Info className="mb-2 size-8" />
+        <p className="text-sm">此区块的数据通过管理页面编辑</p>
+        <p className="mt-1 text-xs">使用左侧导航栏进入对应的管理模块</p>
+      </div>
+    )
+  }
 
   if (editType === "simple") {
     const fields = SIMPLE_FIELDS[block.type] || []
@@ -161,81 +170,30 @@ function ContactItemsList({
   const items: ContactInfoBlockItem[] | null = currentBlock?.data?.items ?? block.data?.items ?? null
   const resolved = resolveContactItems(items, contactItems, locale, block.id)
 
-  function handleDragEnd(result: DropResult): void {
-    if (!result.destination || result.source.index === result.destination.index) return
-    onEditConfig(`contact_item_reorder_${block.id}_${result.source.index}_${result.destination.index}`)
-  }
-
-  /** 渲染条目行 */
-  function renderRow(item: typeof resolved[number], idx: number, dragHandleProps?: any) {
-    const Icon = resolveIcon(item.icon)
-    return (
-      <div className="flex items-center justify-between rounded-lg border bg-background p-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <div {...(dragHandleProps ?? {})} className="cursor-grab text-muted-foreground">
-            <GripVertical className="size-4" />
-          </div>
-          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
-          <div className="min-w-0">
-            <div className="text-sm font-medium">{item.label}</div>
-            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
-          </div>
-          {item.source === "global" && (
-            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
-            <Pencil className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost" size="icon"
-            className="size-7 text-destructive hover:text-destructive"
-            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-2">
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable
-          droppableId="contact-items"
-          renderClone={(provided, _snapshot, rubric) => (
-            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-              {renderRow(resolved[rubric.source.index], rubric.source.index)}
-            </div>
-          )}
-        >
-          {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
-              {resolved.map((item, idx) => (
-                <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
-                  {(dragProvided) => (
-                    <div ref={dragProvided.innerRef} {...dragProvided.draggableProps}>
-                      {renderRow(item, idx, dragProvided.dragHandleProps)}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-
-      <AddContactItemMenu
-        block={block}
-        items={items}
-        globalItems={contactItems}
-        onEditConfig={onEditConfig}
-        compact
-      />
-    </div>
+    <BlockItemsList
+      items={resolved}
+      onEditItem={(idx) => onEditConfig(resolved[idx].editSection)}
+      onDeleteItem={(idx) => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`contact_item_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item) => ({
+        icon: item.icon,
+        label: item.label,
+        content: item.content,
+        badge: item.source === "global" ? "共享" : undefined,
+      })}
+      addButton={
+        <AddContactItemMenu
+          block={block}
+          items={items}
+          globalItems={contactItems}
+          onEditConfig={onEditConfig}
+          compact
+        />
+      }
+    />
   )
 }
 
