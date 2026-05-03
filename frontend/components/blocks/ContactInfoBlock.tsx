@@ -53,7 +53,7 @@ export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditCo
             }}
             onDelete={(index) => onEditConfig(`contact_item_delete_${block.id}_${index}`)}
             footer={
-              <div className="hidden group-hover/block:flex" data-editable onClick={(e) => e.stopPropagation()}>
+              <div className="hidden h-full group-hover/block:flex" data-editable onClick={(e) => e.stopPropagation()}>
                 <AddContactItemMenu
                   block={block}
                   items={items}
