@@ -233,6 +233,7 @@ function ContactItemsList({
         items={items}
         globalItems={contactItems}
         onEditConfig={onEditConfig}
+        compact
       />
     </div>
   )

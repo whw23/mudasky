@@ -18,10 +18,11 @@ interface AddContactItemMenuProps {
   items: ContactInfoBlockItem[] | null
   globalItems: ContactItem[]
   onEditConfig: (section: string) => void
+  compact?: boolean
 }
 
 /** 添加条目下拉菜单 */
-export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: AddContactItemMenuProps) {
+export function AddContactItemMenu({ block, items, globalItems, onEditConfig, compact }: AddContactItemMenuProps) {
   const locale = useLocale()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -57,17 +58,28 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
 
   return (
     <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        className="flex h-full w-full items-start gap-3 rounded-lg bg-white p-5 opacity-50 transition-opacity hover:opacity-80"
-        onClick={handleClick}
-      >
-        <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
-        <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-muted-foreground">新建条目</div>
-          <div className="mt-1 text-sm text-foreground">点击添加联系方式</div>
-        </div>
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          onClick={handleClick}
+        >
+          <CirclePlus className="size-4" />
+          添加条目
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="flex h-full w-full items-start gap-3 rounded-lg bg-white p-5 opacity-50 transition-opacity hover:opacity-80"
+          onClick={handleClick}
+        >
+          <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
+          <div className="flex-1 text-left">
+            <div className="text-sm font-medium text-muted-foreground">新建条目</div>
+            <div className="mt-1 text-sm text-foreground">点击添加联系方式</div>
+          </div>
+        </button>
+      )}
 
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border bg-popover py-1 shadow-md">
