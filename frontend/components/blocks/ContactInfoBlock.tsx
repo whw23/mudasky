@@ -23,10 +23,11 @@ interface BlockProps {
   onEdit?: (block: Block) => void
   /** 字段级编辑回调，由 BlockRenderer 透传 */
   onEditConfig?: (section: string) => void
+  blockLabel?: string
 }
 
 /** 联系信息区块：渲染动态联系条目 + 图片/二维码 */
-export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditConfig }: BlockProps) {
+export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditConfig, blockLabel }: BlockProps) {
   const { contactItems: rawContactItems } = useConfig()
   const locale = useLocale()
   const items: ContactInfoBlockItem[] | null = block.data?.items ?? null
@@ -34,7 +35,7 @@ export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditCo
 
   if (editable && onEdit && onEditConfig) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑联系信息">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑联系信息"}>
         <div className={bg}>
           {header && <div className="mx-auto max-w-7xl px-4 pt-10">{header}</div>}
           <ContactInfoSection

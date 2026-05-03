@@ -21,10 +21,11 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 /** 行动号召区块 */
-export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const title = getLocalizedValue(block.data?.title, locale) || ""
   const desc = getLocalizedValue(block.data?.desc, locale) || ""
@@ -52,7 +53,7 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit }: B
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑 CTA">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑 CTA"}>
         <section className={`py-10 md:py-16 ${bgClass}`}>
           <div className="mx-auto max-w-7xl px-4 text-center">
             {header}

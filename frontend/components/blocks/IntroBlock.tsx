@@ -19,10 +19,11 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 /** 介绍区块：标题 + 正文段落 */
-export function IntroBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function IntroBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const content = getLocalizedValue(block.data?.content, locale) || ""
 
@@ -39,7 +40,7 @@ export function IntroBlock({ block, header, bg, editable, onEdit, onFieldEdit }:
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑介绍">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑介绍"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}

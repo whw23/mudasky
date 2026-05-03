@@ -47,10 +47,11 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  blockLabel?: string
 }
 
 /** 案例网格区块 */
-export function CaseGridBlock({ block, header, bg, editable, onEdit }: BlockProps) {
+export function CaseGridBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
   /* 编辑弹窗状态 */
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<CaseItem | null>(null)
@@ -130,7 +131,7 @@ export function CaseGridBlock({ block, header, bg, editable, onEdit }: BlockProp
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑案例网格">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑案例网格"}>
         {el}
 
         {/* 编辑弹窗 */}

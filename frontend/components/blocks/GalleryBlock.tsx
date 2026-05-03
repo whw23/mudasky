@@ -19,6 +19,7 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 interface GalleryItem {
@@ -27,13 +28,13 @@ interface GalleryItem {
 }
 
 /** 图片画廊区块 */
-export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const items: GalleryItem[] = Array.isArray(block.data) ? block.data : []
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑画廊">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑画廊"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}

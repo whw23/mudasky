@@ -19,16 +19,17 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 /** 步骤列表区块 */
-export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const steps: Array<{ title: any; desc: any }> = Array.isArray(block.data) ? block.data : []
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑步骤">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑步骤"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}

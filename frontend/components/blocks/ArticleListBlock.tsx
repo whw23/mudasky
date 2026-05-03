@@ -51,10 +51,11 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  blockLabel?: string
 }
 
 /** 文章列表区块 */
-export function ArticleListBlock({ block, header, bg, editable, onEdit }: BlockProps) {
+export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
   const categorySlug = block.options?.categorySlug as string | undefined
 
   /* 编辑弹窗状态 */
@@ -155,7 +156,7 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit }: BlockP
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑文章列表">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑文章列表"}>
         {el}
 
         {/* 编辑弹窗 */}

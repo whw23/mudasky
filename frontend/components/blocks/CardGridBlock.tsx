@@ -24,6 +24,7 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 /** 根据卡片类型渲染对应卡片组件 */
@@ -55,7 +56,7 @@ function getGridClass(count: number, maxColumns: number): string {
 }
 
 /** 卡片网格区块 */
-export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const cards: Record<string, any>[] = Array.isArray(block.data) ? block.data : []
   const cardType: CardType = block.options?.cardType || "guide"
@@ -65,7 +66,7 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑卡片">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑卡片"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}

@@ -19,6 +19,7 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  blockLabel?: string
 }
 
 interface UniversityItem {
@@ -41,7 +42,7 @@ interface CaseItem {
 }
 
 /** 精选数据区块（院校或案例） */
-export function FeaturedDataBlock({ block, header, bg, editable, onEdit }: BlockProps) {
+export function FeaturedDataBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
   const t = useTranslations("Home")
   const dataType = block.options?.dataType as "universities" | "cases"
   const maxItems = block.options?.maxItems ?? 6
@@ -96,7 +97,7 @@ export function FeaturedDataBlock({ block, header, bg, editable, onEdit }: Block
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑精选数据">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑精选数据"}>
         {el}
       </SpotlightOverlay>
     )

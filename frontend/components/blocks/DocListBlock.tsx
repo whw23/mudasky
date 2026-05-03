@@ -22,6 +22,7 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
 }
 
 /** 根据数据量和最大列数计算网格样式 */
@@ -34,7 +35,7 @@ function getDocGridClass(count: number, maxColumns?: number): string {
 }
 
 /** 文档列表区块 */
-export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
   const locale = useLocale()
   const items: Array<{ text: any }> = Array.isArray(block.data) ? block.data : []
 
@@ -42,7 +43,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit 
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑文档列表">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑文档列表"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
