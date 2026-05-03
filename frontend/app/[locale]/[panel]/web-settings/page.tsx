@@ -362,12 +362,47 @@ export default function WebSettingsPage() {
         break
       case 'phone': {
         const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'phone')
-        if (idx >= 0) handleEditConfig(`contact_item_global_${rawConfig.contactItems[idx].id}`)
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑电话',
+            fields: [{ key: 'content', label: '电话号码', type: 'text' as const, localized: true }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              await syncContactItemToSiteInfo(item.icon, { ...item, ...data }, item)
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
       }
       case 'email': {
         const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'mail')
-        if (idx >= 0) handleEditConfig(`contact_item_global_${rawConfig.contactItems[idx].id}`)
+        if (idx >= 0) {
+          const item = rawConfig.contactItems[idx]
+          setDialogState({
+            open: true,
+            title: '编辑邮箱',
+            fields: [{ key: 'content', label: '邮箱地址', type: 'text' as const, localized: true }],
+            configKey: 'contact_items',
+            data: item,
+            customSave: async (data) => {
+              const updated = [...rawConfig.contactItems]
+              updated[idx] = { ...item, ...data }
+              await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+              toast.success('保存成功')
+              await fetchAllConfigs(true)
+              refreshConfig()
+            },
+          })
+        }
         break
       }
       case 'company':

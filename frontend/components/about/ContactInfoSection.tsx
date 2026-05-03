@@ -100,6 +100,7 @@ export function ContactInfoSection({
                   <EditableOverlay
                     onClick={() => onEditField?.(String(index))}
                     label={`编辑${item.label}`}
+                    className="h-full"
                   >
                     {content}
                   </EditableOverlay>
