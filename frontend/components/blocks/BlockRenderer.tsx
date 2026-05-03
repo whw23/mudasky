@@ -94,7 +94,7 @@ function renderBlock(
     : null
   const bg = block.bgColor === "gray" ? "bg-gray-50" : ""
   const blockLabel = getBlockLabel(block)
-  const props = { block, header, bg, editable, onEdit: onEditData, onFieldEdit, blockLabel }
+  const props = { block, header, bg, editable, onEdit: onEditData, onEditConfig, onFieldEdit, blockLabel }
 
   switch (block.type) {
     case "intro":

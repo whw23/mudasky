@@ -20,12 +20,13 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  onEditConfig?: (section: string) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
   blockLabel?: string
 }
 
 /** 行动号召区块 */
-export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
+export function CtaBlock({ block, header, bg, editable, onEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const title = getLocalizedValue(block.data?.title, locale) || ""
   const desc = getLocalizedValue(block.data?.desc, locale) || ""
@@ -57,16 +58,12 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onFieldEdit, blo
         <section className={`py-10 md:py-16 ${bgClass}`}>
           <div className="mx-auto max-w-7xl px-4 text-center">
             {header}
-            {title && (
-              <FieldOverlay onClick={() => onFieldEdit?.(block, "title")} label="编辑标题" className="mx-auto mt-6">
-                <h3 className="text-2xl font-bold">{title}</h3>
-              </FieldOverlay>
-            )}
-            {desc && (
-              <FieldOverlay onClick={() => onFieldEdit?.(block, "desc")} label="编辑描述" className="mx-auto mt-4 max-w-2xl">
-                <p className="text-muted-foreground">{desc}</p>
-              </FieldOverlay>
-            )}
+            <FieldOverlay onClick={() => onEditConfig?.(`cta_edit_${block.id}`)} label="编辑内容" className="mx-auto mt-6 max-w-2xl">
+              <div>
+                {title && <h3 className="text-2xl font-bold">{title}</h3>}
+                {desc && <p className="mt-4 text-muted-foreground">{desc}</p>}
+              </div>
+            </FieldOverlay>
             <ConsultButton href={link} showLogin={showLogin} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
               立即咨询
               <ArrowRight className="size-4" />

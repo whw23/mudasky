@@ -23,6 +23,7 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  onEditConfig?: (section: string) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
   blockLabel?: string
 }
@@ -56,7 +57,7 @@ function getGridClass(count: number, maxColumns: number): string {
 }
 
 /** 卡片网格区块 */
-export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit, blockLabel }: BlockProps) {
+export function CardGridBlock({ block, header, bg, editable, onEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const cards: Record<string, any>[] = Array.isArray(block.data) ? block.data : []
   const cardType: CardType = block.options?.cardType || "guide"
@@ -64,7 +65,7 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit
 
   const gridClass = getGridClass(cards.length, maxColumns)
 
-  if (editable && onEdit) {
+  if (editable && onEdit && onEditConfig) {
     return (
       <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑卡片"}>
         <section className={`py-10 md:py-16 ${bg}`}>
@@ -74,7 +75,7 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit
               {cards.map((card, i) => (
                 <FieldOverlay
                   key={card.id || i}
-                  onClick={() => onFieldEdit?.(block, "item", i)}
+                  onClick={() => onEditConfig(`card_grid_item_${block.id}_${i}`)}
                   label={`编辑卡片 ${i + 1}`}
                 >
                   {renderCard(cardType, card, locale, i)}

@@ -41,6 +41,54 @@ const CONTACT_ITEM_FIELDS: ItemFieldDef[] = [
   },
 ]
 
+/** 介绍区块编辑字段定义 */
+const INTRO_FIELDS: ItemFieldDef[] = [
+  { key: "content", label: "内容", type: "textarea", localized: true, required: true },
+]
+
+/** 行动号召区块编辑字段定义 */
+const CTA_FIELDS: ItemFieldDef[] = [
+  { key: "title", label: "标题", type: "text", localized: true, required: true },
+  { key: "desc", label: "描述", type: "textarea", localized: true },
+]
+
+/** card_grid 各 cardType 的字段定义 */
+const CARD_GRID_FIELDS: Record<string, ItemFieldDef[]> = {
+  guide: [
+    { key: "icon", label: "图标", type: "icon", localized: false },
+    { key: "title", label: "标题", type: "text", localized: true, required: true },
+    { key: "desc", label: "描述", type: "textarea", localized: true },
+  ],
+  timeline: [
+    { key: "title", label: "标题", type: "text", localized: true, required: true },
+    { key: "time", label: "时间", type: "text", localized: true },
+    { key: "desc", label: "描述", type: "text", localized: true },
+  ],
+  city: [
+    { key: "image_id", label: "图片", type: "image", localized: false },
+    { key: "city", label: "城市", type: "text", localized: true, required: true },
+    { key: "country", label: "国家", type: "text", localized: true },
+    { key: "desc", label: "描述", type: "textarea", localized: true },
+  ],
+  program: [
+    { key: "name", label: "项目名称", type: "text", localized: true, required: true },
+    { key: "country", label: "国家", type: "text", localized: true },
+    { key: "desc", label: "描述", type: "textarea", localized: true },
+    { key: "features", label: "特点列表", type: "textarea", localized: true, description: "每行一个特点" },
+  ],
+  checklist: [
+    { key: "icon", label: "图标", type: "icon", localized: false },
+    { key: "label", label: "标签", type: "text", localized: true, required: true },
+    { key: "items", label: "条目列表", type: "textarea", localized: true, description: "每行一个条目" },
+  ],
+}
+
+/** card_grid cardType 中文名 */
+const CARD_TYPE_LABELS: Record<string, string> = {
+  guide: "指南卡片", timeline: "时间线", city: "城市指南",
+  program: "专业卡片", checklist: "检查清单",
+}
+
 /** ItemEditDialog 弹窗状态 */
 interface ItemDialogState {
   open: boolean
@@ -438,6 +486,60 @@ export default function WebSettingsPage() {
 
   /** 处理页面预览中的配置编辑（Header/统计/联系信息） */
   async function handleEditConfig(section: string): Promise<void> {
+    // 介绍区块编辑
+    if (section.startsWith('intro_edit_')) {
+      const blockId = section.replace('intro_edit_', '')
+      const currentBlocks = pageBlocks[activePage] ?? []
+      const block = currentBlocks.find((b) => b.id === blockId)
+      if (block) {
+        setItemDialogState({
+          open: true,
+          title: '编辑介绍',
+          subtitle: '编辑配置项，中文字段为必填。',
+          fields: INTRO_FIELDS,
+          data: block.data ?? {},
+          onSave: async (data) => {
+            const updatedBlock = { ...block, data: { ...block.data, ...data } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            await api.post("/admin/web-settings/list/edit", {
+              key: "page_blocks", value: { ...pageBlocks, [activePage]: updatedBlocks }
+            })
+            toast.success('保存成功')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          },
+        })
+      }
+      return
+    }
+
+    // 行动号召区块编辑
+    if (section.startsWith('cta_edit_')) {
+      const blockId = section.replace('cta_edit_', '')
+      const currentBlocks = pageBlocks[activePage] ?? []
+      const block = currentBlocks.find((b) => b.id === blockId)
+      if (block) {
+        setItemDialogState({
+          open: true,
+          title: '编辑行动号召',
+          subtitle: '编辑配置项，中文字段为必填。',
+          fields: CTA_FIELDS,
+          data: block.data ?? {},
+          onSave: async (data) => {
+            const updatedBlock = { ...block, data: { ...block.data, ...data } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            await api.post("/admin/web-settings/list/edit", {
+              key: "page_blocks", value: { ...pageBlocks, [activePage]: updatedBlocks }
+            })
+            toast.success('保存成功')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          },
+        })
+      }
+      return
+    }
+
     switch (section) {
       case 'brand_name':
         setDialogState({
@@ -603,6 +705,149 @@ export default function WebSettingsPage() {
               refreshConfig()
             },
           })
+        } else if (section.startsWith('card_grid_item_')) {
+          // 编辑 card_grid 卡片
+          const rest = section.replace('card_grid_item_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block && block.type === 'card_grid') {
+            const cardType = block.options?.cardType || 'guide'
+            const fields = CARD_GRID_FIELDS[cardType] || CARD_GRID_FIELDS.guide
+            const cards: any[] = Array.isArray(block.data) ? block.data : []
+            const card = cards[itemIndex] || {}
+            // 转换嵌套数组字段为 textarea (features/items)
+            const dataForDialog = { ...card }
+            if (cardType === 'program' && Array.isArray(card.features)) {
+              dataForDialog.features = card.features.map((f: any) => (typeof f === 'object' ? f.zh : f) || '').join('\n')
+            }
+            if (cardType === 'checklist' && Array.isArray(card.items)) {
+              dataForDialog.items = card.items.map((it: any) => (typeof it === 'object' ? it.zh : it) || '').join('\n')
+            }
+            setItemDialogState({
+              open: true,
+              title: `编辑${CARD_TYPE_LABELS[cardType]} ${itemIndex + 1}`,
+              subtitle: '编辑卡片内容，中文字段为必填。',
+              fields,
+              data: dataForDialog,
+              onSave: async (data) => {
+                // 转换 textarea 为嵌套数组
+                const savedData = { ...data }
+                if (cardType === 'program' && typeof data.features === 'string') {
+                  savedData.features = data.features
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => ({ zh: line }))
+                }
+                if (cardType === 'checklist' && typeof data.items === 'string') {
+                  savedData.items = data.items
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => ({ zh: line }))
+                }
+                const updatedCards = [...cards]
+                updatedCards[itemIndex] = { ...cards[itemIndex], ...savedData }
+                const updatedBlock = { ...block, data: updatedCards }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('保存成功')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
+        } else if (section.startsWith('card_grid_delete_')) {
+          // 删除 card_grid 卡片
+          const rest = section.replace('card_grid_delete_', '')
+          const sepIdx = rest.lastIndexOf('_')
+          const blockId = rest.substring(0, sepIdx)
+          const itemIndex = parseInt(rest.substring(sepIdx + 1), 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const cards: any[] = Array.isArray(block.data) ? block.data : []
+            const updatedCards = cards.filter((_, i) => i !== itemIndex)
+            const updatedBlock = { ...block, data: updatedCards }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            toast.success('已删除卡片')
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('card_grid_reorder_')) {
+          // card_grid 拖动排序
+          const parts = section.replace('card_grid_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const cards: any[] = Array.isArray(block.data) ? block.data : []
+            const reordered = [...cards]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: reordered }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
+        } else if (section.startsWith('card_grid_add_')) {
+          // 添加 card_grid 卡片
+          const blockId = section.replace('card_grid_add_', '')
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block && block.type === 'card_grid') {
+            const cardType = block.options?.cardType || 'guide'
+            const fields = CARD_GRID_FIELDS[cardType] || CARD_GRID_FIELDS.guide
+            const emptyCard: any = {}
+            for (const f of fields) {
+              if (f.key === 'features' || f.key === 'items') emptyCard[f.key] = ''
+              else if (f.type === 'icon') emptyCard[f.key] = 'circle'
+              else emptyCard[f.key] = ''
+            }
+            setItemDialogState({
+              open: true,
+              title: `添加${CARD_TYPE_LABELS[cardType]}`,
+              subtitle: '填写卡片内容，中文字段为必填。',
+              fields,
+              data: emptyCard,
+              onSave: async (data) => {
+                const savedData = { ...data }
+                if (cardType === 'program' && typeof data.features === 'string') {
+                  savedData.features = data.features
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => ({ zh: line }))
+                }
+                if (cardType === 'checklist' && typeof data.items === 'string') {
+                  savedData.items = data.items
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => ({ zh: line }))
+                }
+                const cards: any[] = Array.isArray(block.data) ? block.data : []
+                const updatedCards = [...cards, savedData]
+                const updatedBlock = { ...block, data: updatedCards }
+                const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+                const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+                await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+                toast.success('已添加卡片')
+                await fetchAllConfigs(true)
+                refreshConfig()
+              },
+            })
+          }
         }
         break
     }
