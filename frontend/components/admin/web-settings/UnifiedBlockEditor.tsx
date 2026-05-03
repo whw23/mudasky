@@ -47,6 +47,7 @@ interface UnifiedBlockEditorProps {
   defaultTab?: EditorTab
   defaultFieldIndex?: number | null
   onSave: (updated: Block) => void
+  onEditConfig?: (section: string) => void
 }
 
 /** 统一 Block 编辑弹窗 */
@@ -57,6 +58,7 @@ export function UnifiedBlockEditor({
   defaultTab,
   defaultFieldIndex,
   onSave,
+  onEditConfig,
 }: UnifiedBlockEditorProps) {
   const [locale, setLocale] = useState<ConfigLocale>("zh")
   const [activeTab, setActiveTab] = useState<EditorTab>("content")
@@ -160,6 +162,7 @@ export function UnifiedBlockEditor({
               data={data}
               onDataChange={setData}
               defaultFieldIndex={defaultFieldIndex}
+              onEditConfig={onEditConfig}
             />
           )}
         </DialogBody>

@@ -9,14 +9,17 @@ import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SwitchField } from "@/components/admin/SwitchField"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { ArrayFieldRenderer } from "@/components/admin/ArrayFieldRenderer"
-import type { Block, BlockType } from "@/types/block"
+import { useConfig } from "@/contexts/ConfigContext"
+import { getLocalizedValue } from "@/lib/i18n-config"
+import { resolveIcon } from "@/lib/icon-utils"
+import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
 
@@ -107,16 +110,21 @@ interface BlockContentTabProps {
   data: any
   onDataChange: (data: any) => void
   defaultFieldIndex?: number | null
+  onEditConfig?: (section: string) => void
 }
 
 /** Block 内容编辑 Tab */
-export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex }: BlockContentTabProps) {
+export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex, onEditConfig }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
   if (editType === "api") return null
 
   if (editType === "simple") {
     const fields = SIMPLE_FIELDS[block.type] || []
     return <SimpleFieldsForm fields={fields} data={data || {}} locale={locale} onChange={onDataChange} />
+  }
+
+  if (block.type === "contact_info" && onEditConfig) {
+    return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} />
   }
 
   const fields = getArrayFields(block)
@@ -136,6 +144,91 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
       defaultFieldIndex={defaultFieldIndex}
     />
   )
+}
+
+/** 联系信息条目列表 */
+function ContactItemsList({
+  block, locale, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  onEditConfig: (section: string) => void
+}) {
+  const { contactItems } = useConfig()
+  const items: ContactInfoBlockItem[] | null = block.data?.items ?? null
+  const resolved = resolveContactItems(items, contactItems, locale)
+
+  return (
+    <div className="space-y-2">
+      {resolved.map((item, idx) => {
+        const Icon = resolveIcon(item.icon)
+        return (
+          <div
+            key={idx}
+            className="flex items-center justify-between rounded-lg border p-3"
+          >
+            <div className="flex items-center gap-3">
+              {Icon && <Icon className="size-5 text-primary" />}
+              <div>
+                <div className="text-sm font-medium">{item.label}</div>
+                <div className="text-xs text-muted-foreground">{item.content}</div>
+              </div>
+              {item.source === "global" && (
+                <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={() => onEditConfig(item.editSection)}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 text-destructive hover:text-destructive"
+                onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/** 解析联系条目到列表展示数据 */
+function resolveContactItems(
+  items: ContactInfoBlockItem[] | null,
+  globalItems: Array<{ id: string; icon: string; label: any; content: any }>,
+  locale: string,
+): Array<{ icon: string; label: string; content: string; source: "global" | "custom"; editSection: string }> {
+  const source = items ?? globalItems.map((g) => ({ type: "global" as const, id: g.id }))
+  return source.map((item, idx) => {
+    if (item.type === "global") {
+      const g = globalItems.find((gi) => gi.id === item.id)
+      if (!g) return null
+      return {
+        icon: g.icon,
+        label: getLocalizedValue(g.label, locale),
+        content: getLocalizedValue(g.content, locale),
+        source: "global" as const,
+        editSection: `contact_item_global_${g.id}`,
+      }
+    }
+    return {
+      icon: item.icon,
+      label: getLocalizedValue(item.label, locale),
+      content: getLocalizedValue(item.content, locale),
+      source: "custom" as const,
+      editSection: `contact_item_custom_${idx}`,
+    }
+  }).filter(Boolean) as any[]
 }
 
 /** 获取数组类型 Block 的字段定义 */

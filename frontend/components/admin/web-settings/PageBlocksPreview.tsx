@@ -190,6 +190,7 @@ export function PageBlocksPreview({
         defaultTab={editingTab}
         defaultFieldIndex={editingFieldIndex}
         onSave={handleEditSave}
+        onEditConfig={onEditConfig}
       />
     </>
   )
