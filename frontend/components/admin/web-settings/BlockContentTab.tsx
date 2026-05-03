@@ -156,7 +156,7 @@ function ContactItemsList({
 }) {
   const { contactItems } = useConfig()
   const items: ContactInfoBlockItem[] | null = block.data?.items ?? null
-  const resolved = resolveContactItems(items, contactItems, locale)
+  const resolved = resolveContactItems(items, contactItems, locale, block.id)
 
   return (
     <div className="space-y-2">
@@ -167,17 +167,17 @@ function ContactItemsList({
             key={idx}
             className="flex items-center justify-between rounded-lg border p-3"
           >
-            <div className="flex items-center gap-3">
-              {Icon && <Icon className="size-5 text-primary" />}
-              <div>
+            <div className="flex min-w-0 items-center gap-3">
+              {Icon && <Icon className="size-5 shrink-0 text-primary" />}
+              <div className="min-w-0">
                 <div className="text-sm font-medium">{item.label}</div>
-                <div className="text-xs text-muted-foreground">{item.content}</div>
+                <div className="truncate text-xs text-muted-foreground">{item.content}</div>
               </div>
               {item.source === "global" && (
-                <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
+                <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
               )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -198,6 +198,16 @@ function ContactItemsList({
           </div>
         )
       })}
+
+      {/* 添加条目 */}
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => onEditConfig(`contact_item_add_custom_${block.id}`)}
+      >
+        <Plus className="mr-1 size-4" />
+        添加条目
+      </Button>
     </div>
   )
 }
@@ -207,6 +217,7 @@ function resolveContactItems(
   items: ContactInfoBlockItem[] | null,
   globalItems: Array<{ id: string; icon: string; label: any; content: any }>,
   locale: string,
+  blockId: string,
 ): Array<{ icon: string; label: string; content: string; source: "global" | "custom"; editSection: string }> {
   const source = items ?? globalItems.map((g) => ({ type: "global" as const, id: g.id }))
   return source.map((item, idx) => {
@@ -226,7 +237,7 @@ function resolveContactItems(
       label: getLocalizedValue(item.label, locale),
       content: getLocalizedValue(item.content, locale),
       source: "custom" as const,
-      editSection: `contact_item_custom_${idx}`,
+      editSection: `contact_item_custom_${blockId}_${idx}`,
     }
   }).filter(Boolean) as any[]
 }
