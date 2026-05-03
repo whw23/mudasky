@@ -26,7 +26,10 @@ export type BlockEditType = "simple" | "array" | "api"
 /** 判断 Block 类型的编辑方式 */
 export function getBlockEditType(type: BlockType): BlockEditType {
   if (type === "intro" || type === "cta") return "simple"
-  if (type === "card_grid" || type === "step_list" || type === "doc_list" || type === "gallery") return "array"
+  if (
+    type === "card_grid" || type === "step_list" ||
+    type === "doc_list" || type === "gallery" || type === "contact_info"
+  ) return "array"
   return "api"
 }
 
