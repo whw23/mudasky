@@ -62,7 +62,7 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
   /** 手动输入图标名称 */
   function handleTextChange(text: string): void {
     setTextInput(text)
-    if (resolveIcon(text) !== resolveIcon("")) {
+    if (resolveIcon(text)) {
       onChange(text)
     }
   }
