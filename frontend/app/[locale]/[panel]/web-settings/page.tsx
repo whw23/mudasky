@@ -152,6 +152,14 @@ export default function WebSettingsPage() {
     }
     if (!dialogState) return
     await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
+    // site_info 二维码变更时同步到 contact_items
+    if (dialogState.configKey === "site_info" && data.wechat_service_qr_url !== rawConfig.siteInfo.wechat_service_qr_url) {
+      const newImageId = data.wechat_service_qr_url?.split("id=")[1] ?? null
+      const updated = rawConfig.contactItems.map((ci: any) =>
+        ci.icon === "message-circle" ? { ...ci, image_id: newImageId } : ci,
+      )
+      await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+    }
     toast.success('保存成功')
     await fetchAllConfigs(true)
     refreshConfig()
@@ -244,6 +252,9 @@ export default function WebSettingsPage() {
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      if (field === "wechat_service_qr_url") {
+        await syncQrToContactItems(data.url)
+      }
       fetchAllConfigs(true)
       refreshConfig()
       toast.success("上传成功")
@@ -258,12 +269,24 @@ export default function WebSettingsPage() {
     try {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
+      if (field === "wechat_service_qr_url") {
+        await syncQrToContactItems("")
+      }
       await fetchAllConfigs(true)
       refreshConfig()
       toast.success("已清除")
     } catch {
       toast.error("清除失败")
     }
+  }
+
+  /** 微信二维码 URL 变更时同步 image_id 到 contact_items */
+  async function syncQrToContactItems(qrUrl: string): Promise<void> {
+    const imageId = qrUrl?.includes("id=") ? qrUrl.split("id=")[1] : null
+    const updated = rawConfig.contactItems.map((ci: any) =>
+      ci.icon === "message-circle" ? { ...ci, image_id: imageId } : ci,
+    )
+    await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
   }
 
   /** 处理 Footer 编辑区域点击 */
@@ -402,6 +425,14 @@ export default function WebSettingsPage() {
                 const updated = [...rawConfig.contactItems]
                 updated[idx] = { ...item, ...data }
                 await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+                // 微信二维码同步到 site_info
+                if (item.icon === "message-circle" && data.image_id !== item.image_id) {
+                  const newUrl = data.image_id ? `/api/public/images/detail?id=${data.image_id}` : ""
+                  await api.post("/admin/web-settings/list/edit", {
+                    key: "site_info",
+                    value: { ...rawConfig.siteInfo, wechat_service_qr_url: newUrl },
+                  })
+                }
                 toast.success('保存成功')
                 await fetchAllConfigs(true)
                 refreshConfig()
