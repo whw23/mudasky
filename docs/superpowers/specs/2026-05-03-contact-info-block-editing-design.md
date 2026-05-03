@@ -360,13 +360,30 @@ label 和 content 从 `string` 改为 `LocalizedField`（`{ zh: string, en?: str
 
 | 条目 | zh label | en label | ja label | de label |
 |------|----------|----------|----------|----------|
-| 服务热线 | 服务热线 | Hotline | ホットライン | Hotline |
-| 邮箱 | 邮箱 | Email | メール | E-Mail |
-| 微信咨询 | 微信咨询 | WeChat | WeChat | WeChat |
-| 公司地址 | 公司地址 | Office Address | 会社住所 | Büroadresse |
-| 注册地址 | 注册地址 | Registered Address | 登記住所 | Eingetragene Adresse |
+| 条目 | zh label | en label | ja label | de label | zh content |
+|------|----------|----------|----------|----------|------------|
+| 服务热线 | 服务热线 | Hotline | ホットライン | Hotline | 189-1268-6656 |
+| 邮箱 | 邮箱 | Email | メール | E-Mail | haoranxuexing@163.com |
+| 微信咨询 | 微信咨询 | WeChat | WeChat | WeChat | 扫码添加客服微信 |
+| 办公地址 | 办公地址 | Office Address | オフィス所在地 | Büroadresse | 苏州独墅湖大学城林泉街377号公共学院5号楼7楼 |
+| 注册地址 | 注册地址 | Registered Address | 登記住所 | Eingetragene Adresse | 中国(江苏)自由贸易试验区苏州片区苏州工业园区苏州大道东398号太平金融大厦5层5112室 |
 
-content 字段同理补全（电话号码、邮箱地址等在各语言间相同，地址类需要翻译）。
+content 中电话号码、邮箱在各语言间相同；地址类中文为准，其他语言可选填。
+
+---
+
+## 添加区块弹窗分组
+
+当前"添加区块"弹窗中 11 种 Block 类型为平铺列表，改为按类型分组：
+
+| 分组 | Block 类型 |
+|------|-----------|
+| 基础内容 | 介绍、行动号召 |
+| 自定义列表 | 卡片网格、步骤列表、文档清单、联系方式 |
+| 媒体 | 图片墙 |
+| 数据展示 | 文章列表、院校列表、案例网格、精选展示 |
+
+每个分组显示分组标题，组内保持当前的卡片样式。
 
 ---
 
