@@ -18,6 +18,7 @@ import { PreviewContainer } from '@/components/admin/PreviewContainer'
 import { PagePreview } from '@/components/admin/web-settings/PagePreview'
 import { NavEditor } from '@/components/admin/web-settings/NavEditor'
 import { ConfigEditDialog } from '@/components/admin/ConfigEditDialog'
+import { ItemEditDialog, type FieldDefinition as ItemFieldDef } from '@/components/admin/ItemEditDialog'
 import { BannerEditDialog } from '@/components/admin/web-settings/BannerEditDialog'
 import type { SiteInfo, ContactItem, HomepageStat, AboutInfo, PageBanners } from '@/types/config'
 
@@ -26,6 +27,30 @@ const STAT_FIELDS = [
   { key: 'value', label: '数值', type: 'text' as const, localized: false },
   { key: 'label', label: '标签', type: 'text' as const, localized: true },
 ]
+
+/** 联系条目编辑字段定义 */
+const CONTACT_ITEM_FIELDS: ItemFieldDef[] = [
+  { key: 'icon', label: '图标', type: 'icon', localized: false },
+  { key: 'label', label: '标签', type: 'text', localized: true, required: true },
+  { key: 'content', label: '内容', type: 'text', localized: true, required: true },
+  { key: 'image_id', label: '图片', type: 'image', localized: false, description: '如二维码图片' },
+  {
+    key: 'hover_zoom', label: '悬浮放大', type: 'switch', localized: false,
+    description: '鼠标 hover 时放大显示图片',
+    showWhen: (data) => !!data.image_id,
+  },
+]
+
+/** ItemEditDialog 弹窗状态 */
+interface ItemDialogState {
+  open: boolean
+  title: string
+  subtitle?: string
+  fields: ItemFieldDef[]
+  data: Record<string, unknown>
+  onSave: (data: Record<string, unknown>) => Promise<void>
+  sourceHint?: string
+}
 
 /** 弹窗状态类型 */
 interface DialogState {
@@ -85,6 +110,7 @@ export default function WebSettingsPage() {
   const [activePage, setActivePage] = useState('home')
   const [rawConfig, setRawConfig] = useState<RawConfig>(DEFAULT_RAW)
   const [dialogState, setDialogState] = useState<DialogState | null>(null)
+  const [itemDialogState, setItemDialogState] = useState<ItemDialogState | null>(null)
   const [bannerDialogState, setBannerDialogState] = useState<BannerDialogState | null>(null)
   const [loading, setLoading] = useState(true)
   const [faviconUploading, setFaviconUploading] = useState(false)
@@ -365,19 +391,14 @@ export default function WebSettingsPage() {
           const idx = rawConfig.contactItems.findIndex((i: any) => i.id === globalId)
           const item = rawConfig.contactItems[idx]
           if (item) {
-            setDialogState({
+            setItemDialogState({
               open: true,
-              title: '编辑联系信息（共享数据）',
-              fields: [
-                { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
-                { key: 'label', label: '标签', type: 'text' as const, localized: true },
-                { key: 'content', label: '内容', type: 'text' as const, localized: true },
-                { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
-                { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
-              ],
-              configKey: 'contact_items',
+              title: '编辑联系信息',
+              subtitle: '编辑配置项，中文字段为必填。',
+              fields: CONTACT_ITEM_FIELDS,
               data: item,
-              customSave: async (data) => {
+              sourceHint: '此条目为共享数据，修改将影响 Footer、关于我们等页面。',
+              onSave: async (data) => {
                 const updated = [...rawConfig.contactItems]
                 updated[idx] = { ...item, ...data }
                 await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
@@ -397,19 +418,13 @@ export default function WebSettingsPage() {
           const block = currentBlocks.find((b) => b.id === blockId)
           if (block?.data?.items?.[itemIndex]?.type === 'custom') {
             const customItem = block.data.items[itemIndex]
-            setDialogState({
+            setItemDialogState({
               open: true,
               title: '编辑自定义条目',
-              fields: [
-                { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
-                { key: 'label', label: '标签', type: 'text' as const, localized: true },
-                { key: 'content', label: '内容', type: 'text' as const, localized: true },
-                { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
-                { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
-              ],
-              configKey: 'page_blocks',
+              subtitle: '编辑配置项，中文字段为必填。',
+              fields: CONTACT_ITEM_FIELDS,
               data: customItem,
-              customSave: async (data) => {
+              onSave: async (data) => {
                 const updatedItems = [...block.data.items]
                 updatedItems[itemIndex] = { ...customItem, ...data }
                 const updatedBlock = { ...block, data: { items: updatedItems } }
@@ -463,19 +478,13 @@ export default function WebSettingsPage() {
         } else if (section.startsWith('contact_item_add_custom_')) {
           // 添加自定义条目
           const blockId = section.replace('contact_item_add_custom_', '')
-          setDialogState({
+          setItemDialogState({
             open: true,
             title: '添加自定义条目',
-            fields: [
-              { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
-              { key: 'label', label: '标签', type: 'text' as const, localized: true },
-              { key: 'content', label: '内容', type: 'text' as const, localized: true },
-              { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
-              { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
-            ],
-            configKey: 'page_blocks',
-            data: { icon: '', label: '', content: '', image_id: null, hover_zoom: false },
-            customSave: async (data) => {
+            subtitle: '填写新条目信息，中文字段为必填。',
+            fields: CONTACT_ITEM_FIELDS,
+            data: { icon: 'info', label: '', content: '', image_id: null, hover_zoom: false },
+            onSave: async (data) => {
               const currentBlocks = pageBlocks[activePage] ?? []
               const block = currentBlocks.find((b) => b.id === blockId)
               if (!block) return
@@ -591,6 +600,20 @@ export default function WebSettingsPage() {
           data={dialogState.data}
           onSave={handleSave}
           defaultValues={dialogState.defaultValues}
+        />
+      )}
+
+      {/* 条目编辑弹窗（联系信息等） */}
+      {itemDialogState && (
+        <ItemEditDialog
+          open={itemDialogState.open}
+          onOpenChange={(open) => { if (!open) setItemDialogState(null) }}
+          title={itemDialogState.title}
+          subtitle={itemDialogState.subtitle}
+          fields={itemDialogState.fields}
+          data={itemDialogState.data}
+          onSave={itemDialogState.onSave}
+          sourceHint={itemDialogState.sourceHint}
         />
       )}
 
