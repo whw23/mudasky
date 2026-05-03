@@ -83,7 +83,7 @@ export function ContactInfoSection({
                   <div className="text-sm font-medium text-muted-foreground">
                     {item.label}
                   </div>
-                  <div className="mt-1 text-sm text-foreground">
+                  <div className="mt-1 line-clamp-2 text-sm text-foreground">
                     {item.content}
                   </div>
                 </div>

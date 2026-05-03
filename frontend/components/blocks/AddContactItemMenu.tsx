@@ -59,7 +59,7 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        className="flex w-full items-start gap-3 rounded-lg border border-border bg-white p-5 opacity-60 transition-opacity hover:opacity-100"
+        className="flex w-full items-start gap-3 rounded-lg bg-white p-5 opacity-60 transition-opacity hover:opacity-100"
         onClick={handleClick}
       >
         <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />

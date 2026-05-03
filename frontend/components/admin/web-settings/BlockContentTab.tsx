@@ -165,52 +165,64 @@ function ContactItemsList({
     onEditConfig(`contact_item_reorder_${block.id}_${result.source.index}_${result.destination.index}`)
   }
 
+  /** 渲染条目行 */
+  function renderRow(item: typeof resolved[number], idx: number, dragHandleProps?: any) {
+    const Icon = resolveIcon(item.icon)
+    return (
+      <div className="flex items-center justify-between rounded-lg border bg-background p-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {dragHandleProps && (
+            <div {...dragHandleProps} className="cursor-grab text-muted-foreground">
+              <GripVertical className="size-4" />
+            </div>
+          )}
+          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
+          <div className="min-w-0">
+            <div className="text-sm font-medium">{item.label}</div>
+            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
+          </div>
+          {item.source === "global" && (
+            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            className="size-7 text-destructive hover:text-destructive"
+            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-2">
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="contact-items">
+        <Droppable
+          droppableId="contact-items"
+          renderClone={(provided, _snapshot, rubric) => (
+            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+              {renderRow(resolved[rubric.source.index], rubric.source.index)}
+            </div>
+          )}
+        >
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
-              {resolved.map((item, idx) => {
-                const Icon = resolveIcon(item.icon)
-                return (
-                  <Draggable key={`${item.editSection}-${idx}`} draggableId={`item-${idx}`} index={idx}>
-                    {(dragProvided) => (
-                      <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        className="flex items-center justify-between rounded-lg border bg-background p-3"
-                      >
-                        <div className="flex min-w-0 items-center gap-2">
-                          <div {...dragProvided.dragHandleProps} className="cursor-grab text-muted-foreground">
-                            <GripVertical className="size-4" />
-                          </div>
-                          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium">{item.label}</div>
-                            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
-                          </div>
-                          {item.source === "global" && (
-                            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
-                          )}
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
-                            <Pencil className="size-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost" size="icon"
-                            className="size-7 text-destructive hover:text-destructive"
-                            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                )
-              })}
+              {resolved.map((item, idx) => (
+                <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
+                  {(dragProvided) => (
+                    <div ref={dragProvided.innerRef} {...dragProvided.draggableProps}>
+                      {renderRow(item, idx, dragProvided.dragHandleProps)}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
               {provided.placeholder}
             </div>
           )}
