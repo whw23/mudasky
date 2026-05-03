@@ -62,10 +62,10 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
         className="flex h-full w-full items-start gap-3 rounded-lg bg-white p-5 opacity-50 transition-opacity hover:opacity-80"
         onClick={handleClick}
       >
-        <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary/50" />
+        <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium text-muted-foreground/70">新建条目</div>
-          <div className="mt-1 text-sm text-muted-foreground/50">点击添加联系方式</div>
+          <div className="text-sm font-medium text-muted-foreground">新建条目</div>
+          <div className="mt-1 text-sm text-foreground">点击添加联系方式</div>
         </div>
       </button>
 
