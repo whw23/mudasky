@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
-import { icons, Trash2 } from "lucide-react"
+import { icons, Trash2, CirclePlus } from "lucide-react"
 import { useLocalizedConfig } from "@/contexts/ConfigContext"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
 import { resolveIcon } from "@/lib/icon-utils"
@@ -54,7 +54,7 @@ interface ContactInfoSectionProps {
   maxColumns?: number
   items?: ContactItem[]
   onDelete?: (index: number) => void
-  footer?: React.ReactNode
+  onAdd?: () => void
 }
 
 export function ContactInfoSection({
@@ -63,7 +63,7 @@ export function ContactInfoSection({
   maxColumns = 3,
   items,
   onDelete,
-  footer,
+  onAdd,
 }: ContactInfoSectionProps) {
   const { contactItems } = useLocalizedConfig()
   const displayItems = items ?? contactItems
@@ -117,7 +117,19 @@ export function ContactInfoSection({
             }
             return <div key={index}>{content}</div>
           })}
-          {footer}
+          {editable && onAdd && (
+            <div className="group relative hidden h-full group-hover/block:block" data-editable onClick={(e) => e.stopPropagation()}>
+              <EditableOverlay onClick={onAdd} label="添加联系条目">
+                <div className="flex h-full items-start gap-3 rounded-lg bg-white p-5 opacity-50">
+                  <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-muted-foreground">新建条目</div>
+                    <div className="mt-1 text-sm text-foreground">点击添加联系方式</div>
+                  </div>
+                </div>
+              </EditableOverlay>
+            </div>
+          )}
         </div>
       </div>
     </section>

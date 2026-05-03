@@ -9,7 +9,6 @@
 import { useLocale } from "next-intl"
 import { ContactInfoSection } from "@/components/about/ContactInfoSection"
 import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
-import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
 import { useConfig } from "@/contexts/ConfigContext"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import type { Block, ContactInfoBlockItem } from "@/types/block"
@@ -52,16 +51,7 @@ export function ContactInfoBlock({ block, header, bg, editable, onEdit, onEditCo
               }
             }}
             onDelete={(index) => onEditConfig(`contact_item_delete_${block.id}_${index}`)}
-            footer={
-              <div className="hidden h-full group-hover/block:flex" data-editable onClick={(e) => e.stopPropagation()}>
-                <AddContactItemMenu
-                  block={block}
-                  items={items}
-                  globalItems={rawContactItems}
-                  onEditConfig={onEditConfig}
-                />
-              </div>
-            }
+            onAdd={() => onEditConfig(`contact_item_add_custom_${block.id}`)}
           />
         </div>
       </SpotlightOverlay>
