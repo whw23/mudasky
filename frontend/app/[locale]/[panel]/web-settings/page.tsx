@@ -360,17 +360,20 @@ export default function WebSettingsPage() {
         break
       default:
         if (section.startsWith('contact_item_global_')) {
-          // 编辑全局条目
+          // 编辑全局条目（共享数据）
           const globalId = section.replace('contact_item_global_', '')
           const idx = rawConfig.contactItems.findIndex((i: any) => i.id === globalId)
           const item = rawConfig.contactItems[idx]
           if (item) {
             setDialogState({
               open: true,
-              title: '编辑联系信息',
+              title: '编辑联系信息（共享数据）',
               fields: [
+                { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
                 { key: 'label', label: '标签', type: 'text' as const, localized: true },
                 { key: 'content', label: '内容', type: 'text' as const, localized: true },
+                { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
+                { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
               ],
               configKey: 'contact_items',
               data: item,
@@ -401,6 +404,8 @@ export default function WebSettingsPage() {
                 { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
                 { key: 'label', label: '标签', type: 'text' as const, localized: true },
                 { key: 'content', label: '内容', type: 'text' as const, localized: true },
+                { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
+                { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
               ],
               configKey: 'page_blocks',
               data: customItem,
@@ -465,6 +470,8 @@ export default function WebSettingsPage() {
               { key: 'icon', label: '图标名称', type: 'text' as const, localized: false },
               { key: 'label', label: '标签', type: 'text' as const, localized: true },
               { key: 'content', label: '内容', type: 'text' as const, localized: true },
+              { key: 'image_id', label: '图片ID', type: 'text' as const, localized: false },
+              { key: 'hover_zoom', label: '悬停放大', type: 'text' as const, localized: false },
             ],
             configKey: 'page_blocks',
             data: { icon: '', label: '', content: '', image_id: null, hover_zoom: false },
