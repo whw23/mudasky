@@ -82,7 +82,7 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig, co
       )}
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border bg-popover py-1 shadow-md">
+        <div className={`absolute left-0 z-50 w-64 rounded-lg border bg-popover py-1 shadow-md ${compact ? "bottom-full mb-1" : "top-full mt-1"}`}>
           {availableGlobal.map((g) => {
             const Icon = resolveIcon(g.icon)
             return (
