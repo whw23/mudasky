@@ -77,7 +77,7 @@ export function ContactInfoSection({
             const imageUrl = item.image_id ? `/api/public/images/detail?id=${item.image_id}` : ""
 
             const content = (
-              <div className="flex items-start gap-3 rounded-lg bg-white p-5">
+              <div className="flex h-full items-start gap-3 rounded-lg bg-white p-5">
                 <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-muted-foreground">
@@ -96,7 +96,7 @@ export function ContactInfoSection({
 
             if (editable) {
               return (
-                <div key={index} className="group relative">
+                <div key={index} className="group relative h-full">
                   <EditableOverlay
                     onClick={() => onEditField?.(String(index))}
                     label={`编辑${item.label}`}
