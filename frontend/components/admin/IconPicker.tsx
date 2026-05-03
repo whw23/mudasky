@@ -58,8 +58,9 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
   const filteredIcons = useMemo(() => {
     if (!search.trim()) return COMMON_ICONS
     const q = search.toLowerCase()
+    const kebab = q.replace(/-/g, "")
     return Object.keys(icons).filter((name) =>
-      name.toLowerCase().includes(q),
+      name.toLowerCase().includes(kebab),
     ).slice(0, 60)
   }, [search])
 
