@@ -171,11 +171,9 @@ function ContactItemsList({
     return (
       <div className="flex items-center justify-between rounded-lg border bg-background p-3">
         <div className="flex min-w-0 items-center gap-2">
-          {dragHandleProps && (
-            <div {...dragHandleProps} className="cursor-grab text-muted-foreground">
-              <GripVertical className="size-4" />
-            </div>
-          )}
+          <div {...(dragHandleProps ?? {})} className="cursor-grab text-muted-foreground">
+            <GripVertical className="size-4" />
+          </div>
           {Icon && <Icon className="size-5 shrink-0 text-primary" />}
           <div className="min-w-0">
             <div className="text-sm font-medium">{item.label}</div>
