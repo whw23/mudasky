@@ -13,7 +13,7 @@ from app.db.config.models import SystemConfig
 
 from .seed_page_blocks import build_page_blocks
 
-CONTACT_ITEM_IDS = [str(uuid4()) for _ in range(5)]
+CONTACT_ITEM_IDS = [str(uuid4()) for _ in range(6)]
 
 logger = logging.getLogger(__name__)
 
@@ -231,6 +231,24 @@ CONFIGS = [
                 },
                 "image_id": None,
                 "hover_zoom": False,
+            },
+            {
+                "id": CONTACT_ITEM_IDS[5],
+                "icon": "qr-code",
+                "label": {
+                    "zh": "微信公众号",
+                    "en": "WeChat Official",
+                    "ja": "WeChat公式",
+                    "de": "WeChat Offiziell",
+                },
+                "content": {
+                    "zh": "扫码关注公众号",
+                    "en": "Scan to follow",
+                    "ja": "QRコードをスキャンしてフォロー",
+                    "de": "QR-Code scannen zum Folgen",
+                },
+                "image_id": None,
+                "hover_zoom": True,
             },
         ],
     ),

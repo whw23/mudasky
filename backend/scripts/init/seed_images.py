@@ -76,12 +76,11 @@ async def init_seed_images(session) -> None:
 
 
 async def _sync_wechat_qr_to_contact_items(session, site_info: dict) -> None:
-    """将微信二维码图片 ID 同步到 contact_items 的微信咨询条目。"""
-    qr_url = site_info.get("wechat_service_qr_url", "")
-    if not qr_url or "id=" not in qr_url:
-        return
-
-    image_id = qr_url.split("id=")[-1]
+    """将微信二维码图片 ID 同步到 contact_items 的对应条目。"""
+    sync_map = {
+        "wechat_service_qr_url": "message-circle",
+        "wechat_official_qr_url": "qr-code",
+    }
 
     stmt = select(SystemConfig).where(SystemConfig.key == "contact_items")
     result = await session.execute(stmt)
@@ -90,14 +89,22 @@ async def _sync_wechat_qr_to_contact_items(session, site_info: dict) -> None:
         return
 
     items = list(config.value)
-    for item in items:
-        if item.get("icon") == "message-circle" and not item.get("image_id"):
-            item["image_id"] = image_id
-            config.value = items
-            flag_modified(config, "value")
-            await session.flush()
-            logger.info("微信二维码已同步到 contact_items")
-            return
+    updated = False
+    for url_field, icon_name in sync_map.items():
+        qr_url = site_info.get(url_field, "")
+        if not qr_url or "id=" not in qr_url:
+            continue
+        image_id = qr_url.split("id=")[-1]
+        for item in items:
+            if item.get("icon") == icon_name and not item.get("image_id"):
+                item["image_id"] = image_id
+                updated = True
+                logger.info("二维码已同步到 contact_items: %s → %s", url_field, icon_name)
+
+    if updated:
+        config.value = items
+        flag_modified(config, "value")
+        await session.flush()
 
 
 async def _init_page_blocks_images(session) -> None:

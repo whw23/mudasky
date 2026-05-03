@@ -252,9 +252,7 @@ export default function WebSettingsPage() {
       const { data } = await api.post("/admin/web-settings/images/upload", formData)
       const updated = { ...rawConfig.siteInfo, [field]: data.url }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      if (field === "wechat_service_qr_url") {
-        await syncQrToContactItems(data.url)
-      }
+      await syncQrIfNeeded(field, data.url)
       fetchAllConfigs(true)
       refreshConfig()
       toast.success("上传成功")
@@ -269,9 +267,7 @@ export default function WebSettingsPage() {
     try {
       const updated = { ...rawConfig.siteInfo, [field]: "" }
       await api.post("/admin/web-settings/list/edit", { key: "site_info", value: updated })
-      if (field === "wechat_service_qr_url") {
-        await syncQrToContactItems("")
-      }
+      await syncQrIfNeeded(field, "")
       await fetchAllConfigs(true)
       refreshConfig()
       toast.success("已清除")
@@ -280,11 +276,19 @@ export default function WebSettingsPage() {
     }
   }
 
-  /** 微信二维码 URL 变更时同步 image_id 到 contact_items */
-  async function syncQrToContactItems(qrUrl: string): Promise<void> {
+  /** 二维码字段与 contact_items 图标的映射 */
+  const QR_SYNC_MAP: Record<string, string> = {
+    wechat_service_qr_url: "message-circle",
+    wechat_official_qr_url: "qr-code",
+  }
+
+  /** 二维码 URL 变更时同步 image_id 到 contact_items */
+  async function syncQrIfNeeded(field: string, qrUrl: string): Promise<void> {
+    const iconName = QR_SYNC_MAP[field]
+    if (!iconName) return
     const imageId = qrUrl?.includes("id=") ? qrUrl.split("id=")[1] : null
     const updated = rawConfig.contactItems.map((ci: any) =>
-      ci.icon === "message-circle" ? { ...ci, image_id: imageId } : ci,
+      ci.icon === iconName ? { ...ci, image_id: imageId } : ci,
     )
     await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
   }
@@ -425,12 +429,14 @@ export default function WebSettingsPage() {
                 const updated = [...rawConfig.contactItems]
                 updated[idx] = { ...item, ...data }
                 await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
-                // 微信二维码同步到 site_info
-                if (item.icon === "message-circle" && data.image_id !== item.image_id) {
+                // 二维码同步到 site_info
+                const reverseMap: Record<string, string> = { "message-circle": "wechat_service_qr_url", "qr-code": "wechat_official_qr_url" }
+                const siteField = reverseMap[item.icon]
+                if (siteField && data.image_id !== item.image_id) {
                   const newUrl = data.image_id ? `/api/public/images/detail?id=${data.image_id}` : ""
                   await api.post("/admin/web-settings/list/edit", {
                     key: "site_info",
-                    value: { ...rawConfig.siteInfo, wechat_service_qr_url: newUrl },
+                    value: { ...rawConfig.siteInfo, [siteField]: newUrl },
                   })
                 }
                 toast.success('保存成功')
