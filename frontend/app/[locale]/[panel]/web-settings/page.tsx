@@ -152,13 +152,8 @@ export default function WebSettingsPage() {
     }
     if (!dialogState) return
     await api.post("/admin/web-settings/list/edit", { key: dialogState.configKey, value: data })
-    // site_info 二维码变更时同步到 contact_items
-    if (dialogState.configKey === "site_info" && data.wechat_service_qr_url !== rawConfig.siteInfo.wechat_service_qr_url) {
-      const newImageId = data.wechat_service_qr_url?.split("id=")[1] ?? null
-      const updated = rawConfig.contactItems.map((ci: any) =>
-        ci.icon === "message-circle" ? { ...ci, image_id: newImageId } : ci,
-      )
-      await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+    if (dialogState.configKey === "site_info") {
+      await syncSiteInfoToContactItems(data)
     }
     toast.success('保存成功')
     await fetchAllConfigs(true)
@@ -276,13 +271,47 @@ export default function WebSettingsPage() {
     }
   }
 
-  /** 二维码字段与 contact_items 图标的映射 */
+  /** site_info 字段 → contact_items 图标的映射（图片同步） */
   const QR_SYNC_MAP: Record<string, string> = {
     wechat_service_qr_url: "message-circle",
     wechat_official_qr_url: "qr-code",
   }
 
-  /** 二维码 URL 变更时同步 image_id 到 contact_items */
+  /** contact_items 图标 → site_info 字段的映射（内容/图片同步） */
+  const CONTACT_SITE_SYNC: Record<string, { content?: string; image?: string }> = {
+    phone: { content: "hotline" },
+    "message-circle": { image: "wechat_service_qr_url" },
+    "qr-code": { image: "wechat_official_qr_url" },
+  }
+
+  /** site_info 保存后同步到 contact_items */
+  async function syncSiteInfoToContactItems(newSiteInfo: Record<string, any>): Promise<void> {
+    let updated = [...rawConfig.contactItems]
+    let changed = false
+    // 热线同步
+    if (newSiteInfo.hotline !== rawConfig.siteInfo.hotline) {
+      updated = updated.map((ci: any) => {
+        if (ci.icon !== "phone") return ci
+        const content = typeof ci.content === "object" ? { ...ci.content } : { zh: ci.content ?? "" }
+        content.zh = newSiteInfo.hotline ?? ""
+        return { ...ci, content }
+      })
+      changed = true
+    }
+    // 二维码同步
+    for (const [urlField, iconName] of Object.entries(QR_SYNC_MAP)) {
+      if (newSiteInfo[urlField] !== (rawConfig.siteInfo as any)[urlField]) {
+        const imageId = newSiteInfo[urlField]?.includes("id=") ? newSiteInfo[urlField].split("id=")[1] : null
+        updated = updated.map((ci: any) => ci.icon === iconName ? { ...ci, image_id: imageId } : ci)
+        changed = true
+      }
+    }
+    if (changed) {
+      await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+    }
+  }
+
+  /** site_info 图片字段变更时同步到 contact_items */
   async function syncQrIfNeeded(field: string, qrUrl: string): Promise<void> {
     const iconName = QR_SYNC_MAP[field]
     if (!iconName) return
@@ -291,6 +320,31 @@ export default function WebSettingsPage() {
       ci.icon === iconName ? { ...ci, image_id: imageId } : ci,
     )
     await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
+  }
+
+  /** 全局 contact_item 保存后同步到 site_info */
+  async function syncContactItemToSiteInfo(
+    icon: string,
+    newData: Record<string, unknown>,
+    oldData: Record<string, unknown>,
+  ): Promise<void> {
+    const sync = CONTACT_SITE_SYNC[icon]
+    if (!sync) return
+    const updates: Record<string, unknown> = {}
+    if (sync.content) {
+      const newContent = typeof newData.content === "object" ? (newData.content as any)?.zh : newData.content
+      const oldContent = typeof oldData.content === "object" ? (oldData.content as any)?.zh : oldData.content
+      if (newContent !== oldContent) updates[sync.content] = newContent ?? ""
+    }
+    if (sync.image && newData.image_id !== oldData.image_id) {
+      updates[sync.image] = newData.image_id ? `/api/public/images/detail?id=${newData.image_id}` : ""
+    }
+    if (Object.keys(updates).length > 0) {
+      await api.post("/admin/web-settings/list/edit", {
+        key: "site_info",
+        value: { ...rawConfig.siteInfo, ...updates },
+      })
+    }
   }
 
   /** 处理 Footer 编辑区域点击 */
@@ -429,16 +483,7 @@ export default function WebSettingsPage() {
                 const updated = [...rawConfig.contactItems]
                 updated[idx] = { ...item, ...data }
                 await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
-                // 二维码同步到 site_info
-                const reverseMap: Record<string, string> = { "message-circle": "wechat_service_qr_url", "qr-code": "wechat_official_qr_url" }
-                const siteField = reverseMap[item.icon]
-                if (siteField && data.image_id !== item.image_id) {
-                  const newUrl = data.image_id ? `/api/public/images/detail?id=${data.image_id}` : ""
-                  await api.post("/admin/web-settings/list/edit", {
-                    key: "site_info",
-                    value: { ...rawConfig.siteInfo, [siteField]: newUrl },
-                  })
-                }
+                await syncContactItemToSiteInfo(item.icon, data, item)
                 toast.success('保存成功')
                 await fetchAllConfigs(true)
                 refreshConfig()
