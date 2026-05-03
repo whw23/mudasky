@@ -138,6 +138,10 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
     return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} />
   }
 
+  if (block.type === "card_grid" && onEditConfig) {
+    return <CardGridItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
   const fields = getArrayFields(block)
   const cardType = block.type === "card_grid" ? (block.options?.cardType || "guide") : ""
   const hasIconField = cardType === "guide" || cardType === "checklist"
@@ -195,6 +199,93 @@ function ContactItemsList({
       }
     />
   )
+}
+
+/** card_grid 卡片列表（支持拖动排序） */
+function CardGridItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const cards: any[] = Array.isArray(data) ? data : []
+  const cardType = block.options?.cardType || "guide"
+
+  return (
+    <BlockItemsList
+      items={cards}
+      onEditItem={(idx) => onEditConfig(`card_grid_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`card_grid_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`card_grid_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const firstTextField = getFirstTextField(item, cardType, locale)
+        const secondTextField = getSecondTextField(item, cardType, locale)
+        const iconField = getIconField(item, cardType)
+        return {
+          icon: iconField,
+          label: firstTextField || `卡片 ${idx + 1}`,
+          content: secondTextField || '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`card_grid_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加卡片
+        </Button>
+      }
+    />
+  )
+}
+
+/** 获取卡片的第一个文本字段（作为标签） */
+function getFirstTextField(item: any, cardType: string, locale: string): string {
+  const fieldMap: Record<string, string> = {
+    guide: 'title',
+    timeline: 'title',
+    city: 'city',
+    program: 'name',
+    checklist: 'label',
+  }
+  const key = fieldMap[cardType]
+  if (!key) return ''
+  const value = item[key]
+  return typeof value === 'object' ? (value[locale] || value.zh || '') : (value || '')
+}
+
+/** 获取卡片的第二个文本字段（作为内容） */
+function getSecondTextField(item: any, cardType: string, locale: string): string {
+  const fieldMap: Record<string, string> = {
+    guide: 'desc',
+    timeline: 'time',
+    city: 'country',
+    program: 'country',
+    checklist: 'items',
+  }
+  const key = fieldMap[cardType]
+  if (!key) return ''
+  const value = item[key]
+  if (key === 'items' && Array.isArray(value)) {
+    // checklist.items 是数组，显示第一项
+    const first = value[0]
+    return typeof first === 'object' ? (first[locale] || first.zh || '') : (first || '')
+  }
+  return typeof value === 'object' ? (value[locale] || value.zh || '') : (value || '')
+}
+
+/** 获取卡片的图标字段 */
+function getIconField(item: any, cardType: string): string | undefined {
+  if (cardType === 'guide' || cardType === 'checklist') {
+    return item.icon || undefined
+  }
+  return undefined
 }
 
 /** 解析联系条目到列表展示数据 */
