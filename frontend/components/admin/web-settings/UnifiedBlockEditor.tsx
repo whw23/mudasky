@@ -163,7 +163,6 @@ export function UnifiedBlockEditor({
               onDataChange={setData}
               defaultFieldIndex={defaultFieldIndex}
               onEditConfig={onEditConfig}
-              onClose={() => onOpenChange(false)}
             />
           )}
         </DialogBody>

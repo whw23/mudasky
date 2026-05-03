@@ -125,7 +125,7 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
   }
 
   if (block.type === "contact_info" && onEditConfig) {
-    return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} onClose={onClose} />
+    return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} />
   }
 
   const fields = getArrayFields(block)
@@ -147,66 +147,77 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
   )
 }
 
-/** 联系信息条目列表 */
+/** 联系信息条目列表（支持拖动排序） */
 function ContactItemsList({
-  block, locale, onEditConfig, onClose,
+  block, locale, onEditConfig,
 }: {
   block: Block
   locale: ConfigLocale
   onEditConfig: (section: string) => void
-  onClose?: () => void
 }) {
-  const { contactItems } = useConfig()
-  const items: ContactInfoBlockItem[] | null = block.data?.items ?? null
+  const { contactItems, pageBlocks } = useConfig()
+  const currentBlock = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
+  const items: ContactInfoBlockItem[] | null = currentBlock?.data?.items ?? block.data?.items ?? null
   const resolved = resolveContactItems(items, contactItems, locale, block.id)
+
+  function handleDragEnd(result: DropResult): void {
+    if (!result.destination || result.source.index === result.destination.index) return
+    onEditConfig(`contact_item_reorder_${block.id}_${result.source.index}_${result.destination.index}`)
+  }
 
   return (
     <div className="space-y-2">
-      {resolved.map((item, idx) => {
-        const Icon = resolveIcon(item.icon)
-        return (
-          <div
-            key={idx}
-            className="flex items-center justify-between rounded-lg border p-3"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              {Icon && <Icon className="size-5 shrink-0 text-primary" />}
-              <div className="min-w-0">
-                <div className="text-sm font-medium">{item.label}</div>
-                <div className="truncate text-xs text-muted-foreground">{item.content}</div>
-              </div>
-              {item.source === "global" && (
-                <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
-              )}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="contact-items">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+              {resolved.map((item, idx) => {
+                const Icon = resolveIcon(item.icon)
+                return (
+                  <Draggable key={`${item.editSection}-${idx}`} draggableId={`item-${idx}`} index={idx}>
+                    {(dragProvided) => (
+                      <div
+                        ref={dragProvided.innerRef}
+                        {...dragProvided.draggableProps}
+                        className="flex items-center justify-between rounded-lg border bg-background p-3"
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div {...dragProvided.dragHandleProps} className="cursor-grab text-muted-foreground">
+                            <GripVertical className="size-4" />
+                          </div>
+                          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium">{item.label}</div>
+                            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
+                          </div>
+                          {item.source === "global" && (
+                            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
+                          )}
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
+                            <Pencil className="size-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon"
+                            className="size-7 text-destructive hover:text-destructive"
+                            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                )
+              })}
+              {provided.placeholder}
             </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                onClick={() => { onClose?.(); onEditConfig(item.editSection) }}
-              >
-                <Pencil className="size-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7 text-destructive hover:text-destructive"
-                onClick={() => { onClose?.(); onEditConfig(`contact_item_delete_${block.id}_${idx}`) }}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
-            </div>
-          </div>
-        )
-      })}
+          )}
+        </Droppable>
+      </DragDropContext>
 
-      {/* 添加条目 */}
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={() => { onClose?.(); onEditConfig(`contact_item_add_custom_${block.id}`) }}
-      >
+      <Button variant="outline" className="w-full" onClick={() => onEditConfig(`contact_item_add_custom_${block.id}`)}>
         <Plus className="mr-1 size-4" />
         添加条目
       </Button>

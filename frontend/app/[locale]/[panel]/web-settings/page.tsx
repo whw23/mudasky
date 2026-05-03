@@ -456,6 +456,26 @@ export default function WebSettingsPage() {
             await fetchAllConfigs(true)
             refreshConfig()
           }
+        } else if (section.startsWith('contact_item_reorder_')) {
+          // 拖动排序
+          const parts = section.replace('contact_item_reorder_', '').split('_')
+          const blockId = parts.slice(0, -2).join('_')
+          const fromIdx = parseInt(parts[parts.length - 2], 10)
+          const toIdx = parseInt(parts[parts.length - 1], 10)
+          const currentBlocks = pageBlocks[activePage] ?? []
+          const block = currentBlocks.find((b) => b.id === blockId)
+          if (block) {
+            const currentItems: any[] = block.data?.items ?? rawConfig.contactItems.map((g: any) => ({ type: "global", id: g.id }))
+            const reordered = [...currentItems]
+            const [moved] = reordered.splice(fromIdx, 1)
+            reordered.splice(toIdx, 0, moved)
+            const updatedBlock = { ...block, data: { items: reordered } }
+            const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
+            const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
+            await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
+            await fetchAllConfigs(true)
+            refreshConfig()
+          }
         } else if (section.startsWith('contact_item_add_global_')) {
           // 添加全局引用
           const rest = section.replace('contact_item_add_global_', '')

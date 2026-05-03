@@ -47,12 +47,20 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
     onEditConfig(section)
   }
 
+  function handleClick(): void {
+    if (availableGlobal.length === 0) {
+      onEditConfig(`contact_item_add_custom_${block.id}`)
+    } else {
+      setOpen(!open)
+    }
+  }
+
   return (
     <div ref={containerRef} className="relative">
       <button
         type="button"
         className="flex w-full items-start gap-3 rounded-lg border border-border bg-white p-5 opacity-60 transition-opacity hover:opacity-100"
-        onClick={() => setOpen(!open)}
+        onClick={handleClick}
       >
         <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
         <div className="flex-1 text-left">
