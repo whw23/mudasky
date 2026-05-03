@@ -5,7 +5,7 @@
  * 列出未被引用的全局条目 + 自定义新建选项。
  */
 
-import { Plus, PenLine } from "lucide-react"
+import { CirclePlus, PenLine } from "lucide-react"
 import { icons } from "lucide-react"
 import { useLocale } from "next-intl"
 import {
@@ -42,12 +42,19 @@ export function AddContactItemMenu({ block, items, globalItems, onEditConfig }: 
         render={
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 p-5 text-sm text-muted-foreground transition-colors hover:border-blue-400 hover:text-blue-500"
+            className="flex w-full items-start gap-3 rounded-lg border border-border bg-white p-5 opacity-60 transition-opacity hover:opacity-100"
           />
         }
       >
-        <Plus className="size-4" />
-        添加条目
+        <CirclePlus className="mt-0.5 size-5 shrink-0 text-primary" />
+        <div className="flex-1">
+          <div className="text-sm font-medium text-muted-foreground">
+            新建条目
+          </div>
+          <div className="mt-1 text-sm text-foreground">
+            点击添加联系方式
+          </div>
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-64">
         {availableGlobal.map((g) => {
