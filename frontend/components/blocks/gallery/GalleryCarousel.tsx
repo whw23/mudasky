@@ -2,8 +2,8 @@
 
 /**
  * 轮播布局（中心聚焦风格）。
- * 深色背景，当前幻灯片居中突出，两侧图片重叠在后方。
- * 主图下方显示标题和说明文字。自动轮播（5 秒），hover 暂停。
+ * 深色背景，主图居中，两侧图片藏在主图后方露出边缘。
+ * 自动轮播（5 秒），hover 暂停。
  */
 
 import { useState, useCallback, useEffect } from "react"
@@ -37,36 +37,59 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
 
   const prev = (current - 1 + len) % len
   const next = (current + 1) % len
+
   return (
     <div
       className="relative overflow-hidden rounded-2xl bg-gray-800 py-8 md:py-10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* 三层卡片——用 grid 实现精确居中 */}
-      <div className="relative mx-auto grid max-w-6xl grid-cols-[1.5fr_minmax(0,2.5fr)_1.5fr] items-center px-8 md:px-10">
-        {/* 左侧 */}
-        {len > 2 ? (
-          <div
-            className="z-0 translate-x-[40%] cursor-pointer transition-all duration-500"
-            onClick={(e) => { e.stopPropagation(); go(-1) }}
-          >
-            <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
-              <div className="aspect-[16/9]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/public/images/detail?id=${items[prev].image_id}`}
-                  alt=""
-                  className="size-full object-cover"
-                  loading="lazy"
-                />
+      {/* 主图居中 + 侧图 absolute 藏在后面 */}
+      <div className="relative mx-auto max-w-6xl px-4">
+        {/* 侧图：与主图同高，absolute 定位，露出左右边缘 */}
+        {len > 2 && (
+          <>
+            <div
+              className="absolute inset-y-0 left-0 z-0 w-[40%] cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); go(-1) }}
+            >
+              <div className="flex h-full items-center pl-4">
+                <div className="w-full overflow-hidden rounded-xl opacity-60 brightness-75">
+                  <div className="aspect-[16/9]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/public/images/detail?id=${items[prev].image_id}`}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ) : <div />}
+            <div
+              className="absolute inset-y-0 right-0 z-0 w-[40%] cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); go(1) }}
+            >
+              <div className="flex h-full items-center pr-4">
+                <div className="w-full overflow-hidden rounded-xl opacity-60 brightness-75">
+                  <div className="aspect-[16/9]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/public/images/detail?id=${items[next].image_id}`}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* 中心主图 */}
-        <div className="relative z-10">
+        <div className="relative z-10 mx-auto w-[60%]">
           {renderItem
             ? renderItem(items[current], current, "aspect-[16/9] rounded-xl")
             : (
@@ -80,26 +103,6 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
             )
           }
         </div>
-
-        {/* 右侧 */}
-        {len > 2 ? (
-          <div
-            className="z-0 -translate-x-[40%] cursor-pointer transition-all duration-500"
-            onClick={(e) => { e.stopPropagation(); go(1) }}
-          >
-            <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
-              <div className="aspect-[16/9]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/public/images/detail?id=${items[next].image_id}`}
-                  alt=""
-                  className="size-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </div>
-        ) : <div />}
       </div>
 
       {/* 箭头 */}
