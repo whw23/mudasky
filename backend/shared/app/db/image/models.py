@@ -34,6 +34,12 @@ class Image(Base):
     file_hash: Mapped[str] = mapped_column(
         String(64), nullable=False, index=True
     )
+    width: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, doc="图片宽度（像素）"
+    )
+    height: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, doc="图片高度（像素）"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
