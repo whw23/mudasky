@@ -18,6 +18,7 @@ import {
 import type { Block } from "@/types/block"
 import type { ConfigLocale, LocalizedField } from "@/lib/i18n-config"
 import { LanguageCapsule } from "@/components/admin/LanguageCapsule"
+import { useConfig } from "@/contexts/ConfigContext"
 import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import { TypeSpecificFields } from "./BlockTypeFields"
 import api from "@/lib/api"
@@ -49,6 +50,8 @@ export function UnifiedBlockEditor({
 }: UnifiedBlockEditorProps) {
   const [locale, setLocale] = useState<ConfigLocale>("zh")
   const [activeTab, setActiveTab] = useState<EditorTab>("content")
+
+  const { pageBlocks } = useConfig()
 
   /* 配置状态 */
   const [showTitle, setShowTitle] = useState(true)
@@ -84,10 +87,17 @@ export function UnifiedBlockEditor({
     setOptions((prev) => ({ ...prev, [key]: value }))
   }
 
-  /** 保存 */
+  /** 保存（array/contact_info 类型从 ConfigContext 读最新 data，避免覆盖） */
   function handleSave(): void {
     if (!block) return
-    onSave({ ...block, showTitle, sectionTag, sectionTitle, bgColor, options, data })
+    const editType = getBlockEditType(block.type)
+    if (editType === "array" || block.type === "contact_info") {
+      const latestBlock = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
+      const latestData = latestBlock?.data ?? block.data
+      onSave({ ...block, showTitle, sectionTag, sectionTitle, bgColor, options, data: latestData })
+    } else {
+      onSave({ ...block, showTitle, sectionTag, sectionTitle, bgColor, options, data })
+    }
     onOpenChange(false)
   }
 
