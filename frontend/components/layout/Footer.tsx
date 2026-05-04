@@ -128,9 +128,13 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
             "brand_name",
             "编辑品牌名称"
           )}
-          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-            {t("description")}
-          </p>
+          {wrapEditable(
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+              {siteInfo.description || t("description")}
+            </p>,
+            "description",
+            "编辑公司简介"
+          )}
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <Phone className="size-4 shrink-0 text-primary" />
@@ -161,12 +165,13 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
           <ul className="space-y-2">
             {QUICK_LINKS.map((item) => (
               <li key={item.key}>
-                <Link
-                  href={item.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {tNav(item.key)}
-                </Link>
+                {editable ? (
+                  <span className="text-sm text-muted-foreground">{tNav(item.key)}</span>
+                ) : (
+                  <Link href={item.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                    {tNav(item.key)}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -180,12 +185,13 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
           <ul className="space-y-2">
             {SERVICE_LINKS.map((item) => (
               <li key={item.key}>
-                <Link
-                  href={item.href}
-                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {tNav(item.key)}
-                </Link>
+                {editable ? (
+                  <span className="text-sm text-muted-foreground">{tNav(item.key)}</span>
+                ) : (
+                  <Link href={item.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                    {tNav(item.key)}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

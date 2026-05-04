@@ -42,6 +42,12 @@ CONFIGS = [
                 "ja": "蘇さん",
                 "de": "Frau Su",
             },
+            "description": {
+                "zh": "慕大国际从事小语种留学项目运营已15年，为慕尼黑大学语言中心江苏省唯一指定招生考点。",
+                "en": "Muda International has been operating study abroad programs for 15 years, serving as the sole authorized enrollment center for the Munich University Language Center in Jiangsu Province.",
+                "ja": "慕大国際は小言語種留学プロジェクトを15年間運営し、ミュンヘン大学言語センターの江蘇省唯一の指定入学試験会場です。",
+                "de": "Muda International betreibt seit 15 Jahren Studienprogramme und ist die einzige autorisierte Anmeldestelle des Sprachenzentrums der Universität München in der Provinz Jiangsu.",
+            },
             "company_name": "浩然学行(苏州)文化传播有限公司",
             "icp_filing": "苏ICP备2022046719号-1",
         },

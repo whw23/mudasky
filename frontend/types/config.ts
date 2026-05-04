@@ -33,6 +33,7 @@ export interface SiteInfo {
   favicon_url: string
   wechat_service_qr_url: string
   wechat_official_qr_url: string
+  description: LocalizedField
   company_name: string
   icp_filing: string
 }

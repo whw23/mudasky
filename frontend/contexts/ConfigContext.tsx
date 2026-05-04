@@ -22,6 +22,7 @@ const DEFAULT_SITE_INFO: SiteInfo = {
   favicon_url: '',
   wechat_service_qr_url: '',
   wechat_official_qr_url: '',
+  description: '',
   company_name: '浩然学行(苏州)文化传播有限公司',
   icp_filing: '苏ICP备2022046719号-1',
 }
@@ -174,6 +175,7 @@ export function useLocalizedConfig(): LocalizedConfigType {
       brand_name: getLocalizedValue(siteInfo.brand_name, locale),
       tagline: getLocalizedValue(siteInfo.tagline, locale),
       hotline_contact: getLocalizedValue(siteInfo.hotline_contact, locale),
+      description: getLocalizedValue(siteInfo.description, locale),
     },
     contactItems: config.contactItems.map((item) => ({
       ...item,

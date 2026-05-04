@@ -471,6 +471,15 @@ export default function WebSettingsPage() {
         }
         break
       }
+      case 'description':
+        setDialogState({
+          open: true,
+          title: '编辑公司简介',
+          fields: [{ key: 'description', label: '公司简介', type: 'textarea' as const, localized: true }],
+          configKey: 'site_info',
+          data: rawConfig.siteInfo,
+        })
+        break
       case 'company':
         setDialogState({
           open: true,
