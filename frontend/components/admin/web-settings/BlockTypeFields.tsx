@@ -40,6 +40,8 @@ export function TypeSpecificFields({
       return <CtaFields options={options} onUpdate={onUpdateOption} />
     case "contact_info":
       return <MaxColumnsField options={options} onUpdate={onUpdateOption} label="联系信息选项" />
+    case "gallery":
+      return <GalleryFields options={options} onUpdate={onUpdateOption} />
     default:
       return null
   }
@@ -181,6 +183,26 @@ function CtaFields({ options, onUpdate }: FieldsProps) {
           { value: "bg-gray-50", label: "灰色背景" },
         ]}
         onValueChange={(v) => onUpdate("variant", v)}
+      />
+    </div>
+  )
+}
+
+/** gallery 类型配置 */
+function GalleryFields({ options, onUpdate }: FieldsProps) {
+  return (
+    <div className="space-y-3 border-t pt-3">
+      <p className="text-xs font-medium text-muted-foreground">图片墙选项</p>
+      <SelectField
+        label="布局风格"
+        value={options.galleryType || "grid"}
+        options={[
+          { value: "grid", label: "等高网格" },
+          { value: "masonry", label: "瀑布流" },
+          { value: "rows", label: "行排列" },
+          { value: "carousel", label: "轮播" },
+        ]}
+        onValueChange={(v) => onUpdate("galleryType", v)}
       />
     </div>
   )
