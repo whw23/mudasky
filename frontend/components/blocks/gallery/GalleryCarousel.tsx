@@ -51,7 +51,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         )}
 
         {/* 中心主图 */}
-        <div className="relative z-10 w-full max-w-4xl shrink-0 px-2">
+        <div className="relative z-10 flex w-full max-w-4xl shrink-0 justify-center px-2">
           {renderItem
             ? renderItem(items[current], current, "aspect-[16/9] max-h-[55vh] rounded-xl")
             : (
