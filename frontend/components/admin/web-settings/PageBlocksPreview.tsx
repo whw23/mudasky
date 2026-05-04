@@ -12,7 +12,7 @@ import { Plus } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import api from "@/lib/api"
-import { useConfig } from "@/contexts/ConfigContext"
+import { useConfig, useLocalizedConfig } from "@/contexts/ConfigContext"
 import type { Block, BlockType } from "@/types/block"
 import { BlockRenderer } from "@/components/blocks/BlockRenderer"
 import { BlockEditorOverlay } from "./BlockEditorOverlay"
@@ -207,6 +207,7 @@ function PageTopSection({
   onEditConfig?: (section: string) => void
 }) {
   const p = useTranslations("Pages")
+  const { navConfig } = useLocalizedConfig()
 
   // 首页使用 HomeBanner
   if (pageSlug === "home") {
@@ -219,10 +220,11 @@ function PageTopSection({
     )
   }
 
-  // 其他页面通用 Banner（自定义页面可能无翻译，用 slug 兜底）
+  // 其他页面通用 Banner（自定义页面从 nav_config 读标签）
   const pageI18nKey = getPageI18nKey(pageSlug)
   const hasI18n = pageSlug in SLUG_TO_I18N
-  const title = hasI18n ? p(pageI18nKey as any) : pageSlug
+  const customItem = navConfig?.custom_items?.find((i: any) => i.slug === pageSlug)
+  const title = hasI18n ? p(pageI18nKey as any) : (customItem?.name || pageSlug)
   const subtitle = hasI18n ? p(`${pageI18nKey}Subtitle` as any) : ""
   return (
     <EditableOverlay onClick={() => onBannerEdit(pageSlug)} label="编辑 Banner">
