@@ -98,7 +98,7 @@ export function BlockItemsList({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable
           droppableId="block-items-list"
@@ -109,7 +109,7 @@ export function BlockItemsList({
           )}
         >
           {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+            <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-2">
               {localItems.map((item, idx) => (
                 <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
                   {(dragProvided) => (
