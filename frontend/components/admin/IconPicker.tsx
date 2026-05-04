@@ -9,7 +9,7 @@ import { useState, useMemo, useRef, useEffect } from "react"
 import { icons, type LucideIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { resolveIcon } from "@/lib/icon-utils"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 
 /** 常用图标子集（默认显示） */
 const COMMON_ICONS = [
@@ -82,16 +82,28 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
 
   return (
     <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent ${className ?? ""}`}
-        onClick={() => setOpen(!open)}
-      >
-        {CurrentIcon && <CurrentIcon className="size-5 text-primary" />}
-        <span className="text-muted-foreground">
-          {value || "选择图标"}
-        </span>
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-accent ${className ?? ""}`}
+          onClick={() => setOpen(!open)}
+        >
+          {CurrentIcon && <CurrentIcon className="size-5 text-primary" />}
+          <span className="text-muted-foreground">
+            {value || "选择图标"}
+          </span>
+        </button>
+        {value && (
+          <button
+            type="button"
+            className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => { onChange(""); setTextInput("") }}
+            title="清除图标"
+          >
+            <X className="size-4" />
+          </button>
+        )}
+      </div>
 
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border bg-popover p-3 shadow-md">
