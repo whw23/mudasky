@@ -16,6 +16,7 @@ import { TimelineCard } from "./cards/TimelineCard"
 import { CityCard } from "./cards/CityCard"
 import { ProgramCard } from "./cards/ProgramCard"
 import { ChecklistCard } from "./cards/ChecklistCard"
+import { Trash2, Plus } from "lucide-react"
 
 interface BlockProps {
   block: Block
@@ -73,14 +74,39 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onEditConfi
             {header}
             <div className={`mt-8 ${gridClass}`}>
               {cards.map((card, i) => (
-                <FieldOverlay
-                  key={card.id || i}
-                  onClick={() => onEditConfig(`card_grid_item_${block.id}_${i}`)}
-                  label={`编辑卡片 ${i + 1}`}
-                >
-                  {renderCard(cardType, card, locale, i)}
-                </FieldOverlay>
+                <div key={card.id || i} className="group relative h-full">
+                  <FieldOverlay
+                    onClick={() => onEditConfig(`card_grid_item_${block.id}_${i}`)}
+                    label={`编辑卡片 ${i + 1}`}
+                    className="h-full"
+                  >
+                    {renderCard(cardType, card, locale, i)}
+                  </FieldOverlay>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditConfig(`card_grid_delete_${block.id}_${i}`)
+                    }}
+                    className="pointer-events-none absolute top-1 left-1 z-10 rounded bg-red-500 p-1 text-white opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+                    title="移除"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
               ))}
+              {/* 添加卡片按钮 */}
+              <div
+                className="hidden h-full group-hover/block:block"
+                data-editable
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  onClick={() => onEditConfig(`card_grid_add_${block.id}`)}
+                  className="flex h-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 opacity-50 transition-opacity hover:opacity-80"
+                >
+                  <Plus className="size-8 text-muted-foreground" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
