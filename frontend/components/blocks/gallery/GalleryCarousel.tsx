@@ -5,12 +5,14 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { GalleryItem } from "./GalleryItem"
+import type { GalleryItemData, RenderItem } from "./types"
 
 interface GalleryCarouselProps {
-  items: Array<{ image_id: string; caption: any; width: number; height: number }>
+  items: GalleryItemData[]
+  renderItem?: RenderItem
 }
 
-export function GalleryCarousel({ items }: GalleryCarouselProps) {
+export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [current, setCurrent] = useState(0)
 
@@ -45,13 +47,18 @@ export function GalleryCarousel({ items }: GalleryCarouselProps) {
       >
         {items.map((item, i) => (
           <div key={i} className="w-full shrink-0 snap-center">
-            <GalleryItem
-              imageId={item.image_id}
-              caption={item.caption}
-              width={item.width}
-              height={item.height}
-              className="aspect-video"
-            />
+            {renderItem
+              ? renderItem(item, i, "aspect-video")
+              : (
+                <GalleryItem
+                  imageId={item.image_id}
+                  caption={item.caption}
+                  width={item.width}
+                  height={item.height}
+                  className="aspect-video"
+                />
+              )
+            }
           </div>
         ))}
       </div>
