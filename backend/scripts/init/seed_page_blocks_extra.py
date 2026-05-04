@@ -45,7 +45,7 @@ def build_study_abroad_blocks() -> list[dict]:
             "card_grid",
             section_tag="Programs",
             section_title={"zh": "留学项目", "en": "Study Programs", "ja": "留学プログラム", "de": "Studienprogramme"},
-            options={"cardType": "program"},
+            options={"cardType": "program", "maxColumns": 3},
             data=[
                 {
                     "featured": True,
@@ -133,7 +133,7 @@ def build_visa_blocks() -> list[dict]:
             "doc_list",
             section_tag="Required Documents",
             section_title={"zh": "所需材料", "en": "Required Documents", "ja": "必要書類", "de": "Erforderliche Dokumente"},
-            options={"iconName": "FileText"},
+            options={"iconName": "FileText", "maxColumns": 2},
             data=[
                 {"text": {"zh": "有效护照原件及复印件", "en": "Valid passport original and copies", "ja": "有効なパスポート原本とコピー", "de": "Gültiger Reisepass Original und Kopien"}},
                 {"text": {"zh": "签证申请表", "en": "Visa application form", "ja": "ビザ申請フォーム", "de": "Visaantragsformular"}},
@@ -149,7 +149,7 @@ def build_visa_blocks() -> list[dict]:
             "card_grid",
             section_tag="Timeline",
             section_title={"zh": "办理周期", "en": "Processing Timeline", "ja": "処理スケジュール", "de": "Bearbeitungszeitplan"},
-            options={"cardType": "timeline"},
+            options={"cardType": "timeline", "maxColumns": 2},
             data=[
                 {"title": {"zh": "材料准备", "en": "Document Preparation", "ja": "書類準備", "de": "Dokumentenvorbereitung"}, "time": {"zh": "2-4周", "en": "2-4 weeks", "ja": "2-4週間", "de": "2-4 Wochen"}, "desc": {"zh": "根据个人情况准备并审核签证材料", "en": "Prepare and review visa materials based on individual circumstances", "ja": "個人の状況に基づいてビザ書類を準備し審査します", "de": "Vorbereitung und Überprüfung von Visumsunterlagen basierend auf individuellen Umständen"}},
                 {"title": {"zh": "签证审批", "en": "Visa Review", "ja": "ビザ審査", "de": "Visumsprüfung"}, "time": {"zh": "4-8周", "en": "4-8 weeks", "ja": "4-8週間", "de": "4-8 Wochen"}, "desc": {"zh": "使馆审核签证申请，期间可能补充材料", "en": "Embassy reviews the application; additional materials may be requested", "ja": "大使館が申請を審査し、期間中に追加書類が要求される場合があります", "de": "Botschaft prüft den Antrag; zusätzliche Materialien können angefordert werden"}},
@@ -160,7 +160,7 @@ def build_visa_blocks() -> list[dict]:
             "doc_list",
             section_tag="Tips",
             section_title={"zh": "注意事项", "en": "Important Tips", "ja": "注意事項", "de": "Wichtige Tipps"},
-            options={"iconName": "AlertTriangle"},
+            options={"iconName": "AlertTriangle", "maxColumns": 2},
             data=[
                 {"text": {"zh": "务必提前至少3个月开始准备签证材料，避免时间紧张影响入学。", "en": "Start preparing visa materials at least 3 months in advance to avoid time pressure affecting enrollment.", "ja": "入学に影響を与える時間的プレッシャーを避けるため、少なくとも3か月前にビザ書類の準備を開始してください。", "de": "Beginnen Sie mindestens 3 Monate im Voraus mit der Vorbereitung der Visumsunterlagen, um Zeitdruck zu vermeiden."}},
                 {"text": {"zh": "资金证明金额需满足目标国家的最低要求，德国目前为每年10,332欧元。", "en": "Financial proof must meet the target country's minimum requirements; Germany currently requires €10,332 per year.", "ja": "資金証明額は対象国の最低要件を満たす必要があり、ドイツは現在年間10,332ユーロです。", "de": "Der Finanznachweis muss die Mindestanforderungen des Ziellandes erfüllen; Deutschland verlangt derzeit 10.332 € pro Jahr."}},
@@ -193,7 +193,7 @@ def build_requirements_blocks() -> list[dict]:
             "card_grid",
             section_tag="Country Requirements",
             section_title={"zh": "各国申请条件", "en": "Country Requirements", "ja": "各国の申請条件", "de": "Länderanforderungen"},
-            options={"cardType": "checklist"},
+            options={"cardType": "checklist", "maxColumns": 3},
             data=[
                 {"icon": "GraduationCap", "label": {"zh": "德国留学", "en": "Study in Germany", "ja": "ドイツ留学", "de": "Studium in Deutschland"}, "items": [{"zh": "高中毕业或同等学历（211/985院校优先）", "en": "High school diploma or equivalent (211/985 universities preferred)", "ja": "高校卒業または同等の学歴（211/985大学優先）", "de": "Abitur oder gleichwertig (211/985-Universitäten bevorzugt)"}, {"zh": "德语B1以上或英语雅思6.0以上", "en": "German B1+ or English IELTS 6.0+", "ja": "ドイツ語B1以上または英語IELTS 6.0以上", "de": "Deutsch B1+ oder Englisch IELTS 6.0+"}, {"zh": "APS审核证书", "en": "APS verification certificate", "ja": "APS審査証明書", "de": "APS-Zertifikat"}, {"zh": "资金证明（约10,332欧元/年）", "en": "Proof of finances (approx. €10,332/year)", "ja": "資金証明（約10,332ユーロ/年）", "de": "Finanznachweis (ca. 10.332 €/Jahr)"}]},
                 {"icon": "BookOpen", "label": {"zh": "日本留学", "en": "Study in Japan", "ja": "日本留学", "de": "Studium in Japan"}, "items": [{"zh": "12年及以上教育经历", "en": "12+ years of education", "ja": "12年以上の教育歴", "de": "12+ Jahre Bildung"}, {"zh": "日语N2以上或EJU成绩", "en": "JLPT N2+ or EJU score", "ja": "日本語能力試験N2以上またはEJUスコア", "de": "JLPT N2+ oder EJU-Punktzahl"}, {"zh": "经费支付能力证明", "en": "Proof of financial support", "ja": "経費支払能力証明", "de": "Nachweis finanzieller Unterstützung"}]},
@@ -204,7 +204,7 @@ def build_requirements_blocks() -> list[dict]:
             "card_grid",
             section_tag="Language Requirements",
             section_title={"zh": "语言要求", "en": "Language Requirements", "ja": "語学要件", "de": "Sprachanforderungen"},
-            options={"cardType": "checklist"},
+            options={"cardType": "checklist", "maxColumns": 3},
             data=[
                 {
                     "icon": "Languages",
@@ -241,6 +241,7 @@ def build_requirements_blocks() -> list[dict]:
             "doc_list",
             section_tag="Documents",
             section_title={"zh": "申请材料清单", "en": "Application Documents", "ja": "申請書類一覧", "de": "Bewerbungsunterlagen"},
+            options={"maxColumns": 2},
             data=[
                 {"text": {"zh": "护照（有效期6个月以上）", "en": "Valid passport (6+ months validity)", "ja": "パスポート（有効期限6ヶ月以上）", "de": "Gültiger Reisepass (6+ Monate gültig)"}},
                 {"text": {"zh": "学历证明及成绩单", "en": "Academic certificates and transcripts", "ja": "学歴証明書と成績証明書", "de": "Akademische Zeugnisse und Abschriften"}},

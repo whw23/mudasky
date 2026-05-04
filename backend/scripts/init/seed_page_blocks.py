@@ -124,6 +124,7 @@ def build_about_blocks(contact_item_ids: list[str] | None = None) -> list[dict]:
                 "de": "Kontaktinformationen",
             },
             bg_color="gray",
+            options={"maxColumns": 3},
             data=contact_data,
         ),
         _block(

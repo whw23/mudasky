@@ -46,7 +46,7 @@ def build_life_blocks() -> list[dict]:
             section_tag="Life Guide",
             section_title={"zh": "生活指南", "en": "Life Guide", "ja": "生活ガイド", "de": "Lebensführer"},
             bg_color="gray",
-            options={"cardType": "guide"},
+            options={"cardType": "guide", "maxColumns": 3},
             data=[
                 {
                     "icon": "House",
@@ -74,7 +74,7 @@ def build_life_blocks() -> list[dict]:
             "card_grid",
             section_tag="Popular Cities",
             section_title={"zh": "热门留学城市", "en": "Popular Cities", "ja": "人気の留学都市", "de": "Beliebte Studienstädte"},
-            options={"cardType": "city"},
+            options={"cardType": "city", "maxColumns": 3},
             data=[
                 {
                     "city": {"zh": "慕尼黑", "en": "Munich", "ja": "ミュンヘン", "de": "München"},
