@@ -44,11 +44,11 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
       onMouseLeave={() => setPaused(false)}
     >
       {/* 三层卡片——用 grid 实现精确居中 */}
-      <div className="relative mx-auto grid max-w-6xl grid-cols-[1fr_minmax(0,3fr)_1fr] items-center px-10 md:px-14">
+      <div className="relative mx-auto grid max-w-6xl grid-cols-[1.5fr_minmax(0,2.5fr)_1.5fr] items-center px-8 md:px-10">
         {/* 左侧 */}
         {len > 2 ? (
           <div
-            className="z-0 translate-x-[30%] cursor-pointer transition-all duration-500"
+            className="z-0 translate-x-[40%] cursor-pointer transition-all duration-500"
             onClick={(e) => { e.stopPropagation(); go(-1) }}
           >
             <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
@@ -84,7 +84,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         {/* 右侧 */}
         {len > 2 ? (
           <div
-            className="z-0 -translate-x-[30%] cursor-pointer transition-all duration-500"
+            className="z-0 -translate-x-[40%] cursor-pointer transition-all duration-500"
             onClick={(e) => { e.stopPropagation(); go(1) }}
           >
             <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
