@@ -50,7 +50,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         {len > 2 && (
           <>
             <div
-              className="absolute inset-y-0 left-0 z-0 w-[40%] cursor-pointer"
+              className="absolute inset-y-0 left-0 z-0 w-[20%] cursor-pointer"
               onClick={(e) => { e.stopPropagation(); go(-1) }}
             >
               <div className="flex h-full items-center pl-4">
@@ -68,7 +68,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
               </div>
             </div>
             <div
-              className="absolute inset-y-0 right-0 z-0 w-[40%] cursor-pointer"
+              className="absolute inset-y-0 right-0 z-0 w-[20%] cursor-pointer"
               onClick={(e) => { e.stopPropagation(); go(1) }}
             >
               <div className="flex h-full items-center pr-4">
