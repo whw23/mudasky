@@ -16,7 +16,7 @@ import { TimelineCard } from "./cards/TimelineCard"
 import { CityCard } from "./cards/CityCard"
 import { ProgramCard } from "./cards/ProgramCard"
 import { ChecklistCard } from "./cards/ChecklistCard"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 interface BlockProps {
   block: Block
@@ -27,6 +27,15 @@ interface BlockProps {
   onEditConfig?: (section: string) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
   blockLabel?: string
+}
+
+/** 各卡片类型的新建占位数据 */
+const ADD_PLACEHOLDER: Record<string, Record<string, any>> = {
+  guide: { icon: "plus", title: { zh: "新建卡片" }, desc: { zh: "点击添加" } },
+  timeline: { title: { zh: "新建时间线" }, time: { zh: "" }, desc: { zh: "点击添加" } },
+  city: { city: { zh: "新建城市" }, country: { zh: "" }, desc: { zh: "点击添加" } },
+  program: { name: { zh: "新建项目" }, country: { zh: "" }, desc: { zh: "点击添加" } },
+  checklist: { icon: "plus", label: { zh: "新建清单" }, items: [] },
 }
 
 /** 根据卡片类型渲染对应卡片组件 */
@@ -94,18 +103,14 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onEditConfi
                   </button>
                 </div>
               ))}
-              {/* 添加卡片按钮 */}
+              {/* 添加卡片按钮：用真实卡片组件渲染占位数据 */}
               <div
                 className="hidden h-full cursor-pointer group-hover/block:block"
                 data-editable
                 onClick={(e) => { e.stopPropagation(); onEditConfig(`card_grid_add_${block.id}`) }}
               >
-                <div className="h-full rounded-lg border bg-card p-6 text-center shadow-sm opacity-50 transition-opacity hover:opacity-80">
-                  <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
-                    <Plus className="size-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold text-muted-foreground">新建卡片</h4>
-                  <p className="mt-2 text-sm text-muted-foreground">点击添加</p>
+                <div className="h-full opacity-50 transition-opacity hover:opacity-80">
+                  {renderCard(cardType, ADD_PLACEHOLDER[cardType] || ADD_PLACEHOLDER.guide, locale, -1)}
                 </div>
               </div>
             </div>

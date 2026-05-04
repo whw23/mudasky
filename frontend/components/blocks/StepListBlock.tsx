@@ -70,18 +70,18 @@ export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit
                   </button>
                 </div>
               ))}
-              {/* 添加步骤按钮 */}
+              {/* 添加步骤：模拟真实步骤结构 */}
               <div
                 className="hidden cursor-pointer group-hover/block:block"
                 data-editable
                 onClick={(e) => { e.stopPropagation(); onEditConfig?.(`step_list_add_${block.id}`) }}
               >
                 <div className="flex gap-4 opacity-50 transition-opacity hover:opacity-80">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/50 text-sm font-bold text-primary-foreground">
-                    <Plus className="size-5" />
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    {String(steps.length + 1).padStart(2, "0")}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-muted-foreground">新建步骤</h4>
+                    <h4 className="font-semibold">新建步骤</h4>
                     <p className="mt-1 text-sm text-muted-foreground">点击添加</p>
                   </div>
                 </div>
