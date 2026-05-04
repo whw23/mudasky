@@ -37,7 +37,7 @@ export function GalleryItem({ imageId, caption, width, height, className = "" }:
       {({ ref, open }) => (
         <div
           ref={ref as React.Ref<HTMLDivElement>}
-          className={`group relative cursor-pointer overflow-hidden rounded-lg shadow-sm transition-shadow duration-300 hover:shadow-xl ${className}`}
+          className={`group relative cursor-pointer overflow-hidden transition-shadow duration-300 hover:shadow-xl ${className}`}
           onClick={open}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

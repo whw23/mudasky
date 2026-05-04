@@ -12,12 +12,12 @@ interface GalleryMasonryProps {
 
 export function GalleryMasonry({ items, renderItem }: GalleryMasonryProps) {
   return (
-    <div className="columns-2 gap-1 md:columns-3 lg:columns-4">
+    <div className="columns-2 gap-0.5 md:columns-3 lg:columns-4">
       {items.map((item, i) => {
         const ratio = item.width && item.height ? item.width / item.height : 4 / 3
         const cls = ratio > 1.4 ? "aspect-video" : ratio < 0.8 ? "aspect-[3/4]" : "aspect-square"
         return (
-          <div key={i} className="mb-1 break-inside-avoid">
+          <div key={i} className="mb-0.5 break-inside-avoid">
             {renderItem
               ? renderItem(item, i, cls)
               : (

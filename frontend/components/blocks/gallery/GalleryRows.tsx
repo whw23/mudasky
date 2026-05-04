@@ -12,7 +12,7 @@ interface GalleryRowsProps {
 
 export function GalleryRows({ items, renderItem }: GalleryRowsProps) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-0.5">
       {items.map((item, i) => {
         const ratio = item.width && item.height ? item.width / item.height : 4 / 3
         return (
