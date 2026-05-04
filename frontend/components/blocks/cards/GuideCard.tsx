@@ -27,7 +27,7 @@ export function GuideCard({ card, locale }: GuideCardProps) {
         <Icon className="size-6 text-primary" />
       </div>
       <h4 className="font-semibold">{title}</h4>
-      {desc && <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{desc}</p>}
+      {desc && <p className="mt-2 text-sm text-muted-foreground">{desc}</p>}
     </div>
   )
 }
