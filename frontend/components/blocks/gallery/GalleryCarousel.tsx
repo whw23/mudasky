@@ -2,8 +2,8 @@
 
 /**
  * 轮播布局（中心聚焦风格）。
- * 当前幻灯片居中放大，两侧露出前后图片（缩小+暗化）。
- * 自动轮播（5 秒），hover 暂停，箭头 + 指示条。
+ * 深色背景，当前幻灯片居中突出，两侧图片重叠在后方。
+ * 自动轮播（5 秒），hover 暂停。
  */
 
 import { useState, useCallback, useEffect } from "react"
@@ -40,18 +40,34 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
 
   return (
     <div
-      className="relative max-h-[calc(80vh-7rem)] overflow-hidden rounded-xl py-6"
+      className="relative max-h-[calc(80vh-7rem)] overflow-hidden rounded-2xl bg-gray-800 px-4 py-8 md:px-8 md:py-10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative mx-auto flex items-center justify-center">
-        {/* 左侧预览 */}
-        {len > 1 && (
-          <SideSlide item={items[prev]} index={prev} side="left" onClick={() => go(-1)} />
+      {/* 三层卡片 */}
+      <div className="relative mx-auto flex max-w-6xl items-center justify-center">
+        {/* 左侧（在主图后面） */}
+        {len > 2 && (
+          <div
+            className="absolute left-0 z-0 w-[35%] cursor-pointer transition-all duration-500"
+            onClick={() => go(-1)}
+          >
+            <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
+              <div className="aspect-[16/9]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/public/images/detail?id=${items[prev].image_id}`}
+                  alt=""
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* 中心主图 */}
-        <div className="relative z-10 flex w-full max-w-4xl shrink-0 justify-center px-2">
+        <div className="relative z-10 w-[70%] max-w-3xl shrink-0">
           {renderItem
             ? renderItem(items[current], current, "aspect-[16/9] max-h-[calc(60vh-7rem)] rounded-xl")
             : (
@@ -60,41 +76,56 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
                 caption={items[current].caption}
                 width={items[current].width}
                 height={items[current].height}
-                className="aspect-[16/9] max-h-[calc(60vh-7rem)] rounded-xl shadow-xl"
+                className="aspect-[16/9] max-h-[calc(60vh-7rem)] rounded-xl shadow-2xl ring-1 ring-white/10"
               />
             )
           }
         </div>
 
-        {/* 右侧预览 */}
-        {len > 1 && (
-          <SideSlide item={items[next]} index={next} side="right" onClick={() => go(1)} />
+        {/* 右侧（在主图后面） */}
+        {len > 2 && (
+          <div
+            className="absolute right-0 z-0 w-[35%] cursor-pointer transition-all duration-500"
+            onClick={() => go(1)}
+          >
+            <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
+              <div className="aspect-[16/9]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/public/images/detail?id=${items[next].image_id}`}
+                  alt=""
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* 箭头 */}
+      {/* 箭头（贴边） */}
       {len > 1 && (
         <>
           <button
             onClick={() => go(-1)}
-            className="absolute left-1 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md transition-all hover:bg-white hover:shadow-lg md:left-3 md:p-2"
+            className="absolute left-2 top-1/2 z-20 -translate-y-1/2 p-1 text-white/60 transition-colors hover:text-white md:left-3"
             aria-label="上一张"
           >
-            <ChevronLeft className="size-5 text-primary md:size-6" />
+            <ChevronLeft className="size-7 md:size-9" strokeWidth={2} />
           </button>
           <button
             onClick={() => go(1)}
-            className="absolute right-1 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow-md transition-all hover:bg-white hover:shadow-lg md:right-3 md:p-2"
+            className="absolute right-2 top-1/2 z-20 -translate-y-1/2 p-1 text-white/60 transition-colors hover:text-white md:right-3"
             aria-label="下一张"
           >
-            <ChevronRight className="size-5 text-primary md:size-6" />
+            <ChevronRight className="size-7 md:size-9" strokeWidth={2} />
           </button>
         </>
       )}
 
       {/* 指示条 */}
       {len > 1 && (
-        <div className="mt-5 flex items-center justify-center gap-2">
+        <div className="mt-6 flex items-center justify-center gap-2">
           {items.map((_, i) => (
             <button
               key={i}
@@ -102,44 +133,13 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
               className={`rounded-full transition-all duration-300 ${
                 i === current
                   ? "h-2 w-7 bg-primary"
-                  : "size-2 bg-muted-foreground/25 hover:bg-muted-foreground/40"
+                  : "size-2 bg-white/30 hover:bg-white/50"
               }`}
               aria-label={`第 ${i + 1} 张`}
             />
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-/** 侧边预览幻灯片 */
-function SideSlide({
-  item, index, side, onClick,
-}: {
-  item: GalleryItemData
-  index: number
-  side: "left" | "right"
-  onClick: () => void
-}) {
-  const translateCls = side === "left" ? "translate-x-[20%]" : "-translate-x-[20%]"
-
-  return (
-    <div
-      className={`relative z-0 hidden w-full max-w-[240px] cursor-pointer md:block lg:max-w-[300px] ${translateCls}`}
-      onClick={onClick}
-    >
-      <div className="overflow-hidden rounded-xl opacity-40 shadow-md transition-opacity duration-300 hover:opacity-60">
-        <div className="aspect-[16/9]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/public/images/detail?id=${item.image_id}`}
-            alt=""
-            className="size-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      </div>
     </div>
   )
 }
