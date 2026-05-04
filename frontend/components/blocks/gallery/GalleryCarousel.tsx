@@ -49,7 +49,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         {len > 2 ? (
           <div
             className="z-0 translate-x-[30%] cursor-pointer transition-all duration-500"
-            onClick={() => go(-1)}
+            onClick={(e) => { e.stopPropagation(); go(-1) }}
           >
             <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
               <div className="aspect-[16/9]">
@@ -85,7 +85,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         {len > 2 ? (
           <div
             className="z-0 -translate-x-[30%] cursor-pointer transition-all duration-500"
-            onClick={() => go(1)}
+            onClick={(e) => { e.stopPropagation(); go(1) }}
           >
             <div className="overflow-hidden rounded-xl opacity-50 brightness-75">
               <div className="aspect-[16/9]">
@@ -106,14 +106,14 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
       {len > 1 && (
         <>
           <button
-            onClick={() => go(-1)}
+            onClick={(e) => { e.stopPropagation(); go(-1) }}
             className="absolute left-2 top-1/2 z-20 -translate-y-1/2 p-1 text-white/50 transition-colors hover:text-white md:left-4"
             aria-label="上一张"
           >
             <ChevronLeft className="size-7 md:size-9" strokeWidth={2.5} />
           </button>
           <button
-            onClick={() => go(1)}
+            onClick={(e) => { e.stopPropagation(); go(1) }}
             className="absolute right-2 top-1/2 z-20 -translate-y-1/2 p-1 text-white/50 transition-colors hover:text-white md:right-4"
             aria-label="下一张"
           >
@@ -128,7 +128,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
           {items.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              onClick={(e) => { e.stopPropagation(); setCurrent(i) }}
               className={`rounded-full transition-all duration-300 ${
                 i === current
                   ? "h-2 w-7 bg-primary"

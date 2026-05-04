@@ -6,12 +6,14 @@
  */
 
 import { type ReactNode } from "react"
+import { useLocale } from "next-intl"
 import type { Block } from "@/types/block"
 import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { FieldOverlay } from "@/components/admin/FieldOverlay"
 import { Trash2, ImagePlus } from "lucide-react"
 import { Gallery } from "react-photoswipe-gallery"
 import "photoswipe/style.css"
+import { getLocalizedValue } from "@/lib/i18n-config"
 import { GalleryGrid } from "./gallery/GalleryGrid"
 import { GalleryMasonry } from "./gallery/GalleryMasonry"
 import { GalleryRows } from "./gallery/GalleryRows"
@@ -111,13 +113,16 @@ function EditableGalleryItem({
   blockId: string
   onEditConfig?: (section: string) => void
 }) {
+  const locale = useLocale()
+  const captionText = getLocalizedValue(item.caption, locale) || ""
+
   return (
     <div className="group relative">
       <FieldOverlay
         onClick={() => onEditConfig?.(`gallery_item_${blockId}_${index}`)}
         label={`编辑图片 ${index + 1}`}
       >
-        <div className={`overflow-hidden rounded-xl bg-muted ${className}`}>
+        <div className={`relative overflow-hidden rounded-xl bg-muted ${className}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/api/public/images/detail?id=${item.image_id}`}
@@ -125,6 +130,13 @@ function EditableGalleryItem({
             className="size-full object-cover"
             loading="lazy"
           />
+          {captionText && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-3 pt-8">
+              <p className="text-sm font-medium text-white drop-shadow-sm">
+                {captionText}
+              </p>
+            </div>
+          )}
         </div>
       </FieldOverlay>
       <button
