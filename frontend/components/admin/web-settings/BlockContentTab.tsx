@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Info, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Info, Pencil, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -129,9 +129,15 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
     )
   }
 
-  if (editType === "simple") {
-    const fields = SIMPLE_FIELDS[block.type] || []
-    return <SimpleFieldsForm fields={fields} data={data || {}} locale={locale} onChange={onDataChange} />
+  if (editType === "simple" && onEditConfig) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Button variant="outline" onClick={() => onEditConfig(`${block.type}_edit_${block.id}`)}>
+          <Pencil className="mr-1.5 size-4" />
+          编辑内容
+        </Button>
+      </div>
+    )
   }
 
   if (block.type === "contact_info" && onEditConfig) {
