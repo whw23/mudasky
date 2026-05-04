@@ -21,17 +21,17 @@ export function CityCard({ card, locale }: CityCardProps) {
   return (
     <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
       {/* 城市图片 */}
-      {card.image_id && (
-        <div className="relative aspect-video bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div className="relative aspect-video bg-muted">
+        {card.image_id && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`/api/public/images/detail?id=${card.image_id}`}
             alt={city}
             className="size-full object-cover"
             loading="lazy"
           />
-        </div>
-      )}
+        )}
+      </div>
       <div className="p-4">
         <h4 className="font-semibold">{city}</h4>
         {country && (

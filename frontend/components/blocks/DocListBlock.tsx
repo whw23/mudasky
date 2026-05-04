@@ -48,7 +48,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
-            <div className={`mt-8 grid gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
+            <div className={`mx-auto mt-8 grid w-fit gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
               {items.map((item, i) => {
                 const ItemIcon = resolveIcon((item as any).icon, DefaultIcon) ?? DefaultIcon
                 return (
@@ -97,7 +97,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
     <section className={`py-10 md:py-16 ${bg}`}>
       <div className="mx-auto max-w-7xl px-4">
         {header}
-        <div className={`mt-8 grid gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
+        <div className={`mx-auto mt-8 grid w-fit gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
           {items.map((item, i) => {
             const ItemIcon = resolveIcon((item as any).icon, DefaultIcon) ?? DefaultIcon
             return (

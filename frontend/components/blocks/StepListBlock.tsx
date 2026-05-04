@@ -35,7 +35,7 @@ export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
-            <div className="mx-auto mt-8 max-w-3xl space-y-6">
+            <div className="mx-auto mt-8 w-fit max-w-3xl space-y-6">
               {steps.map((step, i) => (
                 <div key={i} className="group relative">
                   <FieldOverlay
@@ -97,7 +97,7 @@ export function StepListBlock({ block, header, bg, editable, onEdit, onFieldEdit
     <section className={`py-10 md:py-16 ${bg}`}>
       <div className="mx-auto max-w-7xl px-4">
         {header}
-        <div className="mx-auto mt-8 max-w-3xl space-y-6">
+        <div className="mx-auto mt-8 w-fit max-w-3xl space-y-6">
           {steps.map((step, i) => (
             <div key={i} className="flex gap-4">
               {/* 左侧编号圆 */}
