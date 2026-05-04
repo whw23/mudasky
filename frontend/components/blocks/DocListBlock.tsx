@@ -40,7 +40,7 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
   const locale = useLocale()
   const items: Array<{ text: any }> = Array.isArray(block.data) ? block.data : []
 
-  const Icon = resolveIcon(block.options?.iconName, icons.FileText)!
+  const DefaultIcon = resolveIcon(block.options?.iconName, icons.FileText)!
 
   if (editable && onEdit) {
     return (
@@ -49,14 +49,16 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
           <div className="mx-auto max-w-7xl px-4">
             {header}
             <div className={`mt-8 grid gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
-              {items.map((item, i) => (
+              {items.map((item, i) => {
+                const ItemIcon = resolveIcon((item as any).icon, DefaultIcon) ?? DefaultIcon
+                return (
                 <div key={i} className="group relative">
                   <FieldOverlay
                     onClick={() => onEditConfig?.(`doc_list_item_${block.id}_${i}`)}
                     label={`编辑文档 ${i + 1}`}
                   >
                     <div className="flex items-start gap-3 rounded-lg border p-4">
-                      <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
+                      <ItemIcon className="mt-0.5 size-5 shrink-0 text-primary" />
                       <span className="text-sm">{getLocalizedValue(item.text, locale)}</span>
                     </div>
                   </FieldOverlay>
@@ -71,7 +73,8 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
                     <Trash2 className="size-3" />
                   </button>
                 </div>
-              ))}
+                )
+              })}
               {/* 添加文档按钮 */}
               <div
                 className="hidden cursor-pointer group-hover/block:block"
@@ -95,12 +98,15 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
       <div className="mx-auto max-w-7xl px-4">
         {header}
         <div className={`mt-8 grid gap-4 ${getDocGridClass(items.length, block.options?.maxColumns)}`}>
-          {items.map((item, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-lg border p-4">
-              <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-              <span className="text-sm">{getLocalizedValue(item.text, locale)}</span>
-            </div>
-          ))}
+          {items.map((item, i) => {
+            const ItemIcon = resolveIcon((item as any).icon, DefaultIcon) ?? DefaultIcon
+            return (
+              <div key={i} className="flex items-start gap-3 rounded-lg border p-4">
+                <ItemIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+                <span className="text-sm">{getLocalizedValue(item.text, locale)}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>
