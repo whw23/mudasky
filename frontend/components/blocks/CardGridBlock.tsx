@@ -96,15 +96,16 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onEditConfi
               ))}
               {/* 添加卡片按钮 */}
               <div
-                className="hidden h-full group-hover/block:block"
+                className="hidden h-full cursor-pointer group-hover/block:block"
                 data-editable
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onEditConfig(`card_grid_add_${block.id}`) }}
               >
-                <div
-                  onClick={() => onEditConfig(`card_grid_add_${block.id}`)}
-                  className="flex h-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 opacity-50 transition-opacity hover:opacity-80"
-                >
-                  <Plus className="size-8 text-muted-foreground" />
+                <div className="h-full rounded-lg border bg-card p-6 text-center shadow-sm opacity-50 transition-opacity hover:opacity-80">
+                  <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
+                    <Plus className="size-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold text-muted-foreground">新建卡片</h4>
+                  <p className="mt-2 text-sm text-muted-foreground">点击添加</p>
                 </div>
               </div>
             </div>
