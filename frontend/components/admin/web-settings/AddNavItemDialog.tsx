@@ -2,7 +2,7 @@
 
 /**
  * 新增导航项弹窗。
- * 输入名称和 slug，调用 API 添加自定义导航项。
+ * 输入多语言名称和 slug，调用 API 添加自定义导航项。
  */
 
 import { useState } from "react"
@@ -11,6 +11,7 @@ import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LocalizedInput } from "@/components/admin/LocalizedInput"
 import {
   Dialog,
   DialogContent,
@@ -34,23 +35,27 @@ export function AddNavItemDialog({
   onOpenChange,
   onSuccess,
 }: AddNavItemDialogProps) {
-  const [name, setName] = useState("")
+  const [name, setName] = useState<Record<string, string>>({ zh: "", en: "", ja: "", de: "" })
   const [slug, setSlug] = useState("")
   const [saving, setSaving] = useState(false)
 
   /** 重置表单 */
   function resetForm(): void {
-    setName("")
+    setName({ zh: "", en: "", ja: "", de: "" })
     setSlug("")
   }
 
   /** 提交新增导航项 */
   async function handleSubmit(): Promise<void> {
-    const trimmedName = name.trim()
     const trimmedSlug = slug.trim()
+    const zhName = name.zh?.trim()
 
-    if (!trimmedName || !trimmedSlug) {
-      toast.error("名称和 slug 不能为空")
+    if (!zhName) {
+      toast.error("中文名称不能为空")
+      return
+    }
+    if (!trimmedSlug) {
+      toast.error("slug 不能为空")
       return
     }
     if (!SLUG_PATTERN.test(trimmedSlug)) {
@@ -62,7 +67,7 @@ export function AddNavItemDialog({
     try {
       await api.post("/admin/web-settings/nav/add-item", {
         slug: trimmedSlug,
-        name: trimmedName,
+        name,
         description: "",
       })
       toast.success("导航项已添加")
@@ -89,15 +94,11 @@ export function AddNavItemDialog({
           <DialogTitle>新增导航项</DialogTitle>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="nav-item-name">名称</Label>
-            <Input
-              id="nav-item-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例如：校园风采"
-            />
-          </div>
+          <LocalizedInput
+            value={name}
+            onChange={setName}
+            label="名称"
+          />
           <div className="space-y-1.5">
             <Label htmlFor="nav-item-slug">Slug</Label>
             <Input

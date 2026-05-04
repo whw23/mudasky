@@ -188,7 +188,13 @@ export function useLocalizedConfig(): LocalizedConfigType {
       history_title: getLocalizedValue(config.aboutInfo.history_title, locale),
       history: getLocalizedValue(config.aboutInfo.history, locale),
     },
-    navConfig: config.navConfig,
+    navConfig: {
+      ...config.navConfig,
+      custom_items: config.navConfig.custom_items?.map((item: any) => ({
+        ...item,
+        name: getLocalizedValue(item.name, locale),
+      })),
+    },
     pageBanners: config.pageBanners,
     pageBlocks: config.pageBlocks,
   }
