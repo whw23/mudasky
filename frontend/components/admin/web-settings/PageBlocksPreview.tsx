@@ -219,14 +219,17 @@ function PageTopSection({
     )
   }
 
-  // 其他页面通用 Banner
+  // 其他页面通用 Banner（自定义页面可能无翻译，用 slug 兜底）
   const pageI18nKey = getPageI18nKey(pageSlug)
+  const hasI18n = pageSlug in SLUG_TO_I18N
+  const title = hasI18n ? p(pageI18nKey as any) : pageSlug
+  const subtitle = hasI18n ? p(`${pageI18nKey}Subtitle` as any) : ""
   return (
     <EditableOverlay onClick={() => onBannerEdit(pageSlug)} label="编辑 Banner">
       <PageBanner
         pageKey={pageSlug}
-        title={p(pageI18nKey as any)}
-        subtitle={p(`${pageI18nKey}Subtitle` as any)}
+        title={title}
+        subtitle={subtitle}
       />
     </EditableOverlay>
   )
