@@ -2,16 +2,20 @@
 
 /**
  * 图片画廊区块。
- * 水平滚动展示图片列表，图片通过 image_id 加载。
+ * 支持 4 种布局风格（grid/masonry/rows/carousel）+ PhotoSwipe Lightbox。
  */
 
-import { useLocale } from "next-intl"
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 import type { Block } from "@/types/block"
-import { getLocalizedValue } from "@/lib/i18n-config"
 import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { FieldOverlay } from "@/components/admin/FieldOverlay"
 import { Trash2, ImagePlus } from "lucide-react"
+import { Gallery } from "react-photoswipe-gallery"
+import "photoswipe/style.css"
+import { GalleryGrid } from "./gallery/GalleryGrid"
+import { GalleryMasonry } from "./gallery/GalleryMasonry"
+import { GalleryRows } from "./gallery/GalleryRows"
+import { GalleryCarousel } from "./gallery/GalleryCarousel"
 
 interface BlockProps {
   block: Block
@@ -27,12 +31,30 @@ interface BlockProps {
 interface GalleryItem {
   image_id: string
   caption: any
+  width: number
+  height: number
+}
+
+type GalleryType = "grid" | "masonry" | "rows" | "carousel"
+
+/** 根据 galleryType 渲染对应布局 */
+function GalleryLayout({ items, galleryType }: { items: GalleryItem[]; galleryType: GalleryType }) {
+  switch (galleryType) {
+    case "masonry":
+      return <GalleryMasonry items={items} />
+    case "rows":
+      return <GalleryRows items={items} />
+    case "carousel":
+      return <GalleryCarousel items={items} />
+    default:
+      return <GalleryGrid items={items} />
+  }
 }
 
 /** 图片画廊区块 */
-export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit, onEditConfig, blockLabel }: BlockProps) {
-  const locale = useLocale()
+export function GalleryBlock({ block, header, bg, editable, onEdit, onEditConfig, blockLabel }: BlockProps) {
   const items: GalleryItem[] = Array.isArray(block.data) ? block.data : []
+  const galleryType: GalleryType = block.options?.galleryType || "grid"
 
   if (editable && onEdit) {
     return (
@@ -48,22 +70,15 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
                     label={`编辑图片 ${i + 1}`}
                   >
                     <div>
-                      {/* 16:9 图片容器 */}
-                      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                      <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={`/api/public/images/detail?id=${item.image_id}`}
-                          alt={getLocalizedValue(item.caption, locale) || ""}
+                          alt=""
                           className="size-full object-cover"
                           loading="lazy"
                         />
                       </div>
-                      {/* 图片说明 */}
-                      {getLocalizedValue(item.caption, locale) && (
-                        <p className="mt-2 text-center text-sm text-muted-foreground">
-                          {getLocalizedValue(item.caption, locale)}
-                        </p>
-                      )}
                     </div>
                   </FieldOverlay>
                   <button
@@ -78,7 +93,6 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
                   </button>
                 </div>
               ))}
-              {/* 添加图片按钮 */}
               <div
                 className="hidden shrink-0 cursor-pointer group-hover/block:block"
                 style={{ width: 280 }}
@@ -86,7 +100,7 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
                 onClick={(e) => { e.stopPropagation(); onEditConfig?.(`gallery_add_${block.id}`) }}
               >
                 <div className="opacity-50 transition-opacity hover:opacity-80">
-                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted">
+                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl bg-muted">
                     <ImagePlus className="size-10 text-muted-foreground" />
                   </div>
                   <p className="mt-2 text-center text-sm text-muted-foreground">新建图片</p>
@@ -99,31 +113,16 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
     )
   }
 
+  if (items.length === 0) return null
+
   return (
     <section className={`py-10 md:py-16 ${bg}`}>
       <div className="mx-auto max-w-7xl px-4">
         {header}
-        <div className="mt-8 flex gap-4 overflow-x-auto pb-4">
-          {items.map((item, i) => (
-            <div key={i} className="shrink-0" style={{ width: 280 }}>
-              {/* 16:9 图片容器 */}
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/public/images/detail?id=${item.image_id}`}
-                  alt={getLocalizedValue(item.caption, locale) || ""}
-                  className="size-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              {/* 图片说明 */}
-              {getLocalizedValue(item.caption, locale) && (
-                <p className="mt-2 text-center text-sm text-muted-foreground">
-                  {getLocalizedValue(item.caption, locale)}
-                </p>
-              )}
-            </div>
-          ))}
+        <div className="mt-8">
+          <Gallery withCaption>
+            <GalleryLayout items={items} galleryType={galleryType} />
+          </Gallery>
         </div>
       </div>
     </section>
