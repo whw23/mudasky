@@ -21,3 +21,19 @@ export async function fetchPageBlocks(slug: string): Promise<Block[]> {
     return []
   }
 }
+
+/** 获取自定义导航项信息 */
+export async function fetchCustomNavItem(slug: string): Promise<{ name: any } | null> {
+  try {
+    const res = await fetch(
+      `${INTERNAL_API}/api/public/config/nav_config`,
+      { next: { revalidate: 60 } },
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const items = data.value?.custom_items ?? []
+    return items.find((i: any) => i.slug === slug) ?? null
+  } catch {
+    return null
+  }
+}

@@ -208,6 +208,7 @@ function PageTopSection({
 }) {
   const p = useTranslations("Pages")
   const { navConfig } = useLocalizedConfig()
+  const rawNavConfig = useConfig().navConfig
 
   // 首页使用 HomeBanner
   if (pageSlug === "home") {
@@ -224,8 +225,11 @@ function PageTopSection({
   const pageI18nKey = getPageI18nKey(pageSlug)
   const hasI18n = pageSlug in SLUG_TO_I18N
   const customItem = navConfig?.custom_items?.find((i: any) => i.slug === pageSlug)
+  const rawCustomItem = rawNavConfig?.custom_items?.find((i: any) => i.slug === pageSlug)
   const title = hasI18n ? p(pageI18nKey as any) : (customItem?.name || pageSlug)
-  const subtitle = hasI18n ? p(`${pageI18nKey}Subtitle` as any) : ""
+  const subtitle = hasI18n
+    ? p(`${pageI18nKey}Subtitle` as any)
+    : (typeof rawCustomItem?.name === "object" ? rawCustomItem.name.en || "" : "")
   return (
     <EditableOverlay onClick={() => onBannerEdit(pageSlug)} label="编辑 Banner">
       <PageBanner
