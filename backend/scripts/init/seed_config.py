@@ -150,6 +150,7 @@ CONFIGS = [
         lambda: [
             {
                 "id": CONTACT_ITEM_IDS[0],
+                "type": "hotline",
                 "icon": "phone",
                 "label": {
                     "zh": "服务热线",
@@ -168,6 +169,7 @@ CONFIGS = [
             },
             {
                 "id": CONTACT_ITEM_IDS[1],
+                "type": "email",
                 "icon": "mail",
                 "label": {
                     "zh": "邮箱",
@@ -186,6 +188,7 @@ CONFIGS = [
             },
             {
                 "id": CONTACT_ITEM_IDS[2],
+                "type": "wechat_service",
                 "icon": "message-circle",
                 "label": {
                     "zh": "微信咨询",
@@ -204,6 +207,7 @@ CONFIGS = [
             },
             {
                 "id": CONTACT_ITEM_IDS[3],
+                "type": "address_office",
                 "icon": "map-pin",
                 "label": {
                     "zh": "办公地址",
@@ -219,6 +223,7 @@ CONFIGS = [
             },
             {
                 "id": CONTACT_ITEM_IDS[4],
+                "type": "address_registered",
                 "icon": "building",
                 "label": {
                     "zh": "注册地址",
@@ -234,6 +239,7 @@ CONFIGS = [
             },
             {
                 "id": CONTACT_ITEM_IDS[5],
+                "type": "wechat_official",
                 "icon": "qr-code",
                 "label": {
                     "zh": "微信公众号",

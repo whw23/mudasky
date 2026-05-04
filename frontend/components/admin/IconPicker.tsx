@@ -11,6 +11,11 @@ import { Input } from "@/components/ui/input"
 import { resolveIcon } from "@/lib/icon-utils"
 import { Search, X } from "lucide-react"
 
+/** PascalCase → kebab-case */
+function toKebab(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
+}
+
 /** 常用图标子集（默认显示） */
 const COMMON_ICONS = [
   "Phone", "Mail", "MessageCircle", "MapPin", "Building",
@@ -64,10 +69,11 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
     ).slice(0, 60)
   }, [search])
 
-  /** 选择图标 */
+  /** 选择图标（保存为 kebab-case） */
   function handleSelect(name: string): void {
-    onChange(name)
-    setTextInput(name)
+    const kebab = toKebab(name)
+    onChange(kebab)
+    setTextInput(kebab)
     setOpen(false)
     setSearch("")
   }
@@ -132,7 +138,7 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
             {filteredIcons.map((name) => {
               const Icon = icons[name as keyof typeof icons] as LucideIcon | undefined
               if (!Icon) return null
-              const isActive = name === value
+              const isActive = toKebab(name) === value
               return (
                 <button
                   key={name}

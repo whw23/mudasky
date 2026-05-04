@@ -337,17 +337,17 @@ export default function WebSettingsPage() {
     }
   }
 
-  /** site_info 字段 → contact_items 图标的映射（图片同步） */
+  /** site_info 字段 → contact_items type 的映射（图片同步） */
   const QR_SYNC_MAP: Record<string, string> = {
-    wechat_service_qr_url: "message-circle",
-    wechat_official_qr_url: "qr-code",
+    wechat_service_qr_url: "wechat_service",
+    wechat_official_qr_url: "wechat_official",
   }
 
-  /** contact_items 图标 → site_info 字段的映射（内容/图片同步） */
+  /** contact_items type → site_info 字段的映射（内容/图片同步） */
   const CONTACT_SITE_SYNC: Record<string, { content?: string; image?: string }> = {
-    phone: { content: "hotline" },
-    "message-circle": { image: "wechat_service_qr_url" },
-    "qr-code": { image: "wechat_official_qr_url" },
+    hotline: { content: "hotline" },
+    wechat_service: { image: "wechat_service_qr_url" },
+    wechat_official: { image: "wechat_official_qr_url" },
   }
 
   /** site_info 保存后同步到 contact_items */
@@ -357,7 +357,7 @@ export default function WebSettingsPage() {
     // 热线同步
     if (newSiteInfo.hotline !== rawConfig.siteInfo.hotline) {
       updated = updated.map((ci: any) => {
-        if (ci.icon !== "phone") return ci
+        if (ci.type !== "hotline") return ci
         const content = typeof ci.content === "object" ? { ...ci.content } : { zh: ci.content ?? "" }
         content.zh = newSiteInfo.hotline ?? ""
         return { ...ci, content }
@@ -365,10 +365,10 @@ export default function WebSettingsPage() {
       changed = true
     }
     // 二维码同步
-    for (const [urlField, iconName] of Object.entries(QR_SYNC_MAP)) {
+    for (const [urlField, itemType] of Object.entries(QR_SYNC_MAP)) {
       if (newSiteInfo[urlField] !== (rawConfig.siteInfo as any)[urlField]) {
         const imageId = newSiteInfo[urlField]?.includes("id=") ? newSiteInfo[urlField].split("id=")[1] : null
-        updated = updated.map((ci: any) => ci.icon === iconName ? { ...ci, image_id: imageId } : ci)
+        updated = updated.map((ci: any) => ci.type === itemType ? { ...ci, image_id: imageId } : ci)
         changed = true
       }
     }
@@ -379,22 +379,22 @@ export default function WebSettingsPage() {
 
   /** site_info 图片字段变更时同步到 contact_items */
   async function syncQrIfNeeded(field: string, qrUrl: string): Promise<void> {
-    const iconName = QR_SYNC_MAP[field]
-    if (!iconName) return
+    const itemType = QR_SYNC_MAP[field]
+    if (!itemType) return
     const imageId = qrUrl?.includes("id=") ? qrUrl.split("id=")[1] : null
     const updated = rawConfig.contactItems.map((ci: any) =>
-      ci.icon === iconName ? { ...ci, image_id: imageId } : ci,
+      ci.type === itemType ? { ...ci, image_id: imageId } : ci,
     )
     await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
   }
 
   /** 全局 contact_item 保存后同步到 site_info */
   async function syncContactItemToSiteInfo(
-    icon: string,
+    itemType: string,
     newData: Record<string, unknown>,
     oldData: Record<string, unknown>,
   ): Promise<void> {
-    const sync = CONTACT_SITE_SYNC[icon]
+    const sync = CONTACT_SITE_SYNC[itemType]
     if (!sync) return
     const updates: Record<string, unknown> = {}
     if (sync.content) {
@@ -427,7 +427,7 @@ export default function WebSettingsPage() {
         })
         break
       case 'phone': {
-        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'phone')
+        const idx = rawConfig.contactItems.findIndex((i: any) => i.type === 'hotline')
         if (idx >= 0) {
           const item = rawConfig.contactItems[idx]
           setDialogState({
@@ -440,7 +440,7 @@ export default function WebSettingsPage() {
               const updated = [...rawConfig.contactItems]
               updated[idx] = { ...item, ...data }
               await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
-              await syncContactItemToSiteInfo(item.icon, { ...item, ...data }, item)
+              await syncContactItemToSiteInfo(item.type, { ...item, ...data }, item)
               toast.success('保存成功')
               await fetchAllConfigs(true)
               refreshConfig()
@@ -450,7 +450,7 @@ export default function WebSettingsPage() {
         break
       }
       case 'email': {
-        const idx = rawConfig.contactItems.findIndex((i) => i.icon === 'mail')
+        const idx = rawConfig.contactItems.findIndex((i: any) => i.type === 'email')
         if (idx >= 0) {
           const item = rawConfig.contactItems[idx]
           setDialogState({
@@ -604,7 +604,7 @@ export default function WebSettingsPage() {
                 const updated = [...rawConfig.contactItems]
                 updated[idx] = { ...item, ...data }
                 await api.post("/admin/web-settings/list/edit", { key: "contact_items", value: updated })
-                await syncContactItemToSiteInfo(item.icon, data, item)
+                await syncContactItemToSiteInfo(item.type, data, item)
                 toast.success('保存成功')
                 await fetchAllConfigs(true)
                 refreshConfig()

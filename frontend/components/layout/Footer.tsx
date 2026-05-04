@@ -102,8 +102,8 @@ export function Footer({ editable, onEdit, onImageUpload, onImageClear }: Footer
   const t = useTranslations("Footer")
   const tNav = useTranslations("Nav")
   const { contactItems, siteInfo } = useLocalizedConfig()
-  const phoneItem = contactItems.find((i) => i.icon === "phone")
-  const emailItem = contactItems.find((i) => i.icon === "mail")
+  const phoneItem = contactItems.find((i) => i.type === "hotline")
+  const emailItem = contactItems.find((i) => i.type === "email")
 
   /** 将内容包裹在可编辑叠加层中 */
   function wrapEditable(content: React.ReactNode, section: string, label: string, inline?: boolean) {
