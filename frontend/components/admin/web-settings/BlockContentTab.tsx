@@ -213,20 +213,12 @@ function ContactItemsList({
   )
 }
 
-/** 从 ConfigContext 读最新的 Block data（稳定引用避免跳动） */
+/** 从 ConfigContext 读最新的 Block data */
 function useLatestBlockData(block: Block, fallbackData: any): any[] {
   const { pageBlocks } = useConfig()
   const latest = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
   const raw = latest?.data ?? fallbackData
-  const items = Array.isArray(raw) ? raw : []
-  const ref = useRef(items)
-  const json = JSON.stringify(items)
-  const prevJson = useRef(json)
-  if (json !== prevJson.current) {
-    ref.current = items
-    prevJson.current = json
-  }
-  return ref.current
+  return Array.isArray(raw) ? raw : []
 }
 
 /** card_grid 卡片列表（支持拖动排序） */
