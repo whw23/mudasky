@@ -32,10 +32,16 @@ interface BlockProps {
 /** 各卡片类型的新建占位数据 */
 const ADD_PLACEHOLDER: Record<string, Record<string, any>> = {
   guide: { icon: "plus", title: { zh: "新建卡片" }, desc: { zh: "点击添加" } },
-  timeline: { title: { zh: "新建时间线" }, time: { zh: "" }, desc: { zh: "点击添加" } },
-  city: { city: { zh: "新建城市" }, country: { zh: "" }, desc: { zh: "点击添加" } },
-  program: { name: { zh: "新建项目" }, country: { zh: "" }, desc: { zh: "点击添加" } },
-  checklist: { icon: "plus", label: { zh: "新建清单" }, items: [] },
+  timeline: { title: { zh: "新建时间线" }, time: { zh: "——" }, desc: { zh: "点击添加" } },
+  city: { image_id: null, city: { zh: "新建城市" }, country: { zh: "——" }, desc: { zh: "点击添加" } },
+  program: {
+    featured: false, name: { zh: "新建项目" }, country: { zh: "——" },
+    desc: { zh: "点击添加" }, features: [{ zh: "特点 1" }, { zh: "特点 2" }],
+  },
+  checklist: {
+    icon: "plus", label: { zh: "新建清单" },
+    items: [{ zh: "条目 1" }, { zh: "条目 2" }],
+  },
 }
 
 /** 根据卡片类型渲染对应卡片组件 */
