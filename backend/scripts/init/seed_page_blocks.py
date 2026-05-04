@@ -189,6 +189,7 @@ def build_about_blocks(contact_item_ids: list[str] | None = None) -> list[dict]:
                 "ja": "オフィス環境",
                 "de": "Büroumgebung",
             },
+            options={"galleryType": "grid"},
             data=[],
         ),
         _block(
