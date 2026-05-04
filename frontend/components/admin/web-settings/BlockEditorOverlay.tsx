@@ -32,6 +32,16 @@ const BLOCK_TYPE_NAMES: Record<string, string> = {
   case_grid: "案例网格",
   featured_data: "精选展示",
   cta: "行动号召",
+  contact_info: "联系信息",
+}
+
+/** 卡片子类型中文名 */
+const CARD_TYPE_NAMES: Record<string, string> = {
+  guide: "指南卡片",
+  timeline: "时间线",
+  city: "城市指南",
+  program: "专业卡片",
+  checklist: "检查清单",
 }
 
 interface BlockEditorOverlayProps {
@@ -51,7 +61,11 @@ export function BlockEditorOverlay({
   dragHandleProps,
 }: BlockEditorOverlayProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const typeName = BLOCK_TYPE_NAMES[block.type] || block.type
+  let typeName = BLOCK_TYPE_NAMES[block.type] || block.type
+  if (block.type === "card_grid" && block.options?.cardType) {
+    const sub = CARD_TYPE_NAMES[block.options.cardType]
+    if (sub) typeName = `${typeName} · ${sub}`
+  }
 
   return (
     <>
