@@ -2,10 +2,10 @@
 
 /**
  * 通用 Block 条目列表组件。
- * 支持拖动排序、编辑、删除操作。
+ * 支持拖动排序（乐观更新）、编辑、删除操作。
  */
 
-import type { ReactNode } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
@@ -31,11 +31,7 @@ export interface BlockItemsListProps {
   addButton?: ReactNode
 }
 
-/**
- * 通用 Block 条目列表组件。
- * 每行显示：拖动手柄 + 图标（可选）+ 标签 + 内容 + 徽章（可选）+ 编辑按钮 + 删除按钮。
- * 底部：自定义添加按钮（可选）。
- */
+/** 通用 Block 条目列表组件 */
 export function BlockItemsList({
   items,
   onEditItem,
@@ -44,10 +40,22 @@ export function BlockItemsList({
   renderItemSummary,
   addButton,
 }: BlockItemsListProps) {
-  /** 处理拖放结束 */
+  const [localItems, setLocalItems] = useState(items)
+
+  useEffect(() => {
+    setLocalItems(items)
+  }, [items])
+
+  /** 拖拽结束：立即更新本地，同时保存到后端 */
   function handleDragEnd(result: DropResult): void {
     if (!result.destination || result.source.index === result.destination.index) return
-    onReorder(result.source.index, result.destination.index)
+    const from = result.source.index
+    const to = result.destination.index
+    const reordered = [...localItems]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    setLocalItems(reordered)
+    onReorder(from, to)
   }
 
   /** 渲染条目行 */
@@ -96,13 +104,13 @@ export function BlockItemsList({
           droppableId="block-items-list"
           renderClone={(provided, _snapshot, rubric) => (
             <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-              {renderRow(items[rubric.source.index], rubric.source.index)}
+              {renderRow(localItems[rubric.source.index], rubric.source.index)}
             </div>
           )}
         >
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
-              {items.map((item, idx) => (
+              {localItems.map((item, idx) => (
                 <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
                   {(dragProvided) => (
                     <div ref={dragProvided.innerRef} {...dragProvided.draggableProps}>
