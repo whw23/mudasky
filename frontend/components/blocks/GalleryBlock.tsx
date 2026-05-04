@@ -80,16 +80,16 @@ export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit,
               ))}
               {/* 添加图片按钮 */}
               <div
-                className="hidden shrink-0 group-hover/block:block"
+                className="hidden shrink-0 cursor-pointer group-hover/block:block"
                 style={{ width: 280 }}
                 data-editable
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onEditConfig?.(`gallery_add_${block.id}`) }}
               >
-                <div
-                  onClick={() => onEditConfig?.(`gallery_add_${block.id}`)}
-                  className="flex aspect-video cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 opacity-50 transition-opacity hover:opacity-80"
-                >
-                  <ImagePlus className="size-12 text-muted-foreground" />
+                <div className="opacity-50 transition-opacity hover:opacity-80">
+                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted">
+                    <ImagePlus className="size-10 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 text-center text-sm text-muted-foreground">新建图片</p>
                 </div>
               </div>
             </div>

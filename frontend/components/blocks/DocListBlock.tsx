@@ -74,16 +74,13 @@ export function DocListBlock({ block, header, bg, editable, onEdit, onFieldEdit,
               ))}
               {/* 添加文档按钮 */}
               <div
-                className="hidden group-hover/block:block"
+                className="hidden cursor-pointer group-hover/block:block"
                 data-editable
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onEditConfig?.(`doc_list_add_${block.id}`) }}
               >
-                <div
-                  onClick={() => onEditConfig?.(`doc_list_add_${block.id}`)}
-                  className="flex cursor-pointer items-start gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-4 opacity-50 transition-opacity hover:opacity-80"
-                >
-                  <Plus className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">添加新文档</span>
+                <div className="flex items-start gap-3 rounded-lg border p-4 opacity-50 transition-opacity hover:opacity-80">
+                  <Plus className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <span className="text-sm text-muted-foreground">新建文档</span>
                 </div>
               </div>
             </div>
