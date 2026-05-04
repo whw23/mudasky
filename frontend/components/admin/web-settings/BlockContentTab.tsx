@@ -336,7 +336,7 @@ function DocListItemsList({
       renderItemSummary={(item, idx) => {
         const text = typeof item.text === 'object' ? (item.text[locale] || item.text.zh || '') : (item.text || '')
         return {
-          icon: item.icon,
+          icon: item.icon || block.options?.iconName,
           label: text || `文档 ${idx + 1}`,
           content: '',
         }
