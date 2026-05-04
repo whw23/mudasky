@@ -16,6 +16,7 @@ import { TimelineCard } from "./cards/TimelineCard"
 import { CityCard } from "./cards/CityCard"
 import { ProgramCard } from "./cards/ProgramCard"
 import { ChecklistCard } from "./cards/ChecklistCard"
+import { Trash2 } from "lucide-react"
 
 interface BlockProps {
   block: Block
@@ -23,7 +24,24 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  onEditConfig?: (section: string) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  blockLabel?: string
+}
+
+/** 各卡片类型的新建占位数据 */
+const ADD_PLACEHOLDER: Record<string, Record<string, any>> = {
+  guide: { icon: "plus", title: { zh: "新建卡片" }, desc: { zh: "点击添加" } },
+  timeline: { title: { zh: "新建时间线" }, time: { zh: "——" }, desc: { zh: "点击添加" } },
+  city: { image_id: null, city: { zh: "新建城市" }, country: { zh: "——" }, desc: { zh: "点击添加" } },
+  program: {
+    featured: false, name: { zh: "新建项目" }, country: { zh: "——" },
+    desc: { zh: "点击添加" }, features: [{ zh: "特点 1" }, { zh: "特点 2" }],
+  },
+  checklist: {
+    icon: "plus", label: { zh: "新建清单" },
+    items: [{ zh: "条目 1" }, { zh: "条目 2" }],
+  },
 }
 
 /** 根据卡片类型渲染对应卡片组件 */
@@ -55,7 +73,7 @@ function getGridClass(count: number, maxColumns: number): string {
 }
 
 /** 卡片网格区块 */
-export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function CardGridBlock({ block, header, bg, editable, onEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const cards: Record<string, any>[] = Array.isArray(block.data) ? block.data : []
   const cardType: CardType = block.options?.cardType || "guide"
@@ -63,22 +81,44 @@ export function CardGridBlock({ block, header, bg, editable, onEdit, onFieldEdit
 
   const gridClass = getGridClass(cards.length, maxColumns)
 
-  if (editable && onEdit) {
+  if (editable && onEdit && onEditConfig) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑卡片">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑卡片"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
             <div className={`mt-8 ${gridClass}`}>
               {cards.map((card, i) => (
-                <FieldOverlay
-                  key={card.id || i}
-                  onClick={() => onFieldEdit?.(block, "item", i)}
-                  label={`编辑卡片 ${i + 1}`}
-                >
-                  {renderCard(cardType, card, locale, i)}
-                </FieldOverlay>
+                <div key={card.id || i} className="group relative h-full">
+                  <FieldOverlay
+                    onClick={() => onEditConfig(`card_grid_item_${block.id}_${i}`)}
+                    label={`编辑卡片 ${i + 1}`}
+                    className="h-full"
+                  >
+                    {renderCard(cardType, card, locale, i)}
+                  </FieldOverlay>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditConfig(`card_grid_delete_${block.id}_${i}`)
+                    }}
+                    className="pointer-events-none absolute top-1 left-1 z-10 rounded bg-red-500 p-1 text-white opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+                    title="移除"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
               ))}
+              {/* 添加卡片按钮：用真实卡片组件渲染占位数据 */}
+              <div
+                className="hidden h-full cursor-pointer group-hover/block:block"
+                data-editable
+                onClick={(e) => { e.stopPropagation(); onEditConfig(`card_grid_add_${block.id}`) }}
+              >
+                <div className="h-full opacity-50 transition-opacity hover:opacity-80">
+                  {renderCard(cardType, ADD_PLACEHOLDER[cardType] || ADD_PLACEHOLDER.guide, locale, -1)}
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react"
+import { GripVertical, Info, Pencil, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,7 @@ import { useConfig } from "@/contexts/ConfigContext"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { resolveIcon } from "@/lib/icon-utils"
 import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
+import { BlockItemsList } from "@/components/admin/web-settings/BlockItemsList"
 import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
@@ -118,15 +119,45 @@ interface BlockContentTabProps {
 /** Block 内容编辑 Tab */
 export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex, onEditConfig, onClose }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
-  if (editType === "api") return null
+  if (editType === "api") {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+        <Info className="mb-2 size-8" />
+        <p className="text-sm">此区块的数据通过管理页面编辑</p>
+        <p className="mt-1 text-xs">使用左侧导航栏进入对应的管理模块</p>
+      </div>
+    )
+  }
 
-  if (editType === "simple") {
-    const fields = SIMPLE_FIELDS[block.type] || []
-    return <SimpleFieldsForm fields={fields} data={data || {}} locale={locale} onChange={onDataChange} />
+  if (editType === "simple" && onEditConfig) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Button variant="outline" onClick={() => onEditConfig(`${block.type}_edit_${block.id}`)}>
+          <Pencil className="mr-1.5 size-4" />
+          编辑内容
+        </Button>
+      </div>
+    )
   }
 
   if (block.type === "contact_info" && onEditConfig) {
     return <ContactItemsList block={block} locale={locale} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "card_grid" && onEditConfig) {
+    return <CardGridItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "step_list" && onEditConfig) {
+    return <StepListItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "doc_list" && onEditConfig) {
+    return <DocListItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
+  }
+
+  if (block.type === "gallery" && onEditConfig) {
+    return <GalleryItemsList block={block} locale={locale} data={data} onEditConfig={onEditConfig} />
   }
 
   const fields = getArrayFields(block)
@@ -161,82 +192,248 @@ function ContactItemsList({
   const items: ContactInfoBlockItem[] | null = currentBlock?.data?.items ?? block.data?.items ?? null
   const resolved = resolveContactItems(items, contactItems, locale, block.id)
 
-  function handleDragEnd(result: DropResult): void {
-    if (!result.destination || result.source.index === result.destination.index) return
-    onEditConfig(`contact_item_reorder_${block.id}_${result.source.index}_${result.destination.index}`)
-  }
+  return (
+    <BlockItemsList
+      items={resolved}
+      onEditItem={(idx) => onEditConfig(resolved[idx].editSection)}
+      onDeleteItem={(idx) => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`contact_item_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item) => ({
+        icon: item.icon,
+        label: item.label,
+        content: item.content,
+        badge: item.source === "global" ? "共享" : undefined,
+      })}
+      addButton={
+        <AddContactItemMenu
+          block={block}
+          items={items}
+          globalItems={contactItems}
+          onEditConfig={onEditConfig}
+          compact
+        />
+      }
+    />
+  )
+}
 
-  /** 渲染条目行 */
-  function renderRow(item: typeof resolved[number], idx: number, dragHandleProps?: any) {
-    const Icon = resolveIcon(item.icon)
-    return (
-      <div className="flex items-center justify-between rounded-lg border bg-background p-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <div {...(dragHandleProps ?? {})} className="cursor-grab text-muted-foreground">
-            <GripVertical className="size-4" />
-          </div>
-          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
-          <div className="min-w-0">
-            <div className="text-sm font-medium">{item.label}</div>
-            <div className="truncate text-xs text-muted-foreground">{item.content}</div>
-          </div>
-          {item.source === "global" && (
-            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">共享</span>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditConfig(item.editSection)}>
-            <Pencil className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost" size="icon"
-            className="size-7 text-destructive hover:text-destructive"
-            onClick={() => onEditConfig(`contact_item_delete_${block.id}_${idx}`)}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
-      </div>
-    )
-  }
+/** 从 ConfigContext 读最新的 Block data */
+function useLatestBlockData(block: Block, fallbackData: any): any[] {
+  const { pageBlocks } = useConfig()
+  const latest = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
+  const raw = latest?.data ?? fallbackData
+  return Array.isArray(raw) ? raw : []
+}
+
+/** card_grid 卡片列表（支持拖动排序） */
+function CardGridItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const cards = useLatestBlockData(block, data)
+  const cardType = block.options?.cardType || "guide"
 
   return (
-    <div className="space-y-2">
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable
-          droppableId="contact-items"
-          renderClone={(provided, _snapshot, rubric) => (
-            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-              {renderRow(resolved[rubric.source.index], rubric.source.index)}
-            </div>
-          )}
+    <BlockItemsList
+      items={cards}
+      onEditItem={(idx) => onEditConfig(`card_grid_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`card_grid_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`card_grid_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const firstTextField = getFirstTextField(item, cardType, locale)
+        const secondTextField = getSecondTextField(item, cardType, locale)
+        const iconField = getIconField(item, cardType)
+        return {
+          icon: iconField,
+          label: firstTextField || `卡片 ${idx + 1}`,
+          content: secondTextField || '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`card_grid_add_${block.id}`)}
         >
-          {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
-              {resolved.map((item, idx) => (
-                <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
-                  {(dragProvided) => (
-                    <div ref={dragProvided.innerRef} {...dragProvided.draggableProps}>
-                      {renderRow(item, idx, dragProvided.dragHandleProps)}
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-
-      <AddContactItemMenu
-        block={block}
-        items={items}
-        globalItems={contactItems}
-        onEditConfig={onEditConfig}
-        compact
-      />
-    </div>
+          <Plus className="mr-1 size-4" />
+          添加卡片
+        </Button>
+      }
+    />
   )
+}
+
+/** step_list 步骤列表（支持拖动排序） */
+function StepListItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const steps = useLatestBlockData(block, data)
+
+  return (
+    <BlockItemsList
+      items={steps}
+      onEditItem={(idx) => onEditConfig(`step_list_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`step_list_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`step_list_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const title = typeof item.title === 'object' ? (item.title[locale] || item.title.zh || '') : (item.title || '')
+        const desc = typeof item.desc === 'object' ? (item.desc[locale] || item.desc.zh || '') : (item.desc || '')
+        return {
+          label: title || `步骤 ${idx + 1}`,
+          content: desc || '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`step_list_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加步骤
+        </Button>
+      }
+    />
+  )
+}
+
+/** doc_list 文档列表（支持拖动排序） */
+function DocListItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const docs = useLatestBlockData(block, data)
+
+  return (
+    <BlockItemsList
+      items={docs}
+      onEditItem={(idx) => onEditConfig(`doc_list_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`doc_list_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`doc_list_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const text = typeof item.text === 'object' ? (item.text[locale] || item.text.zh || '') : (item.text || '')
+        return {
+          icon: item.icon || block.options?.iconName,
+          label: text || `文档 ${idx + 1}`,
+          content: '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`doc_list_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加文档
+        </Button>
+      }
+    />
+  )
+}
+
+/** gallery 图片列表（支持拖动排序） */
+function GalleryItemsList({
+  block, locale, data, onEditConfig,
+}: {
+  block: Block
+  locale: ConfigLocale
+  data: any
+  onEditConfig: (section: string) => void
+}) {
+  const items = useLatestBlockData(block, data)
+
+  return (
+    <BlockItemsList
+      items={items}
+      onEditItem={(idx) => onEditConfig(`gallery_item_${block.id}_${idx}`)}
+      onDeleteItem={(idx) => onEditConfig(`gallery_delete_${block.id}_${idx}`)}
+      onReorder={(fromIndex, toIndex) => {
+        onEditConfig(`gallery_reorder_${block.id}_${fromIndex}_${toIndex}`)
+      }}
+      renderItemSummary={(item, idx) => {
+        const caption = typeof item.caption === 'object' ? (item.caption[locale] || item.caption.zh || '') : (item.caption || '')
+        return {
+          label: caption || `图片 ${idx + 1}`,
+          content: item.image_id ? `ID: ${item.image_id}` : '',
+        }
+      }}
+      addButton={
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => onEditConfig(`gallery_add_${block.id}`)}
+        >
+          <Plus className="mr-1 size-4" />
+          添加图片
+        </Button>
+      }
+    />
+  )
+}
+
+/** 获取卡片的第一个文本字段（作为标签） */
+function getFirstTextField(item: any, cardType: string, locale: string): string {
+  const fieldMap: Record<string, string> = {
+    guide: 'title',
+    timeline: 'title',
+    city: 'city',
+    program: 'name',
+    checklist: 'label',
+  }
+  const key = fieldMap[cardType]
+  if (!key) return ''
+  const value = item[key]
+  return typeof value === 'object' ? (value[locale] || value.zh || '') : (value || '')
+}
+
+/** 获取卡片的第二个文本字段（作为内容） */
+function getSecondTextField(item: any, cardType: string, locale: string): string {
+  const fieldMap: Record<string, string> = {
+    guide: 'desc',
+    timeline: 'time',
+    city: 'country',
+    program: 'country',
+    checklist: 'items',
+  }
+  const key = fieldMap[cardType]
+  if (!key) return ''
+  const value = item[key]
+  if (key === 'items' && Array.isArray(value)) {
+    // checklist.items 是数组，显示第一项
+    const first = value[0]
+    return typeof first === 'object' ? (first[locale] || first.zh || '') : (first || '')
+  }
+  return typeof value === 'object' ? (value[locale] || value.zh || '') : (value || '')
+}
+
+/** 获取卡片的图标字段 */
+function getIconField(item: any, cardType: string): string | undefined {
+  if (cardType === 'guide' || cardType === 'checklist') {
+    return item.icon || undefined
+  }
+  return undefined
 }
 
 /** 解析联系条目到列表展示数据 */

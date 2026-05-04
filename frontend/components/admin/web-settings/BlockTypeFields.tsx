@@ -8,6 +8,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SelectField } from "@/components/admin/SelectField"
+import { IconPicker } from "@/components/admin/IconPicker"
 
 interface FieldsProps {
   options: Record<string, any>
@@ -98,16 +99,11 @@ function DocListFields({ options, onUpdate }: FieldsProps) {
     <div className="space-y-3 border-t pt-3">
       <p className="text-xs font-medium text-muted-foreground">文档清单选项</p>
       <div className="space-y-1.5">
-        <Label htmlFor="block-icon-name">图标名称</Label>
-        <Input
-          id="block-icon-name"
+        <Label>图标</Label>
+        <IconPicker
           value={options.iconName || ""}
-          onChange={(e) => onUpdate("iconName", e.target.value)}
-          placeholder="如 FileText 或 file-text"
+          onChange={(name) => onUpdate("iconName", name)}
         />
-        <p className="text-xs text-muted-foreground">
-          图标名称参考 <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Lucide 图标库</a>，支持 PascalCase 和 kebab-case
-        </p>
       </div>
       <MaxColumnsSelect options={options} onUpdate={onUpdate} />
     </div>

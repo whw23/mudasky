@@ -19,7 +19,7 @@ export function CityCard({ card, locale }: CityCardProps) {
   const desc = getLocalizedValue(card.desc, locale)
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
       {/* 城市图片 */}
       {card.image_id && (
         <div className="relative aspect-video bg-muted">

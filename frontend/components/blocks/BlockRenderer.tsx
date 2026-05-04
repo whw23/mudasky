@@ -31,6 +31,8 @@ interface BlockRendererProps {
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
 }
 
+import { getBlockLabel } from "@/lib/block-labels"
+
 /** Block 列表渲染器 */
 export function BlockRenderer({ blocks, editable, onEditBlock, onEditData, onEditConfig, onFieldEdit }: BlockRendererProps) {
   return (
@@ -56,7 +58,8 @@ function renderBlock(
     ? <SectionHeader tag={block.sectionTag} title={block.sectionTitle} />
     : null
   const bg = block.bgColor === "gray" ? "bg-gray-50" : ""
-  const props = { block, header, bg, editable, onEdit: onEditData, onFieldEdit }
+  const blockLabel = getBlockLabel(block)
+  const props = { block, header, bg, editable, onEdit: onEditData, onEditConfig, onFieldEdit, blockLabel }
 
   switch (block.type) {
     case "intro":

@@ -22,7 +22,7 @@ export function GuideCard({ card, locale }: GuideCardProps) {
   const desc = getLocalizedValue(card.desc, locale)
 
   return (
-    <div className="rounded-lg border bg-card p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+    <div className="h-full rounded-lg border bg-card p-6 text-center shadow-sm transition-shadow hover:shadow-md">
       <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
         <Icon className="size-6 text-primary" />
       </div>

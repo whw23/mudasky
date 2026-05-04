@@ -1,0 +1,131 @@
+"use client"
+
+/**
+ * 通用 Block 条目列表组件。
+ * 支持拖动排序（乐观更新）、编辑、删除操作。
+ */
+
+import { useState, useEffect, type ReactNode } from "react"
+import {
+  DragDropContext, Droppable, Draggable, type DropResult,
+} from "@hello-pangea/dnd"
+import { GripVertical, Pencil, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { resolveIcon } from "@/lib/icon-utils"
+
+/** 条目摘要信息 */
+export interface ItemSummary {
+  icon?: string
+  label: string
+  content: string
+  badge?: string
+}
+
+/** BlockItemsList 组件属性 */
+export interface BlockItemsListProps {
+  items: any[]
+  onEditItem: (index: number) => void
+  onDeleteItem: (index: number) => void
+  onReorder: (fromIndex: number, toIndex: number) => void
+  renderItemSummary: (item: any, index: number) => ItemSummary
+  addButton?: ReactNode
+}
+
+/** 通用 Block 条目列表组件 */
+export function BlockItemsList({
+  items,
+  onEditItem,
+  onDeleteItem,
+  onReorder,
+  renderItemSummary,
+  addButton,
+}: BlockItemsListProps) {
+  const [localItems, setLocalItems] = useState(items)
+
+  useEffect(() => {
+    setLocalItems(items)
+  }, [items])
+
+  /** 拖拽结束：立即更新本地，同时保存到后端 */
+  function handleDragEnd(result: DropResult): void {
+    if (!result.destination || result.source.index === result.destination.index) return
+    const from = result.source.index
+    const to = result.destination.index
+    const reordered = [...localItems]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    setLocalItems(reordered)
+    onReorder(from, to)
+  }
+
+  /** 渲染条目行 */
+  function renderRow(item: any, idx: number, dragHandleProps?: any) {
+    const summary = renderItemSummary(item, idx)
+    const Icon = summary.icon ? resolveIcon(summary.icon) : null
+
+    return (
+      <div className="flex items-center justify-between rounded-lg border bg-background p-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div {...(dragHandleProps ?? {})} className="cursor-grab text-muted-foreground">
+            <GripVertical className="size-4" />
+          </div>
+          {Icon && <Icon className="size-5 shrink-0 text-primary" />}
+          <div className="min-w-0">
+            <div className="text-sm font-medium">{summary.label}</div>
+            <div className="truncate text-xs text-muted-foreground">{summary.content}</div>
+          </div>
+          {summary.badge && (
+            <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600">
+              {summary.badge}
+            </span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onEditItem(idx)}>
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-destructive hover:text-destructive"
+            onClick={() => onDeleteItem(idx)}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable
+          droppableId="block-items-list"
+          renderClone={(provided, _snapshot, rubric) => (
+            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+              {renderRow(localItems[rubric.source.index], rubric.source.index)}
+            </div>
+          )}
+        >
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              {localItems.map((item, idx) => (
+                <Draggable key={`item-${idx}`} draggableId={`item-${idx}`} index={idx}>
+                  {(dragProvided) => (
+                    <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} className="mb-2">
+                      {renderRow(item, idx, dragProvided.dragHandleProps)}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      {addButton && addButton}
+    </div>
+  )
+}

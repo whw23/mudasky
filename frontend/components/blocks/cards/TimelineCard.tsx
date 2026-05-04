@@ -20,7 +20,7 @@ export function TimelineCard({ card, locale }: TimelineCardProps) {
   const desc = getLocalizedValue(card.desc, locale)
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="h-full rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
       <div className="mb-3 flex items-center gap-2 text-primary">
         <Clock className="size-5" />
         <span className="text-sm font-medium">{time}</span>

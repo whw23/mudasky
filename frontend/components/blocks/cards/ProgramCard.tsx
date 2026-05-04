@@ -21,7 +21,7 @@ export function ProgramCard({ card, locale }: ProgramCardProps) {
   const features: any[] = Array.isArray(card.features) ? card.features : []
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="h-full rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
       {/* 国家标签 */}
       {country && (
         <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">

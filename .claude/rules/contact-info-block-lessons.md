@@ -21,6 +21,18 @@
 - **问题**：@hello-pangea/dnd 在 Dialog 的 CSS transform 容器内拖动预览位置错误
 - **修复**：使用 `Droppable.renderClone` 在 body 层渲染拖动预览，绕过 transform
 
+#### DnD 拖动间距跳动
+- **问题**：容器用 `space-y-2` 或 `gap-2` 时，DnD placeholder 不计算间距，拖动时其他元素跳动
+- **修复**：不在容器上用 gap/space-y，改为在每个 Draggable wrapper 上加 `mb-2`，让 placeholder 包含正确高度
+
+#### DnD 拖动乐观更新
+- **问题**：拖拽后通过 API 保存再刷新数据，中间有延迟导致视觉跳回
+- **修复**：BlockItemsList 内部用 `useState(localItems)` 乐观更新，拖拽结束立即重排本地数据，再异步保存 API
+
+#### DnD reorder 全量 refetch 导致重渲染
+- **问题**：reorder 操作调用 `fetchAllConfigs(true)` 全量重新获取配置，触发整页重渲染跳动
+- **修复**：reorder 只调 `refreshConfig()` 轻量更新 ConfigContext，不调 `fetchAllConfigs`
+
 #### EditableOverlay h-full 副作用
 - **问题**：给 EditableOverlay 全局加 `h-full` 导致 Footer 布局错乱——品牌简介和联系方式被挤到四列下方
 - **修复**：EditableOverlay 不默认 h-full，改为通过 `className` prop 按需传入，只在 ContactInfoSection 的卡片中使用
@@ -40,6 +52,10 @@
 #### 内容标签页数据不刷新
 - **问题**：从内容标签页触发编辑/添加后，保存调用 refreshConfig 更新了 ConfigContext，但 UnifiedBlockEditor 的 block prop 来自本地 state，不随 ConfigContext 更新
 - **修复**：ContactItemsList 从 `useConfig().pageBlocks` 读最新数据（`Object.values(pageBlocks).flat().find(b => b.id === block.id)`），而非依赖 block prop
+
+#### UnifiedBlockEditor 保存覆盖已编辑数据
+- **问题**：通过 onEditConfig 编辑条目后数据已保存到 API，但 UnifiedBlockEditor 的本地 data state 仍是旧的，点"保存"会把旧数据覆盖回去
+- **修复**：array/contact_info 类型保存时从 ConfigContext.pageBlocks 读最新 data，不用本地 state
 
 #### Subagent 不执行工具
 - **问题**：分派 subagent 实现 ItemEditDialog 时，subagent 返回了报告但 0 tool_uses——它只生成了文本没有实际执行
@@ -81,10 +97,33 @@
 - AddContactItemMenu 支持 `compact` prop：预览用卡片样式（`top-full` 向下展开），内容标签页用按钮样式（`bottom-full` 向上展开）
 - 无可用全局条目时跳过下拉菜单直接打开自定义弹窗
 
-### 后续复用指南
+### 全 Block 改造复用经验
 
-后续 card_grid、step_list、doc_list、gallery 改造时参照此 Block：
-1. 定义字段列表（`FieldDefinition[]`）
-2. 提供卡片渲染模板
-3. 接入 ArrayItemBlock 框架（待提取）
-4. 需要数据同源的字段建立同步映射
+#### 统一的编辑模式
+
+所有数组型 Block（card_grid/step_list/doc_list/gallery/contact_info）遵循相同模式：
+1. 预览区域：FieldOverlay 点击 → `onEditConfig('{blockType}_item_{blockId}_{index}')` → page.tsx 打开 ItemEditDialog
+2. 内容标签页：BlockItemsList（拖动排序 + 编辑/删除按钮）+ 添加按钮
+3. 数据读取：从 `useConfig().pageBlocks` 读最新数据（`useLatestBlockData` hook）
+4. 保存：通过 `handleEditConfig` → API → `refreshConfig()`
+
+#### 类型标签统一管理
+
+`frontend/lib/block-labels.ts` 统一导出所有 Block 类型的中文名和子类型名，三处消费方（BlockEditorOverlay、BlockRenderer、UnifiedBlockEditor）共用 `getBlockLabel(block)` 函数。
+
+#### 高度对齐方案
+
+- `FieldOverlay` 默认 `h-full`（所有 Block 预览卡片自动受益）
+- 各卡片组件根 div 加 `h-full`
+- 后续新增卡片组件只要根 div 加 `h-full` 即可
+
+#### 添加按钮复用方案
+
+card_grid 用 `ADD_PLACEHOLDER` 占位数据 + 真实卡片组件渲染，自动匹配不同 cardType 的视觉结构。其他 Block 用对应的真实结构模拟。
+
+#### IconPicker 复用
+
+- 支持搜索 + 网格 + 文本输入 + 实时预览 + 清除按钮
+- 搜索支持 PascalCase 和 kebab-case（去连字符匹配）
+- 在 Dialog 内使用相对定位（非 Portal），避免 transform 偏移
+- BlockTypeFields 的显示配置和 ItemEditDialog 的条目编辑都复用同一个 IconPicker

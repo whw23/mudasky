@@ -11,6 +11,7 @@ import type { Block } from "@/types/block"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { FieldOverlay } from "@/components/admin/FieldOverlay"
+import { Trash2, ImagePlus } from "lucide-react"
 
 interface BlockProps {
   block: Block
@@ -19,6 +20,8 @@ interface BlockProps {
   editable?: boolean
   onEdit?: (block: Block) => void
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
+  onEditConfig?: (section: string) => void
+  blockLabel?: string
 }
 
 interface GalleryItem {
@@ -27,43 +30,68 @@ interface GalleryItem {
 }
 
 /** 图片画廊区块 */
-export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit }: BlockProps) {
+export function GalleryBlock({ block, header, bg, editable, onEdit, onFieldEdit, onEditConfig, blockLabel }: BlockProps) {
   const locale = useLocale()
   const items: GalleryItem[] = Array.isArray(block.data) ? block.data : []
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑画廊">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑画廊"}>
         <section className={`py-10 md:py-16 ${bg}`}>
           <div className="mx-auto max-w-7xl px-4">
             {header}
             <div className="mt-8 flex gap-4 overflow-x-auto pb-4">
               {items.map((item, i) => (
-                <FieldOverlay
-                  key={i}
-                  onClick={() => onFieldEdit?.(block, "item", i)}
-                  label={`编辑图片 ${i + 1}`}
-                >
-                  <div className="shrink-0" style={{ width: 280 }}>
-                    {/* 16:9 图片容器 */}
-                    <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/api/public/images/detail?id=${item.image_id}`}
-                        alt={getLocalizedValue(item.caption, locale) || ""}
-                        className="size-full object-cover"
-                        loading="lazy"
-                      />
+                <div key={i} className="group relative shrink-0" style={{ width: 280 }}>
+                  <FieldOverlay
+                    onClick={() => onEditConfig?.(`gallery_item_${block.id}_${i}`)}
+                    label={`编辑图片 ${i + 1}`}
+                  >
+                    <div>
+                      {/* 16:9 图片容器 */}
+                      <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/api/public/images/detail?id=${item.image_id}`}
+                          alt={getLocalizedValue(item.caption, locale) || ""}
+                          className="size-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      {/* 图片说明 */}
+                      {getLocalizedValue(item.caption, locale) && (
+                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                          {getLocalizedValue(item.caption, locale)}
+                        </p>
+                      )}
                     </div>
-                    {/* 图片说明 */}
-                    {getLocalizedValue(item.caption, locale) && (
-                      <p className="mt-2 text-center text-sm text-muted-foreground">
-                        {getLocalizedValue(item.caption, locale)}
-                      </p>
-                    )}
-                  </div>
-                </FieldOverlay>
+                  </FieldOverlay>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditConfig?.(`gallery_delete_${block.id}_${i}`)
+                    }}
+                    className="pointer-events-none absolute top-1 left-1 z-10 rounded bg-red-500 p-1 text-white opacity-0 shadow transition-opacity group-hover:pointer-events-auto group-hover:opacity-100"
+                    title="移除"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
               ))}
+              {/* 添加图片按钮 */}
+              <div
+                className="hidden shrink-0 cursor-pointer group-hover/block:block"
+                style={{ width: 280 }}
+                data-editable
+                onClick={(e) => { e.stopPropagation(); onEditConfig?.(`gallery_add_${block.id}`) }}
+              >
+                <div className="opacity-50 transition-opacity hover:opacity-80">
+                  <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted">
+                    <ImagePlus className="size-10 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 text-center text-sm text-muted-foreground">新建图片</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

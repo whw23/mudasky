@@ -52,10 +52,11 @@ interface BlockProps {
   bg: string
   editable?: boolean
   onEdit?: (block: Block) => void
+  blockLabel?: string
 }
 
 /** 院校列表区块 */
-export function UniversityListBlock({ block, header, bg, editable, onEdit }: BlockProps) {
+export function UniversityListBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
   /* 编辑弹窗状态 */
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<UniversityData | null>(null)
@@ -146,7 +147,7 @@ export function UniversityListBlock({ block, header, bg, editable, onEdit }: Blo
 
   if (editable && onEdit) {
     return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label="编辑院校列表">
+      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑院校列表"}>
         {el}
 
         {/* 编辑弹窗 */}
