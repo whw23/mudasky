@@ -39,6 +39,7 @@ class TestConvertToWebp:
         """RGB 模式图片直接转 WebP。"""
         mock_img = MagicMock()
         mock_img.mode = "RGB"
+        mock_img.size = (800, 600)
         mock_img.info = {}
         mock_pil.open.return_value = mock_img
 
@@ -47,11 +48,13 @@ class TestConvertToWebp:
 
         mock_img.save.side_effect = save_side_effect
 
-        data, mime, ext = _convert_to_webp(b"fake_png_data")
+        data, mime, ext, width, height = _convert_to_webp(b"fake_png_data")
 
         assert mime == "image/webp"
         assert ext == ".webp"
         assert data == b"webp_data"
+        assert width == 800
+        assert height == 600
         mock_img.save.assert_called_once()
 
     @patch("app.db.image.repository.PILImage")
@@ -59,6 +62,7 @@ class TestConvertToWebp:
         """RGBA 模式图片直接转 WebP。"""
         mock_img = MagicMock()
         mock_img.mode = "RGBA"
+        mock_img.size = (1024, 768)
         mock_img.info = {}
         mock_pil.open.return_value = mock_img
 
@@ -67,16 +71,19 @@ class TestConvertToWebp:
 
         mock_img.save.side_effect = save_side_effect
 
-        data, mime, ext = _convert_to_webp(b"fake_png_data")
+        data, mime, ext, width, height = _convert_to_webp(b"fake_png_data")
 
         assert mime == "image/webp"
         assert ext == ".webp"
+        assert width == 1024
+        assert height == 768
 
     @patch("app.db.image.repository.PILImage")
     def test_palette_with_transparency(self, mock_pil):
         """带透明度的调色板模式转 RGBA。"""
         mock_img = MagicMock()
         mock_img.mode = "P"
+        mock_img.size = (640, 480)
         mock_img.info = {"transparency": True}
         mock_converted = MagicMock()
         mock_img.convert.return_value = mock_converted
@@ -87,16 +94,19 @@ class TestConvertToWebp:
 
         mock_converted.save.side_effect = save_side_effect
 
-        data, mime, ext = _convert_to_webp(b"palette_data")
+        data, mime, ext, width, height = _convert_to_webp(b"palette_data")
 
         mock_img.convert.assert_called_once_with("RGBA")
         assert mime == "image/webp"
+        assert width == 640
+        assert height == 480
 
     @patch("app.db.image.repository.PILImage")
     def test_palette_without_transparency(self, mock_pil):
         """不带透明度的调色板模式转 RGB。"""
         mock_img = MagicMock()
         mock_img.mode = "P"
+        mock_img.size = (320, 240)
         mock_img.info = {}
         mock_converted = MagicMock()
         mock_img.convert.return_value = mock_converted
@@ -107,9 +117,11 @@ class TestConvertToWebp:
 
         mock_converted.save.side_effect = save_side_effect
 
-        _convert_to_webp(b"palette_data")
+        data, mime, ext, width, height = _convert_to_webp(b"palette_data")
 
         mock_img.convert.assert_called_once_with("RGB")
+        assert width == 320
+        assert height == 240
 
 
 # ---- create_image ----
@@ -125,7 +137,7 @@ class TestCreateImage:
     ):
         """PNG 图片自动转 WebP。"""
         mock_convert.return_value = (
-            b"webp_data", "image/webp", ".webp"
+            b"webp_data", "image/webp", ".webp", 800, 600
         )
         mock_get_hash.return_value = None
 
@@ -138,6 +150,8 @@ class TestCreateImage:
         added_image = session.add.call_args[0][0]
         assert added_image.filename == "photo.webp"
         assert added_image.mime_type == "image/webp"
+        assert added_image.width == 800
+        assert added_image.height == 600
 
     @patch("app.db.image.repository._convert_to_webp")
     @patch("app.db.image.repository.get_by_hash")
@@ -146,7 +160,7 @@ class TestCreateImage:
     ):
         """JPEG 图片自动转 WebP。"""
         mock_convert.return_value = (
-            b"webp_data", "image/webp", ".webp"
+            b"webp_data", "image/webp", ".webp", 800, 600
         )
         mock_get_hash.return_value = None
 
@@ -170,6 +184,44 @@ class TestCreateImage:
         added_image = session.add.call_args[0][0]
         assert added_image.mime_type == "image/svg+xml"
         assert added_image.filename == "icon.svg"
+        assert added_image.width is None
+        assert added_image.height is None
+
+    @patch("app.db.image.repository.get_by_hash")
+    async def test_create_pdf_no_dimensions(
+        self, mock_get_hash, session
+    ):
+        """PDF 不提取尺寸，width/height 为 None。"""
+        mock_get_hash.return_value = None
+
+        await create_image(
+            session, b"%PDF-1.4", "doc.pdf", "application/pdf"
+        )
+
+        added_image = session.add.call_args[0][0]
+        assert added_image.mime_type == "application/pdf"
+        assert added_image.width is None
+        assert added_image.height is None
+
+    @patch("app.db.image.repository.PILImage")
+    @patch("app.db.image.repository.get_by_hash")
+    async def test_create_webp_extracts_dimensions(
+        self, mock_get_hash, mock_pil, session
+    ):
+        """WebP 上传提取尺寸但不转换格式。"""
+        mock_get_hash.return_value = None
+        mock_img = MagicMock()
+        mock_img.size = (1920, 1080)
+        mock_pil.open.return_value = mock_img
+
+        await create_image(
+            session, b"webp_data", "photo.webp", "image/webp"
+        )
+
+        added_image = session.add.call_args[0][0]
+        assert added_image.mime_type == "image/webp"
+        assert added_image.width == 1920
+        assert added_image.height == 1080
 
     @patch("app.db.image.repository._convert_to_webp")
     @patch("app.db.image.repository.get_by_hash")
@@ -179,7 +231,7 @@ class TestCreateImage:
         """哈希重复时返回已有图片，不创建新记录。"""
         existing = MagicMock(spec=Image)
         mock_convert.return_value = (
-            b"webp_data", "image/webp", ".webp"
+            b"webp_data", "image/webp", ".webp", 800, 600
         )
         mock_get_hash.return_value = existing
 
@@ -197,7 +249,7 @@ class TestCreateImage:
     ):
         """文件名无扩展名时正确追加 .webp。"""
         mock_convert.return_value = (
-            b"webp_data", "image/webp", ".webp"
+            b"webp_data", "image/webp", ".webp", 800, 600
         )
         mock_get_hash.return_value = None
 

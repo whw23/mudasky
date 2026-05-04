@@ -49,8 +49,8 @@ def upgrade() -> None:
                 ),
                 {"w": w, "h": h, "id": img_id},
             )
-        except Exception:
-            pass
+        except (OSError, ValueError):
+            continue
 
 
 def downgrade() -> None:
