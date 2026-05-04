@@ -44,6 +44,12 @@ const CARD_TYPE_NAMES: Record<string, string> = {
   checklist: "检查清单",
 }
 
+/** 精选展示数据类型中文名 */
+const DATA_TYPE_NAMES: Record<string, string> = {
+  universities: "院校",
+  cases: "案例",
+}
+
 interface BlockEditorOverlayProps {
   block: Block
   children: ReactNode
@@ -64,6 +70,9 @@ export function BlockEditorOverlay({
   let typeName = BLOCK_TYPE_NAMES[block.type] || block.type
   if (block.type === "card_grid" && block.options?.cardType) {
     const sub = CARD_TYPE_NAMES[block.options.cardType]
+    if (sub) typeName = `${typeName} · ${sub}`
+  } else if (block.type === "featured_data" && block.options?.dataType) {
+    const sub = DATA_TYPE_NAMES[block.options.dataType]
     if (sub) typeName = `${typeName} · ${sub}`
   }
 

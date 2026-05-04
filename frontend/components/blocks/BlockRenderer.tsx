@@ -59,11 +59,20 @@ const CARD_TYPE_LABELS: Record<string, string> = {
  * 生成 Block 的中文显示标签。
  * 对于 card_grid，格式为 "卡片网格 · 指南卡片"。
  */
+const DATA_TYPE_LABELS: Record<string, string> = {
+  universities: "院校",
+  cases: "案例",
+}
+
 function getBlockLabel(block: Block): string {
   const baseName = TYPE_NAMES[block.type] || block.type
   if (block.type === "card_grid" && block.options?.cardType) {
     const cardLabel = CARD_TYPE_LABELS[block.options.cardType] || block.options.cardType
     return `${baseName} · ${cardLabel}`
+  }
+  if (block.type === "featured_data" && block.options?.dataType) {
+    const dataLabel = DATA_TYPE_LABELS[block.options.dataType] || block.options.dataType
+    return `${baseName} · ${dataLabel}`
   }
   return baseName
 }
