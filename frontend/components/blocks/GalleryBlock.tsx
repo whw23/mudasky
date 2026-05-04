@@ -121,6 +121,7 @@ function EditableGalleryItem({
       <FieldOverlay
         onClick={() => onEditConfig?.(`gallery_item_${blockId}_${index}`)}
         label={`编辑图片 ${index + 1}`}
+        className="h-full"
       >
         <div className="relative h-full overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
