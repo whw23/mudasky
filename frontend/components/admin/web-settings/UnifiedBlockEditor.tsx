@@ -23,20 +23,7 @@ import { TypeSpecificFields } from "./BlockTypeFields"
 import api from "@/lib/api"
 import { BlockContentTab, getBlockEditType } from "./BlockContentTab"
 
-/** 区块类型中文名 */
-const BLOCK_TYPE_NAMES: Record<string, string> = {
-  intro: "介绍",
-  card_grid: "卡片网格",
-  step_list: "步骤列表",
-  doc_list: "文档清单",
-  gallery: "图片墙",
-  article_list: "文章列表",
-  university_list: "院校列表",
-  case_grid: "案例网格",
-  featured_data: "精选展示",
-  cta: "行动号召",
-  contact_info: "联系信息",
-}
+import { getBlockLabel } from "@/lib/block-labels"
 
 type EditorTab = "config" | "content"
 
@@ -106,7 +93,7 @@ export function UnifiedBlockEditor({
 
   if (!block) return null
 
-  const typeName = BLOCK_TYPE_NAMES[block.type] || block.type
+  const typeName = getBlockLabel(block)
   const editType = getBlockEditType(block.type)
   const isApiDriven = editType === "api"
 

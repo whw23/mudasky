@@ -18,37 +18,8 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
+import { getBlockLabel } from "@/lib/block-labels"
 import type { Block } from "@/types/block"
-
-/** 区块类型中文名 */
-const BLOCK_TYPE_NAMES: Record<string, string> = {
-  intro: "介绍",
-  card_grid: "卡片网格",
-  step_list: "步骤列表",
-  doc_list: "文档清单",
-  gallery: "图片墙",
-  article_list: "文章列表",
-  university_list: "院校列表",
-  case_grid: "案例网格",
-  featured_data: "精选展示",
-  cta: "行动号召",
-  contact_info: "联系信息",
-}
-
-/** 卡片子类型中文名 */
-const CARD_TYPE_NAMES: Record<string, string> = {
-  guide: "指南卡片",
-  timeline: "时间线",
-  city: "城市指南",
-  program: "专业卡片",
-  checklist: "检查清单",
-}
-
-/** 精选展示数据类型中文名 */
-const DATA_TYPE_NAMES: Record<string, string> = {
-  universities: "院校",
-  cases: "案例",
-}
 
 interface BlockEditorOverlayProps {
   block: Block
@@ -67,14 +38,7 @@ export function BlockEditorOverlay({
   dragHandleProps,
 }: BlockEditorOverlayProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
-  let typeName = BLOCK_TYPE_NAMES[block.type] || block.type
-  if (block.type === "card_grid" && block.options?.cardType) {
-    const sub = CARD_TYPE_NAMES[block.options.cardType]
-    if (sub) typeName = `${typeName} · ${sub}`
-  } else if (block.type === "featured_data" && block.options?.dataType) {
-    const sub = DATA_TYPE_NAMES[block.options.dataType]
-    if (sub) typeName = `${typeName} · ${sub}`
-  }
+  const typeName = getBlockLabel(block)
 
   return (
     <>

@@ -31,51 +31,7 @@ interface BlockRendererProps {
   onFieldEdit?: (block: Block, fieldKey: string, fieldIndex?: number) => void
 }
 
-/** Block 类型中文名映射 */
-const TYPE_NAMES: Record<string, string> = {
-  intro: "介绍",
-  card_grid: "卡片网格",
-  step_list: "步骤列表",
-  doc_list: "文档清单",
-  gallery: "图片墙",
-  article_list: "文章列表",
-  university_list: "院校列表",
-  case_grid: "案例网格",
-  featured_data: "精选展示",
-  cta: "行动号召",
-  contact_info: "联系信息",
-}
-
-/** 卡片类型中文名映射 */
-const CARD_TYPE_LABELS: Record<string, string> = {
-  guide: "指南卡片",
-  timeline: "时间线",
-  city: "城市指南",
-  program: "专业卡片",
-  checklist: "检查清单",
-}
-
-/**
- * 生成 Block 的中文显示标签。
- * 对于 card_grid，格式为 "卡片网格 · 指南卡片"。
- */
-const DATA_TYPE_LABELS: Record<string, string> = {
-  universities: "院校",
-  cases: "案例",
-}
-
-function getBlockLabel(block: Block): string {
-  const baseName = TYPE_NAMES[block.type] || block.type
-  if (block.type === "card_grid" && block.options?.cardType) {
-    const cardLabel = CARD_TYPE_LABELS[block.options.cardType] || block.options.cardType
-    return `${baseName} · ${cardLabel}`
-  }
-  if (block.type === "featured_data" && block.options?.dataType) {
-    const dataLabel = DATA_TYPE_LABELS[block.options.dataType] || block.options.dataType
-    return `${baseName} · ${dataLabel}`
-  }
-  return baseName
-}
+import { getBlockLabel } from "@/lib/block-labels"
 
 /** Block 列表渲染器 */
 export function BlockRenderer({ blocks, editable, onEditBlock, onEditData, onEditConfig, onFieldEdit }: BlockRendererProps) {
