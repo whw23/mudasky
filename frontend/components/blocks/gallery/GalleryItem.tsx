@@ -2,7 +2,7 @@
 
 /**
  * 画廊单张图片卡片。
- * 包含 hover 缩放/遮罩效果 + PhotoSwipe Item 包裹。
+ * 底部渐变遮罩显示标题，hover 缩放 + 半透明遮罩 + 放大镜图标。
  */
 
 import { useLocale } from "next-intl"
@@ -36,26 +36,31 @@ export function GalleryItem({ imageId, caption, width, height, className = "" }:
     >
       {({ ref, open }) => (
         <div
-          className={`group cursor-pointer overflow-hidden rounded-xl ${className}`}
+          ref={ref as React.Ref<HTMLDivElement>}
+          className={`group relative cursor-pointer overflow-hidden rounded-lg shadow-sm transition-shadow duration-300 hover:shadow-xl ${className}`}
           onClick={open}
         >
-          <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              ref={ref as React.Ref<HTMLImageElement>}
-              src={src}
-              alt={alt}
-              className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/30">
-              <ZoomIn className="size-8 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+          />
+          {/* hover 遮罩 + 放大图标 */}
+          <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <div className="rounded-full bg-white/90 p-3 shadow-lg">
+              <ZoomIn className="size-5 text-gray-700" />
             </div>
           </div>
+          {/* 底部渐变 + 标题 */}
           {captionText && (
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              {captionText}
-            </p>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-3 pt-8">
+              <p className="text-sm font-medium text-white drop-shadow-sm">
+                {captionText}
+              </p>
+            </div>
           )}
         </div>
       )}

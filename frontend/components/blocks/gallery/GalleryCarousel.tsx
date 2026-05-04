@@ -1,11 +1,16 @@
 "use client"
 
-/** 轮播布局。scroll-snap 实现，左右箭头 + 指示点。 */
+/**
+ * 轮播布局。
+ * 自动轮播（5 秒间隔），hover 暂停，左右箭头 + 指示点。
+ */
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { GalleryItem } from "./GalleryItem"
 import type { GalleryItemData, RenderItem } from "./types"
+
+const AUTO_INTERVAL = 5000
 
 interface GalleryCarouselProps {
   items: GalleryItemData[]
@@ -15,6 +20,7 @@ interface GalleryCarouselProps {
 export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [current, setCurrent] = useState(0)
+  const [paused, setPaused] = useState(false)
 
   const scrollTo = useCallback((index: number) => {
     const el = scrollRef.current
@@ -39,23 +45,41 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
     return () => el.removeEventListener("scroll", handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (paused || items.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrent((prev) => {
+        const next = (prev + 1) % items.length
+        scrollTo(next)
+        return next
+      })
+    }, AUTO_INTERVAL)
+    return () => clearInterval(timer)
+  }, [paused, items.length, scrollTo])
+
+  if (items.length === 0) return null
+
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div
         ref={scrollRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-none"
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth scrollbar-none"
       >
         {items.map((item, i) => (
           <div key={i} className="w-full shrink-0 snap-center">
             {renderItem
-              ? renderItem(item, i, "aspect-video")
+              ? renderItem(item, i, "aspect-[21/9] max-h-[500px]")
               : (
                 <GalleryItem
                   imageId={item.image_id}
                   caption={item.caption}
                   width={item.width}
                   height={item.height}
-                  className="aspect-video"
+                  className="aspect-[21/9] max-h-[500px]"
                 />
               )
             }
@@ -66,28 +90,34 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
       {items.length > 1 && (
         <>
           <button
-            onClick={() => scrollTo(Math.max(0, current - 1))}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-opacity hover:bg-white disabled:opacity-30"
-            disabled={current === 0}
+            onClick={() => {
+              const prev = current === 0 ? items.length - 1 : current - 1
+              scrollTo(prev)
+            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-2.5 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl"
             aria-label="上一张"
           >
-            <ChevronLeft className="size-5" />
+            <ChevronLeft className="size-5 text-gray-700" />
           </button>
           <button
-            onClick={() => scrollTo(Math.min(items.length - 1, current + 1))}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-opacity hover:bg-white disabled:opacity-30"
-            disabled={current === items.length - 1}
+            onClick={() => {
+              const next = (current + 1) % items.length
+              scrollTo(next)
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 p-2.5 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl"
             aria-label="下一张"
           >
-            <ChevronRight className="size-5" />
+            <ChevronRight className="size-5 text-gray-700" />
           </button>
-          <div className="mt-4 flex justify-center gap-2">
+          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
             {items.map((_, i) => (
               <button
                 key={i}
                 onClick={() => scrollTo(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === current ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
+                className={`rounded-full transition-all duration-300 ${
+                  i === current
+                    ? "h-2 w-6 bg-white shadow-sm"
+                    : "size-2 bg-white/50 hover:bg-white/80"
                 }`}
                 aria-label={`第 ${i + 1} 张`}
               />

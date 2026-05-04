@@ -1,6 +1,6 @@
 "use client"
 
-/** 等高网格布局。统一裁切比例，响应式 2/3/4 列。 */
+/** 等高网格布局。统一 4:3 裁切，紧凑间距，响应式 2/3/4 列。 */
 
 import { GalleryItem } from "./GalleryItem"
 import type { GalleryItemData, RenderItem } from "./types"
@@ -12,7 +12,7 @@ interface GalleryGridProps {
 
 export function GalleryGrid({ items, renderItem }: GalleryGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
       {items.map((item, i) => renderItem
         ? renderItem(item, i, "aspect-[4/3]")
         : (
