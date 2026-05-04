@@ -162,12 +162,12 @@ function AddImageButton({
 }) {
   return (
     <div
-      className="mt-4 hidden cursor-pointer group-hover/block:block"
+      className="mt-4 cursor-pointer"
       data-editable
       onClick={(e) => { e.stopPropagation(); onEditConfig?.(`gallery_add_${blockId}`) }}
     >
-      <div className="mx-auto flex w-48 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 p-4 opacity-50 transition-opacity hover:opacity-80">
-        <ImagePlus className="size-5 text-muted-foreground" />
+      <div className="mx-auto flex w-48 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 p-3 opacity-40 transition-opacity hover:opacity-80">
+        <ImagePlus className="size-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">添加图片</span>
       </div>
     </div>
