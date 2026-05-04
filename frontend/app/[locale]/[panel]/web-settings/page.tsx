@@ -1141,7 +1141,7 @@ export default function WebSettingsPage() {
               data: {},
               onSave: async (data) => {
                 const items: any[] = Array.isArray(block.data) ? block.data : []
-                const updatedItems = [...items, data]
+                const updatedItems = [...items, { ...data, width: 0, height: 0 }]
                 const updatedBlock = { ...block, data: updatedItems }
                 const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
                 const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
