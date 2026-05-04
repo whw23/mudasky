@@ -40,7 +40,7 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
 
   return (
     <div
-      className="relative max-h-[80vh] overflow-hidden rounded-xl py-6"
+      className="relative max-h-[calc(80vh-7rem)] overflow-hidden rounded-xl py-6"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -53,14 +53,14 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
         {/* 中心主图 */}
         <div className="relative z-10 flex w-full max-w-4xl shrink-0 justify-center px-2">
           {renderItem
-            ? renderItem(items[current], current, "aspect-[16/9] max-h-[55vh] rounded-xl")
+            ? renderItem(items[current], current, "aspect-[16/9] max-h-[calc(60vh-7rem)] rounded-xl")
             : (
               <GalleryItem
                 imageId={items[current].image_id}
                 caption={items[current].caption}
                 width={items[current].width}
                 height={items[current].height}
-                className="aspect-[16/9] max-h-[55vh] rounded-xl shadow-xl"
+                className="aspect-[16/9] max-h-[calc(60vh-7rem)] rounded-xl shadow-xl"
               />
             )
           }
