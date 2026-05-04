@@ -22,7 +22,7 @@ export function ChecklistCard({ card, locale }: ChecklistCardProps) {
   const Icon = resolveIcon(card.icon)
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="h-full rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center gap-3">
         {Icon && (
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
