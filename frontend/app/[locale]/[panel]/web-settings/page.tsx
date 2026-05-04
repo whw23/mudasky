@@ -676,7 +676,7 @@ export default function WebSettingsPage() {
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
-            await fetchAllConfigs(true)
+
             refreshConfig()
           }
         } else if (section.startsWith('contact_item_add_global_')) {
@@ -695,7 +695,6 @@ export default function WebSettingsPage() {
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
             toast.success('已添加条目')
-            await fetchAllConfigs(true)
             refreshConfig()
           }
         } else if (section.startsWith('contact_item_add_custom_')) {
@@ -815,7 +814,6 @@ export default function WebSettingsPage() {
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
-            await fetchAllConfigs(true)
             refreshConfig()
           }
         } else if (section.startsWith('card_grid_add_')) {
@@ -932,7 +930,6 @@ export default function WebSettingsPage() {
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
-            await fetchAllConfigs(true)
             refreshConfig()
           }
         } else if (section.startsWith('step_list_add_')) {
@@ -1026,7 +1023,6 @@ export default function WebSettingsPage() {
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
-            await fetchAllConfigs(true)
             refreshConfig()
           }
         } else if (section.startsWith('doc_list_add_')) {
@@ -1120,7 +1116,6 @@ export default function WebSettingsPage() {
             const updatedBlocks = currentBlocks.map((b) => b.id === blockId ? updatedBlock : b)
             const allPageBlocks = { ...pageBlocks, [activePage]: updatedBlocks }
             await api.post("/admin/web-settings/list/edit", { key: "page_blocks", value: allPageBlocks })
-            await fetchAllConfigs(true)
             refreshConfig()
           }
         } else if (section.startsWith('gallery_add_')) {
