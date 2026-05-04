@@ -5,10 +5,12 @@
  * 根据区块类型渲染对应的选项表单（卡片类型、图标名、分类标识等）。
  */
 
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SelectField } from "@/components/admin/SelectField"
 import { IconPicker } from "@/components/admin/IconPicker"
+import api from "@/lib/api"
 
 interface FieldsProps {
   options: Record<string, any>
@@ -112,18 +114,26 @@ function DocListFields({ options, onUpdate }: FieldsProps) {
 
 /** article_list 类型配置 */
 function ArticleListFields({ options, onUpdate }: FieldsProps) {
+  const [categories, setCategories] = useState<Array<{ value: string; label: string }>>([
+    { value: "_all", label: "全部分类" },
+  ])
+
+  useEffect(() => {
+    api.get("/admin/web-settings/categories/list").then((res) => {
+      const items = (res.data as any[]).map((c) => ({ value: c.slug, label: c.name }))
+      setCategories([{ value: "_all", label: "全部分类" }, ...items])
+    }).catch(() => {})
+  }, [])
+
   return (
     <div className="space-y-3 border-t pt-3">
       <p className="text-xs font-medium text-muted-foreground">文章列表选项</p>
-      <div className="space-y-1.5">
-        <Label htmlFor="block-category-slug">分类标识</Label>
-        <Input
-          id="block-category-slug"
-          value={options.categorySlug || ""}
-          onChange={(e) => onUpdate("categorySlug", e.target.value)}
-          placeholder="如 news"
-        />
-      </div>
+      <SelectField
+        label="分类"
+        value={options.categorySlug || "_all"}
+        options={categories}
+        onValueChange={(v) => onUpdate("categorySlug", v === "_all" ? "" : v)}
+      />
     </div>
   )
 }
