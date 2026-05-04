@@ -7,10 +7,8 @@
  */
 
 import { useState, useCallback, useEffect } from "react"
-import { useLocale } from "next-intl"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { GalleryItem } from "./GalleryItem"
-import { getLocalizedValue } from "@/lib/i18n-config"
 import type { GalleryItemData, RenderItem } from "./types"
 
 const AUTO_INTERVAL = 5000
@@ -23,7 +21,6 @@ interface GalleryCarouselProps {
 export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
-  const locale = useLocale()
   const len = items.length
 
   const go = useCallback((dir: number) => {
@@ -40,8 +37,6 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
 
   const prev = (current - 1 + len) % len
   const next = (current + 1) % len
-  const captionText = getLocalizedValue(items[current].caption, locale) || ""
-
   return (
     <div
       className="relative overflow-hidden rounded-2xl bg-gray-800 py-8 md:py-10"
@@ -106,15 +101,6 @@ export function GalleryCarousel({ items, renderItem }: GalleryCarouselProps) {
           </div>
         ) : <div />}
       </div>
-
-      {/* 文字说明 */}
-      {captionText && (
-        <div className="mx-auto mt-5 max-w-2xl px-8 text-center">
-          <p className="text-sm leading-relaxed text-white/70 md:text-base">
-            {captionText}
-          </p>
-        </div>
-      )}
 
       {/* 箭头 */}
       {len > 1 && (
