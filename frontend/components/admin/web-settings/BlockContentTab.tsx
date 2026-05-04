@@ -213,6 +213,14 @@ function ContactItemsList({
   )
 }
 
+/** 从 ConfigContext 读最新的 Block data */
+function useLatestBlockData(block: Block, fallbackData: any): any[] {
+  const { pageBlocks } = useConfig()
+  const latest = Object.values(pageBlocks).flat().find((b) => b.id === block.id)
+  const data = latest?.data ?? fallbackData
+  return Array.isArray(data) ? data : []
+}
+
 /** card_grid 卡片列表（支持拖动排序） */
 function CardGridItemsList({
   block, locale, data, onEditConfig,
@@ -222,7 +230,7 @@ function CardGridItemsList({
   data: any
   onEditConfig: (section: string) => void
 }) {
-  const cards: any[] = Array.isArray(data) ? data : []
+  const cards = useLatestBlockData(block, data)
   const cardType = block.options?.cardType || "guide"
 
   return (
@@ -266,7 +274,7 @@ function StepListItemsList({
   data: any
   onEditConfig: (section: string) => void
 }) {
-  const steps: any[] = Array.isArray(data) ? data : []
+  const steps = useLatestBlockData(block, data)
 
   return (
     <BlockItemsList
@@ -307,7 +315,7 @@ function DocListItemsList({
   data: any
   onEditConfig: (section: string) => void
 }) {
-  const docs: any[] = Array.isArray(data) ? data : []
+  const docs = useLatestBlockData(block, data)
 
   return (
     <BlockItemsList
@@ -348,7 +356,7 @@ function GalleryItemsList({
   data: any
   onEditConfig: (section: string) => void
 }) {
-  const items: any[] = Array.isArray(data) ? data : []
+  const items = useLatestBlockData(block, data)
 
   return (
     <BlockItemsList
