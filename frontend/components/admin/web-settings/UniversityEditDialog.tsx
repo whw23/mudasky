@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Trash2, Upload } from "lucide-react"
 import { TiptapEditor } from "@/components/editor/TiptapEditor"
+import { ProgramManager } from "@/components/admin/web-settings/ProgramManager"
 
 interface UniversityData {
   id: string
@@ -371,6 +372,10 @@ export function UniversityEditDialog({
               </div>
             ))}
           </div>
+          {/* 专业管理（仅编辑模式） */}
+          {isEdit && university && (
+            <ProgramManager universityId={university.id} />
+          )}
         </DialogBody>
         <DialogFooter>
           <Button

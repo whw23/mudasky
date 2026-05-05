@@ -19,6 +19,7 @@ from .export_service import ExportService
 from .import_service import ImportService
 from .schemas import (
     ImageResponse,
+    ProgramResponse,
     SetProgramsRequest,
     UniversityCreate,
     UniversityDeleteRequest,
@@ -150,6 +151,21 @@ async def delete_image(
     """删除院校图片。"""
     svc = UniversityService(session)
     await svc.delete_image(data.university_id, data.image_record_id)
+
+
+@router.get(
+    "/list/detail/programs",
+    response_model=list[ProgramResponse],
+    summary="获取院校专业列表",
+)
+async def get_programs(
+    university_id: str,
+    session: DbSession,
+) -> list[ProgramResponse]:
+    """获取指定院校的专业列表。"""
+    svc = UniversityService(session)
+    programs = await svc.get_programs(university_id)
+    return [ProgramResponse.model_validate(p) for p in programs]
 
 
 @router.post(
