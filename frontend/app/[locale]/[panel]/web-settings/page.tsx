@@ -157,7 +157,7 @@ const DEFAULT_RAW: RawConfig = {
   siteInfo: {
     brand_name: '', tagline: '', hotline: '', hotline_contact: '',
     logo_url: '', favicon_url: '', wechat_service_qr_url: '',
-    wechat_official_qr_url: '', company_name: '', icp_filing: '',
+    wechat_official_qr_url: '', description: '', company_name: '', icp_filing: '',
   },
   contactItems: [],
   homepageStats: [],
