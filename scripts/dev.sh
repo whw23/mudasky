@@ -18,7 +18,8 @@ case "${1:-}" in
     docker compose down
     docker compose build
     cleanup_docker
-    docker compose up
+    docker compose up -d
+    echo "开发环境已启动，查看日志: ./scripts/dev.sh --logs"
     ;;
   --clean)
     echo "停止容器并清理数据卷..."
@@ -26,7 +27,8 @@ case "${1:-}" in
     echo "重新构建并启动..."
     docker compose build
     cleanup_docker
-    docker compose up
+    docker compose up -d
+    echo "开发环境已启动（数据库已重置），查看日志: ./scripts/dev.sh --logs"
     ;;
   --down)
     echo "停止并移除容器..."

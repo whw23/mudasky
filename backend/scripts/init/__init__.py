@@ -25,6 +25,7 @@ from app.db.university.models import University  # noqa: F401
 from app.db.user.models import User  # noqa: F401
 from app.db.worker.models import Task  # noqa: F401
 
+from .seed_articles import init_articles
 from .seed_config import init_system_config
 from .seed_content import init_categories
 from .seed_images import init_seed_images
@@ -53,6 +54,8 @@ async def main() -> None:
         await init_seed_images(session)
         print("初始化内容分类...")
         await init_categories(session)
+        print("初始化种子文章...")
+        await init_articles(session)
         await session.commit()
         logger.info("系统初始化完成")
 
