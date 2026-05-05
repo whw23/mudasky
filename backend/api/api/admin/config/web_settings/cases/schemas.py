@@ -32,6 +32,8 @@ class CaseCreate(BaseModel):
     )
     sort_order: int = Field(0, description="排序序号")
     university_id: str | None = Field(None, description="关联院校 ID")
+    avatar_image_id: str | None = Field(None, description="头像图片 ID")
+    offer_image_id: str | None = Field(None, description="录取通知书图片 ID")
 
 
 class CaseDeleteRequest(BaseModel):
@@ -67,6 +69,8 @@ class CaseUpdate(BaseModel):
         None, description="排序序号"
     )
     university_id: str | None = Field(None, description="关联院校 ID")
+    avatar_image_id: str | None = Field(None, description="头像图片 ID")
+    offer_image_id: str | None = Field(None, description="录取通知书图片 ID")
 
 
 class CaseResponse(BaseModel):

@@ -111,62 +111,39 @@ export function CaseEditDialog({
     }
   }, [open, caseItem])
 
+  /** 通用图片上传 */
+  async function uploadImage(
+    file: File,
+    setLoading: (v: boolean) => void,
+    setId: (id: string) => void,
+    label: string,
+  ): Promise<void> {
+    setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const { data } = await api.post("/admin/web-settings/images/upload", formData)
+      setId(data.id)
+      toast.success(`${label}上传成功`)
+    } catch {
+      toast.error("上传失败")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   /** 上传头像 */
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const file = e.target.files?.[0]
     if (!file) return
-
-    setUploadingAvatar(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      if (isEdit) {
-        formData.append("case_id", caseItem!.id)
-      }
-
-      const res = await api.post(
-        isEdit
-          ? "/admin/web-settings/cases/list/detail/upload-avatar"
-          : "/admin/web-settings/cases/upload-avatar-temp",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      )
-      setAvatarImageId(res.data.avatar_image_id)
-      toast.success("头像上传成功")
-    } catch {
-      toast.error("上传失败")
-    } finally {
-      setUploadingAvatar(false)
-    }
+    await uploadImage(file, setUploadingAvatar, (id) => setAvatarImageId(id), "头像")
   }
 
   /** 上传录取通知书 */
   async function handleOfferUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const file = e.target.files?.[0]
     if (!file) return
-
-    setUploadingOffer(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      if (isEdit) {
-        formData.append("case_id", caseItem!.id)
-      }
-
-      const res = await api.post(
-        isEdit
-          ? "/admin/web-settings/cases/list/detail/upload-offer"
-          : "/admin/web-settings/cases/upload-offer-temp",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      )
-      setOfferImageId(res.data.offer_image_id)
-      toast.success("录取通知书上传成功")
-    } catch {
-      toast.error("上传失败")
-    } finally {
-      setUploadingOffer(false)
-    }
+    await uploadImage(file, setUploadingOffer, (id) => setOfferImageId(id), "录取通知书")
   }
 
   /** 提交表单 */
