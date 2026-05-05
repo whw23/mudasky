@@ -380,7 +380,7 @@ jobs:
 
             # 健康检查（最多重试 6 次，间隔 10 秒）
             for i in 1 2 3 4 5 6; do
-              if curl -sf http://localhost/api/health; then
+              if curl -sf http://localhost:${GATEWAY_PORT:-80}/api/health; then
                 echo "部署成功"
                 exit 0
               fi
