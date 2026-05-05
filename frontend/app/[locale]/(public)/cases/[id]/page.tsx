@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation"
 import { getTranslations } from "next-intl/server"
 import { notFound } from "next/navigation"
 import { ArrowLeft, ArrowRight, GraduationCap, Quote, ExternalLink, FileText } from "lucide-react"
-import Image from "next/image"
+/* eslint-disable @next/next/no-img-element */
 
 /** 获取案例详情 */
 async function fetchCase(id: string) {
@@ -51,11 +51,9 @@ export default async function CaseDetailPage({
         <div className="mt-8 rounded-xl border bg-white p-8">
           <div className="flex items-center gap-4">
             {caseData.avatar_image_id ? (
-              <Image
+              <img
                 src={`/api/public/images/detail?id=${caseData.avatar_image_id}`}
                 alt={caseData.student_name}
-                width={64}
-                height={64}
                 className="h-16 w-16 rounded-full object-cover"
               />
             ) : (
@@ -118,11 +116,9 @@ export default async function CaseDetailPage({
                 rel="noopener noreferrer"
                 className="mt-3 block overflow-hidden rounded-lg border transition-all hover:shadow-lg"
               >
-                <Image
+                <img
                   src={`/api/public/images/detail?id=${caseData.offer_image_id}`}
                   alt="录取通知书"
-                  width={800}
-                  height={600}
                   className="w-full object-contain"
                 />
               </a>

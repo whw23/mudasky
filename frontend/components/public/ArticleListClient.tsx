@@ -9,6 +9,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
+import { Pin, PinOff } from "lucide-react"
+import { toast } from "sonner"
 import { Link } from "@/i18n/navigation"
 import api from "@/lib/api"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
@@ -37,8 +39,10 @@ interface Article {
   slug: string
   content: string
   excerpt: string
+  cover_image: string | null
   category_id: string
   status: string
+  is_pinned: boolean
   published_at: string | null
   created_at: string
 }
@@ -47,6 +51,7 @@ interface ArticleListClientProps {
   categorySlug?: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onRefresh?: () => void
 }
 
 /** 文章列表客户端组件 */
@@ -63,6 +68,7 @@ export function ArticleListClient({
   const [articles, setArticles] = useState<Article[]>([])
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [categoryReady, setCategoryReady] = useState(!categorySlug)
 
   /* 从 URL 读取初始值 */
   const [activeCategoryId, setActiveCategoryId] = useState<string | undefined>(
@@ -81,17 +87,21 @@ export function ArticleListClient({
       .get<Category[]>(url)
       .then(({ data }) => {
         setCategories(data ?? [])
-        /* 若指定了 slug，找到对应分类 ID */
         if (categorySlug) {
           const cat = (data ?? []).find((c) => c.slug === categorySlug)
           if (cat) setActiveCategoryId(cat.id)
         }
+        setCategoryReady(true)
       })
-      .catch(() => setCategories([]))
+      .catch(() => {
+        setCategories([])
+        setCategoryReady(true)
+      })
   }, [editable, categorySlug])
 
-  /** 获取文章列表 */
+  /** 获取文章列表（等分类解析完再请求） */
   const fetchArticles = useCallback(async () => {
+    if (!categoryReady) return
     setLoading(true)
     try {
       const url = editable
@@ -111,21 +121,55 @@ export function ArticleListClient({
     } finally {
       setLoading(false)
     }
-  }, [editable, activeCategoryId, currentPage])
+  }, [editable, activeCategoryId, currentPage, categoryReady])
 
   useEffect(() => {
     fetchArticles()
   }, [fetchArticles])
 
+  /** 根据分类 ID 获取分类信息 */
+  function getCategory(catId: string): Category | undefined {
+    return categories.find((c) => c.id === catId)
+  }
+
   /** 根据分类 ID 获取名称 */
   function getCategoryName(catId: string): string {
-    return categories.find((c) => c.id === catId)?.name ?? ""
+    return getCategory(catId)?.name ?? ""
   }
 
   /** 根据分类 ID 获取颜色 */
   function getCategoryColor(catId: string): string {
     const idx = categories.findIndex((c) => c.id === catId)
     return CAT_COLORS[idx % 5] ?? "bg-gray-100 text-gray-700"
+  }
+
+  /** 切换置顶 */
+  async function handleTogglePin(article: Article) {
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/edit", {
+        article_id: article.id,
+        is_pinned: !article.is_pinned,
+      })
+      toast.success(article.is_pinned ? "已取消置顶" : "已置顶")
+      fetchArticles()
+    } catch {
+      toast.error("操作失败")
+    }
+  }
+
+  /** 切换发布状态 */
+  async function handleTogglePublish(article: Article) {
+    const newStatus = article.status === "published" ? "draft" : "published"
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/edit", {
+        article_id: article.id,
+        status: newStatus,
+      })
+      toast.success(newStatus === "published" ? "已发布" : "已转为草稿")
+      fetchArticles()
+    } catch {
+      toast.error("操作失败")
+    }
   }
 
   /** 切换分类 */
@@ -148,23 +192,26 @@ export function ArticleListClient({
 
       {/* 文章列表 */}
       {loading ? (
-        <div className="mt-8 text-center text-muted-foreground">加载中...</div>
+        <div className="mt-4 text-center text-muted-foreground">加载中...</div>
       ) : articles.length > 0 ? (
-        <div className="mt-8 space-y-4">
+        <div className="mt-4 space-y-4">
           {articles.map((article) => (
             <ArticleCard
               key={article.id}
               article={article}
               categoryName={getCategoryName(article.category_id)}
+              categorySlug={getCategory(article.category_id)?.slug ?? "news"}
               categoryColor={getCategoryColor(article.category_id)}
               readMoreLabel={t("readMore")}
               editable={editable}
               onEdit={onEdit}
+              onTogglePin={editable ? handleTogglePin : undefined}
+              onTogglePublish={editable ? handleTogglePublish : undefined}
             />
           ))}
         </div>
       ) : (
-        <div className="mt-16 text-center text-muted-foreground">
+        <div className="mt-8 text-center text-muted-foreground">
           {t("noContent")}
         </div>
       )}
@@ -198,7 +245,7 @@ function CategoryTabs({
   onChange: (catId?: string) => void
 }) {
   return (
-    <div className="mt-8 flex flex-wrap justify-center gap-2">
+    <div className="mt-4 flex flex-wrap justify-center gap-2">
       <button
         className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
           !activeCategoryId
@@ -230,20 +277,33 @@ function CategoryTabs({
 function ArticleCard({
   article,
   categoryName,
+  categorySlug,
   categoryColor,
   readMoreLabel,
   editable,
   onEdit,
+  onTogglePin,
+  onTogglePublish,
 }: {
   article: Article
   categoryName: string
+  categorySlug: string
   categoryColor: string
   readMoreLabel: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onTogglePin?: (article: Article) => void
+  onTogglePublish?: (article: Article) => void
 }) {
   const inner = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {article.cover_image && (
+        <img
+          src={article.cover_image}
+          alt={article.title}
+          className="hidden h-20 w-32 shrink-0 rounded object-cover sm:block"
+        />
+      )}
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -254,6 +314,11 @@ function ArticleCard({
           <span className="text-xs text-muted-foreground">
             {(article.published_at ?? article.created_at).slice(0, 10)}
           </span>
+          {editable && article.is_pinned && (
+            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+              置顶
+            </span>
+          )}
           {editable && article.status !== "published" && (
             <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
               草稿
@@ -282,17 +347,47 @@ function ArticleCard({
 
   if (editable) {
     return (
-      <EditableOverlay
-        onClick={() => onEdit?.(article)}
-        label={`编辑文章 ${article.title}`}
-      >
-        <div className={cls}>{inner}</div>
-      </EditableOverlay>
+      <div className="relative">
+        <EditableOverlay
+          onClick={() => onEdit?.(article)}
+          label={`编辑文章 ${article.title}`}
+        >
+          <div className={cls}>{inner}</div>
+        </EditableOverlay>
+        <div className="absolute right-10 top-2 z-10 flex items-center gap-2">
+          {onTogglePin && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePin(article) }}
+              className={`rounded-full p-1.5 shadow-sm transition-colors ${
+                article.is_pinned
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-primary"
+              }`}
+              title={article.is_pinned ? "取消置顶" : "置顶"}
+            >
+              {article.is_pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+            </button>
+          )}
+          {onTogglePublish && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePublish(article) }}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium shadow-sm transition-colors ${
+                article.status === "published"
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
+              title={article.status === "published" ? "转为草稿" : "发布"}
+            >
+              {article.status === "published" ? "已发布" : "草稿"}
+            </button>
+          )}
+        </div>
+      </div>
     )
   }
 
   return (
-    <Link href={`/news/${article.id}`} className={cls}>
+    <Link href={`/${categorySlug}/${article.id}`} className={cls}>
       {inner}
     </Link>
   )

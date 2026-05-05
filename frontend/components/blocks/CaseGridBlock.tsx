@@ -3,18 +3,15 @@
 /**
  * 案例网格区块。
  * 调用 CaseGrid 组件展示成功案例列表。
- * editable 模式下显示 ManageToolbar 并支持案例 CRUD。
+ * editable 模式下显示管理工具栏（导入导出）+ 添加案例占位卡片。
  */
 
 import { useState, useCallback } from "react"
 import type { ReactNode } from "react"
-import { Plus } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
-import { Button } from "@/components/ui/button"
 import type { Block } from "@/types/block"
 import { CaseGrid } from "@/components/public/CaseGrid"
-import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { CaseEditDialog } from "@/components/admin/web-settings/CaseEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
@@ -51,30 +48,27 @@ interface BlockProps {
 }
 
 /** 案例网格区块 */
-export function CaseGridBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
-  /* 编辑弹窗状态 */
+export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<CaseItem | null>(null)
-
-  /* 导入预览状态 */
   const [previewData, setPreviewData] = useState<any>(null)
   const [importFile, setImportFile] = useState<File | null>(null)
-
-  /* 刷新标记 */
   const [refreshKey, setRefreshKey] = useState(0)
 
-  /** 刷新数据 */
   const refreshData = useCallback(() => {
     setRefreshKey((k) => k + 1)
   }, [])
 
-  /** 打开编辑弹窗（编辑已有案例） */
   function handleEditCase(item: any) {
     setEditItem(item as CaseItem)
     setEditOpen(true)
   }
 
-  /** 确认导入 */
+  function handleCreateCase() {
+    setEditItem(null)
+    setEditOpen(true)
+  }
+
   async function handleImportConfirm(items: any[]) {
     if (!importFile) {
       toast.error("未找到导入文件")
@@ -91,58 +85,45 @@ export function CaseGridBlock({ block, header, bg, editable, onEdit, blockLabel 
     refreshData()
   }
 
-  const el = (
-    <section className={`py-10 md:py-16 ${bg}`}>
-      <div className="mx-auto max-w-7xl px-4">
-        {header}
+  return (
+    <>
+      <section className={`py-10 md:py-16 ${bg}`}>
+        <div className="mx-auto max-w-7xl px-4">
+          {header}
 
-        {/* 管理工具栏（仅编辑模式） */}
-        {editable && (
-          <ManageToolbar>
-            <ImportExportToolbar
-              templateUrl="/admin/web-settings/cases/list/import/template"
-              importUrl="/admin/web-settings/cases/list/import/preview"
-              exportUrl="/admin/web-settings/cases/list/export"
-              onImportPreview={setPreviewData}
-              onFileSelect={setImportFile}
-              templateFilename="cases_template.zip"
-              exportFilename="cases.zip"
-            />
-            <Button
-              size="sm"
-              onClick={() => {
-                setEditItem(null)
-                setEditOpen(true)
-              }}
-            >
-              <Plus className="mr-1 size-4" /> 添加案例
-            </Button>
-          </ManageToolbar>
-        )}
+          {editable && (
+            <ManageToolbar>
+              <ImportExportToolbar
+                templateUrl="/admin/web-settings/cases/list/import/template"
+                importUrl="/admin/web-settings/cases/list/import/preview"
+                exportUrl="/admin/web-settings/cases/list/export"
+                onImportPreview={setPreviewData}
+                onFileSelect={setImportFile}
+                templateFilename="cases_template.zip"
+                exportFilename="cases.zip"
+              />
+            </ManageToolbar>
+          )}
 
-        <CaseGrid
-          key={refreshKey}
-          editable={editable}
-          onEdit={editable ? handleEditCase : undefined}
-        />
-      </div>
-    </section>
-  )
+          <CaseGrid
+            key={refreshKey}
+            editable={editable}
+            onEdit={editable ? handleEditCase : undefined}
+            onAdd={editable ? handleCreateCase : undefined}
+          />
+        </div>
+      </section>
 
-  if (editable && onEdit) {
-    return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑案例网格"}>
-        {el}
-
-        {/* 编辑弹窗 */}
+      {editable && (
         <CaseEditDialog
           open={editOpen}
           onOpenChange={setEditOpen}
           caseItem={editItem}
           onSuccess={refreshData}
         />
+      )}
 
-        {/* 导入预览弹窗 */}
+      {editable && (
         <ImportPreviewDialog
           open={!!previewData}
           onOpenChange={(open) => !open && setPreviewData(null)}
@@ -150,8 +131,7 @@ export function CaseGridBlock({ block, header, bg, editable, onEdit, blockLabel 
           onConfirm={handleImportConfirm}
           columns={IMPORT_COLUMNS}
         />
-      </SpotlightOverlay>
-    )
-  }
-  return el
+      )}
+    </>
+  )
 }

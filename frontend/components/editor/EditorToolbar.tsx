@@ -30,6 +30,8 @@ interface EditorToolbarProps {
   onImageSelect: () => void
   /** 视频插入回调 */
   onVideoInsert: () => void
+  /** iframe 插入回调 */
+  onIframeInsert: () => void
 }
 
 /** 渲染一组工具栏按钮 */
@@ -109,6 +111,7 @@ export function EditorToolbar({
   onModeChange,
   onImageSelect,
   onVideoInsert,
+  onIframeInsert,
 }: EditorToolbarProps) {
   const t = useTranslations("Editor")
 
@@ -131,7 +134,7 @@ export function EditorToolbar({
     ? getRow1Groups(editor)
     : []
   const row2Groups = editor
-    ? getRow2Groups(editor, { onImageSelect, onVideoInsert })
+    ? getRow2Groups(editor, { onImageSelect, onVideoInsert, onIframeInsert })
     : []
 
   return (

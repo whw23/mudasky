@@ -10,12 +10,13 @@ import { useCallback, useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import {
   MapPin,
-  GraduationCap,
   Building2,
   Loader2,
   SearchX,
   Award,
+  Star,
 } from "lucide-react"
+import { toast } from "sonner"
 import { Link } from "@/i18n/navigation"
 import { Pagination } from "@/components/common/Pagination"
 import { UniversitySearch } from "@/components/public/UniversitySearch"
@@ -28,11 +29,12 @@ const PAGE_SIZE = 12
 interface UniversityListProps {
   editable?: boolean
   onEdit?: (university: University) => void
+  onAdd?: () => void
   onManageDisciplines?: () => void
 }
 
 /** 院校列表（含搜索筛选） */
-export function UniversityList({ editable = false, onEdit, onManageDisciplines }: UniversityListProps) {
+export function UniversityList({ editable = false, onEdit, onAdd, onManageDisciplines }: UniversityListProps) {
   const t = useTranslations("Universities")
 
   const [universities, setUniversities] = useState<University[]>([])
@@ -73,8 +75,11 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
       if (filters.disciplineCategoryId) params.discipline_category_id = filters.disciplineCategoryId
       if (filters.disciplineId) params.discipline_id = filters.disciplineId
 
+      const url = editable
+        ? "/admin/web-settings/universities/list"
+        : "/public/universities/list"
       const { data } = await api.get<PaginatedResponse<University>>(
-        "/public/universities/list",
+        url,
         { params },
       )
       setUniversities(data.items)
@@ -87,11 +92,25 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
     } finally {
       setLoading(false)
     }
-  }, [page, filters])
+  }, [page, filters, editable])
 
   useEffect(() => {
     fetchUniversities()
   }, [fetchUniversities])
+
+  /** 切换精选 */
+  async function handleToggleFeatured(uni: University) {
+    try {
+      await api.post("/admin/web-settings/universities/list/detail/edit", {
+        university_id: uni.id,
+        is_featured: !uni.is_featured,
+      })
+      toast.success(uni.is_featured ? "已取消精选" : "已设为精选")
+      fetchUniversities()
+    } catch {
+      toast.error("操作失败")
+    }
+  }
 
   /** 筛选变更时重置到第一页 */
   const handleFilterChange = (newFilters: {
@@ -216,18 +235,29 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
                 </>
               )
 
-              // editable 模式：用 EditableOverlay 包装的 div
               if (editable && onEdit) {
                 return (
-                  <EditableOverlay
-                    key={uni.id}
-                    onClick={() => onEdit(uni)}
-                    label={`编辑 ${uni.name}`}
-                  >
-                    <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
-                      {cardContent}
-                    </div>
-                  </EditableOverlay>
+                  <div key={uni.id} className="relative">
+                    <EditableOverlay
+                      onClick={() => onEdit(uni)}
+                      label={`编辑 ${uni.name}`}
+                    >
+                      <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
+                        {cardContent}
+                      </div>
+                    </EditableOverlay>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleFeatured(uni) }}
+                      className={`absolute left-2 top-2 z-10 rounded-full p-1.5 shadow-sm transition-colors ${
+                        uni.is_featured
+                          ? "bg-yellow-400 text-white hover:bg-yellow-500"
+                          : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-yellow-500"
+                      }`}
+                      title={uni.is_featured ? "取消精选" : "设为精选"}
+                    >
+                      <Star className={`size-3.5 ${uni.is_featured ? "fill-current" : ""}`} />
+                    </button>
+                  </div>
                 )
               }
 
@@ -242,6 +272,19 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
                 </Link>
               )
             })}
+            {onAdd && (
+              <button onClick={onAdd} className="group rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80">
+                <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
+                  <Building2 className="size-8 text-gray-400" />
+                </div>
+                <h4 className="mt-4 text-lg font-bold text-muted-foreground">添加院校</h4>
+                <p className="text-xs text-muted-foreground">University Name</p>
+                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                  <MapPin className="size-4" />
+                  城市, 国家
+                </div>
+              </button>
+            )}
           </div>
         )}
 

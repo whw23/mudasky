@@ -143,7 +143,7 @@ async def get_university(
         city=uni.city,
         logo_url=uni.logo_url,
         description=uni.description,
-        programs=uni.programs or [],
+        programs=detail["programs"] or [],
         website=uni.website,
         is_featured=uni.is_featured,
         sort_order=uni.sort_order,

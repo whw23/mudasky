@@ -5,11 +5,12 @@
  * 根据 Block 类型渲染简单字段表单或数组条目列表。
  */
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import {
   DragDropContext, Droppable, Draggable, type DropResult,
 } from "@hello-pangea/dnd"
 import { GripVertical, Info, Pencil, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,6 +22,10 @@ import { getLocalizedValue } from "@/lib/i18n-config"
 import { resolveIcon } from "@/lib/icon-utils"
 import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
 import { BlockItemsList } from "@/components/admin/web-settings/BlockItemsList"
+import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
+import { CaseEditDialog } from "@/components/admin/web-settings/CaseEditDialog"
+import { UniversityEditDialog } from "@/components/admin/web-settings/UniversityEditDialog"
+import api from "@/lib/api"
 import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
 import type { ArrayFieldDef } from "@/components/admin/ArrayEditDialog"
@@ -119,6 +124,19 @@ interface BlockContentTabProps {
 /** Block 内容编辑 Tab */
 export function BlockContentTab({ block, locale, data, onDataChange, defaultFieldIndex, onEditConfig, onClose }: BlockContentTabProps) {
   const editType = getBlockEditType(block.type)
+
+  if (block.type === "article_list") {
+    return <ArticleItemsList block={block} />
+  }
+
+  if (block.type === "case_grid") {
+    return <CaseItemsList />
+  }
+
+  if (block.type === "university_list") {
+    return <UniversityItemsList />
+  }
+
   if (editType === "api") {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
@@ -464,6 +482,327 @@ function resolveContactItems(
       editSection: `contact_item_custom_${blockId}_${idx}`,
     }
   }).filter(Boolean) as any[]
+}
+
+/** 文章数据 */
+interface ArticleItem {
+  id: string
+  title: string
+  slug: string
+  content: string
+  excerpt: string
+  cover_image: string | null
+  category_id: string
+  status: string
+  content_type?: string
+  file_id?: string | null
+  published_at: string | null
+  created_at: string
+}
+
+/** 文章列表管理（article_list 内容标签页） */
+function ArticleItemsList({ block }: { block: Block }) {
+  const [articles, setArticles] = useState<ArticleItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editItem, setEditItem] = useState<ArticleItem | null>(null)
+
+  const categorySlug = block.options?.categorySlug as string | undefined
+
+  const isAllCategories = !categorySlug
+
+  const fetchArticles = useCallback(async (catId?: string) => {
+    setLoading(true)
+    try {
+      const params: Record<string, any> = { page_size: 100 }
+      if (catId) params.category_id = catId
+      const { data } = await api.get("/admin/web-settings/articles/list", { params })
+      setArticles(data.items ?? [])
+    } catch {
+      setArticles([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isAllCategories) {
+      fetchArticles()
+      return
+    }
+    api.get("/admin/web-settings/categories/list")
+      .then(({ data }) => {
+        const cat = (data ?? []).find((c: any) => c.slug === categorySlug)
+        if (cat) {
+          setCategoryId(cat.id)
+          fetchArticles(cat.id)
+        } else {
+          setLoading(false)
+        }
+      })
+      .catch(() => setLoading(false))
+  }, [categorySlug, isAllCategories, fetchArticles])
+
+  async function handleDelete(articleId: string) {
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/delete", { article_id: articleId })
+      toast.success("文章已删除")
+      fetchArticles(categoryId ?? undefined)
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  if (loading) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+  }
+
+  return (
+    <div className="space-y-2">
+      {articles.map((article) => (
+        <div key={article.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{article.title}</span>
+              {article.status === "draft" && (
+                <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700">草稿</span>
+              )}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {(article.published_at ?? article.created_at).slice(0, 10)}
+              {article.excerpt && ` · ${article.excerpt}`}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditItem(article); setEditOpen(true) }}>
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-destructive hover:text-destructive"
+              onClick={() => handleDelete(article.id)}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => { setEditItem(null); setEditOpen(true) }}
+      >
+        <Plus className="mr-1 size-4" />
+        写文章
+      </Button>
+
+      <ArticleEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        article={editItem}
+        categoryId={categoryId ?? undefined}
+        onSuccess={() => fetchArticles(categoryId ?? undefined)}
+      />
+    </div>
+  )
+}
+
+/** 案例数据 */
+interface CaseItem {
+  id: string
+  student_name: string
+  university: string
+  program: string
+  year: number
+  testimonial: string | null
+  is_featured: boolean
+  avatar_image_id: string | null
+  offer_image_id: string | null
+  related_university_id: string | null
+}
+
+/** 案例列表管理（case_grid 内容标签页） */
+function CaseItemsList() {
+  const [cases, setCases] = useState<CaseItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editItem, setEditItem] = useState<CaseItem | null>(null)
+
+  const fetchCases = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get("/admin/web-settings/cases/list", { params: { page_size: 100 } })
+      setCases(data.items ?? [])
+    } catch {
+      setCases([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCases() }, [fetchCases])
+
+  async function handleDelete(caseId: string) {
+    try {
+      await api.post("/admin/web-settings/cases/list/detail/delete", { case_id: caseId })
+      toast.success("案例已删除")
+      fetchCases()
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  if (loading) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+  }
+
+  return (
+    <div className="space-y-2">
+      {cases.map((c) => (
+        <div key={c.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{c.student_name}</span>
+              {c.is_featured && (
+                <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700">精选</span>
+              )}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {c.university} · {c.program} · {c.year}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditItem(c); setEditOpen(true) }}>
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-destructive hover:text-destructive"
+              onClick={() => handleDelete(c.id)}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => { setEditItem(null); setEditOpen(true) }}
+      >
+        <Plus className="mr-1 size-4" />
+        添加案例
+      </Button>
+
+      <CaseEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        caseItem={editItem}
+        onSuccess={fetchCases}
+      />
+    </div>
+  )
+}
+
+/** 院校数据 */
+interface UniversityItem {
+  id: string
+  name: string
+  name_en: string | null
+  country: string
+  city: string
+  is_featured: boolean
+  [key: string]: unknown
+}
+
+/** 院校列表管理（university_list 内容标签页） */
+function UniversityItemsList() {
+  const [unis, setUnis] = useState<UniversityItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editItem, setEditItem] = useState<UniversityItem | null>(null)
+
+  const fetchUnis = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get("/admin/web-settings/universities/list", { params: { page_size: 100 } })
+      setUnis(data.items ?? [])
+    } catch {
+      setUnis([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchUnis() }, [fetchUnis])
+
+  async function handleDelete(uniId: string) {
+    try {
+      await api.post("/admin/web-settings/universities/list/detail/delete", { university_id: uniId })
+      toast.success("院校已删除")
+      fetchUnis()
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  if (loading) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+  }
+
+  return (
+    <div className="space-y-2">
+      {unis.map((u) => (
+        <div key={u.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{u.name}</span>
+              {u.is_featured && (
+                <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700">精选</span>
+              )}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {u.country} · {u.city}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditItem(u); setEditOpen(true) }}>
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-destructive hover:text-destructive"
+              onClick={() => handleDelete(u.id)}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => { setEditItem(null); setEditOpen(true) }}
+      >
+        <Plus className="mr-1 size-4" />
+        添加院校
+      </Button>
+
+      <UniversityEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        university={editItem as any}
+        onSuccess={fetchUnis}
+      />
+    </div>
+  )
 }
 
 /** 获取数组类型 Block 的字段定义 */

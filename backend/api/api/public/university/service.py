@@ -117,6 +117,7 @@ class UniversityService:
 
         return {
             "university": university,
+            "programs": programs,
             "disciplines": disciplines,
             "image_ids": image_ids,
             "related_cases": related_cases,

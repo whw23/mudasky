@@ -1,0 +1,30 @@
+/**
+ * 文章内容渲染样式。
+ * 编辑器（.tiptap）和公开页面（.article-content）共享。
+ */
+
+/* 图片：inline 以支持 text-align 居中 */
+.article-content img,
+.tiptap img {
+  display: inline;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+/* 视频嵌入居中 */
+.article-content .video-embed,
+.tiptap .video-embed {
+  margin: 1rem auto;
+  border-radius: 0.5rem;
+}
+
+.article-content .video-embed iframe,
+.tiptap .video-embed iframe {
+  border: 0;
+}
+
+/* iframe 嵌入居中 */
+.article-content .iframe-embed {
+  margin: 1rem auto;
+  text-align: center;
+}

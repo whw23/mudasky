@@ -90,34 +90,74 @@
   margin: 1rem 0;
 }
 
-/* 图片 */
-.tiptap img {
-  max-width: 100%;
-  border-radius: 0.25rem;
-}
-
+/* 图片选中态 */
 .tiptap img.ProseMirror-selectednode {
   outline: 2px solid #dc2626;
   border-radius: 0.25rem;
 }
 
-/* 视频嵌入 */
-.video-embed {
-  position: relative;
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
-  margin: 1rem 0;
-  border-radius: 0.5rem;
+/* 图片缩放 handle */
+.tiptap [data-resize-container] {
+  display: inline-flex;
+  max-width: 100%;
 }
 
-.video-embed iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
+.tiptap [data-resize-handle] {
+  width: 10px;
+  height: 10px;
+  background: #dc2626;
+  border: 2px solid white;
+  border-radius: 2px;
+  z-index: 10;
+  cursor: nwse-resize;
+}
+
+.tiptap [data-resize-handle="top-left"],
+.tiptap [data-resize-handle="bottom-left"] {
+  cursor: nesw-resize;
+}
+
+.tiptap [data-resize-container]:hover [data-resize-handle] {
+  opacity: 1;
+}
+
+.tiptap [data-resize-container] [data-resize-handle] {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* 视频 ResizableNodeView 对齐 */
+.tiptap [data-node="videoEmbed"] {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.tiptap [data-node="videoEmbed"].align-left {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.tiptap [data-node="videoEmbed"].align-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* 视频/iframe 缩放 handle（复用图片样式） */
+.tiptap .video-embed [data-resize-handle],
+.tiptap .iframe-embed [data-resize-handle] {
+  width: 10px;
+  height: 10px;
+  background: #dc2626;
+  border: 2px solid white;
+  border-radius: 2px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.tiptap .video-embed:hover [data-resize-handle],
+.tiptap .iframe-embed:hover [data-resize-handle] {
+  opacity: 1;
 }
 
 /* 分割线 */

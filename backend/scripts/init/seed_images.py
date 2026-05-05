@@ -163,6 +163,8 @@ async def _init_office_images(session, blocks: dict) -> bool:
         office_images.append({
             "image_id": str(image.id),
             "caption": {"zh": "", "en": "", "ja": "", "de": ""},
+            "width": image.width or 0,
+            "height": image.height or 0,
         })
         logger.info("办公环境图片已导入: %s", filepath.name)
 

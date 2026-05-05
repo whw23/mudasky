@@ -58,12 +58,13 @@ async def delete_category(
 async def count_articles_by_category(
     session: AsyncSession,
 ) -> dict[str, int]:
-    """统计每个分类的文章数量。"""
+    """统计每个分类的已发布文章数量。"""
     stmt = (
         select(
             Article.category_id,
             func.count().label("cnt"),
         )
+        .where(Article.status == "published")
         .group_by(Article.category_id)
     )
     result = await session.execute(stmt)
@@ -172,27 +173,27 @@ async def list_all_articles(
     offset: int,
     limit: int,
     status: str | None = None,
+    category_id: str | None = None,
 ) -> tuple[list[Article], int]:
     """分页查询所有文章（管理员用）。
 
-    可按状态过滤。
+    可按状态和分类过滤。
     """
-    base_filter = True  # noqa: E712
+    base = select(Article)
     if status:
-        base_filter = Article.status == status
+        base = base.where(Article.status == status)
+    if category_id:
+        base = base.where(Article.category_id == category_id)
 
     count_stmt = (
         select(func.count())
-        .select_from(Article)
-        .where(base_filter)
+        .select_from(base.subquery())
     )
     total_result = await session.execute(count_stmt)
     total = total_result.scalar_one()
 
     stmt = (
-        select(Article)
-        .where(base_filter)
-        .order_by(
+        base.order_by(
             Article.is_pinned.desc(),
             Article.created_at.desc(),
         )

@@ -42,12 +42,13 @@ async def admin_list_articles(
     page: int = 1,
     page_size: int = 20,
     status_filter: str | None = None,
+    category_id: str | None = None,
 ) -> PaginatedResponse[ArticleResponse]:
     """管理员分页查询所有文章。"""
     params = PaginationParams(page=page, page_size=page_size)
     svc = ArticleService(session)
     articles, total = await svc.list_all_articles(
-        params.offset, params.page_size, status_filter
+        params.offset, params.page_size, status_filter, category_id
     )
     return build_paginated(
         articles, total, params, ArticleResponse

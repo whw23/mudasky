@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Trash2, Upload } from "lucide-react"
 import { TiptapEditor } from "@/components/editor/TiptapEditor"
+import { ProgramManager } from "@/components/admin/web-settings/ProgramManager"
 
 interface UniversityData {
   id: string
@@ -115,18 +116,8 @@ export function UniversityEditDialog({
     try {
       const formData = new FormData()
       formData.append("file", file)
-      if (isEdit) {
-        formData.append("university_id", university!.id)
-      }
-
-      const res = await api.post(
-        isEdit
-          ? "/admin/web-settings/universities/list/detail/upload-logo"
-          : "/admin/web-settings/universities/upload-logo-temp",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      )
-      setLogoImageId(res.data.logo_image_id)
+      const { data } = await api.post("/admin/web-settings/images/upload", formData)
+      setLogoImageId(data.id)
       toast.success("Logo 上传成功")
     } catch {
       toast.error("上传失败")
@@ -381,6 +372,10 @@ export function UniversityEditDialog({
               </div>
             ))}
           </div>
+          {/* 专业管理（仅编辑模式） */}
+          {isEdit && university && (
+            <ProgramManager universityId={university.id} />
+          )}
         </DialogBody>
         <DialogFooter>
           <Button

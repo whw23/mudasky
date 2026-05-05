@@ -6,8 +6,10 @@
 from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.discipline.models import Discipline, DisciplineCategory
 from app.db.university.models import University
 from app.db.university.image_models import UniversityImage
+from app.db.university.program_models import UniversityProgram
 
 
 async def create_university(
@@ -62,12 +64,25 @@ async def list_universities(
         )
     if search:
         pattern = f"%{search}%"
+        discipline_match = (
+            select(UniversityProgram.university_id)
+            .join(Discipline, UniversityProgram.discipline_id == Discipline.id)
+            .join(DisciplineCategory, Discipline.category_id == DisciplineCategory.id)
+            .where(
+                or_(
+                    Discipline.name.ilike(pattern),
+                    DisciplineCategory.name.ilike(pattern),
+                    UniversityProgram.name.ilike(pattern),
+                )
+            )
+        )
         conditions.append(
             or_(
                 University.name.ilike(pattern),
                 University.name_en.ilike(pattern),
                 University.city.ilike(pattern),
                 University.description.ilike(pattern),
+                University.id.in_(discipline_match),
             )
         )
     # Note: program filter removed - now handled via UniversityProgram join

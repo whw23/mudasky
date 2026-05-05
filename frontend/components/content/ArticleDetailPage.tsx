@@ -46,7 +46,7 @@ export async function ArticleDetailPage({
     <>
       <Banner title={bannerTitle} subtitle={bannerSubtitle} />
 
-      <article className="mx-auto max-w-4xl px-4 py-10 md:py-16">
+      <article className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         {/* 返回链接 */}
         <Link
           href={backPath}

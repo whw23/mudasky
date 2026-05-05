@@ -181,6 +181,11 @@ class UniversityService:
             )
         await repository.delete_university_image(self.session, record)
 
+    async def get_programs(self, university_id: str) -> list:
+        """获取院校专业列表。"""
+        await self.get_university(university_id)
+        return await prog_repo.list_programs(self.session, university_id)
+
     async def set_programs(self, university_id: str, programs: list[ProgramItem]) -> None:
         """设置院校专业（全量覆盖）。"""
         await self.get_university(university_id)

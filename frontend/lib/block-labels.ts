@@ -35,6 +35,14 @@ export const DATA_TYPE_LABELS: Record<string, string> = {
   cases: "案例",
 }
 
+/** 画廊布局类型中文名 */
+export const GALLERY_TYPE_LABELS: Record<string, string> = {
+  grid: "等高网格",
+  masonry: "瀑布流",
+  rows: "行排列",
+  carousel: "轮播",
+}
+
 /** 获取 Block 的完整显示标签（含子类型） */
 export function getBlockLabel(block: Block): string {
   const base = BLOCK_TYPE_NAMES[block.type] ?? block.type
@@ -44,6 +52,10 @@ export function getBlockLabel(block: Block): string {
   }
   if (block.type === "featured_data" && block.options?.dataType) {
     const sub = DATA_TYPE_LABELS[block.options.dataType]
+    if (sub) return `${base} · ${sub}`
+  }
+  if (block.type === "gallery" && block.options?.galleryType) {
+    const sub = GALLERY_TYPE_LABELS[block.options.galleryType]
     if (sub) return `${base} · ${sub}`
   }
   return base

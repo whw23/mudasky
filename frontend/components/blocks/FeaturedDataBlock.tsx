@@ -57,12 +57,17 @@ export function FeaturedDataBlock({ block, header, bg, editable, onEdit, blockLa
       .catch(() => setData([]))
   }, [dataType, maxItems])
 
+  const itemCount = data.length
   const maxCols = block.options?.maxColumns ?? 3
-  const gridCls = maxCols === 4
-    ? "mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+  const needCenter = itemCount > 0 && itemCount < 3
+  const colsCls = maxCols === 4
+    ? "sm:grid-cols-2 lg:grid-cols-4"
     : maxCols === 2
-      ? "mt-8 grid gap-6 sm:grid-cols-2"
-      : "mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+      ? "sm:grid-cols-2"
+      : "md:grid-cols-2 lg:grid-cols-3"
+  const gridCls = needCenter
+    ? "mt-8 flex flex-wrap justify-center gap-6 [&>*]:w-80"
+    : `mt-8 grid gap-6 ${colsCls}`
 
   const content = dataType === "universities" ? (
     <UniversityGrid items={data as UniversityItem[]} gridCls={gridCls} />
