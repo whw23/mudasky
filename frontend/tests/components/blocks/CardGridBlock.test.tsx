@@ -121,12 +121,22 @@ describe("CardGridBlock", () => {
     expect(screen.queryByTestId("guide-card")).not.toBeInTheDocument()
   })
 
-  it("editable 模式包裹 SpotlightOverlay", () => {
+  it("editable + onEdit + onEditConfig 模式包裹 SpotlightOverlay", () => {
+    const onEdit = vi.fn()
+    const onEditConfig = vi.fn()
+    render(
+      <CardGridBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} onEditConfig={onEditConfig} />,
+    )
+
+    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
+  })
+
+  it("editable + onEdit 但无 onEditConfig 时不包裹 SpotlightOverlay", () => {
     const onEdit = vi.fn()
     render(
       <CardGridBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 })

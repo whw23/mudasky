@@ -48,6 +48,14 @@ vi.mock("@/components/admin/web-settings/BlockTypeFields", () => ({
   TypeSpecificFields: () => <div data-testid="type-specific-fields" />,
 }))
 
+vi.mock("@/contexts/ConfigContext", () => ({
+  useConfig: () => ({ pageBlocks: {} }),
+}))
+
+vi.mock("@/lib/api", () => ({
+  default: { get: vi.fn(), post: vi.fn() },
+}))
+
 /** 构造测试用 Block */
 function mockBlock(overrides: Partial<Block> = {}): Block {
   return {
@@ -129,7 +137,7 @@ describe("UnifiedBlockEditor", () => {
     expect(screen.queryByText("编辑 介绍")).not.toBeInTheDocument()
   })
 
-  it("API 驱动类型禁用内容编辑 Tab", () => {
+  it("API 驱动类型内容编辑 Tab 存在且可点击", async () => {
     render(
       <UnifiedBlockEditor
         {...defaultProps}
@@ -138,7 +146,9 @@ describe("UnifiedBlockEditor", () => {
     )
 
     const contentTab = screen.getByText("内容编辑")
-    expect(contentTab).toBeDisabled()
+    expect(contentTab).toBeInTheDocument()
+    expect(contentTab).not.toBeDisabled()
+    await userEvent.click(contentTab)
   })
 
   it("card_grid 类型显示卡片网格标题", () => {

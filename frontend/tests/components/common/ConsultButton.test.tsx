@@ -44,10 +44,10 @@ describe("ConsultButton", () => {
     expect(button.getAttribute("type")).toBe("button")
   })
 
-  it("已登录时点击跳转到关于页面", async () => {
+  it("已登录时点击跳转到指定 href", async () => {
     mockIsLoggedIn = true
 
-    render(<ConsultButton>立即咨询</ConsultButton>)
+    render(<ConsultButton href="/about">立即咨询</ConsultButton>)
 
     await userEvent.click(screen.getByText("立即咨询"))
 
@@ -55,10 +55,10 @@ describe("ConsultButton", () => {
     expect(mockShowLoginModal).not.toHaveBeenCalled()
   })
 
-  it("未登录时点击跳转并弹出登录弹窗", async () => {
+  it("未登录且 showLogin 时点击跳转并弹出登录弹窗", async () => {
     mockIsLoggedIn = false
 
-    render(<ConsultButton>立即咨询</ConsultButton>)
+    render(<ConsultButton href="/about" showLogin>立即咨询</ConsultButton>)
 
     await userEvent.click(screen.getByText("立即咨询"))
 

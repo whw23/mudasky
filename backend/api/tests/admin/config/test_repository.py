@@ -4,7 +4,7 @@
 使用 mock session 隔离真实数据库。
 """
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -61,13 +61,15 @@ async def test_list_all(session):
     assert len(result) == 2
 
 
-async def test_update_value(session):
+@patch("app.db.config.repository.flag_modified")
+async def test_update_value(mock_flag_modified, session):
     """更新配置值。"""
     config = MagicMock(spec=SystemConfig)
 
     await update_value(session, config, {"key": "new_value"})
 
     assert config.value == {"key": "new_value"}
+    mock_flag_modified.assert_called_once_with(config, "value")
     session.flush.assert_awaited_once()
 
 

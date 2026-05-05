@@ -49,8 +49,10 @@ const mockArticles = [
     slug: "guide",
     content: "<p>内容</p>",
     excerpt: "摘要1",
+    cover_image: null,
     category_id: "cat-1",
     status: "published",
+    is_pinned: false,
     published_at: "2024-01-15T00:00:00",
     created_at: "2024-01-14T00:00:00",
   },
@@ -60,8 +62,10 @@ const mockArticles = [
     slug: "visa-flow",
     content: "<p>签证</p>",
     excerpt: "摘要2",
+    cover_image: null,
     category_id: "cat-2",
     status: "published",
+    is_pinned: false,
     published_at: null,
     created_at: "2024-02-01T00:00:00",
   },
@@ -167,14 +171,16 @@ describe("ArticleListClient", () => {
 
   it("editable 模式显示草稿标签", async () => {
     const draftArticles = [
-      { ...mockArticles[0], status: "draft" },
+      { ...mockArticles[0], status: "draft", is_pinned: false },
     ]
     setupMockApi(draftArticles)
 
     render(<ArticleListClient editable />)
 
     await waitFor(() => {
-      expect(screen.getByText("草稿")).toBeInTheDocument()
+      /* 草稿标签在卡片 badge 和快捷操作按钮中各出现一次 */
+      const draftElements = screen.getAllByText("草稿")
+      expect(draftElements.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -226,7 +232,8 @@ describe("ArticleListClient", () => {
       expect(screen.getByText("留学申请攻略")).toBeInTheDocument()
     })
 
+    /* 文章链接根据分类 slug 动态生成：/{categorySlug}/{articleId} */
     const link = screen.getByText("留学申请攻略").closest("a")
-    expect(link).toHaveAttribute("href", "/news/a-1")
+    expect(link).toHaveAttribute("href", "/study-abroad/a-1")
   })
 })

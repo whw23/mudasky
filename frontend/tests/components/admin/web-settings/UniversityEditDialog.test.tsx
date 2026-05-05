@@ -75,6 +75,7 @@ describe("UniversityEditDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(api.get).mockResolvedValue({ data: [] })
   })
 
   it("创建模式：渲染添加院校标题", () => {

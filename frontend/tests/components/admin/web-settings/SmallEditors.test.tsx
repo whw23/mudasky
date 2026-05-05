@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { Block } from "@/types/block"
 
@@ -60,6 +60,31 @@ vi.mock("@/components/admin/ArrayFieldRenderer", () => ({
   ),
 }))
 
+/* mock IconPicker */
+vi.mock("@/components/admin/IconPicker", () => ({
+  IconPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <div data-testid="icon-picker">{value}</div>
+  ),
+}))
+
+/* mock API */
+vi.mock("@/lib/api", () => ({
+  default: {
+    get: vi.fn().mockResolvedValue({ data: [] }),
+    post: vi.fn().mockResolvedValue({ data: {} }),
+  },
+}))
+
+/* mock ConfigContext */
+vi.mock("@/contexts/ConfigContext", () => ({
+  useConfig: () => ({
+    contactItems: [],
+    pageBlocks: {},
+    navConfig: null,
+    refreshConfig: vi.fn(),
+  }),
+}))
+
 /** 构造测试用 Block */
 function mockBlock(overrides: Partial<Block> = {}): Block {
   return {
@@ -85,35 +110,36 @@ import {
 } from "@/components/admin/web-settings/BlockContentTab"
 
 describe("BlockContentTab", () => {
-  it("intro 类型渲染简单字段表单", () => {
+  it("intro 类型渲染编辑内容按钮", () => {
     render(
       <BlockContentTab
         block={mockBlock({ type: "intro" })}
         locale="zh"
         data={{ content: { zh: "测试" } }}
         onDataChange={vi.fn()}
+        onEditConfig={vi.fn()}
       />,
     )
 
-    expect(screen.getByTestId("localized-input-内容")).toBeInTheDocument()
+    expect(screen.getByText("编辑内容")).toBeInTheDocument()
   })
 
-  it("cta 类型渲染标题和描述字段", () => {
+  it("cta 类型渲染编辑内容按钮", () => {
     render(
       <BlockContentTab
         block={mockBlock({ type: "cta" })}
         locale="zh"
         data={{ title: { zh: "T" }, desc: { zh: "D" } }}
         onDataChange={vi.fn()}
+        onEditConfig={vi.fn()}
       />,
     )
 
-    expect(screen.getByTestId("localized-input-标题")).toBeInTheDocument()
-    expect(screen.getByTestId("localized-input-描述")).toBeInTheDocument()
+    expect(screen.getByText("编辑内容")).toBeInTheDocument()
   })
 
-  it("article_list（API 类型）返回 null", () => {
-    const { container } = render(
+  it("article_list 渲染文章列表管理", async () => {
+    render(
       <BlockContentTab
         block={mockBlock({ type: "article_list" })}
         locale="zh"
@@ -122,7 +148,9 @@ describe("BlockContentTab", () => {
       />,
     )
 
-    expect(container.innerHTML).toBe("")
+    await waitFor(() => {
+      expect(screen.getByText("写文章")).toBeInTheDocument()
+    })
   })
 
   it("step_list 类型渲染数组条目列表", () => {
@@ -202,7 +230,7 @@ describe("TypeSpecificFields", () => {
     expect(screen.getByText("最大列数")).toBeInTheDocument()
   })
 
-  it("doc_list 类型渲染图标名称输入", () => {
+  it("doc_list 类型渲染图标选择器", () => {
     render(
       <TypeSpecificFields
         type="doc_list"
@@ -212,10 +240,11 @@ describe("TypeSpecificFields", () => {
     )
 
     expect(screen.getByText("文档清单选项")).toBeInTheDocument()
-    expect(screen.getByLabelText("图标名称")).toBeInTheDocument()
+    expect(screen.getByText("图标")).toBeInTheDocument()
+    expect(screen.getByTestId("icon-picker")).toBeInTheDocument()
   })
 
-  it("article_list 类型渲染分类标识输入", () => {
+  it("article_list 类型渲染分类选择器", async () => {
     render(
       <TypeSpecificFields
         type="article_list"
@@ -225,7 +254,7 @@ describe("TypeSpecificFields", () => {
     )
 
     expect(screen.getByText("文章列表选项")).toBeInTheDocument()
-    expect(screen.getByLabelText("分类标识")).toBeInTheDocument()
+    expect(screen.getByText("分类")).toBeInTheDocument()
   })
 
   it("featured_data 类型渲染数据类型和最大数量", () => {
@@ -242,18 +271,17 @@ describe("TypeSpecificFields", () => {
     expect(screen.getByLabelText("最大数量")).toBeInTheDocument()
   })
 
-  it("cta 类型渲染样式和按钮链接", () => {
+  it("cta 类型渲染样式选择", () => {
     render(
       <TypeSpecificFields
         type="cta"
-        options={{ variant: "border-t", link: "/about" }}
+        options={{ variant: "border-t" }}
         onUpdateOption={vi.fn()}
       />,
     )
 
     expect(screen.getByText("行动号召选项")).toBeInTheDocument()
     expect(screen.getByText("样式")).toBeInTheDocument()
-    expect(screen.getByLabelText("按钮链接")).toBeInTheDocument()
   })
 
   it("contact_info 类型渲染联系信息选项", () => {
@@ -280,15 +308,16 @@ describe("TypeSpecificFields", () => {
     expect(container.innerHTML).toBe("")
   })
 
-  it("gallery 类型返回 null", () => {
-    const { container } = render(
+  it("gallery 类型渲染布局风格选择", () => {
+    render(
       <TypeSpecificFields
         type="gallery"
-        options={{}}
+        options={{ galleryType: "grid" }}
         onUpdateOption={vi.fn()}
       />,
     )
 
-    expect(container.innerHTML).toBe("")
+    expect(screen.getByText("图片墙选项")).toBeInTheDocument()
+    expect(screen.getByText("布局风格")).toBeInTheDocument()
   })
 })

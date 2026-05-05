@@ -6,14 +6,47 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 
+vi.mock("next-intl", () => ({
+  useLocale: () => "zh",
+}))
+
+const mockContactItems = [
+  {
+    id: "g1",
+    icon: "phone",
+    label: { zh: "咨询热线", en: "Hotline" },
+    content: { zh: "189-0000-0000", en: "189-0000-0000" },
+    image_id: null,
+    hover_zoom: false,
+  },
+]
+
+vi.mock("@/contexts/ConfigContext", () => ({
+  useConfig: () => ({ contactItems: mockContactItems }),
+}))
+
+vi.mock("@/lib/i18n-config", () => ({
+  getLocalizedValue: (val: any, locale: string) => {
+    if (typeof val === "string") return val
+    return val?.[locale] ?? val?.zh ?? ""
+  },
+}))
+
 vi.mock("@/components/about/ContactInfoSection", () => ({
-  ContactInfoSection: ({ editable, maxColumns, onEditField }: any) => (
+  ContactInfoSection: ({ editable, maxColumns, items, onEditField, onDelete, renderAddCard }: any) => (
     <div data-testid="contact-info-section" data-editable={editable} data-max-columns={maxColumns}>
+      <span data-testid="items-count">{items?.length ?? 0}</span>
       {onEditField && (
-        <button onClick={() => onEditField("1")} data-testid="edit-item">
+        <button onClick={() => onEditField("0")} data-testid="edit-item">
           编辑条目
         </button>
       )}
+      {onDelete && (
+        <button onClick={() => onDelete(0)} data-testid="delete-item">
+          删除条目
+        </button>
+      )}
+      {renderAddCard?.()}
     </div>
   ),
 }))
@@ -24,6 +57,10 @@ vi.mock("@/components/admin/SpotlightOverlay", () => ({
       {children}
     </div>
   ),
+}))
+
+vi.mock("@/components/blocks/AddContactItemMenu", () => ({
+  AddContactItemMenu: () => <div data-testid="add-contact-menu">添加</div>,
 }))
 
 import { ContactInfoBlock } from "@/components/blocks/ContactInfoBlock"
@@ -75,15 +112,15 @@ describe("ContactInfoBlock", () => {
       <ContactInfoBlock block={makeBlock()} header={null} bg="" />,
     )
 
-    /* 无 pt-10 的容器 */
     const headerContainer = container.querySelector(".pt-10")
     expect(headerContainer).toBeNull()
   })
 
-  it("editable + onEdit 时渲染 SpotlightOverlay", () => {
+  it("editable + onEdit + onEditConfig 时渲染 SpotlightOverlay", () => {
     const onEdit = vi.fn()
+    const onEditConfig = vi.fn()
     render(
-      <ContactInfoBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
+      <ContactInfoBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} onEditConfig={onEditConfig} />,
     )
 
     const overlay = screen.getByTestId("spotlight-overlay")
@@ -93,16 +130,17 @@ describe("ContactInfoBlock", () => {
 
   it("点击 SpotlightOverlay 触发 onEdit 并传递 block", () => {
     const onEdit = vi.fn()
+    const onEditConfig = vi.fn()
     const block = makeBlock()
     render(
-      <ContactInfoBlock block={block} header={null} bg="" editable onEdit={onEdit} />,
+      <ContactInfoBlock block={block} header={null} bg="" editable onEdit={onEdit} onEditConfig={onEditConfig} />,
     )
 
     fireEvent.click(screen.getByTestId("spotlight-overlay"))
     expect(onEdit).toHaveBeenCalledWith(block)
   })
 
-  it("onEditConfig 回调透传并添加 contact_item_ 前缀", () => {
+  it("onEditConfig 回调透传（global 类型条目使用 contact_item_global_ 前缀）", () => {
     const onEditConfig = vi.fn()
     const onEdit = vi.fn()
     render(
@@ -116,18 +154,19 @@ describe("ContactInfoBlock", () => {
       />,
     )
 
-    /* 点击编辑按钮触发 onEditField("1") -> onEditConfig("contact_item_1") */
+    /* 点击编辑按钮触发 onEditField("0") */
     screen.getByTestId("edit-item").click()
-    expect(onEditConfig).toHaveBeenCalledWith("contact_item_1")
+    /* data 为 null 时回退到 globalItems，触发 global 分支 */
+    expect(onEditConfig).toHaveBeenCalledWith("contact_item_global_g1")
   })
 
-  it("无 onEditConfig 时不渲染编辑按钮", () => {
+  it("无 onEditConfig 时不渲染 SpotlightOverlay（需要三者同时存在）", () => {
     const onEdit = vi.fn()
     render(
       <ContactInfoBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.queryByTestId("edit-item")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
   it("无 onEdit 时不渲染 SpotlightOverlay", () => {

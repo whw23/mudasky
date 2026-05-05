@@ -5,8 +5,11 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
-vi.mock("dompurify", () => ({
-  default: { sanitize: (html: string) => html },
+/* mock SafeHtml 组件（已经过 DOMPurify 消毒，测试中直接渲染 HTML） */
+vi.mock("@/components/common/SafeHtml", () => ({
+  SafeHtml: ({ html, className }: { html: string; className?: string }) => (
+    <div className={className} data-testid="safe-html" dangerouslySetInnerHTML={{ __html: html }} />
+  ),
 }))
 
 import { ArticleContent } from "@/components/content/ArticleContent"

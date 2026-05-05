@@ -94,14 +94,14 @@ describe("ArticleListBlock", () => {
     expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
-  it("editable 模式渲染管理工具栏和 SpotlightOverlay", () => {
+  it("editable 模式不渲染 SpotlightOverlay（使用 EditableOverlay 包裹条目）", () => {
     const onEdit = vi.fn()
     render(
       <ArticleListBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
     )
 
-    expect(screen.getByTestId("manage-toolbar")).toBeInTheDocument()
-    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
+    /* ManageToolbar 需要 categoryId（异步解析），初始渲染不显示 */
+    expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()
   })
 
   it("无 categorySlug 时 ArticleListClient 仍渲染", () => {

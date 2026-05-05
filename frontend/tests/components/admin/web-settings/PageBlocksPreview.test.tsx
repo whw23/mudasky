@@ -57,7 +57,9 @@ vi.mock("@hello-pangea/dnd", () => ({
 
 /* mock 子组件 */
 vi.mock("@/components/blocks/BlockRenderer", () => ({
-  BlockRenderer: () => <div data-testid="block-renderer" />,
+  BlockRenderer: ({ blocks }: { blocks: any[] }) => (
+    <div data-testid="block-renderer">{blocks?.length ?? 0} blocks</div>
+  ),
 }))
 
 vi.mock("@/components/admin/EditableOverlay", () => ({
@@ -77,7 +79,7 @@ vi.mock("@/components/layout/PageBanner", () => ({
 }))
 
 vi.mock("@/components/home/HomeBanner", () => ({
-  HomeBanner: () => <div data-testid="home-banner" />,
+  HomeBanner: ({ editable }: { editable?: boolean }) => <div data-testid="home-banner" />,
 }))
 
 vi.mock("@/contexts/ConfigContext", () => ({
@@ -97,7 +99,11 @@ vi.mock("@/contexts/ConfigContext", () => ({
       ],
       about: [],
     },
+    navConfig: null,
     refreshConfig: vi.fn(),
+  }),
+  useLocalizedConfig: () => ({
+    navConfig: { custom_items: [] },
   }),
 }))
 
@@ -121,6 +127,14 @@ vi.mock("@/components/admin/web-settings/BlockEditorOverlay", () => ({
   }) => (
     <div data-testid={`overlay-${block.id}`}>{children}</div>
   ),
+}))
+
+vi.mock("@/components/admin/web-settings/BlockContentTab", () => ({
+  getBlockEditType: (type: string) => {
+    if (type === "intro" || type === "cta") return "simple"
+    if (["card_grid", "step_list", "doc_list", "gallery", "contact_info"].includes(type)) return "array"
+    return "api"
+  },
 }))
 
 import { PageBlocksPreview } from "@/components/admin/web-settings/PageBlocksPreview"

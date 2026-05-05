@@ -279,6 +279,7 @@ class TestGetUniversity:
         )
         self.mock_svc.get_university_detail.return_value = {
             "university": uni,
+            "programs": [],
             "disciplines": [],
             "image_ids": [],
             "related_cases": [],
@@ -300,6 +301,7 @@ class TestGetUniversity:
         )
         self.mock_svc.get_university_detail.return_value = {
             "university": uni,
+            "programs": [],
             "disciplines": [],
             "image_ids": [],
             "related_cases": [],
@@ -338,6 +340,7 @@ class TestGetUniversity:
         )
         self.mock_svc.get_university_detail.return_value = {
             "university": uni,
+            "programs": [],
             "disciplines": [],
             "image_ids": [],
             "related_cases": [],

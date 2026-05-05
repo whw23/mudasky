@@ -28,14 +28,15 @@ import { Footer } from "@/components/layout/Footer"
 
 let mockConfig = {
   contactItems: [
-    { icon: "phone", label: "咨询热线", content: "189-1234-5678", image_id: null, hover_zoom: false },
-    { icon: "mail", label: "电子邮箱", content: "test@example.com", image_id: null, hover_zoom: false },
+    { type: "hotline", icon: "phone", label: "咨询热线", content: "189-1234-5678", image_id: null, hover_zoom: false },
+    { type: "email", icon: "mail", label: "电子邮箱", content: "test@example.com", image_id: null, hover_zoom: false },
   ],
   siteInfo: {
     brand_name: "测试品牌",
     tagline: "测试标语",
     hotline: "189-1234-5678",
     hotline_contact: "张老师",
+    description: "测试描述",
     logo_url: "",
     favicon_url: "",
     wechat_service_qr_url: "",

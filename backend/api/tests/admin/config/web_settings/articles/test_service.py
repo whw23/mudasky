@@ -79,7 +79,7 @@ async def test_list_published(mock_repo, service):
     assert total == 2
     assert len(result) == 2
     mock_repo.list_all_articles.assert_awaited_once_with(
-        service.session, 0, 10, None
+        service.session, 0, 10, None, None
     )
 
 

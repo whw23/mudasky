@@ -10,9 +10,13 @@ vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-/* 模拟 DOMPurify（SafeHtml 依赖） */
-vi.mock("dompurify", () => ({
-  default: { sanitize: (html: string) => html },
+/* mock SafeHtml（测试中直接渲染，实际使用 DOMPurify 消毒） */
+vi.mock("@/components/common/SafeHtml", () => ({
+  SafeHtml: ({ html, className }: { html: string; className?: string }) => {
+    const props: any = { className, "data-testid": "safe-html" }
+    props.dangerouslySetInnerHTML = { __html: html }
+    return <div {...props} />
+  },
 }))
 
 import { EditorPreview } from "@/components/editor/EditorPreview"
@@ -23,34 +27,34 @@ import { EditorToolbar } from "@/components/editor/EditorToolbar"
 
 describe("EditorPreview", () => {
   it("渲染 HTML 内容", () => {
-    const { container } = render(<EditorPreview html="<p>预览内容</p>" />)
+    render(<EditorPreview html="<p>预览内容</p>" />)
 
-    expect(container.textContent).toContain("预览内容")
+    const safeHtml = screen.getByTestId("safe-html")
+    expect(safeHtml.textContent).toContain("预览内容")
   })
 
   it("应用 prose 样式类", () => {
-    const { container } = render(<EditorPreview html="<p>内容</p>" />)
+    render(<EditorPreview html="<p>内容</p>" />)
 
-    const div = container.firstChild as HTMLElement
-    expect(div.className).toContain("prose")
-    expect(div.className).toContain("max-w-none")
+    const safeHtml = screen.getByTestId("safe-html")
+    expect(safeHtml.className).toContain("prose")
+    expect(safeHtml.className).toContain("max-w-none")
   })
 
   it("空内容时渲染空容器", () => {
-    const { container } = render(<EditorPreview html="" />)
+    render(<EditorPreview html="" />)
 
-    const div = container.firstChild as HTMLElement
-    expect(div).toBeInTheDocument()
-    expect(div.textContent).toBe("")
+    const safeHtml = screen.getByTestId("safe-html")
+    expect(safeHtml).toBeInTheDocument()
+    expect(safeHtml.textContent).toBe("")
   })
 
   it("渲染包含标签的富文本", () => {
-    const { container } = render(
-      <EditorPreview html="<h1>标题</h1><p>正文</p>" />,
-    )
+    render(<EditorPreview html="<h1>标题</h1><p>正文</p>" />)
 
-    expect(container.querySelector("h1")).toBeInTheDocument()
-    expect(container.querySelector("p")).toBeInTheDocument()
+    const safeHtml = screen.getByTestId("safe-html")
+    expect(safeHtml.querySelector("h1")).toBeInTheDocument()
+    expect(safeHtml.querySelector("p")).toBeInTheDocument()
   })
 })
 

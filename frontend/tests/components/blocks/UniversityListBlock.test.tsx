@@ -101,18 +101,10 @@ describe("UniversityListBlock", () => {
     expect(screen.getByTestId("manage-toolbar")).toBeInTheDocument()
   })
 
-  it("editable + onEdit 模式包裹 SpotlightOverlay", () => {
+  it("editable 模式不使用 SpotlightOverlay（使用 EditableOverlay 包裹条目）", () => {
     const onEdit = vi.fn()
     render(
       <UniversityListBlock block={makeBlock()} header={null} bg="" editable onEdit={onEdit} />,
-    )
-
-    expect(screen.getByTestId("spotlight-overlay")).toBeInTheDocument()
-  })
-
-  it("editable 但无 onEdit 时不包裹 SpotlightOverlay", () => {
-    render(
-      <UniversityListBlock block={makeBlock()} header={null} bg="" editable />,
     )
 
     expect(screen.queryByTestId("spotlight-overlay")).not.toBeInTheDocument()

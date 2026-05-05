@@ -93,7 +93,7 @@ describe("ArticleEditDialog", () => {
     expect(screen.getByText("内容类型")).toBeInTheDocument()
     expect(screen.getByText("富文本")).toBeInTheDocument()
     expect(screen.getByText("PDF 文件")).toBeInTheDocument()
-    expect(screen.getByText("状态")).toBeInTheDocument()
+    expect(screen.getByText("发布")).toBeInTheDocument()
   })
 
   it("渲染 TiptapEditor 组件（html 模式）", () => {

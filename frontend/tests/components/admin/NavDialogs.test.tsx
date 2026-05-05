@@ -20,6 +20,25 @@ vi.mock("sonner", () => ({
   },
 }))
 
+vi.mock("@/components/admin/LocalizedInput", () => ({
+  LocalizedInput: ({ value, onChange, label }: any) => (
+    <div data-testid="localized-input">
+      <label htmlFor={`localized-zh-${label}`}>{label}（中文）</label>
+      <input
+        id={`localized-zh-${label}`}
+        value={value?.zh || ""}
+        onChange={(e: any) => onChange({ ...value, zh: e.target.value })}
+      />
+      <label htmlFor={`localized-en-${label}`}>{label}（English）</label>
+      <input
+        id={`localized-en-${label}`}
+        value={value?.en || ""}
+        onChange={(e: any) => onChange({ ...value, en: e.target.value })}
+      />
+    </div>
+  ),
+}))
+
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { AddNavItemDialog } from "@/components/admin/web-settings/AddNavItemDialog"
@@ -44,7 +63,7 @@ describe("AddNavItemDialog", () => {
     render(<AddNavItemDialog {...defaultProps} />)
 
     expect(screen.getByText("新增导航项")).toBeInTheDocument()
-    expect(screen.getByLabelText("名称")).toBeInTheDocument()
+    expect(screen.getByLabelText("名称（中文）")).toBeInTheDocument()
     expect(screen.getByLabelText("Slug")).toBeInTheDocument()
   })
 
@@ -55,19 +74,19 @@ describe("AddNavItemDialog", () => {
     expect(screen.getByText("添加")).toBeInTheDocument()
   })
 
-  it("名称和 slug 为空时提交触发错误提示", async () => {
+  it("中文名称为空时提交触发错误提示", async () => {
     render(<AddNavItemDialog {...defaultProps} />)
 
     await userEvent.click(screen.getByText("添加"))
 
-    expect(toast.error).toHaveBeenCalledWith("名称和 slug 不能为空")
+    expect(toast.error).toHaveBeenCalledWith("中文名称不能为空")
     expect(api.post).not.toHaveBeenCalled()
   })
 
   it("slug 格式错误时提交触发错误提示", async () => {
     render(<AddNavItemDialog {...defaultProps} />)
 
-    await userEvent.type(screen.getByLabelText("名称"), "测试页")
+    await userEvent.type(screen.getByLabelText("名称（中文）"), "测试页")
     await userEvent.type(screen.getByLabelText("Slug"), "INVALID_slug")
     await userEvent.click(screen.getByText("添加"))
 
@@ -80,14 +99,14 @@ describe("AddNavItemDialog", () => {
 
     render(<AddNavItemDialog {...defaultProps} />)
 
-    await userEvent.type(screen.getByLabelText("名称"), "校园风采")
+    await userEvent.type(screen.getByLabelText("名称（中文）"), "校园风采")
     await userEvent.type(screen.getByLabelText("Slug"), "campus-life")
     await userEvent.click(screen.getByText("添加"))
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith("/admin/web-settings/nav/add-item", {
         slug: "campus-life",
-        name: "校园风采",
+        name: expect.objectContaining({ zh: "校园风采" }),
         description: "",
       })
       expect(toast.success).toHaveBeenCalledWith("导航项已添加")
@@ -101,7 +120,7 @@ describe("AddNavItemDialog", () => {
 
     render(<AddNavItemDialog {...defaultProps} />)
 
-    await userEvent.type(screen.getByLabelText("名称"), "测试")
+    await userEvent.type(screen.getByLabelText("名称（中文）"), "测试")
     await userEvent.type(screen.getByLabelText("Slug"), "test")
     await userEvent.click(screen.getByText("添加"))
 
