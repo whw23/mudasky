@@ -157,14 +157,13 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
                   <SelectValue placeholder="选择学科" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => {
-                    const catDiscs = disciplines.filter((d) => d.category_id === cat.id)
-                    if (catDiscs.length === 0) return null
-                    return catDiscs.map((d) => (
+                  {disciplines.map((d) => {
+                    const cat = categories.find((c) => c.id === d.category_id)
+                    return (
                       <SelectItem key={d.id} value={d.id}>
-                        {cat.name} / {d.name}
+                        {cat ? `${cat.name} / ${d.name}` : d.name}
                       </SelectItem>
-                    ))
+                    )
                   })}
                 </SelectContent>
               </Select>
