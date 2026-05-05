@@ -74,8 +74,11 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
       if (filters.disciplineCategoryId) params.discipline_category_id = filters.disciplineCategoryId
       if (filters.disciplineId) params.discipline_id = filters.disciplineId
 
+      const url = editable
+        ? "/admin/web-settings/universities/list"
+        : "/public/universities/list"
       const { data } = await api.get<PaginatedResponse<University>>(
-        "/public/universities/list",
+        url,
         { params },
       )
       setUniversities(data.items)
@@ -88,7 +91,7 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
     } finally {
       setLoading(false)
     }
-  }, [page, filters])
+  }, [page, filters, editable])
 
   useEffect(() => {
     fetchUniversities()
