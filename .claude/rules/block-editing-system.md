@@ -65,9 +65,10 @@ contact_items 与 site_info 之间存在双向同步关系，使用不可编辑�
 |------|-------|---------|
 | 数组型 | card_grid, step_list, doc_list, gallery, contact_info | ItemEditDialog + BlockItemsList + DnD |
 | 单体型 | intro, cta | ItemEditDialog（"编辑内容"按钮） |
-| API 型 | university_list, featured_data | 不可编辑（数据来自管理页面） |
+| API 型 | featured_data | 不可编辑（数据来自管理页面） |
 | 文章型 | article_list | ArticleEditDialog + API 直接操作（见下方） |
 | 案例型 | case_grid | CaseEditDialog + API 直接操作（见下方） |
+| 院校型 | university_list | UniversityEditDialog + API 直接操作（见下方） |
 
 数组型 Block 遵循统一模式：预览区 FieldOverlay → handleEditConfig → ItemEditDialog；内容标签页 BlockItemsList + 添加按钮。
 
@@ -140,6 +141,16 @@ case_grid 的内容标签页使用自定义的 `CaseItemsList` 组件：
 #### 图片上传
 
 CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-settings/images/upload` 通用接口（与 ImageUploadField 一致），不再使用独立的 upload-avatar/upload-offer 端点。上传后获得 image_id，保存时传递给 CaseCreate/CaseUpdate schema 的 `avatar_image_id`/`offer_image_id` 字段。
+
+### 院校列表 Block（university_list）
+
+与 case_grid 模式完全对齐，额外保留学科管理功能：
+
+1. **不使用 SpotlightOverlay**：院校卡片有精选和编辑按钮
+2. **管理工具栏**：导入导出 + 学科管理按钮（DisciplineManageDialog），"添加院校"改为占位卡片
+3. **卡片快捷操作**：左上角星标精选按钮（`is_featured`），EditableOverlay 编辑按钮
+4. **BlockContentTab**：`UniversityItemsList`（院校名+国家+城市+精选标记，编辑/删除/新建）
+5. **Logo 上传**：UniversityEditDialog 改用通用接口 `/admin/web-settings/images/upload`，UniversityCreate/Update schema 加 `logo_image_id`
 
 ### 富文本编辑器（Tiptap）
 
@@ -294,3 +305,5 @@ ResizableNodeView 的外层容器 `[data-resize-container]` 设置 `display: fle
 - **案例图片上传端点不存在**：CaseEditDialog 新建模式调用 `upload-avatar-temp`/`upload-offer-temp`（不存在），改为统一用通用图片上传接口 `/admin/web-settings/images/upload`
 - **案例 Schema 缺 image_id 字段**：CaseCreate/CaseUpdate 只有旧的 `avatar_url` 字段，需要加 `avatar_image_id`/`offer_image_id`
 - **案例详情页 next/image 报错**：`next/image` 不支持带 query string 的本地路径（`/api/public/images/detail?id=xxx`），改用普通 `<img>` 标签
+- **院校 logo 上传端点不存在**：UniversityEditDialog 新建模式调用 `upload-logo-temp`（不存在），改为统一用通用图片上传接口
+- **院校 Schema 缺 logo_image_id 字段**：UniversityCreate/UniversityUpdate 只有旧的 `logo_url` 字段，需要加 `logo_image_id`
