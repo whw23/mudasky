@@ -157,7 +157,7 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
             const filteredDiscs = disciplines.filter((d) => d.category_id === prog.category_id)
             return (
               <div key={idx} className="flex items-center gap-2">
-                <Select value={prog.category_id} onValueChange={(v) => updateCategory(idx, v)}>
+                <Select value={prog.category_id} onValueChange={(v) => { if (v !== null) updateCategory(idx, v) }}>
                   <SelectTrigger className="w-28">
                     <SelectValue placeholder="大分类" />
                   </SelectTrigger>
@@ -169,7 +169,7 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
                 </Select>
                 <Select
                   value={prog.discipline_id}
-                  onValueChange={(v) => updateDiscipline(idx, v)}
+                  onValueChange={(v) => { if (v !== null) updateDiscipline(idx, v) }}
                   disabled={!prog.category_id}
                 >
                   <SelectTrigger className="w-28">

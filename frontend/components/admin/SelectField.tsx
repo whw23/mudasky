@@ -25,7 +25,7 @@ export function SelectField({ label, value, options, onValueChange, id }: Select
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={(v) => { if (v !== null) onValueChange(v) }}>
         <SelectTrigger id={id} className="w-full">
           <SelectValue />
         </SelectTrigger>

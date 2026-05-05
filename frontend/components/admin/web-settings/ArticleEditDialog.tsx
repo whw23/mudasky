@@ -254,7 +254,7 @@ export function ArticleEditDialog({
           {!categoryLocked && !isEdit && (
             <div className="space-y-1.5">
               <Label>分类</Label>
-              <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+              <Select value={selectedCategoryId} onValueChange={(v) => { if (v !== null) setSelectedCategoryId(v) }}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="选择分类" />
                 </SelectTrigger>

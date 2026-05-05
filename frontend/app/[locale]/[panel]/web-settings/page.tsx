@@ -113,8 +113,8 @@ interface ItemDialogState {
   title: string
   subtitle?: string
   fields: ItemFieldDef[]
-  data: Record<string, unknown>
-  onSave: (data: Record<string, unknown>) => Promise<void>
+  data: Record<string, any>
+  onSave: (data: Record<string, any>) => Promise<void>
   sourceHint?: string
 }
 
@@ -391,8 +391,8 @@ export default function WebSettingsPage() {
   /** 全局 contact_item 保存后同步到 site_info */
   async function syncContactItemToSiteInfo(
     itemType: string,
-    newData: Record<string, unknown>,
-    oldData: Record<string, unknown>,
+    newData: Record<string, any>,
+    oldData: Record<string, any>,
   ): Promise<void> {
     const sync = CONTACT_SITE_SYNC[itemType]
     if (!sync) return

@@ -17,7 +17,7 @@ export function SwitchField({ label, checked, onCheckedChange, id }: SwitchField
     <div className="space-y-2">
       <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
       <div>
-        <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+        <Switch checked={checked} onCheckedChange={onCheckedChange} />
       </div>
     </div>
   )

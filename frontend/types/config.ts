@@ -16,6 +16,7 @@ export interface CountryCode {
 /** 联系信息条目 */
 export interface ContactItem {
   id: string
+  type: string
   icon: string
   label: LocalizedField
   content: LocalizedField
