@@ -6,6 +6,7 @@
  */
 
 import { SafeHtml } from "@/components/common/SafeHtml"
+import "./article-content.css"
 
 interface ArticleContentProps {
   contentType: string
@@ -45,7 +46,7 @@ export function ArticleContent({
   return (
     <SafeHtml
       html={content}
-      className="prose max-w-none prose-headings:font-bold prose-a:text-primary"
+      className="article-content prose max-w-none prose-headings:font-bold prose-a:text-primary"
     />
   )
 }

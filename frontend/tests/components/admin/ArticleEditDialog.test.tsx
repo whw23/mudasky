@@ -28,6 +28,12 @@ vi.mock("@/components/editor/TiptapEditor", () => ({
   ),
 }))
 
+vi.mock("@/components/admin/ImageUploadField", () => ({
+  ImageUploadField: ({ label }: { label: string }) => (
+    <div data-testid="image-upload-field">{label}</div>
+  ),
+}))
+
 import api from "@/lib/api"
 import { toast } from "sonner"
 import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
@@ -44,6 +50,7 @@ function mockArticle(overrides: Record<string, unknown> = {}) {
     status: "draft",
     content_type: "html",
     file_id: null,
+    cover_image: null,
     ...overrides,
   }
 }

@@ -2,6 +2,7 @@
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.db.config.models import SystemConfig
 
@@ -31,6 +32,7 @@ async def update_value(
 ) -> None:
     """更新配置值。"""
     config.value = value
+    flag_modified(config, "value")
     await session.flush()
 
 

@@ -210,6 +210,7 @@
     "insertImage": "插入图片",
     "insertLink": "插入链接",
     "insertVideo": "插入视频",
+    "insertIframe": "插入 iframe",
     "insertTable": "插入表格",
     "imagePrompt": "请输入图片地址",
     "linkPrompt": "请输入链接地址",

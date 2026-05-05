@@ -11,10 +11,12 @@ import { useTranslations } from "next-intl"
 import { createEditorExtensions } from "./editor-extensions"
 import { handleImagePaste, handleImageDrop, handleImageSelect } from "./image-upload"
 import { insertVideo } from "./video-embed"
+import { insertIframe } from "./iframe-embed"
 import { EditorToolbar, type EditorMode } from "./EditorToolbar"
 import { HtmlSourceEditor } from "./HtmlSourceEditor"
 import { EditorPreview } from "./EditorPreview"
 import "./editor.css"
+import "@/components/content/article-content.css"
 
 interface TiptapEditorProps {
   /** 初始 HTML 内容 */
@@ -96,22 +98,28 @@ export function TiptapEditor({
 
   /** 处理视频插入 */
   const handleVideoInsert = useCallback(() => {
-    if (editor) {
-      insertVideo(editor, t("videoPrompt"))
-    }
+    if (editor) insertVideo(editor, t("videoPrompt"))
   }, [editor, t])
+
+  /** 处理 iframe 插入 */
+  const handleIframeInsert = useCallback(() => {
+    if (editor) insertIframe(editor)
+  }, [editor])
 
   if (!editor) return null
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <EditorToolbar
-        editor={editor}
-        mode={mode}
-        onModeChange={handleModeChange}
-        onImageSelect={handleImageSelectClick}
-        onVideoInsert={handleVideoInsert}
-      />
+    <div className="rounded-lg border">
+      <div className="sticky -top-4 z-10 -mx-5 bg-background px-5 pt-1">
+        <EditorToolbar
+          editor={editor}
+          mode={mode}
+          onModeChange={handleModeChange}
+          onImageSelect={handleImageSelectClick}
+          onVideoInsert={handleVideoInsert}
+          onIframeInsert={handleIframeInsert}
+        />
+      </div>
       <div className="flex min-h-[300px]">
         {mode === "source" ? (
           <HtmlSourceEditor value={sourceHtml} onChange={setSourceHtml} />

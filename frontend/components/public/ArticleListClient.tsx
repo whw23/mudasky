@@ -37,6 +37,7 @@ interface Article {
   slug: string
   content: string
   excerpt: string
+  cover_image: string | null
   category_id: string
   status: string
   published_at: string | null
@@ -63,6 +64,7 @@ export function ArticleListClient({
   const [articles, setArticles] = useState<Article[]>([])
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [categoryReady, setCategoryReady] = useState(!categorySlug)
 
   /* 从 URL 读取初始值 */
   const [activeCategoryId, setActiveCategoryId] = useState<string | undefined>(
@@ -81,17 +83,21 @@ export function ArticleListClient({
       .get<Category[]>(url)
       .then(({ data }) => {
         setCategories(data ?? [])
-        /* 若指定了 slug，找到对应分类 ID */
         if (categorySlug) {
           const cat = (data ?? []).find((c) => c.slug === categorySlug)
           if (cat) setActiveCategoryId(cat.id)
         }
+        setCategoryReady(true)
       })
-      .catch(() => setCategories([]))
+      .catch(() => {
+        setCategories([])
+        setCategoryReady(true)
+      })
   }, [editable, categorySlug])
 
-  /** 获取文章列表 */
+  /** 获取文章列表（等分类解析完再请求） */
   const fetchArticles = useCallback(async () => {
+    if (!categoryReady) return
     setLoading(true)
     try {
       const url = editable
@@ -111,15 +117,20 @@ export function ArticleListClient({
     } finally {
       setLoading(false)
     }
-  }, [editable, activeCategoryId, currentPage])
+  }, [editable, activeCategoryId, currentPage, categoryReady])
 
   useEffect(() => {
     fetchArticles()
   }, [fetchArticles])
 
+  /** 根据分类 ID 获取分类信息 */
+  function getCategory(catId: string): Category | undefined {
+    return categories.find((c) => c.id === catId)
+  }
+
   /** 根据分类 ID 获取名称 */
   function getCategoryName(catId: string): string {
-    return categories.find((c) => c.id === catId)?.name ?? ""
+    return getCategory(catId)?.name ?? ""
   }
 
   /** 根据分类 ID 获取颜色 */
@@ -148,14 +159,15 @@ export function ArticleListClient({
 
       {/* 文章列表 */}
       {loading ? (
-        <div className="mt-8 text-center text-muted-foreground">加载中...</div>
+        <div className="mt-4 text-center text-muted-foreground">加载中...</div>
       ) : articles.length > 0 ? (
-        <div className="mt-8 space-y-4">
+        <div className="mt-4 space-y-4">
           {articles.map((article) => (
             <ArticleCard
               key={article.id}
               article={article}
               categoryName={getCategoryName(article.category_id)}
+              categorySlug={getCategory(article.category_id)?.slug ?? "news"}
               categoryColor={getCategoryColor(article.category_id)}
               readMoreLabel={t("readMore")}
               editable={editable}
@@ -164,7 +176,7 @@ export function ArticleListClient({
           ))}
         </div>
       ) : (
-        <div className="mt-16 text-center text-muted-foreground">
+        <div className="mt-8 text-center text-muted-foreground">
           {t("noContent")}
         </div>
       )}
@@ -198,7 +210,7 @@ function CategoryTabs({
   onChange: (catId?: string) => void
 }) {
   return (
-    <div className="mt-8 flex flex-wrap justify-center gap-2">
+    <div className="mt-4 flex flex-wrap justify-center gap-2">
       <button
         className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
           !activeCategoryId
@@ -230,6 +242,7 @@ function CategoryTabs({
 function ArticleCard({
   article,
   categoryName,
+  categorySlug,
   categoryColor,
   readMoreLabel,
   editable,
@@ -237,6 +250,7 @@ function ArticleCard({
 }: {
   article: Article
   categoryName: string
+  categorySlug: string
   categoryColor: string
   readMoreLabel: string
   editable?: boolean
@@ -244,6 +258,13 @@ function ArticleCard({
 }) {
   const inner = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {article.cover_image && (
+        <img
+          src={article.cover_image}
+          alt={article.title}
+          className="hidden h-20 w-32 shrink-0 rounded object-cover sm:block"
+        />
+      )}
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -292,7 +313,7 @@ function ArticleCard({
   }
 
   return (
-    <Link href={`/news/${article.id}`} className={cls}>
+    <Link href={`/${categorySlug}/${article.id}`} className={cls}>
       {inner}
     </Link>
   )

@@ -3,7 +3,7 @@
 /**
  * 文章列表区块。
  * 从 options.categorySlug 读取分类参数，调用 ArticleListClient。
- * editable 模式下显示 ManageToolbar 并支持文章 CRUD。
+ * editable 模式下显示管理工具栏并支持文章 CRUD。
  */
 
 import { useEffect, useState, useCallback } from "react"
@@ -11,10 +11,8 @@ import type { ReactNode } from "react"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
-import { Button } from "@/components/ui/button"
 import type { Block } from "@/types/block"
 import { ArticleListClient } from "@/components/public/ArticleListClient"
-import { SpotlightOverlay } from "@/components/admin/SpotlightOverlay"
 import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
@@ -32,6 +30,7 @@ interface Article {
   slug: string
   content: string
   excerpt: string
+  cover_image: string | null
   category_id: string
   status: string
   published_at: string | null
@@ -55,7 +54,7 @@ interface BlockProps {
 }
 
 /** 文章列表区块 */
-export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLabel }: BlockProps) {
+export function ArticleListBlock({ block, header, bg, editable, blockLabel }: BlockProps) {
   const categorySlug = block.options?.categorySlug as string | undefined
 
   /* 编辑弹窗状态 */
@@ -95,6 +94,12 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLab
     setEditOpen(true)
   }
 
+  /** 打开新建弹窗 */
+  function handleCreateArticle() {
+    setEditItem(null)
+    setEditOpen(true)
+  }
+
   /** 确认导入 */
   async function handleImportConfirm(items: any[]) {
     if (!importFile) {
@@ -112,15 +117,15 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLab
     refreshData()
   }
 
-  const el = (
-    <section className={`py-10 md:py-16 ${bg}`}>
-      <div className="mx-auto max-w-7xl px-4">
-        {header}
+  return (
+    <>
+      <section className={`py-10 md:py-16 ${bg}`}>
+        <div className="mx-auto max-w-7xl px-4">
+          {header}
 
-        {/* 管理工具栏（仅编辑模式） */}
-        {editable && (
-          <ManageToolbar>
-            {categoryId && (
+          {/* 管理工具栏（仅编辑模式，只含导入导出） */}
+          {editable && categoryId && (
+            <ManageToolbar>
               <ImportExportToolbar
                 templateUrl="/admin/web-settings/articles/list/import/template"
                 importUrl={`/admin/web-settings/articles/list/import/preview?category_id=${categoryId}`}
@@ -130,47 +135,46 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLab
                 templateFilename="articles_template.zip"
                 exportFilename="articles.zip"
               />
-            )}
-            <Button
-              size="sm"
-              onClick={() => {
-                setEditItem(null)
-                setEditOpen(true)
-              }}
-              disabled={!categoryId}
-            >
-              <Plus className="mr-1 size-4" /> 写文章
-            </Button>
-          </ManageToolbar>
-        )}
+            </ManageToolbar>
+          )}
 
-        <ArticleListClient
-          key={refreshKey}
-          categorySlug={categorySlug}
-          editable={editable}
-          onEdit={editable ? handleEditArticle : undefined}
-        />
-      </div>
-    </section>
-  )
-
-  if (editable && onEdit) {
-    return (
-      <SpotlightOverlay onClick={() => onEdit(block)} label={blockLabel || "编辑文章列表"}>
-        {el}
-
-        {/* 编辑弹窗 */}
-        {categoryId && (
-          <ArticleEditDialog
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            article={editItem}
-            categoryId={categoryId}
-            onSuccess={refreshData}
+          <ArticleListClient
+            key={refreshKey}
+            categorySlug={categorySlug}
+            editable={editable}
+            onEdit={editable ? handleEditArticle : undefined}
           />
-        )}
 
-        {/* 导入预览弹窗 */}
+          {/* 写文章占位卡片（仅编辑模式） */}
+          {editable && (
+            <div className="mt-4">
+              <button
+                onClick={handleCreateArticle}
+                className="group block w-full rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80"
+              >
+                <div className="flex items-center justify-center gap-2 text-muted-foreground group-hover:text-primary">
+                  <Plus className="size-5" />
+                  <span className="text-sm font-medium">写文章</span>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 编辑弹窗（放在 section 外部，避免事件冒泡） */}
+      {editable && (
+        <ArticleEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          article={editItem}
+          categoryId={categoryId ?? undefined}
+          onSuccess={refreshData}
+        />
+      )}
+
+      {/* 导入预览弹窗 */}
+      {editable && (
         <ImportPreviewDialog
           open={!!previewData}
           onOpenChange={(open) => !open && setPreviewData(null)}
@@ -178,8 +182,7 @@ export function ArticleListBlock({ block, header, bg, editable, onEdit, blockLab
           onConfirm={handleImportConfirm}
           columns={IMPORT_COLUMNS}
         />
-      </SpotlightOverlay>
-    )
-  }
-  return el
+      )}
+    </>
+  )
 }

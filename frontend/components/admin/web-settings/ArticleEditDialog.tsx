@@ -2,7 +2,8 @@
 
 /**
  * 文章编辑弹窗。
- * 用于创建和编辑文章，支持标题、摘要、内容、状态等字段。
+ * 用于创建和编辑文章，支持标题、摘要、封面图、内容、分类、状态等字段。
+ * categoryId 有值时分类锁定不可改，为空时可选择分类。
  */
 
 import { useState, useEffect } from "react"
@@ -28,6 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { TiptapEditor } from "@/components/editor/TiptapEditor"
+import { ImageUploadField } from "@/components/admin/ImageUploadField"
 
 interface ArticleData {
   id: string
@@ -35,18 +37,38 @@ interface ArticleData {
   slug: string
   content: string
   excerpt: string
+  cover_image?: string | null
   category_id: string
   status: string
   content_type?: string
   file_id?: string | null
 }
 
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
 interface ArticleEditDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   article: ArticleData | null
-  categoryId: string
+  /** 固定分类 ID（有值时锁定不可改，为空时可选择） */
+  categoryId?: string
   onSuccess: () => void
+}
+
+/** 从 cover_image URL 提取 image ID */
+function extractImageId(url: string | null | undefined): string {
+  if (!url) return ""
+  const match = url.match(/[?&]id=([^&]+)/)
+  return match?.[1] ?? ""
+}
+
+/** 将 image ID 转为 cover_image URL */
+function toImageUrl(imageId: string): string | null {
+  return imageId ? `/api/public/images/detail?id=${imageId}` : null
 }
 
 /** 文章编辑弹窗 */
@@ -54,10 +76,11 @@ export function ArticleEditDialog({
   open,
   onOpenChange,
   article,
-  categoryId,
+  categoryId: fixedCategoryId,
   onSuccess,
 }: ArticleEditDialogProps) {
   const isEdit = !!article
+  const categoryLocked = !!fixedCategoryId
 
   const [title, setTitle] = useState("")
   const [excerpt, setExcerpt] = useState("")
@@ -65,27 +88,45 @@ export function ArticleEditDialog({
   const [status, setStatus] = useState("draft")
   const [contentType, setContentType] = useState<"html" | "file">("html")
   const [fileId, setFileId] = useState<string | null>(null)
+  const [coverImageId, setCoverImageId] = useState("")
+  const [selectedCategoryId, setSelectedCategoryId] = useState("")
+  const [categories, setCategories] = useState<Category[]>([])
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  /** 加载分类列表（仅非锁定模式） */
+  useEffect(() => {
+    if (categoryLocked) return
+    api.get<Category[]>("/admin/web-settings/categories/list")
+      .then(({ data }) => setCategories(data ?? []))
+      .catch(() => setCategories([]))
+  }, [categoryLocked])
+
   /** 打开时初始化表单 */
   useEffect(() => {
-    if (open && article) {
+    if (!open) return
+    if (article) {
       setTitle(article.title)
       setExcerpt(article.excerpt)
       setContent(article.content)
       setStatus(article.status)
       setContentType((article.content_type as "html" | "file") || "html")
       setFileId(article.file_id || null)
-    } else if (open && !article) {
+      setCoverImageId(extractImageId(article.cover_image) || "")
+      setSelectedCategoryId(article.category_id)
+    } else {
       setTitle("")
       setExcerpt("")
       setContent("")
       setStatus("draft")
       setContentType("html")
       setFileId(null)
+      setCoverImageId("")
+      setSelectedCategoryId(fixedCategoryId || "")
     }
-  }, [open, article])
+  }, [open, article, fixedCategoryId])
+
+  const effectiveCategoryId = fixedCategoryId || selectedCategoryId
 
   /** PDF 上传处理 */
   async function handlePdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -123,9 +164,14 @@ export function ArticleEditDialog({
       toast.error("标题不能为空")
       return
     }
+    if (!effectiveCategoryId) {
+      toast.error("请选择分类")
+      return
+    }
 
     setSaving(true)
     try {
+      const coverImage = toImageUrl(coverImageId)
       if (isEdit) {
         await api.post("/admin/web-settings/articles/list/detail/edit", {
           article_id: article.id,
@@ -134,6 +180,7 @@ export function ArticleEditDialog({
           content_type: contentType,
           content: contentType === "html" ? content : "",
           file_id: contentType === "file" ? fileId : null,
+          cover_image: coverImage,
           status,
         })
         toast.success("文章已更新")
@@ -144,7 +191,8 @@ export function ArticleEditDialog({
           content_type: contentType,
           content: contentType === "html" ? content : "",
           file_id: contentType === "file" ? fileId : null,
-          category_id: categoryId,
+          cover_image: coverImage,
+          category_id: effectiveCategoryId,
           status,
         })
         toast.success("文章已创建")
@@ -156,6 +204,15 @@ export function ArticleEditDialog({
     } finally {
       setSaving(false)
     }
+  }
+
+  /** 获取锁定分类的名称 */
+  function getLockedCategoryName(): string {
+    if (article) {
+      const cat = categories.find((c) => c.id === article.category_id)
+      if (cat) return cat.name
+    }
+    return "已指定"
   }
 
   return (
@@ -180,7 +237,30 @@ export function ArticleEditDialog({
                 placeholder="文章标题"
               />
             </div>
+            <ImageUploadField
+              label="封面图"
+              imageId={coverImageId}
+              onChange={setCoverImageId}
+            />
           </div>
+
+          {/* 分类选择（锁定模式显示禁用下拉） */}
+          {!categoryLocked && !isEdit && (
+            <div className="space-y-1.5">
+              <Label>分类</Label>
+              <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择分类" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label htmlFor="article-excerpt">摘要</Label>
             <Textarea

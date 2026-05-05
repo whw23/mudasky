@@ -9,7 +9,7 @@ import {
   Bold, Italic, Underline, Strikethrough, Palette, Highlighter,
   List, ListOrdered, ListTodo, Quote, SquareCode, Minus,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Superscript, Subscript, Link2, ImagePlus, Video, Table2,
+  Superscript, Subscript, Link2, ImagePlus, Video, AppWindow, Table2,
 } from "lucide-react"
 
 /** 宽松编辑器类型，兼容 pnpm 严格提升下扩展命令类型丢失 */
@@ -133,6 +133,7 @@ export function getRow2Groups(
   callbacks: {
     onImageSelect: () => void
     onVideoInsert: () => void
+    onIframeInsert: () => void
   },
 ): ToolbarGroup[] {
   return [
@@ -257,6 +258,11 @@ export function getRow2Groups(
           key: "insertVideo",
           icon: Video,
           action: callbacks.onVideoInsert,
+        },
+        {
+          key: "insertIframe",
+          icon: AppWindow,
+          action: callbacks.onIframeInsert,
         },
         {
           key: "insertTable",

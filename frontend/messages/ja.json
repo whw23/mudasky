@@ -207,6 +207,7 @@
     "insertImage": "画像を挿入",
     "insertLink": "リンクを挿入",
     "insertVideo": "動画を挿入",
+    "insertIframe": "iframe を挿入",
     "insertTable": "表を挿入",
     "imagePrompt": "画像のURLを入力してください",
     "linkPrompt": "リンクのURLを入力してください",

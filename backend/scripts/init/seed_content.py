@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 CATEGORIES = [
     ("新闻政策", "news", "新闻和政策动态"),
-    ("留学项目", "study-abroad", "留学项目介绍"),
+    ("出国留学", "study-abroad", "留学项目介绍"),
     ("申请条件", "requirements", "申请条件和材料"),
     ("签证办理", "visa", "签证申请指南"),
     ("留学生活", "life", "海外生活指南"),

@@ -89,10 +89,11 @@ class ArticleService:
         offset: int,
         limit: int,
         status: str | None = None,
+        category_id: str | None = None,
     ) -> tuple[list[Article], int]:
         """管理员分页查询所有文章。"""
         return await repository.list_all_articles(
-            self.session, offset, limit, status
+            self.session, offset, limit, status, category_id
         )
 
     async def upload_pdf(

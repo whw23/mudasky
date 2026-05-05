@@ -22,6 +22,7 @@ import TaskItem from "@tiptap/extension-task-item"
 import Superscript from "@tiptap/extension-superscript"
 import Subscript from "@tiptap/extension-subscript"
 import { VideoEmbed } from "./video-embed"
+import { IframeEmbed } from "./iframe-embed"
 
 interface EditorExtensionsOptions {
   /** 占位文本 */
@@ -38,7 +39,10 @@ export function createEditorExtensions(
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4] },
     }),
-    Image.configure({ inline: true }),
+    Image.configure({
+      inline: true,
+      resize: { enabled: true, alwaysPreserveAspectRatio: true },
+    }),
     Link.configure({
       openOnClick: false,
       HTMLAttributes: { target: "_blank" },
@@ -50,7 +54,7 @@ export function createEditorExtensions(
     Color,
     TextStyle,
     Highlight.configure({ multicolor: true }),
-    TextAlign.configure({ types: ["heading", "paragraph"] }),
+    TextAlign.configure({ types: ["heading", "paragraph", "image", "videoEmbed"] }),
     Table.configure({ resizable: true }),
     TableRow,
     TableCell,
@@ -60,5 +64,6 @@ export function createEditorExtensions(
     Superscript,
     Subscript,
     VideoEmbed,
+    IframeEmbed,
   ] as Extension[]
 }
