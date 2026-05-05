@@ -65,8 +65,9 @@ contact_items 与 site_info 之间存在双向同步关系，使用不可编辑�
 |------|-------|---------|
 | 数组型 | card_grid, step_list, doc_list, gallery, contact_info | ItemEditDialog + BlockItemsList + DnD |
 | 单体型 | intro, cta | ItemEditDialog（"编辑内容"按钮） |
-| API 型 | university_list, case_grid, featured_data | 不可编辑（数据来自管理页面） |
+| API 型 | university_list, featured_data | 不可编辑（数据来自管理页面） |
 | 文章型 | article_list | ArticleEditDialog + API 直接操作（见下方） |
+| 案例型 | case_grid | CaseEditDialog + API 直接操作（见下方） |
 
 数组型 Block 遵循统一模式：预览区 FieldOverlay → handleEditConfig → ItemEditDialog；内容标签页 BlockItemsList + 添加按钮。
 
@@ -108,6 +109,37 @@ article_list 的内容标签页使用自定义的 `ArticleItemsList` 组件（�
 #### 文章链接
 
 公开页面的文章链接根据分类 slug 动态生成：`/{categorySlug}/{articleId}`（如 `/news/xxx`、`/study-abroad/xxx`）。每个分类有独立的 `[id]/page.tsx` 详情页，共享 `ArticleDetailPage` 组件。
+
+### 案例网格 Block（case_grid）
+
+与 article_list 模式完全对齐：
+
+#### 设计决策
+
+1. **不使用 SpotlightOverlay**：案例卡片上有精选和编辑按钮，SpotlightOverlay 的全区域点击会冲突。每个案例用 EditableOverlay 包裹。
+2. **数据独立于 Block data**：案例存储在 SuccessCase 表中（通过 API 增删改查），不存储在 Block 的 `data` 字段。
+3. **管理工具栏拆分**：工具栏只保留导入导出（ManageToolbar），"添加案例"改为网格末尾的占位卡片。
+
+#### 卡片快捷操作
+
+| 按钮 | 位置 | 功能 |
+|------|------|------|
+| 星标 | 左上角 | 精选/取消精选（`is_featured`，黄色=已精选） |
+| 编辑 | 右上角（EditableOverlay） | 打开 CaseEditDialog |
+
+案例没有 status 字段（无草稿/发布概念），创建即可见。
+
+#### UnifiedBlockEditor 内容标签页
+
+case_grid 的内容标签页使用自定义的 `CaseItemsList` 组件：
+
+- 从 `/admin/web-settings/cases/list` 获取案例列表
+- 每条显示：学生姓名 + 院校 + 专业 + 年份 + 精选标记
+- 支持编辑（打开 CaseEditDialog）、删除、新建
+
+#### 图片上传
+
+CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-settings/images/upload` 通用接口（与 ImageUploadField 一致），不再使用独立的 upload-avatar/upload-offer 端点。上传后获得 image_id，保存时传递给 CaseCreate/CaseUpdate schema 的 `avatar_image_id`/`offer_image_id` 字段。
 
 ### 富文本编辑器（Tiptap）
 
@@ -259,3 +291,6 @@ ResizableNodeView 的外层容器 `[data-resize-container]` 设置 `display: fle
 - **分类名称与页面名称不一致**：种子数据分类名"留学项目"与导航页面名"出国留学"不匹配，下拉选择器显示混淆，需要保持一致
 - **文章链接硬编码**：最初所有文章链接都指向 `/news/{id}`，应根据分类 slug 动态生成 `/{categorySlug}/{id}`
 - **公开文章计数包含草稿**：`count_articles_by_category` 未过滤 `status=published`，导致分类文章数统计不准
+- **案例图片上传端点不存在**：CaseEditDialog 新建模式调用 `upload-avatar-temp`/`upload-offer-temp`（不存在），改为统一用通用图片上传接口 `/admin/web-settings/images/upload`
+- **案例 Schema 缺 image_id 字段**：CaseCreate/CaseUpdate 只有旧的 `avatar_url` 字段，需要加 `avatar_image_id`/`offer_image_id`
+- **案例详情页 next/image 报错**：`next/image` 不支持带 query string 的本地路径（`/api/public/images/detail?id=xxx`），改用普通 `<img>` 标签
