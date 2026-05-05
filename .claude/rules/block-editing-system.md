@@ -18,7 +18,7 @@
 | 字段级 | FieldOverlay | 点击具体字段 | 打开 ItemEditDialog |
 | 配置级 | BlockEditorOverlay | 点击齿轮/删除 | Block 元信息（标题、显隐） |
 
-**例外**：article_list 不使用 SpotlightOverlay（因为点击区域会和文章卡片的编辑/置顶/发布按钮冲突），改为直接在预览区用 EditableOverlay 包裹每篇文章。
+**例外**：article_list、case_grid、university_list 不使用 SpotlightOverlay（因为点击区域会和卡片上的编辑/精选/发布按钮冲突），改为直接在预览区用 EditableOverlay 包裹每个条目。
 
 #### 组件职责
 
@@ -31,6 +31,9 @@
 | block-labels.ts | Block 类型中文名 + 子类型名 | BlockEditorOverlay、BlockRenderer、UnifiedBlockEditor |
 | ArticleEditDialog | 文章创建/编辑弹窗，Tiptap 富文本编辑器 | ArticleListBlock、BlockContentTab |
 | ArticleListClient | 文章列表客户端组件，分类筛选+分页 | ArticleListBlock（编辑/公开复用） |
+| CaseEditDialog | 案例创建/编辑弹窗 | CaseGridBlock、BlockContentTab |
+| UniversityEditDialog | 院校创建/编辑弹窗，含 ProgramManager | UniversityListBlock、BlockContentTab |
+| ProgramManager | 院校专业管理（三级选择：大分类→小分类→专业名） | UniversityEditDialog（仅编辑模式） |
 
 ### 数据流设计
 
@@ -115,32 +118,12 @@ article_list 的内容标签页使用自定义的 `ArticleItemsList` 组件（�
 
 与 article_list 模式完全对齐：
 
-#### 设计决策
-
 1. **不使用 SpotlightOverlay**：案例卡片上有精选和编辑按钮，SpotlightOverlay 的全区域点击会冲突。每个案例用 EditableOverlay 包裹。
 2. **数据独立于 Block data**：案例存储在 SuccessCase 表中（通过 API 增删改查），不存储在 Block 的 `data` 字段。
 3. **管理工具栏拆分**：工具栏只保留导入导出（ManageToolbar），"添加案例"改为网格末尾的占位卡片。
-
-#### 卡片快捷操作
-
-| 按钮 | 位置 | 功能 |
-|------|------|------|
-| 星标 | 左上角 | 精选/取消精选（`is_featured`，黄色=已精选） |
-| 编辑 | 右上角（EditableOverlay） | 打开 CaseEditDialog |
-
-案例没有 status 字段（无草稿/发布概念），创建即可见。
-
-#### UnifiedBlockEditor 内容标签页
-
-case_grid 的内容标签页使用自定义的 `CaseItemsList` 组件：
-
-- 从 `/admin/web-settings/cases/list` 获取案例列表
-- 每条显示：学生姓名 + 院校 + 专业 + 年份 + 精选标记
-- 支持编辑（打开 CaseEditDialog）、删除、新建
-
-#### 图片上传
-
-CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-settings/images/upload` 通用接口（与 ImageUploadField 一致），不再使用独立的 upload-avatar/upload-offer 端点。上传后获得 image_id，保存时传递给 CaseCreate/CaseUpdate schema 的 `avatar_image_id`/`offer_image_id` 字段。
+4. **卡片快捷操作**：左上角星标精选按钮（`is_featured`，黄色=已精选），EditableOverlay 编辑按钮。案例没有 status 字段（无草稿/发布概念），创建即可见。
+5. **BlockContentTab**：`CaseItemsList`（学生姓名+院校+专业+年份+精选标记，编辑/删除/新建）
+6. **图片上传**：CaseEditDialog 头像/录取通知书统一使用 `/admin/web-settings/images/upload` 通用接口，保存时传递 `avatar_image_id`/`offer_image_id`
 
 ### 院校列表 Block（university_list）
 
@@ -152,6 +135,27 @@ CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-setting
 4. **BlockContentTab**：`UniversityItemsList`（院校名+国家+城市+精选标记，编辑/删除/新建）
 5. **Logo 上传**：UniversityEditDialog 改用通用接口 `/admin/web-settings/images/upload`，UniversityCreate/Update schema 加 `logo_image_id`
 
+### 院校专业模型
+
+`University → UniversityProgram → Discipline`，每个专业关联一个学科小分类，院校学科方向 = 所有专业关联的小分类去重集合。
+
+- **ProgramManager 组件**：三级选择（大分类→小分类→专业名称），独立保存（与院校基本信息分开）
+- **后端 API**：`GET /list/detail/programs` 获取 + `POST /list/detail/programs` 全量设置
+- **院校搜索**：支持按院校名/英文名/城市/简介/学科大分类/小分类/专业名称搜索
+
+### 占位卡片统一模式
+
+"添加"占位卡片在网格内渲染，模拟真实卡片的 DOM 结构 + `opacity-50` + 虚线边框，视觉上与其他卡片一致：
+
+- **card_grid**：`ADD_PLACEHOLDER` 占位数据 + 真实卡片组件渲染，自动匹配不同 cardType 的视觉结构
+- **case_grid**：模拟案例卡片结构（头像占位 + "添加案例" + 院校/专业占位文本）
+- **university_list**：模拟院校卡片结构（Logo 占位 + "添加院校" + 城市/国家占位文本）
+- **article_list**：全宽占位按钮（因为文章是列表布局，不是网格）
+
+### 精选展示 Block（featured_data）
+
+少于一行（< 3 个）时用 `flex justify-center` + 固定宽度 `w-80` 居中；满行时用正常 `grid` 布局。
+
 ### 富文本编辑器（Tiptap）
 
 #### 扩展配置
@@ -161,7 +165,7 @@ CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-setting
 | 扩展 | 功能 | 缩放 | 对齐 |
 |------|------|------|------|
 | Image（内置） | 图片上传（粘贴/拖拽/选择） | ResizableNodeView，保持宽高比 | TextAlign 作用于父 `<p>` 的 text-align |
-| VideoEmbed（自定义） | YouTube/Bilibili 视频嵌入 | ResizableNodeView，16:9 锁定 | CSS `width: fit-content` + `margin: auto`，支持 TextAlign 切换 |
+| VideoEmbed（自定义） | YouTube/Bilibili 视频嵌入 | ResizableNodeView，16:9 锁定 | CSS `width: fit-content` + `margin: auto`，默认居中 |
 | IframeEmbed（自定义） | 任意 iframe 嵌入 | 不支持（iframe 代码自己控制） | 固定居中 |
 
 #### 视频嵌入（VideoEmbed）
@@ -169,7 +173,6 @@ CaseEditDialog 的头像和录取通知书上传统一使用 `/admin/web-setting
 - `parseHTML` 匹配 `div[data-video-url]`，通过 `getAttrs` 从嵌套的 `<iframe>` 提取 `src`/`width`/`height`
 - `addNodeView` 使用 `ResizableNodeView` 包裹，拖拽角落缩放（保持 16:9）
 - 居中通过 CSS `.tiptap [data-node="videoEmbed"] { width: fit-content; margin: 0 auto }` 实现
-- 对齐通过 `align-left`/`align-right` class 切换 margin
 
 #### iframe 嵌入（IframeEmbed）
 
@@ -234,10 +237,6 @@ Dialog 使用 CSS transform 居中，导致内部所有 Portal-based 组件（Po
 Grid 布局中同行卡片高度不一致。
 
 **解法**：`FieldOverlay` 默认 `h-full` + 各卡片组件根 div `h-full`。但 EditableOverlay 不能默认 `h-full`（会破坏 Footer 布局），通过 `className` prop 按需传入。
-
-#### 添加按钮的视觉一致性
-
-添加按钮必须模拟真实卡片结构（`opacity-50`），否则视觉上格格不入。card_grid 用 `ADD_PLACEHOLDER` 占位数据 + 真实卡片组件渲染，自动匹配不同 cardType 的视觉结构。
 
 #### 数据标识符必须稳定
 
@@ -307,3 +306,7 @@ ResizableNodeView 的外层容器 `[data-resize-container]` 设置 `display: fle
 - **案例详情页 next/image 报错**：`next/image` 不支持带 query string 的本地路径（`/api/public/images/detail?id=xxx`），改用普通 `<img>` 标签
 - **院校 logo 上传端点不存在**：UniversityEditDialog 新建模式调用 `upload-logo-temp`（不存在），改为统一用通用图片上传接口
 - **院校 Schema 缺 logo_image_id 字段**：UniversityCreate/UniversityUpdate 只有旧的 `logo_url` 字段，需要加 `logo_image_id`
+- **院校详情 500**：router 直接访问 `uni.programs`（University model 无此属性），service 查了 programs 但没返回，需加入 detail dict
+- **案例关联院校字段名不匹配**：前端传 `related_university_id`，后端 schema 用 `university_id`
+- **院校精选后不刷新**：UniversityList 始终用公开 API（有 ETag 缓存），editable 模式需改用 admin API
+- **ProgramManager 学科下拉显示 UUID**：嵌套 map 返回数组导致 Select 渲染异常，改为扁平化遍历 disciplines
