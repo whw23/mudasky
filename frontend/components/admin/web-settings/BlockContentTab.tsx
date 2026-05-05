@@ -23,6 +23,7 @@ import { resolveIcon } from "@/lib/icon-utils"
 import { AddContactItemMenu } from "@/components/blocks/AddContactItemMenu"
 import { BlockItemsList } from "@/components/admin/web-settings/BlockItemsList"
 import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
+import { CaseEditDialog } from "@/components/admin/web-settings/CaseEditDialog"
 import api from "@/lib/api"
 import type { Block, BlockType, ContactInfoBlockItem } from "@/types/block"
 import type { ConfigLocale } from "@/lib/i18n-config"
@@ -125,6 +126,10 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
 
   if (block.type === "article_list") {
     return <ArticleItemsList block={block} />
+  }
+
+  if (block.type === "case_grid") {
+    return <CaseItemsList />
   }
 
   if (editType === "api") {
@@ -595,6 +600,105 @@ function ArticleItemsList({ block }: { block: Block }) {
         article={editItem}
         categoryId={categoryId ?? undefined}
         onSuccess={() => fetchArticles(categoryId ?? undefined)}
+      />
+    </div>
+  )
+}
+
+/** 案例数据 */
+interface CaseItem {
+  id: string
+  student_name: string
+  university: string
+  program: string
+  year: number
+  testimonial: string | null
+  is_featured: boolean
+  avatar_image_id: string | null
+  offer_image_id: string | null
+  related_university_id: string | null
+}
+
+/** 案例列表管理（case_grid 内容标签页） */
+function CaseItemsList() {
+  const [cases, setCases] = useState<CaseItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editItem, setEditItem] = useState<CaseItem | null>(null)
+
+  const fetchCases = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get("/admin/web-settings/cases/list", { params: { page_size: 100 } })
+      setCases(data.items ?? [])
+    } catch {
+      setCases([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchCases() }, [fetchCases])
+
+  async function handleDelete(caseId: string) {
+    try {
+      await api.post("/admin/web-settings/cases/list/detail/delete", { case_id: caseId })
+      toast.success("案例已删除")
+      fetchCases()
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  if (loading) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">加载中...</div>
+  }
+
+  return (
+    <div className="space-y-2">
+      {cases.map((c) => (
+        <div key={c.id} className="flex items-center justify-between rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">{c.student_name}</span>
+              {c.is_featured && (
+                <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700">精选</span>
+              )}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {c.university} · {c.program} · {c.year}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditItem(c); setEditOpen(true) }}>
+              <Pencil className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-destructive hover:text-destructive"
+              onClick={() => handleDelete(c.id)}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => { setEditItem(null); setEditOpen(true) }}
+      >
+        <Plus className="mr-1 size-4" />
+        添加案例
+      </Button>
+
+      <CaseEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        caseItem={editItem}
+        onSuccess={fetchCases}
       />
     </div>
   )
