@@ -40,6 +40,7 @@ interface ArticleData {
   cover_image?: string | null
   category_id: string
   status: string
+  is_pinned?: boolean
   content_type?: string
   file_id?: string | null
 }
@@ -89,6 +90,7 @@ export function ArticleEditDialog({
   const [contentType, setContentType] = useState<"html" | "file">("html")
   const [fileId, setFileId] = useState<string | null>(null)
   const [coverImageId, setCoverImageId] = useState("")
+  const [isPinned, setIsPinned] = useState(false)
   const [selectedCategoryId, setSelectedCategoryId] = useState("")
   const [categories, setCategories] = useState<Category[]>([])
   const [uploading, setUploading] = useState(false)
@@ -113,6 +115,7 @@ export function ArticleEditDialog({
       setContentType((article.content_type as "html" | "file") || "html")
       setFileId(article.file_id || null)
       setCoverImageId(extractImageId(article.cover_image) || "")
+      setIsPinned(article.is_pinned ?? false)
       setSelectedCategoryId(article.category_id)
     } else {
       setTitle("")
@@ -122,6 +125,7 @@ export function ArticleEditDialog({
       setContentType("html")
       setFileId(null)
       setCoverImageId("")
+      setIsPinned(false)
       setSelectedCategoryId(fixedCategoryId || "")
     }
   }, [open, article, fixedCategoryId])
@@ -181,6 +185,7 @@ export function ArticleEditDialog({
           content: contentType === "html" ? content : "",
           file_id: contentType === "file" ? fileId : null,
           cover_image: coverImage,
+          is_pinned: isPinned,
           status,
         })
         toast.success("文章已更新")
@@ -193,6 +198,7 @@ export function ArticleEditDialog({
           file_id: contentType === "file" ? fileId : null,
           cover_image: coverImage,
           category_id: effectiveCategoryId,
+          is_pinned: isPinned,
           status,
         })
         toast.success("文章已创建")
@@ -343,17 +349,25 @@ export function ArticleEditDialog({
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <Label>状态</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v ?? "draft")}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">草稿</SelectItem>
-                <SelectItem value="published">已发布</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={status === "published"}
+                onChange={(e) => setStatus(e.target.checked ? "published" : "draft")}
+                className="size-4 rounded border-gray-300"
+              />
+              发布
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isPinned}
+                onChange={(e) => setIsPinned(e.target.checked)}
+                className="size-4 rounded border-gray-300"
+              />
+              置顶
+            </label>
           </div>
         </DialogBody>
         <DialogFooter>

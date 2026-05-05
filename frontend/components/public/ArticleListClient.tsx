@@ -9,6 +9,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
+import { Pin, PinOff } from "lucide-react"
+import { toast } from "sonner"
 import { Link } from "@/i18n/navigation"
 import api from "@/lib/api"
 import { EditableOverlay } from "@/components/admin/EditableOverlay"
@@ -40,6 +42,7 @@ interface Article {
   cover_image: string | null
   category_id: string
   status: string
+  is_pinned: boolean
   published_at: string | null
   created_at: string
 }
@@ -48,6 +51,7 @@ interface ArticleListClientProps {
   categorySlug?: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onRefresh?: () => void
 }
 
 /** 文章列表客户端组件 */
@@ -139,6 +143,35 @@ export function ArticleListClient({
     return CAT_COLORS[idx % 5] ?? "bg-gray-100 text-gray-700"
   }
 
+  /** 切换置顶 */
+  async function handleTogglePin(article: Article) {
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/edit", {
+        article_id: article.id,
+        is_pinned: !article.is_pinned,
+      })
+      toast.success(article.is_pinned ? "已取消置顶" : "已置顶")
+      fetchArticles()
+    } catch {
+      toast.error("操作失败")
+    }
+  }
+
+  /** 切换发布状态 */
+  async function handleTogglePublish(article: Article) {
+    const newStatus = article.status === "published" ? "draft" : "published"
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/edit", {
+        article_id: article.id,
+        status: newStatus,
+      })
+      toast.success(newStatus === "published" ? "已发布" : "已转为草稿")
+      fetchArticles()
+    } catch {
+      toast.error("操作失败")
+    }
+  }
+
   /** 切换分类 */
   function handleCategoryChange(catId?: string) {
     setActiveCategoryId(catId)
@@ -172,6 +205,8 @@ export function ArticleListClient({
               readMoreLabel={t("readMore")}
               editable={editable}
               onEdit={onEdit}
+              onTogglePin={editable ? handleTogglePin : undefined}
+              onTogglePublish={editable ? handleTogglePublish : undefined}
             />
           ))}
         </div>
@@ -247,6 +282,8 @@ function ArticleCard({
   readMoreLabel,
   editable,
   onEdit,
+  onTogglePin,
+  onTogglePublish,
 }: {
   article: Article
   categoryName: string
@@ -255,6 +292,8 @@ function ArticleCard({
   readMoreLabel: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onTogglePin?: (article: Article) => void
+  onTogglePublish?: (article: Article) => void
 }) {
   const inner = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -275,6 +314,11 @@ function ArticleCard({
           <span className="text-xs text-muted-foreground">
             {(article.published_at ?? article.created_at).slice(0, 10)}
           </span>
+          {editable && article.is_pinned && (
+            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+              置顶
+            </span>
+          )}
           {editable && article.status !== "published" && (
             <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700">
               草稿
@@ -303,12 +347,42 @@ function ArticleCard({
 
   if (editable) {
     return (
-      <EditableOverlay
-        onClick={() => onEdit?.(article)}
-        label={`编辑文章 ${article.title}`}
-      >
-        <div className={cls}>{inner}</div>
-      </EditableOverlay>
+      <div className="relative">
+        <EditableOverlay
+          onClick={() => onEdit?.(article)}
+          label={`编辑文章 ${article.title}`}
+        >
+          <div className={cls}>{inner}</div>
+        </EditableOverlay>
+        <div className="absolute right-10 top-2 z-10 flex items-center gap-2">
+          {onTogglePin && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePin(article) }}
+              className={`rounded-full p-1.5 shadow-sm transition-colors ${
+                article.is_pinned
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-primary"
+              }`}
+              title={article.is_pinned ? "取消置顶" : "置顶"}
+            >
+              {article.is_pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+            </button>
+          )}
+          {onTogglePublish && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePublish(article) }}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium shadow-sm transition-colors ${
+                article.status === "published"
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
+              title={article.status === "published" ? "转为草稿" : "发布"}
+            >
+              {article.status === "published" ? "已发布" : "草稿"}
+            </button>
+          )}
+        </div>
+      </div>
     )
   }
 
