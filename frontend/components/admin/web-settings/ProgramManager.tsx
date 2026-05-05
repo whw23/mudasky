@@ -2,7 +2,7 @@
 
 /**
  * 院校专业管理组件。
- * 在 UniversityEditDialog 中嵌入，支持添加/删除专业，关联学科小分类。
+ * 三级选择：大分类 → 小分类 → 专业名称。
  */
 
 import { useState, useEffect, useCallback } from "react"
@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/select"
 
 interface Program {
-  id?: string
   name: string
   discipline_id: string
+  category_id: string
 }
 
 interface DisciplineCategory {
@@ -54,17 +54,21 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
       const { data } = await api.get(
         `/admin/web-settings/universities/list/detail/programs?university_id=${universityId}`,
       )
-      setPrograms((data ?? []).map((p: any) => ({
-        id: p.id, name: p.name, discipline_id: p.discipline_id,
-      })))
+      setPrograms((data ?? []).map((p: any) => {
+        const disc = disciplines.find((d) => d.id === p.discipline_id)
+        return {
+          name: p.name,
+          discipline_id: p.discipline_id,
+          category_id: disc?.category_id ?? "",
+        }
+      }))
     } catch {
       setPrograms([])
     }
-  }, [universityId])
+  }, [universityId, disciplines])
 
   useEffect(() => {
     Promise.all([
-      fetchPrograms(),
       api.get("/admin/web-settings/disciplines/categories/list")
         .then(({ data }) => setCategories(data ?? []))
         .catch(() => setCategories([])),
@@ -72,28 +76,36 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
         .then(({ data }) => setDisciplines(data ?? []))
         .catch(() => setDisciplines([])),
     ]).finally(() => setLoading(false))
-  }, [fetchPrograms])
+  }, [])
+
+  useEffect(() => {
+    if (!loading && disciplines.length >= 0) fetchPrograms()
+  }, [loading, fetchPrograms, disciplines])
 
   function addProgram() {
-    setPrograms([...programs, { name: "", discipline_id: "" }])
+    setPrograms([...programs, { name: "", discipline_id: "", category_id: "" }])
   }
 
   function removeProgram(index: number) {
     setPrograms(programs.filter((_, i) => i !== index))
   }
 
-  function updateProgram(index: number, field: keyof Program, value: string) {
+  function updateCategory(index: number, categoryId: string) {
     const updated = [...programs]
-    updated[index] = { ...updated[index], [field]: value }
+    updated[index] = { ...updated[index], category_id: categoryId, discipline_id: "" }
     setPrograms(updated)
   }
 
-  /** 获取学科的大分类名 */
-  function getCategoryName(disciplineId: string): string {
-    const disc = disciplines.find((d) => d.id === disciplineId)
-    if (!disc) return ""
-    const cat = categories.find((c) => c.id === disc.category_id)
-    return cat?.name ?? ""
+  function updateDiscipline(index: number, disciplineId: string) {
+    const updated = [...programs]
+    updated[index] = { ...updated[index], discipline_id: disciplineId }
+    setPrograms(updated)
+  }
+
+  function updateName(index: number, name: string) {
+    const updated = [...programs]
+    updated[index] = { ...updated[index], name }
+    setPrograms(updated)
   }
 
   async function handleSave() {
@@ -141,43 +153,52 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
         <p className="text-sm text-muted-foreground">暂无专业，点击"添加"创建</p>
       ) : (
         <div className="space-y-2">
-          {programs.map((prog, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Input
-                value={prog.name}
-                onChange={(e) => updateProgram(idx, "name", e.target.value)}
-                placeholder="专业名称"
-                className="flex-1"
-              />
-              <Select
-                value={prog.discipline_id}
-                onValueChange={(v) => updateProgram(idx, "discipline_id", v)}
-              >
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="选择学科" />
-                </SelectTrigger>
-                <SelectContent>
-                  {disciplines.map((d) => {
-                    const cat = categories.find((c) => c.id === d.category_id)
-                    return (
-                      <SelectItem key={d.id} value={d.id}>
-                        {cat ? `${cat.name} / ${d.name}` : d.name}
-                      </SelectItem>
-                    )
-                  })}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => removeProgram(idx)}
-                className="size-8 p-0 shrink-0"
-              >
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
-            </div>
-          ))}
+          {programs.map((prog, idx) => {
+            const filteredDiscs = disciplines.filter((d) => d.category_id === prog.category_id)
+            return (
+              <div key={idx} className="flex items-center gap-2">
+                <Select value={prog.category_id} onValueChange={(v) => updateCategory(idx, v)}>
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="大分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={prog.discipline_id}
+                  onValueChange={(v) => updateDiscipline(idx, v)}
+                  disabled={!prog.category_id}
+                >
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="小分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredDiscs.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={prog.name}
+                  onChange={(e) => updateName(idx, e.target.value)}
+                  placeholder="专业名称"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeProgram(idx)}
+                  className="size-8 shrink-0 p-0"
+                >
+                  <Trash2 className="size-4 text-destructive" />
+                </Button>
+              </div>
+            )
+          })}
         </div>
       )}
 
