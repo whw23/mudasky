@@ -42,6 +42,7 @@ class UniversityCreate(BaseModel):
     qs_rankings: list[dict] | None = Field(None, description="QS 排名")
     latitude: float | None = Field(None, description="纬度")
     longitude: float | None = Field(None, description="经度")
+    logo_image_id: str | None = Field(None, description="Logo 图片 ID")
 
 
 class UniversityDeleteRequest(BaseModel):
@@ -89,6 +90,7 @@ class UniversityUpdate(BaseModel):
     qs_rankings: list[dict] | None = Field(None, description="QS 排名")
     latitude: float | None = Field(None, description="纬度")
     longitude: float | None = Field(None, description="经度")
+    logo_image_id: str | None = Field(None, description="Logo 图片 ID")
 
 
 class ProgramResponse(BaseModel):

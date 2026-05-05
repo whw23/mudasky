@@ -10,12 +10,13 @@ import { useCallback, useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import {
   MapPin,
-  GraduationCap,
   Building2,
   Loader2,
   SearchX,
   Award,
+  Star,
 } from "lucide-react"
+import { toast } from "sonner"
 import { Link } from "@/i18n/navigation"
 import { Pagination } from "@/components/common/Pagination"
 import { UniversitySearch } from "@/components/public/UniversitySearch"
@@ -92,6 +93,20 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
   useEffect(() => {
     fetchUniversities()
   }, [fetchUniversities])
+
+  /** 切换精选 */
+  async function handleToggleFeatured(uni: University) {
+    try {
+      await api.post("/admin/web-settings/universities/list/detail/edit", {
+        university_id: uni.id,
+        is_featured: !uni.is_featured,
+      })
+      toast.success(uni.is_featured ? "已取消精选" : "已设为精选")
+      fetchUniversities()
+    } catch {
+      toast.error("操作失败")
+    }
+  }
 
   /** 筛选变更时重置到第一页 */
   const handleFilterChange = (newFilters: {
@@ -216,18 +231,29 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
                 </>
               )
 
-              // editable 模式：用 EditableOverlay 包装的 div
               if (editable && onEdit) {
                 return (
-                  <EditableOverlay
-                    key={uni.id}
-                    onClick={() => onEdit(uni)}
-                    label={`编辑 ${uni.name}`}
-                  >
-                    <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
-                      {cardContent}
-                    </div>
-                  </EditableOverlay>
+                  <div key={uni.id} className="relative">
+                    <EditableOverlay
+                      onClick={() => onEdit(uni)}
+                      label={`编辑 ${uni.name}`}
+                    >
+                      <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
+                        {cardContent}
+                      </div>
+                    </EditableOverlay>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleFeatured(uni) }}
+                      className={`absolute left-2 top-2 z-10 rounded-full p-1.5 shadow-sm transition-colors ${
+                        uni.is_featured
+                          ? "bg-yellow-400 text-white hover:bg-yellow-500"
+                          : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-yellow-500"
+                      }`}
+                      title={uni.is_featured ? "取消精选" : "设为精选"}
+                    >
+                      <Star className={`size-3.5 ${uni.is_featured ? "fill-current" : ""}`} />
+                    </button>
+                  </div>
                 )
               }
 

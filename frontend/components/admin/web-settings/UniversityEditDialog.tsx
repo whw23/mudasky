@@ -115,18 +115,8 @@ export function UniversityEditDialog({
     try {
       const formData = new FormData()
       formData.append("file", file)
-      if (isEdit) {
-        formData.append("university_id", university!.id)
-      }
-
-      const res = await api.post(
-        isEdit
-          ? "/admin/web-settings/universities/list/detail/upload-logo"
-          : "/admin/web-settings/universities/upload-logo-temp",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      )
-      setLogoImageId(res.data.logo_image_id)
+      const { data } = await api.post("/admin/web-settings/images/upload", formData)
+      setLogoImageId(data.id)
       toast.success("Logo 上传成功")
     } catch {
       toast.error("上传失败")
