@@ -166,7 +166,7 @@ export function CaseEditDialog({
         testimonial: testimonial.trim() || null,
         avatar_image_id: avatarImageId,
         offer_image_id: offerImageId,
-        related_university_id: relatedUniversityId,
+        university_id: relatedUniversityId,
       }
 
       if (isEdit) {
