@@ -29,11 +29,12 @@ const PAGE_SIZE = 12
 interface UniversityListProps {
   editable?: boolean
   onEdit?: (university: University) => void
+  onAdd?: () => void
   onManageDisciplines?: () => void
 }
 
 /** 院校列表（含搜索筛选） */
-export function UniversityList({ editable = false, onEdit, onManageDisciplines }: UniversityListProps) {
+export function UniversityList({ editable = false, onEdit, onAdd, onManageDisciplines }: UniversityListProps) {
   const t = useTranslations("Universities")
 
   const [universities, setUniversities] = useState<University[]>([])
@@ -271,6 +272,19 @@ export function UniversityList({ editable = false, onEdit, onManageDisciplines }
                 </Link>
               )
             })}
+            {onAdd && (
+              <button onClick={onAdd} className="group rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80">
+                <div className="flex size-16 items-center justify-center rounded-lg bg-gray-100">
+                  <Building2 className="size-8 text-gray-400" />
+                </div>
+                <h4 className="mt-4 text-lg font-bold text-muted-foreground">添加院校</h4>
+                <p className="text-xs text-muted-foreground">University Name</p>
+                <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                  <MapPin className="size-4" />
+                  城市, 国家
+                </div>
+              </button>
+            )}
           </div>
         )}
 

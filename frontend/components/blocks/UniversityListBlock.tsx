@@ -8,7 +8,7 @@
 
 import { useState, useCallback } from "react"
 import type { ReactNode } from "react"
-import { Plus, Tags } from "lucide-react"
+import { Tags } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -124,22 +124,9 @@ export function UniversityListBlock({ block, header, bg, editable }: BlockProps)
             key={refreshKey}
             editable={editable}
             onEdit={editable ? handleEditUniversity : undefined}
+            onAdd={editable ? handleCreateUniversity : undefined}
             onManageDisciplines={editable ? () => setDisciplineOpen(true) : undefined}
           />
-
-          {editable && (
-            <div className="mt-6">
-              <button
-                onClick={handleCreateUniversity}
-                className="group block w-full rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80"
-              >
-                <div className="flex items-center justify-center gap-2 text-muted-foreground group-hover:text-primary">
-                  <Plus className="size-5" />
-                  <span className="text-sm font-medium">添加院校</span>
-                </div>
-              </button>
-            </div>
-          )}
         </div>
       </section>
 

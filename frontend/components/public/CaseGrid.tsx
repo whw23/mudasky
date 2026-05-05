@@ -27,10 +27,11 @@ interface CaseItem {
 interface CaseGridProps {
   editable?: boolean
   onEdit?: (item: CaseItem) => void
+  onAdd?: () => void
 }
 
 /** 案例卡片网格 */
-export function CaseGrid({ editable, onEdit }: CaseGridProps) {
+export function CaseGrid({ editable, onEdit, onAdd }: CaseGridProps) {
   const t = useTranslations("Cases")
   const [cases, setCases] = useState<CaseItem[]>([])
 
@@ -71,6 +72,23 @@ export function CaseGrid({ editable, onEdit }: CaseGridProps) {
           onToggleFeatured={editable ? handleToggleFeatured : undefined}
         />
       ))}
+      {onAdd && (
+        <button onClick={onAdd} className="group rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <GraduationCap className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h4 className="font-bold text-muted-foreground">添加案例</h4>
+              <p className="text-xs text-muted-foreground">2026</p>
+            </div>
+          </div>
+          <div className="mt-4 rounded-lg bg-gray-50 px-4 py-3">
+            <p className="text-sm font-medium text-primary/50">录取大学</p>
+            <p className="text-xs text-muted-foreground">录取专业</p>
+          </div>
+        </button>
+      )}
     </div>
   )
 }

@@ -8,7 +8,6 @@
 
 import { useState, useCallback } from "react"
 import type { ReactNode } from "react"
-import { Plus } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import type { Block } from "@/types/block"
@@ -110,21 +109,8 @@ export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
             key={refreshKey}
             editable={editable}
             onEdit={editable ? handleEditCase : undefined}
+            onAdd={editable ? handleCreateCase : undefined}
           />
-
-          {editable && (
-            <div className="mt-6">
-              <button
-                onClick={handleCreateCase}
-                className="group block w-full rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 opacity-50 transition-all hover:border-primary hover:opacity-80"
-              >
-                <div className="flex items-center justify-center gap-2 text-muted-foreground group-hover:text-primary">
-                  <Plus className="size-5" />
-                  <span className="text-sm font-medium">添加案例</span>
-                </div>
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
