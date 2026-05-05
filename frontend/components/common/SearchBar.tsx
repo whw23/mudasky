@@ -24,8 +24,8 @@ export function SearchBar() {
 
   return (
     <div className="mt-6 md:mt-8 w-full max-w-xl mx-auto px-4">
-      <div className="flex bg-white/90 rounded-full overflow-hidden shadow-lg">
-        <div className="flex items-center pl-5">
+      <div className="flex bg-white/90 rounded-full shadow-lg">
+        <div className="flex shrink-0 items-center pl-4 md:pl-5">
           <Search className="size-5 text-muted-foreground" />
         </div>
         <input
@@ -33,11 +33,11 @@ export function SearchBar() {
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           placeholder={t("searchPlaceholder")}
-          className="flex-1 bg-transparent px-3 py-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 bg-transparent px-3 py-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
         <button
           onClick={handleSearch}
-          className="m-1 rounded-full bg-primary px-6 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+          className="m-1 shrink-0 whitespace-nowrap rounded-full bg-primary px-4 md:px-6 text-sm font-medium text-white transition-colors hover:bg-primary/90"
         >
           {t("searchButton")}
         </button>
