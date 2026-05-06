@@ -2,7 +2,7 @@
 
 /**
  * PDF 查看器组件。
- * 基于 react-pdf 渲染所有页面，支持文字选择、缩放、搜索和目录跳转。
+ * 基于 react-pdf 渲染所有页面，支持文字选择、缩放拖动、搜索和目录跳转。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -23,7 +23,7 @@ interface PdfViewerProps {
   url: string
 }
 
-/** PDF 查看器：渲染所有页面，支持文字选择、缩放、搜索、目录 */
+/** PDF 查看器：渲染所有页面，支持文字选择、缩放拖动、搜索、目录 */
 export function PdfViewer({ url }: PdfViewerProps) {
   const [numPages, setNumPages] = useState(0)
   const [error, setError] = useState(false)
@@ -33,6 +33,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [inView, setInView] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  const isDragging = useRef(false)
+  const dragStart = useRef({ x: 0, y: 0, scrollX: 0, scrollY: 0 })
 
   useEffect(() => {
     const el = containerRef.current
@@ -43,6 +45,43 @@ export function PdfViewer({ url }: PdfViewerProps) {
     )
     observer.observe(el)
     return () => observer.disconnect()
+  }, [])
+
+  /** 拖动平移：鼠标按下 */
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = containerRef.current
+    if (!el || el.scrollWidth <= el.clientWidth) return
+    isDragging.current = true
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollX: el.scrollLeft,
+      scrollY: window.scrollY,
+    }
+    el.style.cursor = "grabbing"
+    el.style.userSelect = "none"
+  }, [])
+
+  /** 拖动平移：鼠标移动 */
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return
+    const el = containerRef.current
+    if (!el) return
+    const dx = e.clientX - dragStart.current.x
+    const dy = e.clientY - dragStart.current.y
+    el.scrollLeft = dragStart.current.scrollX - dx
+    window.scrollTo(0, dragStart.current.scrollY - dy)
+  }, [])
+
+  /** 拖动平移：鼠标松开 */
+  const onMouseUp = useCallback(() => {
+    if (!isDragging.current) return
+    isDragging.current = false
+    const el = containerRef.current
+    if (el) {
+      el.style.cursor = ""
+      el.style.userSelect = ""
+    }
   }, [])
 
   const onLoadSuccess = useCallback(
@@ -86,6 +125,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   )
 
   const containerWidth = containerRef.current?.clientWidth
+  const isZoomed = scale > 1.0
 
   if (error) {
     return (
@@ -101,7 +141,14 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   return (
     <>
-      <div ref={containerRef} className="relative overflow-x-auto rounded-lg border">
+      <div
+        ref={containerRef}
+        className={`relative overflow-x-auto rounded-lg border ${isZoomed ? "cursor-grab" : ""}`}
+        onMouseDown={isZoomed ? onMouseDown : undefined}
+        onMouseMove={isZoomed ? onMouseMove : undefined}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+      >
         <Document
           file={url}
           onLoadSuccess={onLoadSuccess}
@@ -113,17 +160,22 @@ export function PdfViewer({ url }: PdfViewerProps) {
           }
         >
           <Outline onLoadSuccess={onOutlineLoadSuccess} className="hidden" />
-          {numPages > 0 &&
-            Array.from({ length: numPages }, (_, i) => (
-              <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
-                <Page
-                  pageNumber={i + 1}
-                  width={containerWidth ? containerWidth * scale : undefined}
-                  renderTextLayer={true}
-                  renderAnnotationLayer={false}
-                />
-              </div>
-            ))}
+          {numPages > 0 && (
+            <div className="mx-auto w-fit">
+              {Array.from({ length: numPages }, (_, i) => (
+                <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
+                  <Page
+                    pageNumber={i + 1}
+                    width={
+                      containerWidth ? containerWidth * scale : undefined
+                    }
+                    renderTextLayer={true}
+                    renderAnnotationLayer={false}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </Document>
       </div>
 

@@ -39,7 +39,7 @@ interface PdfToolbarProps {
 
 const MIN_SCALE = 0.5
 const MAX_SCALE = 3.0
-const SCALE_STEP = 0.25
+const SCALE_STEP = 0.1
 
 /** PDF 悬浮工具栏 */
 export function PdfToolbar({
