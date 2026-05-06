@@ -29,20 +29,26 @@ export function StatCard({
   loading = false,
 }: StatCardProps) {
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 pt-2">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="size-6 text-primary" />
+    <Card className="@container">
+      <CardContent className="flex items-center gap-[clamp(0.5rem,3cqw,1rem)] pt-2">
+        <div className="flex shrink-0 items-center justify-center rounded-lg bg-primary/10 size-[clamp(2rem,10cqw,3rem)]">
+          <Icon className="text-primary size-[clamp(1rem,5cqw,1.5rem)]" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="whitespace-nowrap text-muted-foreground text-[clamp(0.7rem,3.5cqw,0.875rem)]">
+            {label}
+          </p>
           {loading ? (
             <div className="mt-1 h-7 w-16 animate-pulse rounded bg-muted" />
           ) : (
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="whitespace-nowrap font-bold text-[clamp(0.875rem,6cqw,1.5rem)]">
+              {value}
+            </p>
           )}
           {trend && (
-            <p className="mt-0.5 text-xs text-muted-foreground">{trend}</p>
+            <p className="mt-0.5 text-muted-foreground text-[clamp(0.6rem,2.5cqw,0.75rem)]">
+              {trend}
+            </p>
           )}
         </div>
       </CardContent>
