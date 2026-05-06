@@ -116,6 +116,9 @@ importers:
       node-forge:
         specifier: ^1.4.0
         version: 1.4.0
+      pdfjs-dist:
+        specifier: 5.4.296
+        version: 5.4.296
       pg:
         specifier: ^8.20.0
         version: 8.20.0
