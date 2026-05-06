@@ -5,8 +5,14 @@
  * 根据 content_type 选择渲染方式：SafeHtml 或 PDF 预览。
  */
 
+import dynamic from "next/dynamic"
 import { SafeHtml } from "@/components/common/SafeHtml"
 import "./article-content.css"
+
+const PdfViewer = dynamic(
+  () => import("./PdfViewer").then((m) => m.PdfViewer),
+  { ssr: false },
+)
 
 interface ArticleContentProps {
   contentType: string
@@ -22,24 +28,7 @@ export function ArticleContent({
 }: ArticleContentProps) {
   if (contentType === "file" && fileId) {
     return (
-      <div className="space-y-4">
-        <iframe
-          src={`/api/public/images/detail?id=${fileId}`}
-          className="w-full rounded-lg border-0"
-          style={{ height: "80vh" }}
-          title="PDF 预览"
-        />
-        <div className="text-center">
-          <a
-            href={`/api/public/images/detail?id=${fileId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline"
-          >
-            下载 PDF
-          </a>
-        </div>
-      </div>
+      <PdfViewer url={`/api/public/images/detail?id=${fileId}`} />
     )
   }
 

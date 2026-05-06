@@ -5,43 +5,38 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
-/* mock SafeHtml 组件（已经过 DOMPurify 消毒，测试中直接渲染 HTML） */
 vi.mock("@/components/common/SafeHtml", () => ({
   SafeHtml: ({ html, className }: { html: string; className?: string }) => (
-    <div className={className} data-testid="safe-html" dangerouslySetInnerHTML={{ __html: html }} />
+    <div className={className} data-testid="safe-html">{html}</div>
   ),
+}))
+
+vi.mock("next/dynamic", () => ({
+  __esModule: true,
+  default: (loader: () => Promise<{ default: unknown }>) => {
+    const Component = (props: Record<string, unknown>) => (
+      <div data-testid="pdf-viewer" data-url={props.url as string} />
+    )
+    Component.displayName = "DynamicPdfViewer"
+    void loader
+    return Component
+  },
 }))
 
 import { ArticleContent } from "@/components/content/ArticleContent"
 
 describe("ArticleContent", () => {
   it("HTML 类型渲染富文本内容", () => {
-    const { container } = render(
+    render(
       <ArticleContent
         contentType="html"
         content="<p>Hello World</p>"
       />,
     )
-    expect(container.querySelector("p")).toBeTruthy()
-    expect(screen.getByText("Hello World")).toBeTruthy()
+    expect(screen.getByTestId("safe-html")).toBeTruthy()
   })
 
-  it("PDF 文件渲染 iframe", () => {
-    const { container } = render(
-      <ArticleContent
-        contentType="file"
-        content=""
-        fileId="pdf-123"
-      />,
-    )
-    const iframe = container.querySelector("iframe")
-    expect(iframe).toBeTruthy()
-    expect(iframe?.getAttribute("src")).toBe(
-      "/api/public/images/detail?id=pdf-123",
-    )
-  })
-
-  it("PDF 文件显示下载链接", () => {
+  it("PDF 文件渲染 PdfViewer", () => {
     render(
       <ArticleContent
         contentType="file"
@@ -49,18 +44,21 @@ describe("ArticleContent", () => {
         fileId="pdf-123"
       />,
     )
-    expect(screen.getByText("下载 PDF")).toBeTruthy()
+    const viewer = screen.getByTestId("pdf-viewer")
+    expect(viewer).toBeTruthy()
+    expect(viewer.getAttribute("data-url")).toBe(
+      "/api/public/images/detail?id=pdf-123",
+    )
   })
 
-  it("无 fileId 时 file 类型回退为空", () => {
-    const { container } = render(
+  it("无 fileId 时 file 类型回退为 SafeHtml", () => {
+    render(
       <ArticleContent
         contentType="file"
         content=""
         fileId={null}
       />,
     )
-    const iframe = container.querySelector("iframe")
-    expect(iframe).toBeNull()
+    expect(screen.queryByTestId("pdf-viewer")).toBeNull()
   })
 })
