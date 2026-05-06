@@ -57,3 +57,13 @@
 .pdf-outline a:hover {
   background-color: var(--color-muted);
 }
+
+/* PDF 搜索高亮 */
+.pdf-search-highlight {
+  background-color: rgba(255, 213, 0, 0.4) !important;
+  border-radius: 2px;
+}
+
+.pdf-search-current {
+  background-color: rgba(255, 140, 0, 0.6) !important;
+}
