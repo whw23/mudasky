@@ -24,9 +24,11 @@ interface PdfViewerProps {
 }
 
 /** 扫描每页 TextLayer，计算内容上下边界 */
+/** @param offset 用户自定义偏移量（正值=多裁，负值=少裁） */
 function computeClips(
   pageRefs: Map<number, HTMLDivElement>,
   numPages: number,
+  offset: number,
 ): Map<number, { top: number; bottom: number }> {
   const clips = new Map<number, { top: number; bottom: number }>()
   for (let i = 1; i <= numPages; i++) {
@@ -53,8 +55,8 @@ function computeClips(
 
     const padding = 4
     clips.set(i, {
-      top: Math.max(0, minTop - padding),
-      bottom: Math.max(0, pageRect.height - maxBottom - padding),
+      top: Math.max(0, minTop - padding + offset),
+      bottom: Math.max(0, pageRect.height - maxBottom - padding + offset),
     })
   }
   return clips
@@ -70,6 +72,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [inView, setInView] = useState(false)
   const [handMode, setHandMode] = useState(false)
   const [seamless, setSeamless] = useState(false)
+  const [clipOffset, setClipOffset] = useState(0)
   const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
@@ -95,17 +98,17 @@ export function PdfViewer({ url }: PdfViewerProps) {
       return
     }
     const timer = setTimeout(() => {
-      setClips(computeClips(pageRefs.current, numPages))
+      setClips(computeClips(pageRefs.current, numPages, clipOffset))
     }, 500)
     return () => clearTimeout(timer)
-  }, [seamless, numPages, scale])
+  }, [seamless, numPages, scale, clipOffset])
 
   /** 每页渲染完成后，如果处于连续视图则更新裁切 */
   const onPageRenderSuccess = useCallback(() => {
     renderedPages.current++
     if (seamless && renderedPages.current >= numPages) {
       setTimeout(() => {
-        setClips(computeClips(pageRefs.current, numPages))
+        setClips(computeClips(pageRefs.current, numPages, clipOffset))
       }, 100)
     }
   }, [seamless, numPages])
@@ -176,7 +179,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
     [],
   )
 
-  /** 计算每页的 clip-path 样式 */
+  /** 计算每页的裁切样式：overflow:hidden + 固定高度 + 负 margin 上移 */
   function getPageStyle(pageNum: number): React.CSSProperties | undefined {
     if (!seamless || clips.size === 0) return undefined
     const clip = clips.get(pageNum)
@@ -186,11 +189,24 @@ export function PdfViewer({ url }: PdfViewerProps) {
     const topCut = isFirst ? 0 : clip.top
     const bottomCut = isLast ? 0 : clip.bottom
     if (topCut === 0 && bottomCut === 0) return undefined
+    const pageEl = pageRefs.current.get(pageNum)?.querySelector(".react-pdf__Page")
+    const fullHeight = pageEl?.getBoundingClientRect().height ?? 0
+    if (fullHeight === 0) return undefined
     return {
-      clipPath: `inset(${topCut}px 0 ${bottomCut}px 0)`,
-      marginTop: isFirst ? undefined : `-${topCut}px`,
-      marginBottom: isLast ? undefined : `-${bottomCut}px`,
+      height: `${fullHeight - topCut - bottomCut}px`,
+      overflow: "hidden",
     }
+  }
+
+  /** 计算内页偏移（向上移动裁掉顶部） */
+  function getInnerStyle(pageNum: number): React.CSSProperties | undefined {
+    if (!seamless || clips.size === 0) return undefined
+    const clip = clips.get(pageNum)
+    if (!clip) return undefined
+    const isFirst = pageNum === 1
+    const topCut = isFirst ? 0 : clip.top
+    if (topCut === 0) return undefined
+    return { marginTop: `-${topCut}px` }
   }
 
   const containerWidth = containerRef.current?.clientWidth
@@ -236,14 +252,16 @@ export function PdfViewer({ url }: PdfViewerProps) {
                   ref={(el) => setPageRef(i + 1, el)}
                   style={getPageStyle(i + 1)}
                 >
-                  <Page
-                    pageNumber={i + 1}
-                    width={containerWidth ? containerWidth * scale : undefined}
-                    renderTextLayer={true}
-                    renderAnnotationLayer={false}
-                    onRenderSuccess={onPageRenderSuccess}
-                    className={handMode ? "pointer-events-none" : ""}
-                  />
+                  <div style={getInnerStyle(i + 1)}>
+                    <Page
+                      pageNumber={i + 1}
+                      width={containerWidth ? containerWidth * scale : undefined}
+                      renderTextLayer={true}
+                      renderAnnotationLayer={false}
+                      onRenderSuccess={onPageRenderSuccess}
+                      className={handMode ? "pointer-events-none" : ""}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -264,6 +282,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
           onToggleHandMode={() => setHandMode((v) => !v)}
           seamless={seamless}
           onToggleSeamless={() => setSeamless((v) => !v)}
+          clipOffset={clipOffset}
+          onClipOffsetChange={setClipOffset}
           containerRef={containerRef}
         />
       )}
