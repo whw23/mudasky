@@ -32,6 +32,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [scale, setScale] = useState(1.0)
   const [inView, setInView] = useState(false)
   const [handMode, setHandMode] = useState(false)
+  const [seamless, setSeamless] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const isDragging = useRef(false)
@@ -147,7 +148,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
         >
           <Outline onLoadSuccess={onOutlineLoadSuccess} className="hidden" />
           {numPages > 0 && (
-            <div className="mx-auto w-fit">
+            <div className={`mx-auto w-fit ${seamless ? "pdf-seamless" : ""}`}>
               {Array.from({ length: numPages }, (_, i) => (
                 <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
                   <Page
@@ -174,6 +175,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
           onScaleChange={setScale}
           handMode={handMode}
           onToggleHandMode={() => setHandMode((v) => !v)}
+          seamless={seamless}
+          onToggleSeamless={() => setSeamless((v) => !v)}
           containerRef={containerRef}
         />
       )}

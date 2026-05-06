@@ -16,6 +16,7 @@ import {
   MousePointer2,
   Plus,
   Search,
+  SeparatorHorizontal,
   X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,6 +40,10 @@ interface PdfToolbarProps {
   handMode: boolean
   /** 切换拖拽模式 */
   onToggleHandMode: () => void
+  /** 连续视图（合并页间空白） */
+  seamless: boolean
+  /** 切换连续视图 */
+  onToggleSeamless: () => void
   /** PDF 容器 ref，用于搜索 */
   containerRef: React.RefObject<HTMLDivElement | null>
 }
@@ -58,6 +63,8 @@ export function PdfToolbar({
   onScaleChange,
   handMode,
   onToggleHandMode,
+  seamless,
+  onToggleSeamless,
   containerRef,
 }: PdfToolbarProps) {
   const [showSearch, setShowSearch] = useState(false)
@@ -212,6 +219,15 @@ export function PdfToolbar({
           ) : (
             <MousePointer2 className="size-4" />
           )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`size-8 rounded-full p-0 ${seamless ? "bg-foreground/10" : ""}`}
+          onClick={onToggleSeamless}
+          title={seamless ? "分页视图" : "连续视图"}
+        >
+          <SeparatorHorizontal className="size-4" />
         </Button>
 
         <span className="mx-1 h-4 w-px bg-foreground/20" />
