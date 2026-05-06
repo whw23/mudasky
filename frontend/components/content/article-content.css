@@ -58,15 +58,6 @@
   background-color: var(--color-muted);
 }
 
-/* PDF 连续视图：合并页间空白 */
-.pdf-seamless .react-pdf__Page {
-  margin-bottom: -8px;
-}
-
-.pdf-seamless .react-pdf__Page canvas {
-  display: block;
-}
-
 /* PDF 搜索高亮 */
 .pdf-search-highlight {
   background-color: rgba(255, 213, 0, 0.4) !important;

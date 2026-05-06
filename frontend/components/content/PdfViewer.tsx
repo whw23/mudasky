@@ -23,6 +23,43 @@ interface PdfViewerProps {
   url: string
 }
 
+/** 扫描每页 TextLayer，计算内容上下边界 */
+function computeClips(
+  pageRefs: Map<number, HTMLDivElement>,
+  numPages: number,
+): Map<number, { top: number; bottom: number }> {
+  const clips = new Map<number, { top: number; bottom: number }>()
+  for (let i = 1; i <= numPages; i++) {
+    const wrapper = pageRefs.get(i)
+    if (!wrapper) continue
+    const page = wrapper.querySelector(".react-pdf__Page")
+    const textLayer = wrapper.querySelector(".textLayer")
+    if (!page || !textLayer) continue
+
+    const pageRect = page.getBoundingClientRect()
+    const spans = textLayer.querySelectorAll("span")
+    if (spans.length === 0) continue
+
+    let minTop = pageRect.height
+    let maxBottom = 0
+    spans.forEach((span) => {
+      const r = span.getBoundingClientRect()
+      if (r.height === 0) return
+      const relTop = r.top - pageRect.top
+      const relBottom = r.bottom - pageRect.top
+      if (relTop < minTop) minTop = relTop
+      if (relBottom > maxBottom) maxBottom = relBottom
+    })
+
+    const padding = 4
+    clips.set(i, {
+      top: Math.max(0, minTop - padding),
+      bottom: Math.max(0, pageRect.height - maxBottom - padding),
+    })
+  }
+  return clips
+}
+
 /** PDF 查看器 */
 export function PdfViewer({ url }: PdfViewerProps) {
   const [numPages, setNumPages] = useState(0)
@@ -33,10 +70,12 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [inView, setInView] = useState(false)
   const [handMode, setHandMode] = useState(false)
   const [seamless, setSeamless] = useState(false)
+  const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, scrollX: 0, scrollY: 0 })
+  const renderedPages = useRef(0)
 
   useEffect(() => {
     const el = containerRef.current
@@ -48,6 +87,28 @@ export function PdfViewer({ url }: PdfViewerProps) {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
+  /** 切换连续视图时重新计算裁切 */
+  useEffect(() => {
+    if (!seamless || numPages === 0) {
+      setClips(new Map())
+      return
+    }
+    const timer = setTimeout(() => {
+      setClips(computeClips(pageRefs.current, numPages))
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [seamless, numPages, scale])
+
+  /** 每页渲染完成后，如果处于连续视图则更新裁切 */
+  const onPageRenderSuccess = useCallback(() => {
+    renderedPages.current++
+    if (seamless && renderedPages.current >= numPages) {
+      setTimeout(() => {
+        setClips(computeClips(pageRefs.current, numPages))
+      }, 100)
+    }
+  }, [seamless, numPages])
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -82,7 +143,10 @@ export function PdfViewer({ url }: PdfViewerProps) {
   }, [])
 
   const onLoadSuccess = useCallback(
-    ({ numPages: total }: { numPages: number }) => setNumPages(total),
+    ({ numPages: total }: { numPages: number }) => {
+      renderedPages.current = 0
+      setNumPages(total)
+    },
     [],
   )
 
@@ -111,6 +175,23 @@ export function PdfViewer({ url }: PdfViewerProps) {
     },
     [],
   )
+
+  /** 计算每页的 clip-path 样式 */
+  function getPageStyle(pageNum: number): React.CSSProperties | undefined {
+    if (!seamless || clips.size === 0) return undefined
+    const clip = clips.get(pageNum)
+    if (!clip) return undefined
+    const isFirst = pageNum === 1
+    const isLast = pageNum === numPages
+    const topCut = isFirst ? 0 : clip.top
+    const bottomCut = isLast ? 0 : clip.bottom
+    if (topCut === 0 && bottomCut === 0) return undefined
+    return {
+      clipPath: `inset(${topCut}px 0 ${bottomCut}px 0)`,
+      marginTop: isFirst ? undefined : `-${topCut}px`,
+      marginBottom: isLast ? undefined : `-${bottomCut}px`,
+    }
+  }
 
   const containerWidth = containerRef.current?.clientWidth
 
@@ -148,14 +229,20 @@ export function PdfViewer({ url }: PdfViewerProps) {
         >
           <Outline onLoadSuccess={onOutlineLoadSuccess} className="hidden" />
           {numPages > 0 && (
-            <div className={`mx-auto w-fit ${seamless ? "pdf-seamless" : ""}`}>
+            <div className="mx-auto w-fit">
               {Array.from({ length: numPages }, (_, i) => (
-                <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
+                <div
+                  key={i + 1}
+                  ref={(el) => setPageRef(i + 1, el)}
+                  style={getPageStyle(i + 1)}
+                >
                   <Page
                     pageNumber={i + 1}
                     width={containerWidth ? containerWidth * scale : undefined}
-                    renderTextLayer={!handMode}
+                    renderTextLayer={true}
                     renderAnnotationLayer={false}
+                    onRenderSuccess={onPageRenderSuccess}
+                    className={handMode ? "pointer-events-none" : ""}
                   />
                 </div>
               ))}
