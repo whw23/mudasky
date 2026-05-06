@@ -24,6 +24,51 @@ interface PdfViewerProps {
 }
 
 /** 扫描每页 TextLayer，计算内容上下边界 */
+/** 扫描 canvas 像素行，判断是否全为白色（或接近白色） */
+function isRowWhite(
+  data: Uint8ClampedArray,
+  width: number,
+  row: number,
+): boolean {
+  const start = row * width * 4
+  for (let x = 0; x < width; x++) {
+    const idx = start + x * 4
+    if (data[idx] < 250 || data[idx + 1] < 250 || data[idx + 2] < 250) {
+      return false
+    }
+  }
+  return true
+}
+
+/** 扫描 canvas 找到内容的上下边界（第一个/最后一个非白色像素行） */
+function scanCanvasBounds(
+  canvas: HTMLCanvasElement,
+): { top: number; bottom: number } | null {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })
+  if (!ctx) return null
+  const { width, height } = canvas
+  if (width === 0 || height === 0) return null
+  const data = ctx.getImageData(0, 0, width, height).data
+
+  let contentTop = 0
+  for (let y = 0; y < height; y++) {
+    if (!isRowWhite(data, width, y)) {
+      contentTop = y
+      break
+    }
+  }
+
+  let contentBottom = height
+  for (let y = height - 1; y >= 0; y--) {
+    if (!isRowWhite(data, width, y)) {
+      contentBottom = y + 1
+      break
+    }
+  }
+
+  return { top: contentTop, bottom: height - contentBottom }
+}
+
 /** @param offset 用户自定义偏移量（正值=多裁，负值=少裁） */
 function computeClips(
   pageRefs: Map<number, HTMLDivElement>,
@@ -34,29 +79,22 @@ function computeClips(
   for (let i = 1; i <= numPages; i++) {
     const wrapper = pageRefs.get(i)
     if (!wrapper) continue
-    const page = wrapper.querySelector(".react-pdf__Page")
-    const textLayer = wrapper.querySelector(".textLayer")
-    if (!page || !textLayer) continue
+    const canvas = wrapper.querySelector("canvas")
+    if (!canvas) continue
 
-    const pageRect = page.getBoundingClientRect()
-    const spans = textLayer.querySelectorAll("span")
-    if (spans.length === 0) continue
+    const bounds = scanCanvasBounds(canvas)
+    if (!bounds) continue
 
-    let minTop = pageRect.height
-    let maxBottom = 0
-    spans.forEach((span) => {
-      const r = span.getBoundingClientRect()
-      if (r.height === 0) return
-      const relTop = r.top - pageRect.top
-      const relBottom = r.bottom - pageRect.top
-      if (relTop < minTop) minTop = relTop
-      if (relBottom > maxBottom) maxBottom = relBottom
-    })
+    const pageEl = wrapper.querySelector(".react-pdf__Page")
+    if (!pageEl) continue
+    const displayH = pageEl.getBoundingClientRect().height
+    const canvasH = canvas.height
+    const ratio = displayH / canvasH
 
     const padding = 4
     clips.set(i, {
-      top: Math.max(0, minTop - padding + offset),
-      bottom: Math.max(0, pageRect.height - maxBottom - padding + offset),
+      top: Math.max(0, bounds.top * ratio - padding + offset),
+      bottom: Math.max(0, bounds.bottom * ratio - padding + offset),
     })
   }
   return clips
