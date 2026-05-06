@@ -2,7 +2,7 @@
 
 /**
  * PDF 查看器组件。
- * 基于 react-pdf 渲染所有页面，支持文字选择、缩放拖动、搜索和目录跳转。
+ * 基于 react-pdf 渲染所有页面，支持文字选择/拖动切换、缩放、搜索和目录跳转。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -23,7 +23,7 @@ interface PdfViewerProps {
   url: string
 }
 
-/** PDF 查看器：渲染所有页面，支持文字选择、缩放拖动、搜索、目录 */
+/** PDF 查看器 */
 export function PdfViewer({ url }: PdfViewerProps) {
   const [numPages, setNumPages] = useState(0)
   const [error, setError] = useState(false)
@@ -31,6 +31,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [showOutline, setShowOutline] = useState(false)
   const [scale, setScale] = useState(1.0)
   const [inView, setInView] = useState(false)
+  const [handMode, setHandMode] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const isDragging = useRef(false)
@@ -47,53 +48,44 @@ export function PdfViewer({ url }: PdfViewerProps) {
     return () => observer.disconnect()
   }, [])
 
-  /** 拖动平移：鼠标按下 */
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    const el = containerRef.current
-    if (!el || el.scrollWidth <= el.clientWidth) return
-    isDragging.current = true
-    dragStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-      scrollX: el.scrollLeft,
-      scrollY: window.scrollY,
-    }
-    el.style.cursor = "grabbing"
-    el.style.userSelect = "none"
-  }, [])
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!handMode) return
+      const el = containerRef.current
+      if (!el) return
+      isDragging.current = true
+      dragStart.current = {
+        x: e.clientX,
+        y: e.clientY,
+        scrollX: el.scrollLeft,
+        scrollY: window.scrollY,
+      }
+      el.style.cursor = "grabbing"
+    },
+    [handMode],
+  )
 
-  /** 拖动平移：鼠标移动 */
   const onMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging.current) return
     const el = containerRef.current
     if (!el) return
-    const dx = e.clientX - dragStart.current.x
-    const dy = e.clientY - dragStart.current.y
-    el.scrollLeft = dragStart.current.scrollX - dx
-    window.scrollTo(0, dragStart.current.scrollY - dy)
+    el.scrollLeft = dragStart.current.scrollX - (e.clientX - dragStart.current.x)
+    window.scrollTo(0, dragStart.current.scrollY - (e.clientY - dragStart.current.y))
   }, [])
 
-  /** 拖动平移：鼠标松开 */
   const onMouseUp = useCallback(() => {
     if (!isDragging.current) return
     isDragging.current = false
     const el = containerRef.current
-    if (el) {
-      el.style.cursor = ""
-      el.style.userSelect = ""
-    }
+    if (el) el.style.cursor = ""
   }, [])
 
   const onLoadSuccess = useCallback(
-    ({ numPages: total }: { numPages: number }) => {
-      setNumPages(total)
-    },
+    ({ numPages: total }: { numPages: number }) => setNumPages(total),
     [],
   )
 
-  const onLoadError = useCallback(() => {
-    setError(true)
-  }, [])
+  const onLoadError = useCallback(() => setError(true), [])
 
   const onOutlineLoadSuccess = useCallback(
     (outline: unknown[] | null) => {
@@ -104,10 +96,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   const onItemClick = useCallback(
     ({ pageNumber }: { pageNumber: number }) => {
-      const el = pageRefs.current.get(pageNumber)
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" })
-      }
+      pageRefs.current.get(pageNumber)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" })
       setShowOutline(false)
     },
     [],
@@ -115,17 +105,13 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   const setPageRef = useCallback(
     (pageNum: number, el: HTMLDivElement | null) => {
-      if (el) {
-        pageRefs.current.set(pageNum, el)
-      } else {
-        pageRefs.current.delete(pageNum)
-      }
+      if (el) pageRefs.current.set(pageNum, el)
+      else pageRefs.current.delete(pageNum)
     },
     [],
   )
 
   const containerWidth = containerRef.current?.clientWidth
-  const isZoomed = scale > 1.0
 
   if (error) {
     return (
@@ -143,9 +129,9 @@ export function PdfViewer({ url }: PdfViewerProps) {
     <>
       <div
         ref={containerRef}
-        className={`relative overflow-x-auto rounded-lg border ${isZoomed ? "cursor-grab" : ""}`}
-        onMouseDown={isZoomed ? onMouseDown : undefined}
-        onMouseMove={isZoomed ? onMouseMove : undefined}
+        className={`relative overflow-x-auto rounded-lg border ${handMode ? "cursor-grab select-none" : ""}`}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
@@ -166,10 +152,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
                 <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
                   <Page
                     pageNumber={i + 1}
-                    width={
-                      containerWidth ? containerWidth * scale : undefined
-                    }
-                    renderTextLayer={true}
+                    width={containerWidth ? containerWidth * scale : undefined}
+                    renderTextLayer={!handMode}
                     renderAnnotationLayer={false}
                   />
                 </div>
@@ -188,6 +172,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
           onOutlineItemClick={onItemClick}
           scale={scale}
           onScaleChange={setScale}
+          handMode={handMode}
+          onToggleHandMode={() => setHandMode((v) => !v)}
           containerRef={containerRef}
         />
       )}

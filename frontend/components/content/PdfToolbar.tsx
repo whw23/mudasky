@@ -10,8 +10,10 @@ import { Document, Outline } from "react-pdf"
 import {
   ChevronDown,
   ChevronUp,
+  Hand,
   List,
   Minus,
+  MousePointer2,
   Plus,
   Search,
   X,
@@ -33,6 +35,10 @@ interface PdfToolbarProps {
   scale: number
   /** 设置缩放比例 */
   onScaleChange: (scale: number) => void
+  /** 拖拽模式 */
+  handMode: boolean
+  /** 切换拖拽模式 */
+  onToggleHandMode: () => void
   /** PDF 容器 ref，用于搜索 */
   containerRef: React.RefObject<HTMLDivElement | null>
 }
@@ -50,6 +56,8 @@ export function PdfToolbar({
   onOutlineItemClick,
   scale,
   onScaleChange,
+  handMode,
+  onToggleHandMode,
   containerRef,
 }: PdfToolbarProps) {
   const [showSearch, setShowSearch] = useState(false)
@@ -188,6 +196,22 @@ export function PdfToolbar({
           title="放大"
         >
           <Plus className="size-4" />
+        </Button>
+
+        <span className="mx-1 h-4 w-px bg-foreground/20" />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`size-8 rounded-full p-0 ${handMode ? "bg-foreground/10" : ""}`}
+          onClick={onToggleHandMode}
+          title={handMode ? "文字选择" : "拖动平移"}
+        >
+          {handMode ? (
+            <Hand className="size-4" />
+          ) : (
+            <MousePointer2 className="size-4" />
+          )}
         </Button>
 
         <span className="mx-1 h-4 w-px bg-foreground/20" />
