@@ -222,10 +222,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
     if (!seamless || clips.size === 0) return undefined
     const clip = clips.get(pageNum)
     if (!clip) return undefined
-    const isFirst = pageNum === 1
-    const isLast = pageNum === numPages
-    const topCut = isFirst ? 0 : clip.top
-    const bottomCut = isLast ? 0 : clip.bottom
+    const topCut = clip.top
+    const bottomCut = clip.bottom
     if (topCut === 0 && bottomCut === 0) return undefined
     const pageEl = pageRefs.current.get(pageNum)?.querySelector(".react-pdf__Page")
     const fullHeight = pageEl?.getBoundingClientRect().height ?? 0
@@ -241,8 +239,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
     if (!seamless || clips.size === 0) return undefined
     const clip = clips.get(pageNum)
     if (!clip) return undefined
-    const isFirst = pageNum === 1
-    const topCut = isFirst ? 0 : clip.top
+    const topCut = clip.top
     if (topCut === 0) return undefined
     return { marginTop: `-${topCut}px` }
   }
