@@ -5,7 +5,7 @@
  * 基于 react-pdf 渲染所有页面，支持文字选择、缩放、搜索和目录跳转。
  */
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Document, Outline, Page, pdfjs } from "react-pdf"
 import "react-pdf/dist/Page/AnnotationLayer.css"
 import "react-pdf/dist/Page/TextLayer.css"
@@ -30,8 +30,20 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [hasOutline, setHasOutline] = useState(false)
   const [showOutline, setShowOutline] = useState(false)
   const [scale, setScale] = useState(1.0)
+  const [inView, setInView] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const onLoadSuccess = useCallback(
     ({ numPages: total }: { numPages: number }) => {
@@ -88,47 +100,45 @@ export function PdfViewer({ url }: PdfViewerProps) {
   }
 
   return (
-    <div ref={containerRef} className="relative overflow-x-auto rounded-lg border">
-      {showOutline && (
-        <div className="absolute left-4 top-4 z-30 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
-          <Document file={url}>
-            <Outline onItemClick={onItemClick} className="pdf-outline" />
-          </Document>
-        </div>
-      )}
-
-      <Document
-        file={url}
-        onLoadSuccess={onLoadSuccess}
-        onLoadError={onLoadError}
-        loading={
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          </div>
-        }
-      >
-        <Outline onLoadSuccess={onOutlineLoadSuccess} className="hidden" />
-        {numPages > 0 &&
-          Array.from({ length: numPages }, (_, i) => (
-            <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
-              <Page
-                pageNumber={i + 1}
-                width={containerWidth ? containerWidth * scale : undefined}
-                renderTextLayer={true}
-                renderAnnotationLayer={false}
-              />
+    <>
+      <div ref={containerRef} className="relative overflow-x-auto rounded-lg border">
+        <Document
+          file={url}
+          onLoadSuccess={onLoadSuccess}
+          onLoadError={onLoadError}
+          loading={
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
             </div>
-          ))}
-      </Document>
+          }
+        >
+          <Outline onLoadSuccess={onOutlineLoadSuccess} className="hidden" />
+          {numPages > 0 &&
+            Array.from({ length: numPages }, (_, i) => (
+              <div key={i + 1} ref={(el) => setPageRef(i + 1, el)}>
+                <Page
+                  pageNumber={i + 1}
+                  width={containerWidth ? containerWidth * scale : undefined}
+                  renderTextLayer={true}
+                  renderAnnotationLayer={false}
+                />
+              </div>
+            ))}
+        </Document>
+      </div>
 
-      <PdfToolbar
-        hasOutline={hasOutline}
-        onToggleOutline={() => setShowOutline((v) => !v)}
-        showOutline={showOutline}
-        scale={scale}
-        onScaleChange={setScale}
-        containerRef={containerRef}
-      />
-    </div>
+      {inView && numPages > 0 && (
+        <PdfToolbar
+          hasOutline={hasOutline}
+          onToggleOutline={() => setShowOutline((v) => !v)}
+          showOutline={showOutline}
+          outlineUrl={url}
+          onOutlineItemClick={onItemClick}
+          scale={scale}
+          onScaleChange={setScale}
+          containerRef={containerRef}
+        />
+      )}
+    </>
   )
 }
