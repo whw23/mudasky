@@ -107,17 +107,36 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [error, setError] = useState(false)
   const [hasOutline, setHasOutline] = useState(false)
   const [showOutline, setShowOutline] = useState(false)
-  const [scale, setScale] = useState(1.0)
-  const [handMode, setHandMode] = useState(true)
+  const [scale, setScale] = useState(() => {
+    if (typeof window === "undefined") return 1.0
+    return Number(localStorage.getItem("pdf-scale")) || 1.0
+  })
+  const [handMode, setHandMode] = useState(() => {
+    if (typeof window === "undefined") return true
+    return localStorage.getItem("pdf-hand") !== "false"
+  })
   const [inView, setInView] = useState(false)
-  const [seamless, setSeamless] = useState(false)
-  const [clipOffset, setClipOffset] = useState(-1)
+  const [seamless, setSeamless] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem("pdf-seamless") === "true"
+  })
+  const [clipOffset, setClipOffset] = useState(() => {
+    if (typeof window === "undefined") return -1
+    return Number(localStorage.getItem("pdf-clip")) || -1
+  })
   const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, scrollX: 0, scrollY: 0 })
   const renderedPages = useRef(0)
+
+  useEffect(() => {
+    localStorage.setItem("pdf-scale", String(scale))
+    localStorage.setItem("pdf-hand", String(handMode))
+    localStorage.setItem("pdf-seamless", String(seamless))
+    localStorage.setItem("pdf-clip", String(clipOffset))
+  }, [scale, handMode, seamless, clipOffset])
 
   useEffect(() => {
     const el = containerRef.current
