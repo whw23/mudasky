@@ -91,7 +91,7 @@ function computeClips(
     const canvasH = canvas.height
     const ratio = displayH / canvasH
 
-    const padding = 4
+    const padding = 0
     const offsetPx = displayH * offset / 100
     clips.set(i, {
       top: Math.max(0, bounds.top * ratio - padding + offsetPx),
