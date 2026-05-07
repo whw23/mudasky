@@ -104,6 +104,7 @@ function ToolPanel({
 }: PdfToolbarProps) {
   const [showSearch, setShowSearch] = useState(false)
   const [showClipSlider, setShowClipSlider] = useState(false)
+  const [showZoom, setShowZoom] = useState(false)
   const [query, setQuery] = useState("")
   const [matches, setMatches] = useState<HTMLElement[]>([])
   const [currentMatch, setCurrentMatch] = useState(-1)
@@ -183,19 +184,10 @@ function ToolPanel({
         }]
       : []),
     {
-      icon: <Minus className="size-4" />,
-      title: "缩小",
-      onClick: () => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP)),
-    },
-    {
       icon: <span className="text-xs font-medium">{Math.round(scale * 100)}%</span>,
-      title: "重置缩放",
-      onClick: () => onScaleChange(1.0),
-    },
-    {
-      icon: <Plus className="size-4" />,
-      title: "放大",
-      onClick: () => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP)),
+      title: "缩放",
+      onClick: () => setShowZoom((v) => !v),
+      active: showZoom,
     },
     {
       icon: handMode ? <Hand className="size-4" /> : <MousePointer2 className="size-4" />,
@@ -247,6 +239,35 @@ function ToolPanel({
       })}
 
       {/* 子面板 */}
+      {showZoom && (
+        <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
+          <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span>缩放</span>
+            <span>{Math.round(scale * 100)}%</span>
+          </div>
+          <input
+            type="range"
+            min={MIN_SCALE * 100}
+            max={MAX_SCALE * 100}
+            step={SCALE_STEP * 100}
+            value={Math.round(scale * 100)}
+            onChange={(e) => onScaleChange(Number(e.target.value) / 100)}
+            className="w-full accent-primary"
+          />
+          <div className="mt-1 flex justify-between text-xs text-muted-foreground">
+            <button className="hover:text-foreground" onClick={() => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP))}>
+              − 缩小
+            </button>
+            <button className="text-primary hover:underline" onClick={() => onScaleChange(1.0)}>
+              重置
+            </button>
+            <button className="hover:text-foreground" onClick={() => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP))}>
+              放大 +
+            </button>
+          </div>
+        </div>
+      )}
+
       {showClipSlider && seamless && (
         <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
