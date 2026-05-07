@@ -164,7 +164,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
         scrollX: el.scrollLeft,
         scrollY: window.scrollY,
       }
-      el.style.cursor = "grabbing"
     },
     [handMode],
   )
@@ -180,8 +179,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const onMouseUp = useCallback(() => {
     if (!isDragging.current) return
     isDragging.current = false
-    const el = containerRef.current
-    if (el) el.style.cursor = ""
   }, [])
 
   const onLoadSuccess = useCallback(
@@ -263,7 +260,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
     <>
       <div
         ref={containerRef}
-        className={`relative overflow-x-auto rounded-lg border ${handMode ? "cursor-grab select-none" : ""}`}
+        className={`relative overflow-x-auto rounded-lg border ${handMode ? "pdf-cursor-grab select-none" : "pdf-cursor-text"}`}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}

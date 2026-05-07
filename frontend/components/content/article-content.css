@@ -58,6 +58,19 @@
   background-color: var(--color-muted);
 }
 
+/* PDF 自定义光标：深色描边，白底上清晰可见 */
+.pdf-cursor-grab {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M18 11V9a2 2 0 0 0-2-2 2 2 0 0 0-2-2 2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v7c0 1.1.9 2 2 2h2l3 3 2.02-2.02c.62-.62 1-1.48.98-2.37V11z' fill='white' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, grab;
+}
+
+.pdf-cursor-grab:active {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M18 11V9a2 2 0 0 0-2-2 2 2 0 0 0-2-2 2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v7c0 1.1.9 2 2 2h2l3 3 2.02-2.02c.62-.62 1-1.48.98-2.37V11z' fill='%23ddd' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, grabbing;
+}
+
+.pdf-cursor-text {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M13 6H11V4h2v2zm0 14H11v-2h2v2zm0-8H11V8h2v4zm-1 2v4h2v-4h2l-3 3-3-3h2z' fill='white' stroke='%23333' stroke-width='0.5'/%3E%3Cline x1='12' y1='4' x2='12' y2='20' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, text;
+}
+
 /* PDF 搜索高亮 */
 .pdf-search-highlight {
   background-color: rgba(255, 213, 0, 0.4) !important;
