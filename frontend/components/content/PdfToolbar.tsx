@@ -151,7 +151,7 @@ export function PdfToolbar({
   return (
     <>
       {showClipSlider && seamless && (
-        <div className="fixed bottom-16 left-1/2 z-40 w-64 -translate-x-1/2 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="fixed top-16 left-1/2 z-40 w-64 -translate-x-1/2 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
             <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
@@ -189,7 +189,7 @@ export function PdfToolbar({
       )}
 
       {showOutline && (
-        <div className="fixed bottom-16 left-1/2 z-40 max-h-[60vh] w-72 -translate-x-1/2 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
+        <div className="fixed top-16 left-1/2 z-40 max-h-[60vh] w-72 -translate-x-1/2 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
             <Outline
               onItemClick={onOutlineItemClick}
@@ -199,7 +199,7 @@ export function PdfToolbar({
         </div>
       )}
 
-      <div className="fixed bottom-6 left-1/2 z-40 flex w-fit -translate-x-1/2 items-center gap-1 rounded-full bg-background/90 px-2 py-1 shadow-lg ring-1 ring-foreground/10 backdrop-blur">
+      <div className="fixed top-2 left-1/2 z-40 flex w-fit -translate-x-1/2 items-center gap-1 rounded-full bg-background/90 px-2 py-1 shadow-lg ring-1 ring-foreground/10 backdrop-blur">
         {hasOutline && (
           <Button
             variant="ghost"
