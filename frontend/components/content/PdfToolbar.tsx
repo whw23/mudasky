@@ -2,7 +2,7 @@
 
 /**
  * PDF 悬浮工具栏。
- * 左下角 FAB 按钮吸附在 PDF 容器内，点击后展开工具项。
+ * FAB 按钮 fixed 在视口左下角（对齐 PDF 容器），仅 PDF 可见时显示。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -45,30 +45,33 @@ const SCALE_STEP = 0.1
 /** PDF 悬浮工具栏 */
 export function PdfToolbar(props: PdfToolbarProps) {
   const [open, setOpen] = useState(false)
+  const [left, setLeft] = useState(16)
+
+  useEffect(() => {
+    function updateLeft() {
+      const rect = props.containerRef.current?.getBoundingClientRect()
+      if (rect) setLeft(rect.left + 16)
+    }
+    updateLeft()
+    window.addEventListener("resize", updateLeft)
+    window.addEventListener("scroll", updateLeft)
+    return () => {
+      window.removeEventListener("resize", updateLeft)
+      window.removeEventListener("scroll", updateLeft)
+    }
+  }, [props.containerRef])
 
   return (
-    <div className="sticky bottom-4 z-30 ml-4 mb-4 w-fit">
-      <FabMenu open={open} onToggle={() => setOpen((v) => !v)} />
+    <div className="fixed bottom-6 z-40" style={{ left: `${left}px` }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
+      >
+        {open ? <X className="size-5" /> : <Menu className="size-5" />}
+      </button>
+
       {open && <ToolPanel {...props} />}
     </div>
-  )
-}
-
-/** FAB 主按钮 */
-function FabMenu({
-  open,
-  onToggle,
-}: {
-  open: boolean
-  onToggle: () => void
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className="flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
-    >
-      {open ? <X className="size-5" /> : <Menu className="size-5" />}
-    </button>
   )
 }
 
@@ -162,9 +165,9 @@ function ToolPanel({
     "flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 hover:scale-110 active:scale-95 transition-all"
 
   return (
-    <div className="absolute bottom-0 left-0 z-30">
+    <>
       {/* 按钮组：从 FAB 上方向上排列 */}
-      <div className="mb-14 ml-0.5 flex flex-col-reverse gap-2">
+      <div className="absolute bottom-12 left-0.5 flex flex-col-reverse gap-2">
         {hasOutline && (
           <button className={btn} onClick={onToggleOutline} title="目录">
             <List className="size-4" />
@@ -227,7 +230,7 @@ function ToolPanel({
 
       {/* 子面板：从按钮组右侧弹出 */}
       {showClipSlider && seamless && (
-        <div className="absolute bottom-14 left-14 w-56 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="absolute bottom-0 left-14 w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
             <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
@@ -256,7 +259,7 @@ function ToolPanel({
       )}
 
       {showOutline && (
-        <div className="absolute bottom-14 left-14 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
+        <div className="absolute bottom-0 left-14 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
             <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
           </Document>
@@ -264,7 +267,7 @@ function ToolPanel({
       )}
 
       {showSearch && (
-        <div className="absolute bottom-14 left-14 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
+        <div className="absolute bottom-0 left-14 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
           <input
             ref={inputRef}
             type="text"
@@ -293,6 +296,6 @@ function ToolPanel({
           </button>
         </div>
       )}
-    </div>
+    </>
   )
 }

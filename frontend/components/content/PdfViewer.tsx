@@ -109,6 +109,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [showOutline, setShowOutline] = useState(false)
   const [scale, setScale] = useState(1.0)
   const [handMode, setHandMode] = useState(true)
+  const [inView, setInView] = useState(false)
   const [seamless, setSeamless] = useState(false)
   const [clipOffset, setClipOffset] = useState(-1)
   const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
@@ -117,6 +118,17 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0, scrollX: 0, scrollY: 0 })
   const renderedPages = useRef(0)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   /** 切换连续视图时重新计算裁切 */
   useEffect(() => {
@@ -288,26 +300,26 @@ export function PdfViewer({ url }: PdfViewerProps) {
             </div>
           )}
         </Document>
-
-        {numPages > 0 && (
-          <PdfToolbar
-            hasOutline={hasOutline}
-            onToggleOutline={() => setShowOutline((v) => !v)}
-            showOutline={showOutline}
-            outlineUrl={url}
-            onOutlineItemClick={onItemClick}
-            scale={scale}
-            onScaleChange={setScale}
-            handMode={handMode}
-            onToggleHandMode={() => setHandMode((v) => !v)}
-            seamless={seamless}
-            onToggleSeamless={() => setSeamless((v) => !v)}
-            clipOffset={clipOffset}
-            onClipOffsetChange={setClipOffset}
-            containerRef={containerRef}
-          />
-        )}
       </div>
+
+      {inView && numPages > 0 && (
+        <PdfToolbar
+          hasOutline={hasOutline}
+          onToggleOutline={() => setShowOutline((v) => !v)}
+          showOutline={showOutline}
+          outlineUrl={url}
+          onOutlineItemClick={onItemClick}
+          scale={scale}
+          onScaleChange={setScale}
+          handMode={handMode}
+          onToggleHandMode={() => setHandMode((v) => !v)}
+          seamless={seamless}
+          onToggleSeamless={() => setSeamless((v) => !v)}
+          clipOffset={clipOffset}
+          onClipOffsetChange={setClipOffset}
+          containerRef={containerRef}
+        />
+      )}
     </>
   )
 }
