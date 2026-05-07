@@ -169,7 +169,7 @@ export function PdfToolbar({
             <span>少裁</span>
             <button
               className="text-primary hover:underline"
-              onClick={() => onClipOffsetChange(0)}
+              onClick={() => onClipOffsetChange(-1)}
             >
               重置
             </button>
