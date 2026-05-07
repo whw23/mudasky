@@ -102,13 +102,10 @@ function ToolPanel({
   onClipOffsetChange,
   containerRef,
 }: PdfToolbarProps) {
-  const [showSearch, setShowSearch] = useState(false)
-  const [showClipSlider, setShowClipSlider] = useState(false)
-  const [showZoom, setShowZoom] = useState(false)
+  const [activePanel, setActivePanel] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [matches, setMatches] = useState<HTMLElement[]>([])
   const [currentMatch, setCurrentMatch] = useState(-1)
-  const [activePanel, setActivePanel] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const doSearch = useCallback(
@@ -157,7 +154,6 @@ function ToolPanel({
   )
 
   const closeSearch = useCallback(() => {
-    setShowSearch(false)
     setActivePanel(null)
     setQuery("")
     containerRef.current?.querySelectorAll(".pdf-search-highlight").forEach((el) => {
@@ -168,8 +164,8 @@ function ToolPanel({
   }, [containerRef])
 
   useEffect(() => {
-    if (showSearch) inputRef.current?.focus()
-  }, [showSearch])
+    if (activePanel === "search") inputRef.current?.focus()
+  }, [activePanel])
 
   const btn =
     "absolute flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 hover:scale-110 active:scale-95 transition-all"
@@ -179,15 +175,15 @@ function ToolPanel({
       ? [{
           icon: <List className="size-4" />,
           title: "目录",
-          onClick: () => { onToggleOutline(); setActivePanel(showOutline ? null : "outline") },
-          active: showOutline,
+          onClick: () => { onToggleOutline(); setActivePanel(activePanel === "outline" ? null : "outline") },
+          active: activePanel === "outline",
         }]
       : []),
     {
       icon: <span className="text-xs font-medium">{Math.round(scale * 100)}%</span>,
       title: "缩放",
-      onClick: () => setShowZoom((v) => !v),
-      active: showZoom,
+      onClick: () => setActivePanel(activePanel === "zoom" ? null : "zoom"),
+      active: activePanel === "zoom",
     },
     {
       icon: handMode ? <Hand className="size-4" /> : <MousePointer2 className="size-4" />,
@@ -205,15 +201,15 @@ function ToolPanel({
       ? [{
           icon: <span className="text-xs">±</span>,
           title: "调节裁切",
-          onClick: () => { setShowClipSlider((v) => !v); setActivePanel(showClipSlider ? null : "clip") },
-          active: showClipSlider,
+          onClick: () => setActivePanel(activePanel === "clip" ? null : "clip"),
+          active: activePanel === "clip",
         }]
       : []),
     {
       icon: <Search className="size-4" />,
       title: "搜索",
-      onClick: () => { setShowSearch((v) => !v); setActivePanel(showSearch ? null : "search") },
-      active: showSearch,
+      onClick: () => setActivePanel(activePanel === "search" ? null : "search"),
+      active: activePanel === "search",
     },
   ]
 
@@ -239,7 +235,7 @@ function ToolPanel({
       })}
 
       {/* 子面板 */}
-      {showZoom && (
+      {activePanel === "zoom" && (
         <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>缩放</span>
@@ -268,7 +264,7 @@ function ToolPanel({
         </div>
       )}
 
-      {showClipSlider && seamless && (
+      {activePanel === "clip" && seamless && (
         <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
@@ -297,7 +293,7 @@ function ToolPanel({
         </div>
       )}
 
-      {showOutline && (
+      {activePanel === "outline" && (
         <div className="absolute bottom-0 left-[140px] max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
             <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
@@ -305,7 +301,7 @@ function ToolPanel({
         </div>
       )}
 
-      {showSearch && (
+      {activePanel === "search" && (
         <div className="absolute bottom-0 left-[140px] flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
           <input
             ref={inputRef}
