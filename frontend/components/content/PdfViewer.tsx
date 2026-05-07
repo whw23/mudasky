@@ -109,7 +109,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [showOutline, setShowOutline] = useState(false)
   const [scale, setScale] = useState(1.0)
   const [inView, setInView] = useState(false)
-  const [handMode, setHandMode] = useState(false)
+  const [handMode, setHandMode] = useState(true)
   const [seamless, setSeamless] = useState(false)
   const [clipOffset, setClipOffset] = useState(-1)
   const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
