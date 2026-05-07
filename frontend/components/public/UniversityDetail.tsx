@@ -193,7 +193,7 @@ export function UniversityDetail({ universityId }: Props) {
         <section>
           <h2 className="text-xl font-bold">{t("location")}</h2>
           <div className="mt-3">
-            <UniversityMap latitude={data.latitude} longitude={data.longitude} name={data.name} />
+            <UniversityMap latitude={data.latitude} longitude={data.longitude} name={data.name} country={data.country} />
           </div>
         </section>
       )}

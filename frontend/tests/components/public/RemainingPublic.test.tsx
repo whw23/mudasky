@@ -1,61 +1,45 @@
 /**
  * UniversityMap + ImageGallery 公开组件测试。
- * UniversityMap 动态加载 Leaflet，测试挂载前后状态。
+ * UniversityMap 通过 next/dynamic 加载 UniversityMapInner。
  * ImageGallery 已在 SmallComponents.test.tsx 中测试，此处补充边界场景。
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, act } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { render, screen } from "@testing-library/react"
 
 /* ─── UniversityMap ─── */
 
-/* mock react-leaflet 和 leaflet */
-vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
-  TileLayer: () => <div data-testid="tile-layer" />,
-  Marker: ({ children }: any) => <div data-testid="marker">{children}</div>,
-  Popup: ({ children }: any) => <div data-testid="popup">{children}</div>,
-}))
-
-vi.mock("leaflet", () => ({
-  Icon: {
-    Default: {
-      prototype: {},
-      mergeOptions: vi.fn(),
-    },
+vi.mock("next/dynamic", () => ({
+  default: () => {
+    const Component = (props: any) => (
+      <div data-testid="university-map-inner" data-lat={props.latitude} data-lng={props.longitude}>
+        {props.name}
+      </div>
+    )
+    return Component
   },
 }))
-
-vi.mock("leaflet/dist/leaflet.css", () => ({}))
 
 import { UniversityMap } from "@/components/public/UniversityMap"
 
 describe("UniversityMap", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it("挂载前渲染加载占位符", () => {
-    /* 模拟 SSR 环境：useEffect 不执行 */
-    const { container } = render(
-      <UniversityMap latitude={31.3} longitude={120.6} name="苏州大学" />,
+  it("渲染 dynamic 包装的内部组件", () => {
+    render(
+      <UniversityMap latitude={40.0} longitude={116.3} name="北京大学" />,
     )
 
-    /* 初始状态 mounted=false 时显示占位动画 */
-    const placeholder = container.querySelector(".animate-pulse")
-    /* 组件可能已 mounted（jsdom 中 useEffect 立即执行），两种状态都可接受 */
-    expect(container.firstChild).toBeInTheDocument()
+    expect(screen.getByTestId("university-map-inner")).toBeInTheDocument()
+    expect(screen.getByText("北京大学")).toBeInTheDocument()
   })
 
-  it("mounted 后渲染 MapInner", async () => {
-    await act(async () => {
-      render(
-        <UniversityMap latitude={31.3} longitude={120.6} name="苏州大学" />,
-      )
-    })
+  it("传递坐标 props", () => {
+    render(
+      <UniversityMap latitude={31.3} longitude={121.5} name="复旦大学" />,
+    )
 
-    /* MapInner 会动态加载 leaflet，验证容器已渲染 */
-    expect(screen.getByText("苏州大学").closest("[data-testid='popup']") || true).toBeTruthy()
+    const el = screen.getByTestId("university-map-inner")
+    expect(el).toHaveAttribute("data-lat", "31.3")
+    expect(el).toHaveAttribute("data-lng", "121.5")
   })
 })
 
