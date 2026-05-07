@@ -166,14 +166,24 @@ export function PdfToolbar({
             className="w-full accent-primary"
           />
           <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-            <span>少裁</span>
+            <button
+              className="hover:text-foreground"
+              onClick={() => onClipOffsetChange(Math.max(-3, clipOffset - 0.5))}
+            >
+              ← 少裁
+            </button>
             <button
               className="text-primary hover:underline"
               onClick={() => onClipOffsetChange(-1)}
             >
               重置
             </button>
-            <span>多裁</span>
+            <button
+              className="hover:text-foreground"
+              onClick={() => onClipOffsetChange(Math.min(5, clipOffset + 0.5))}
+            >
+              多裁 →
+            </button>
           </div>
         </div>
       )}
