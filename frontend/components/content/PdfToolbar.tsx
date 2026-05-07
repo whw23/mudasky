@@ -255,7 +255,7 @@ export function PdfToolbar({
         <Button
           variant="ghost"
           size="sm"
-          className={`size-8 rounded-full p-0 ${handMode ? "bg-foreground/10" : ""}`}
+          className={`size-8 rounded-full p-0 ${!handMode ? "opacity-40" : ""}`}
           onClick={onToggleHandMode}
           title={handMode ? "文字选择" : "拖动平移"}
         >
