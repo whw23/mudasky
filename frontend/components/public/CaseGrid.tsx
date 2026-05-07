@@ -57,7 +57,7 @@ export function CaseGrid({ editable, onEdit, onAdd }: CaseGridProps) {
     }
   }
 
-  if (cases.length === 0) {
+  if (cases.length === 0 && !onAdd) {
     return <p className="py-12 text-center text-muted-foreground">{t("noContent")}</p>
   }
 

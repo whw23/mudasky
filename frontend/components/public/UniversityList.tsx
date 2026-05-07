@@ -152,7 +152,7 @@ export function UniversityList({ editable = false, onEdit, onAdd, onManageDiscip
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
             <span className="ml-2 text-muted-foreground">{t("loading")}</span>
           </div>
-        ) : universities.length === 0 ? (
+        ) : universities.length === 0 && !onAdd ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <SearchX className="size-12 text-muted-foreground/50" />
