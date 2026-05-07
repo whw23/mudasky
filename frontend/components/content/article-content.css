@@ -58,17 +58,17 @@
   background-color: var(--color-muted);
 }
 
-/* PDF 自定义光标：深色描边，白底上清晰可见 */
+/* PDF 自定义光标：lucide 图标，白色填充 + 深色描边 */
 .pdf-cursor-grab {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M18 11V9a2 2 0 0 0-2-2 2 2 0 0 0-2-2 2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v7c0 1.1.9 2 2 2h2l3 3 2.02-2.02c.62-.62 1-1.48.98-2.37V11z' fill='white' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, grab;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='white' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2'/%3E%3Cpath d='M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2'/%3E%3Cpath d='M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8'/%3E%3Cpath d='M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15'/%3E%3C/svg%3E") 12 12, grab;
 }
 
 .pdf-cursor-grab:active {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M18 11V9a2 2 0 0 0-2-2 2 2 0 0 0-2-2 2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v7c0 1.1.9 2 2 2h2l3 3 2.02-2.02c.62-.62 1-1.48.98-2.37V11z' fill='%23ddd' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, grabbing;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ddd' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 11.5V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1.4'/%3E%3Cpath d='M14 10V8a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2'/%3E%3Cpath d='M10 9.9V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v5'/%3E%3Cpath d='M6 14a2 2 0 0 0-2-2a2 2 0 0 0-2 2'/%3E%3Cpath d='M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8 2 2 0 1 1 4 0'/%3E%3C/svg%3E") 12 12, grabbing;
 }
 
 .pdf-cursor-text {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M13 6H11V4h2v2zm0 14H11v-2h2v2zm0-8H11V8h2v4zm-1 2v4h2v-4h2l-3 3-3-3h2z' fill='white' stroke='%23333' stroke-width='0.5'/%3E%3Cline x1='12' y1='4' x2='12' y2='20' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, text;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1'/%3E%3Cpath d='M7 22h1a4 4 0 0 0 4-4v-1'/%3E%3Cpath d='M7 2h1a4 4 0 0 1 4 4v1'/%3E%3C/svg%3E") 12 12, text;
 }
 
 /* PDF 搜索高亮 */
