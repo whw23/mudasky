@@ -200,13 +200,16 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   const onItemClick = useCallback(
     ({ pageNumber }: { pageNumber: number }) => {
-      const wrapper = pageRefs.current.get(pageNumber)
-      if (!wrapper) return
-      const rect = wrapper.getBoundingClientRect()
-      const navbarHeight = 100
-      const targetY = window.scrollY + rect.top - navbarHeight
-      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" })
       setShowOutline(false)
+      requestAnimationFrame(() => {
+        const wrapper = pageRefs.current.get(pageNumber)
+        if (!wrapper) return
+        const header = document.querySelector("header")
+        const navH = header?.getBoundingClientRect().height ?? 0
+        const rect = wrapper.getBoundingClientRect()
+        const targetY = window.scrollY + rect.top - navH - 8
+        window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" })
+      })
     },
     [],
   )
