@@ -80,7 +80,7 @@ export function PdfToolbar(props: PdfToolbarProps) {
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
 
-      {open && <ToolPanel {...props} />}
+      {open && <ToolPanel {...props} fabLeft={left} />}
     </div>
   )
 }
@@ -101,7 +101,8 @@ function ToolPanel({
   clipOffset,
   onClipOffsetChange,
   containerRef,
-}: PdfToolbarProps) {
+  fabLeft,
+}: PdfToolbarProps & { fabLeft: number }) {
   const [activePanel, setActivePanel] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [matches, setMatches] = useState<HTMLElement[]>([])
@@ -236,7 +237,7 @@ function ToolPanel({
 
       {/* 子面板 */}
       {activePanel === "zoom" && (
-        <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="fixed bottom-6 z-50 w-56 rounded-lg border bg-background p-3 shadow-lg" style={{ left: `${fabLeft + 56}px` }}>
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>缩放</span>
             <span>{Math.round(scale * 100)}%</span>
@@ -265,7 +266,7 @@ function ToolPanel({
       )}
 
       {activePanel === "clip" && seamless && (
-        <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="fixed bottom-6 z-50 w-56 rounded-lg border bg-background p-3 shadow-lg" style={{ left: `${fabLeft + 56}px` }}>
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
             <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
@@ -294,7 +295,7 @@ function ToolPanel({
       )}
 
       {activePanel === "outline" && (
-        <div className="absolute bottom-0 left-[140px] max-h-[60vh] w-80 overflow-hidden rounded-lg border bg-background shadow-lg">
+        <div className="fixed bottom-6 z-50 max-h-[60vh] w-80 overflow-hidden rounded-lg border bg-background shadow-lg" style={{ left: `${fabLeft + 56}px` }}>
           <div className="border-b bg-muted/30 px-4 py-2">
             <span className="text-sm font-medium">目录</span>
           </div>
@@ -307,7 +308,7 @@ function ToolPanel({
       )}
 
       {activePanel === "search" && (
-        <div className="absolute bottom-0 left-[140px] flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
+        <div className="fixed bottom-6 z-50 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg" style={{ left: `${fabLeft + 56}px` }}>
           <input
             ref={inputRef}
             type="text"
