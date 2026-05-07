@@ -2,7 +2,7 @@
 
 /**
  * PDF 悬浮工具栏。
- * 包含目录、缩放、搜索功能，fixed 定位在视口底部居中。
+ * 左下角 FAB 按钮，点击后扇形展开工具项。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -12,6 +12,7 @@ import {
   ChevronUp,
   Hand,
   List,
+  Menu,
   Minus,
   MousePointer2,
   Plus,
@@ -22,33 +23,19 @@ import {
 import { Button } from "@/components/ui/button"
 
 interface PdfToolbarProps {
-  /** 是否有目录 */
   hasOutline: boolean
-  /** 切换目录面板 */
   onToggleOutline: () => void
-  /** 目录面板是否打开 */
   showOutline: boolean
-  /** PDF 文件 URL（目录用） */
   outlineUrl: string
-  /** 目录项点击回调 */
   onOutlineItemClick: (item: { pageNumber: number }) => void
-  /** 当前缩放比例 */
   scale: number
-  /** 设置缩放比例 */
   onScaleChange: (scale: number) => void
-  /** 拖拽模式 */
   handMode: boolean
-  /** 切换拖拽模式 */
   onToggleHandMode: () => void
-  /** 连续视图（合并页间空白） */
   seamless: boolean
-  /** 切换连续视图 */
   onToggleSeamless: () => void
-  /** 裁切偏移量（px，正值=多裁，负值=少裁） */
   clipOffset: number
-  /** 设置裁切偏移量 */
   onClipOffsetChange: (offset: number) => void
-  /** PDF 容器 ref，用于搜索 */
   containerRef: React.RefObject<HTMLDivElement | null>
 }
 
@@ -56,8 +43,38 @@ const MIN_SCALE = 0.5
 const MAX_SCALE = 3.0
 const SCALE_STEP = 0.1
 
-/** PDF 悬浮工具栏 */
-export function PdfToolbar({
+/** PDF 悬浮工具栏：左下角 FAB + 扇形展开 */
+export function PdfToolbar(props: PdfToolbarProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <FabButton open={open} onToggle={() => setOpen((v) => !v)} />
+      {open && <ToolPanel {...props} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+/** 左下角 FAB 主按钮 */
+function FabButton({
+  open,
+  onToggle,
+}: {
+  open: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className="fixed bottom-6 left-6 z-40 flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
+    >
+      {open ? <X className="size-5" /> : <Menu className="size-5" />}
+    </button>
+  )
+}
+
+/** 展开的工具面板 */
+function ToolPanel({
   hasOutline,
   onToggleOutline,
   showOutline,
@@ -72,7 +89,8 @@ export function PdfToolbar({
   clipOffset,
   onClipOffsetChange,
   containerRef,
-}: PdfToolbarProps) {
+  onClose,
+}: PdfToolbarProps & { onClose: () => void }) {
   const [showSearch, setShowSearch] = useState(false)
   const [showClipSlider, setShowClipSlider] = useState(false)
   const [query, setQuery] = useState("")
@@ -84,19 +102,14 @@ export function PdfToolbar({
     (text: string) => {
       const container = containerRef.current
       if (!container) return
-
-      container
-        .querySelectorAll(".pdf-search-highlight")
-        .forEach((el) => {
-          el.classList.remove("pdf-search-highlight", "pdf-search-current")
-        })
-
+      container.querySelectorAll(".pdf-search-highlight").forEach((el) => {
+        el.classList.remove("pdf-search-highlight", "pdf-search-current")
+      })
       if (!text.trim()) {
         setMatches([])
         setCurrentMatch(-1)
         return
       }
-
       const lower = text.toLowerCase()
       const found: HTMLElement[] = []
       container.querySelectorAll(".textLayer span").forEach((span) => {
@@ -106,7 +119,6 @@ export function PdfToolbar({
           found.push(el)
         }
       })
-
       setMatches(found)
       if (found.length > 0) {
         setCurrentMatch(0)
@@ -148,13 +160,90 @@ export function PdfToolbar({
     if (showSearch) inputRef.current?.focus()
   }, [showSearch])
 
+  const btnClass =
+    "flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 transition-all hover:scale-110 active:scale-95"
+
   return (
     <>
+      {/* 扇形按钮组：从左下角向上展开 */}
+      <div className="fixed bottom-[4.5rem] left-6 z-40 flex flex-col-reverse gap-2">
+        {hasOutline && (
+          <button
+            className={btnClass}
+            onClick={onToggleOutline}
+            title="目录"
+          >
+            <List className="size-4" />
+          </button>
+        )}
+        <button
+          className={btnClass}
+          onClick={() => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP))}
+          disabled={scale <= MIN_SCALE}
+          title="缩小"
+        >
+          <Minus className="size-4" />
+        </button>
+        <button
+          className={`${btnClass} text-xs font-medium`}
+          onClick={() => onScaleChange(1.0)}
+          title="重置缩放"
+        >
+          {Math.round(scale * 100)}%
+        </button>
+        <button
+          className={btnClass}
+          onClick={() => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP))}
+          disabled={scale >= MAX_SCALE}
+          title="放大"
+        >
+          <Plus className="size-4" />
+        </button>
+        <button
+          className={`${btnClass} ${!handMode ? "opacity-40" : ""}`}
+          onClick={onToggleHandMode}
+          title={handMode ? "文字选择" : "拖动平移"}
+        >
+          {handMode ? (
+            <Hand className="size-4" />
+          ) : (
+            <MousePointer2 className="size-4" />
+          )}
+        </button>
+        <button
+          className={`${btnClass} ${seamless ? "ring-primary ring-2" : ""}`}
+          onClick={onToggleSeamless}
+          title={seamless ? "分页视图" : "连续视图"}
+        >
+          <SeparatorHorizontal className="size-4" />
+        </button>
+        {seamless && (
+          <button
+            className={`${btnClass} text-xs ${showClipSlider ? "ring-primary ring-2" : ""}`}
+            onClick={() => setShowClipSlider((v) => !v)}
+            title="调节裁切"
+          >
+            ±
+          </button>
+        )}
+        <button
+          className={btnClass}
+          onClick={() => setShowSearch((v) => !v)}
+          title="搜索"
+        >
+          <Search className="size-4" />
+        </button>
+      </div>
+
+      {/* 裁切滑块面板 */}
       {showClipSlider && seamless && (
-        <div className="fixed top-16 left-1/2 z-40 w-64 -translate-x-1/2 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="fixed bottom-6 left-20 z-40 w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
-            <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
+            <span>
+              {clipOffset > 0 ? "+" : ""}
+              {clipOffset}%
+            </span>
           </div>
           <input
             type="range"
@@ -168,7 +257,9 @@ export function PdfToolbar({
           <div className="mt-1 flex justify-between text-xs text-muted-foreground">
             <button
               className="hover:text-foreground"
-              onClick={() => onClipOffsetChange(Math.max(-3, clipOffset - 0.5))}
+              onClick={() =>
+                onClipOffsetChange(Math.max(-3, clipOffset - 0.5))
+              }
             >
               ← 少裁
             </button>
@@ -180,7 +271,9 @@ export function PdfToolbar({
             </button>
             <button
               className="hover:text-foreground"
-              onClick={() => onClipOffsetChange(Math.min(5, clipOffset + 0.5))}
+              onClick={() =>
+                onClipOffsetChange(Math.min(5, clipOffset + 0.5))
+              }
             >
               多裁 →
             </button>
@@ -188,8 +281,9 @@ export function PdfToolbar({
         </div>
       )}
 
+      {/* 目录面板 */}
       {showOutline && (
-        <div className="fixed top-16 left-1/2 z-40 max-h-[60vh] w-72 -translate-x-1/2 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
+        <div className="fixed bottom-6 left-20 z-40 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
             <Outline
               onItemClick={onOutlineItemClick}
@@ -199,156 +293,48 @@ export function PdfToolbar({
         </div>
       )}
 
-      <div className="fixed top-2 left-1/2 z-40 flex w-fit -translate-x-1/2 items-center gap-1 rounded-full bg-background/90 px-2 py-1 shadow-lg ring-1 ring-foreground/10 backdrop-blur">
-        {hasOutline && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="size-8 rounded-full p-0"
-            onClick={onToggleOutline}
-            title="目录"
-          >
-            {showOutline ? (
-              <X className="size-4" />
-            ) : (
-              <List className="size-4" />
-            )}
-          </Button>
-        )}
-
-        <span className="mx-1 h-4 w-px bg-foreground/20" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="size-8 rounded-full p-0"
-          disabled={scale <= MIN_SCALE}
-          onClick={() =>
-            onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP))
-          }
-          title="缩小"
-        >
-          <Minus className="size-4" />
-        </Button>
-        <button
-          className="min-w-[3rem] text-center text-xs text-muted-foreground"
-          onClick={() => onScaleChange(1.0)}
-          title="重置缩放"
-        >
-          {Math.round(scale * 100)}%
-        </button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="size-8 rounded-full p-0"
-          disabled={scale >= MAX_SCALE}
-          onClick={() =>
-            onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP))
-          }
-          title="放大"
-        >
-          <Plus className="size-4" />
-        </Button>
-
-        <span className="mx-1 h-4 w-px bg-foreground/20" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`size-8 rounded-full p-0 ${!handMode ? "opacity-40" : ""}`}
-          onClick={onToggleHandMode}
-          title={handMode ? "文字选择" : "拖动平移"}
-        >
-          {handMode ? (
-            <Hand className="size-4" />
-          ) : (
-            <MousePointer2 className="size-4" />
+      {/* 搜索面板 */}
+      {showSearch && (
+        <div className="fixed bottom-6 left-20 z-40 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              doSearch(e.target.value)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") navigate(e.shiftKey ? -1 : 1)
+              if (e.key === "Escape") closeSearch()
+            }}
+            placeholder="搜索..."
+            className="w-32 rounded-md border bg-transparent px-2 py-1 text-sm outline-none sm:w-44"
+          />
+          {matches.length > 0 && (
+            <span className="whitespace-nowrap text-xs text-muted-foreground">
+              {currentMatch + 1}/{matches.length}
+            </span>
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`size-8 rounded-full p-0 ${seamless ? "bg-foreground/10" : ""}`}
-          onClick={onToggleSeamless}
-          title={seamless ? "分页视图" : "连续视图"}
-        >
-          <SeparatorHorizontal className="size-4" />
-        </Button>
-        {seamless && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`size-6 rounded-full p-0 text-xs ${showClipSlider ? "bg-foreground/10" : ""}`}
-            onClick={() => setShowClipSlider((v) => !v)}
-            title="调节裁切"
+          <button
+            className="rounded p-1 hover:bg-muted disabled:opacity-30"
+            disabled={matches.length === 0}
+            onClick={() => navigate(-1)}
           >
-            ±
-          </Button>
-        )}
-
-        <span className="mx-1 h-4 w-px bg-foreground/20" />
-
-        {showSearch ? (
-          <div className="flex items-center gap-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                doSearch(e.target.value)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") navigate(e.shiftKey ? -1 : 1)
-                if (e.key === "Escape") closeSearch()
-              }}
-              placeholder="搜索..."
-              className="w-28 rounded-md border bg-transparent px-2 py-0.5 text-sm outline-none sm:w-40"
-            />
-            {matches.length > 0 && (
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                {currentMatch + 1}/{matches.length}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="size-7 rounded-full p-0"
-              disabled={matches.length === 0}
-              onClick={() => navigate(-1)}
-            >
-              <ChevronUp className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="size-7 rounded-full p-0"
-              disabled={matches.length === 0}
-              onClick={() => navigate(1)}
-            >
-              <ChevronDown className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="size-7 rounded-full p-0"
-              onClick={closeSearch}
-            >
-              <X className="size-3.5" />
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="size-8 rounded-full p-0"
-            onClick={() => setShowSearch(true)}
-            title="搜索"
+            <ChevronUp className="size-4" />
+          </button>
+          <button
+            className="rounded p-1 hover:bg-muted disabled:opacity-30"
+            disabled={matches.length === 0}
+            onClick={() => navigate(1)}
           >
-            <Search className="size-4" />
-          </Button>
-        )}
-      </div>
+            <ChevronDown className="size-4" />
+          </button>
+          <button className="rounded p-1 hover:bg-muted" onClick={closeSearch}>
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
     </>
   )
 }
