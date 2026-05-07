@@ -2,7 +2,7 @@
 
 /**
  * PDF 悬浮工具栏。
- * 左下角 FAB 按钮，点击后扇形展开工具项。
+ * 左下角 FAB 按钮吸附在 PDF 容器内，点击后展开工具项。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -20,7 +20,6 @@ import {
   SeparatorHorizontal,
   X,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 interface PdfToolbarProps {
   hasOutline: boolean
@@ -43,20 +42,20 @@ const MIN_SCALE = 0.5
 const MAX_SCALE = 3.0
 const SCALE_STEP = 0.1
 
-/** PDF 悬浮工具栏：左下角 FAB + 扇形展开 */
+/** PDF 悬浮工具栏 */
 export function PdfToolbar(props: PdfToolbarProps) {
   const [open, setOpen] = useState(false)
 
   return (
-    <>
-      <FabButton open={open} onToggle={() => setOpen((v) => !v)} />
-      {open && <ToolPanel {...props} onClose={() => setOpen(false)} />}
-    </>
+    <div className="sticky bottom-4 z-30 ml-4 mb-4 w-fit">
+      <FabMenu open={open} onToggle={() => setOpen((v) => !v)} />
+      {open && <ToolPanel {...props} />}
+    </div>
   )
 }
 
-/** 左下角 FAB 主按钮 */
-function FabButton({
+/** FAB 主按钮 */
+function FabMenu({
   open,
   onToggle,
 }: {
@@ -66,7 +65,7 @@ function FabButton({
   return (
     <button
       onClick={onToggle}
-      className="fixed bottom-6 left-6 z-40 flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
+      className="flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
     >
       {open ? <X className="size-5" /> : <Menu className="size-5" />}
     </button>
@@ -89,8 +88,7 @@ function ToolPanel({
   clipOffset,
   onClipOffsetChange,
   containerRef,
-  onClose,
-}: PdfToolbarProps & { onClose: () => void }) {
+}: PdfToolbarProps) {
   const [showSearch, setShowSearch] = useState(false)
   const [showClipSlider, setShowClipSlider] = useState(false)
   const [query, setQuery] = useState("")
@@ -160,24 +158,20 @@ function ToolPanel({
     if (showSearch) inputRef.current?.focus()
   }, [showSearch])
 
-  const btnClass =
-    "flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 transition-all hover:scale-110 active:scale-95"
+  const btn =
+    "flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 hover:scale-110 active:scale-95 transition-all"
 
   return (
-    <>
-      {/* 扇形按钮组：从左下角向上展开 */}
-      <div className="fixed bottom-[4.5rem] left-6 z-40 flex flex-col-reverse gap-2">
+    <div className="absolute bottom-0 left-0 z-30">
+      {/* 按钮组：从 FAB 上方向上排列 */}
+      <div className="mb-14 ml-0.5 flex flex-col-reverse gap-2">
         {hasOutline && (
-          <button
-            className={btnClass}
-            onClick={onToggleOutline}
-            title="目录"
-          >
+          <button className={btn} onClick={onToggleOutline} title="目录">
             <List className="size-4" />
           </button>
         )}
         <button
-          className={btnClass}
+          className={btn}
           onClick={() => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP))}
           disabled={scale <= MIN_SCALE}
           title="缩小"
@@ -185,14 +179,14 @@ function ToolPanel({
           <Minus className="size-4" />
         </button>
         <button
-          className={`${btnClass} text-xs font-medium`}
+          className={`${btn} text-xs font-medium`}
           onClick={() => onScaleChange(1.0)}
           title="重置缩放"
         >
           {Math.round(scale * 100)}%
         </button>
         <button
-          className={btnClass}
+          className={btn}
           onClick={() => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP))}
           disabled={scale >= MAX_SCALE}
           title="放大"
@@ -200,18 +194,14 @@ function ToolPanel({
           <Plus className="size-4" />
         </button>
         <button
-          className={`${btnClass} ${!handMode ? "opacity-40" : ""}`}
+          className={`${btn} ${!handMode ? "opacity-40" : ""}`}
           onClick={onToggleHandMode}
           title={handMode ? "文字选择" : "拖动平移"}
         >
-          {handMode ? (
-            <Hand className="size-4" />
-          ) : (
-            <MousePointer2 className="size-4" />
-          )}
+          {handMode ? <Hand className="size-4" /> : <MousePointer2 className="size-4" />}
         </button>
         <button
-          className={`${btnClass} ${seamless ? "ring-primary ring-2" : ""}`}
+          className={`${btn} ${seamless ? "ring-primary ring-2" : ""}`}
           onClick={onToggleSeamless}
           title={seamless ? "分页视图" : "连续视图"}
         >
@@ -219,7 +209,7 @@ function ToolPanel({
         </button>
         {seamless && (
           <button
-            className={`${btnClass} text-xs ${showClipSlider ? "ring-primary ring-2" : ""}`}
+            className={`${btn} text-xs ${showClipSlider ? "ring-primary ring-2" : ""}`}
             onClick={() => setShowClipSlider((v) => !v)}
             title="调节裁切"
           >
@@ -227,7 +217,7 @@ function ToolPanel({
           </button>
         )}
         <button
-          className={btnClass}
+          className={btn}
           onClick={() => setShowSearch((v) => !v)}
           title="搜索"
         >
@@ -235,15 +225,12 @@ function ToolPanel({
         </button>
       </div>
 
-      {/* 裁切滑块面板 */}
+      {/* 子面板：从按钮组右侧弹出 */}
       {showClipSlider && seamless && (
-        <div className="fixed bottom-6 left-20 z-40 w-56 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="absolute bottom-14 left-14 w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
-            <span>
-              {clipOffset > 0 ? "+" : ""}
-              {clipOffset}%
-            </span>
+            <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
           </div>
           <input
             type="range"
@@ -255,55 +242,34 @@ function ToolPanel({
             className="w-full accent-primary"
           />
           <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-            <button
-              className="hover:text-foreground"
-              onClick={() =>
-                onClipOffsetChange(Math.max(-3, clipOffset - 0.5))
-              }
-            >
+            <button className="hover:text-foreground" onClick={() => onClipOffsetChange(Math.max(-3, clipOffset - 0.5))}>
               ← 少裁
             </button>
-            <button
-              className="text-primary hover:underline"
-              onClick={() => onClipOffsetChange(-1)}
-            >
+            <button className="text-primary hover:underline" onClick={() => onClipOffsetChange(-1)}>
               重置
             </button>
-            <button
-              className="hover:text-foreground"
-              onClick={() =>
-                onClipOffsetChange(Math.min(5, clipOffset + 0.5))
-              }
-            >
+            <button className="hover:text-foreground" onClick={() => onClipOffsetChange(Math.min(5, clipOffset + 0.5))}>
               多裁 →
             </button>
           </div>
         </div>
       )}
 
-      {/* 目录面板 */}
       {showOutline && (
-        <div className="fixed bottom-6 left-20 z-40 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
+        <div className="absolute bottom-14 left-14 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
-            <Outline
-              onItemClick={onOutlineItemClick}
-              className="pdf-outline"
-            />
+            <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
           </Document>
         </div>
       )}
 
-      {/* 搜索面板 */}
       {showSearch && (
-        <div className="fixed bottom-6 left-20 z-40 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
+        <div className="absolute bottom-14 left-14 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
           <input
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              doSearch(e.target.value)
-            }}
+            onChange={(e) => { setQuery(e.target.value); doSearch(e.target.value) }}
             onKeyDown={(e) => {
               if (e.key === "Enter") navigate(e.shiftKey ? -1 : 1)
               if (e.key === "Escape") closeSearch()
@@ -316,18 +282,10 @@ function ToolPanel({
               {currentMatch + 1}/{matches.length}
             </span>
           )}
-          <button
-            className="rounded p-1 hover:bg-muted disabled:opacity-30"
-            disabled={matches.length === 0}
-            onClick={() => navigate(-1)}
-          >
+          <button className="rounded p-1 hover:bg-muted disabled:opacity-30" disabled={matches.length === 0} onClick={() => navigate(-1)}>
             <ChevronUp className="size-4" />
           </button>
-          <button
-            className="rounded p-1 hover:bg-muted disabled:opacity-30"
-            disabled={matches.length === 0}
-            onClick={() => navigate(1)}
-          >
+          <button className="rounded p-1 hover:bg-muted disabled:opacity-30" disabled={matches.length === 0} onClick={() => navigate(1)}>
             <ChevronDown className="size-4" />
           </button>
           <button className="rounded p-1 hover:bg-muted" onClick={closeSearch}>
@@ -335,6 +293,6 @@ function ToolPanel({
           </button>
         </div>
       )}
-    </>
+    </div>
   )
 }
