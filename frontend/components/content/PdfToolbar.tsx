@@ -2,7 +2,7 @@
 
 /**
  * PDF 悬浮工具栏。
- * FAB 按钮 fixed 在视口左下角（对齐 PDF 容器），仅 PDF 可见时显示。
+ * FAB 按钮 fixed 在 PDF 容器左下角，点击后扇形展开工具项。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -41,6 +41,16 @@ interface PdfToolbarProps {
 const MIN_SCALE = 0.5
 const MAX_SCALE = 3.0
 const SCALE_STEP = 0.1
+const FAN_RADIUS = 90
+
+/** 计算扇形上第 i 个按钮的位置（从正上方到正右方的 90° 弧） */
+function fanPosition(index: number, total: number) {
+  const angle = (Math.PI / 2) * (index / (total - 1))
+  return {
+    x: Math.sin(angle) * FAN_RADIUS,
+    y: -Math.cos(angle) * FAN_RADIUS,
+  }
+}
 
 /** PDF 悬浮工具栏 */
 export function PdfToolbar(props: PdfToolbarProps) {
@@ -65,7 +75,7 @@ export function PdfToolbar(props: PdfToolbarProps) {
     <div className="fixed bottom-6 z-40" style={{ left: `${left}px` }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
+        className="relative z-10 flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
@@ -75,7 +85,7 @@ export function PdfToolbar(props: PdfToolbarProps) {
   )
 }
 
-/** 展开的工具面板 */
+/** 展开的工具面板（扇形按钮 + 子面板） */
 function ToolPanel({
   hasOutline,
   onToggleOutline,
@@ -97,6 +107,7 @@ function ToolPanel({
   const [query, setQuery] = useState("")
   const [matches, setMatches] = useState<HTMLElement[]>([])
   const [currentMatch, setCurrentMatch] = useState(-1)
+  const [activePanel, setActivePanel] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const doSearch = useCallback(
@@ -136,8 +147,7 @@ function ToolPanel({
     (direction: 1 | -1) => {
       if (matches.length === 0) return
       matches[currentMatch]?.classList.remove("pdf-search-current")
-      const next =
-        (currentMatch + direction + matches.length) % matches.length
+      const next = (currentMatch + direction + matches.length) % matches.length
       setCurrentMatch(next)
       matches[next].classList.add("pdf-search-current")
       matches[next].scrollIntoView({ behavior: "smooth", block: "center" })
@@ -147,12 +157,11 @@ function ToolPanel({
 
   const closeSearch = useCallback(() => {
     setShowSearch(false)
+    setActivePanel(null)
     setQuery("")
-    containerRef.current
-      ?.querySelectorAll(".pdf-search-highlight")
-      .forEach((el) => {
-        el.classList.remove("pdf-search-highlight", "pdf-search-current")
-      })
+    containerRef.current?.querySelectorAll(".pdf-search-highlight").forEach((el) => {
+      el.classList.remove("pdf-search-highlight", "pdf-search-current")
+    })
     setMatches([])
     setCurrentMatch(-1)
   }, [containerRef])
@@ -162,75 +171,84 @@ function ToolPanel({
   }, [showSearch])
 
   const btn =
-    "flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 hover:scale-110 active:scale-95 transition-all"
+    "absolute flex size-9 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-foreground/10 hover:scale-110 active:scale-95 transition-all"
+
+  const items = [
+    ...(hasOutline
+      ? [{
+          icon: <List className="size-4" />,
+          title: "目录",
+          onClick: () => { onToggleOutline(); setActivePanel(showOutline ? null : "outline") },
+          active: showOutline,
+        }]
+      : []),
+    {
+      icon: <Minus className="size-4" />,
+      title: "缩小",
+      onClick: () => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP)),
+    },
+    {
+      icon: <span className="text-xs font-medium">{Math.round(scale * 100)}%</span>,
+      title: "重置缩放",
+      onClick: () => onScaleChange(1.0),
+    },
+    {
+      icon: <Plus className="size-4" />,
+      title: "放大",
+      onClick: () => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP)),
+    },
+    {
+      icon: handMode ? <Hand className="size-4" /> : <MousePointer2 className="size-4" />,
+      title: handMode ? "文字选择" : "拖动平移",
+      onClick: onToggleHandMode,
+      dim: !handMode,
+    },
+    {
+      icon: <SeparatorHorizontal className="size-4" />,
+      title: seamless ? "分页视图" : "连续视图",
+      onClick: onToggleSeamless,
+      active: seamless,
+    },
+    ...(seamless
+      ? [{
+          icon: <span className="text-xs">±</span>,
+          title: "调节裁切",
+          onClick: () => { setShowClipSlider((v) => !v); setActivePanel(showClipSlider ? null : "clip") },
+          active: showClipSlider,
+        }]
+      : []),
+    {
+      icon: <Search className="size-4" />,
+      title: "搜索",
+      onClick: () => { setShowSearch((v) => !v); setActivePanel(showSearch ? null : "search") },
+      active: showSearch,
+    },
+  ]
 
   return (
     <>
-      {/* 按钮组：从 FAB 上方向上排列 */}
-      <div className="absolute bottom-12 left-0.5 flex flex-col-reverse gap-2">
-        {hasOutline && (
-          <button className={btn} onClick={onToggleOutline} title="目录">
-            <List className="size-4" />
-          </button>
-        )}
-        <button
-          className={btn}
-          onClick={() => onScaleChange(Math.max(MIN_SCALE, scale - SCALE_STEP))}
-          disabled={scale <= MIN_SCALE}
-          title="缩小"
-        >
-          <Minus className="size-4" />
-        </button>
-        <button
-          className={`${btn} text-xs font-medium`}
-          onClick={() => onScaleChange(1.0)}
-          title="重置缩放"
-        >
-          {Math.round(scale * 100)}%
-        </button>
-        <button
-          className={btn}
-          onClick={() => onScaleChange(Math.min(MAX_SCALE, scale + SCALE_STEP))}
-          disabled={scale >= MAX_SCALE}
-          title="放大"
-        >
-          <Plus className="size-4" />
-        </button>
-        <button
-          className={`${btn} ${!handMode ? "opacity-40" : ""}`}
-          onClick={onToggleHandMode}
-          title={handMode ? "文字选择" : "拖动平移"}
-        >
-          {handMode ? <Hand className="size-4" /> : <MousePointer2 className="size-4" />}
-        </button>
-        <button
-          className={`${btn} ${seamless ? "ring-primary ring-2" : ""}`}
-          onClick={onToggleSeamless}
-          title={seamless ? "分页视图" : "连续视图"}
-        >
-          <SeparatorHorizontal className="size-4" />
-        </button>
-        {seamless && (
+      {/* 扇形按钮 */}
+      {items.map((item, i) => {
+        const pos = fanPosition(i, items.length)
+        return (
           <button
-            className={`${btn} text-xs ${showClipSlider ? "ring-primary ring-2" : ""}`}
-            onClick={() => setShowClipSlider((v) => !v)}
-            title="调节裁切"
+            key={item.title}
+            className={`${btn} ${item.active ? "ring-primary ring-2" : ""} ${item.dim ? "opacity-40" : ""}`}
+            style={{
+              left: `${pos.x}px`,
+              bottom: `${-pos.y}px`,
+            }}
+            onClick={item.onClick}
+            title={item.title}
           >
-            ±
+            {item.icon}
           </button>
-        )}
-        <button
-          className={btn}
-          onClick={() => setShowSearch((v) => !v)}
-          title="搜索"
-        >
-          <Search className="size-4" />
-        </button>
-      </div>
+        )
+      })}
 
-      {/* 子面板：从按钮组右侧弹出 */}
+      {/* 子面板 */}
       {showClipSlider && seamless && (
-        <div className="absolute bottom-0 left-14 w-56 rounded-lg border bg-background p-3 shadow-lg">
+        <div className="absolute bottom-0 left-[140px] w-56 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
             <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
@@ -259,7 +277,7 @@ function ToolPanel({
       )}
 
       {showOutline && (
-        <div className="absolute bottom-0 left-14 max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
+        <div className="absolute bottom-0 left-[140px] max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
           <Document file={outlineUrl}>
             <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
           </Document>
@@ -267,7 +285,7 @@ function ToolPanel({
       )}
 
       {showSearch && (
-        <div className="absolute bottom-0 left-14 flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
+        <div className="absolute bottom-0 left-[140px] flex items-center gap-1 rounded-lg border bg-background p-2 shadow-lg">
           <input
             ref={inputRef}
             type="text"
