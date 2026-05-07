@@ -72,16 +72,24 @@ export function PdfToolbar(props: PdfToolbarProps) {
   }, [props.containerRef])
 
   return (
-    <div className="fixed bottom-6 z-40" style={{ left: `${left}px` }}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="relative z-10 flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
-      >
-        {open ? <X className="size-5" /> : <Menu className="size-5" />}
-      </button>
+    <>
+      {open && (
+        <div
+          className="fixed inset-0 z-30"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      <div className="fixed bottom-6 z-40" style={{ left: `${left}px` }}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="relative z-10 flex size-10 items-center justify-center rounded-full bg-foreground/80 text-background shadow-lg transition-transform hover:scale-110 active:scale-95"
+        >
+          {open ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
 
-      {open && <ToolPanel {...props} fabLeft={left} />}
-    </div>
+        {open && <ToolPanel {...props} fabLeft={left} />}
+      </div>
+    </>
   )
 }
 
