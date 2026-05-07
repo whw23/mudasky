@@ -111,7 +111,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [inView, setInView] = useState(false)
   const [handMode, setHandMode] = useState(false)
   const [seamless, setSeamless] = useState(false)
-  const [clipOffset, setClipOffset] = useState(0)
+  const [clipOffset, setClipOffset] = useState(-1)
   const [clips, setClips] = useState<Map<number, { top: number; bottom: number }>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
