@@ -154,13 +154,13 @@ export function PdfToolbar({
         <div className="fixed bottom-16 left-1/2 z-40 w-64 -translate-x-1/2 rounded-lg border bg-background p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>裁切调节</span>
-            <span>{clipOffset > 0 ? "+" : ""}{clipOffset}px</span>
+            <span>{clipOffset > 0 ? "+" : ""}{clipOffset}%</span>
           </div>
           <input
             type="range"
-            min={-50}
-            max={100}
-            step={5}
+            min={-3}
+            max={5}
+            step={0.5}
             value={clipOffset}
             onChange={(e) => onClipOffsetChange(Number(e.target.value))}
             className="w-full accent-primary"
