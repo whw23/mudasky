@@ -200,8 +200,12 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   const onItemClick = useCallback(
     ({ pageNumber }: { pageNumber: number }) => {
-      pageRefs.current.get(pageNumber)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+      const wrapper = pageRefs.current.get(pageNumber)
+      if (!wrapper) return
+      const rect = wrapper.getBoundingClientRect()
+      const navbarHeight = 100
+      const targetY = window.scrollY + rect.top - navbarHeight
+      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" })
       setShowOutline(false)
     },
     [],
