@@ -294,10 +294,15 @@ function ToolPanel({
       )}
 
       {activePanel === "outline" && (
-        <div className="absolute bottom-0 left-[140px] max-h-[60vh] w-72 overflow-y-auto rounded-lg border bg-background p-4 shadow-lg">
-          <Document file={outlineUrl}>
-            <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
-          </Document>
+        <div className="absolute bottom-0 left-[140px] max-h-[60vh] w-80 overflow-hidden rounded-lg border bg-background shadow-lg">
+          <div className="border-b bg-muted/30 px-4 py-2">
+            <span className="text-sm font-medium">目录</span>
+          </div>
+          <div className="overflow-y-auto p-3" style={{ maxHeight: "calc(60vh - 2.5rem)" }}>
+            <Document file={outlineUrl}>
+              <Outline onItemClick={onOutlineItemClick} className="pdf-outline" />
+            </Document>
+          </div>
         </div>
       )}
 
