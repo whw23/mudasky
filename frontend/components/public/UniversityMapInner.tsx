@@ -65,16 +65,21 @@ function loadEcharts(): Promise<any> {
   })
 }
 
+/** 构建省份→国家映射 */
+function buildProvinceToCountry(provinceGroups: Record<string, string[]>): Record<string, string> {
+  const map: Record<string, string> = {}
+  for (const [country, provinces] of Object.entries(provinceGroups)) {
+    for (const p of provinces) map[p] = country
+  }
+  return map
+}
+
 /** 绑定 hover 事件：省份 hover 时高亮整个国家 */
 function bindCountryHover(
   chart: any,
   provinceGroups: Record<string, string[]>,
 ) {
-  const provinceToCountry: Record<string, string> = {}
-  for (const [country, provinces] of Object.entries(provinceGroups)) {
-    for (const p of provinces) provinceToCountry[p] = country
-  }
-
+  const provinceToCountry = buildProvinceToCountry(provinceGroups)
   let lastHighlighted: string[] = []
 
   chart.on("mouseover", (params: any) => {
@@ -136,6 +141,8 @@ export default function UniversityMapInner({
       )
       echarts.registerMap("world-detail", mapData)
 
+      const provinceToCountry = buildProvinceToCountry(provinceGroups)
+
       chart = echarts.init(inner)
       chart.setOption({
         geo: {
@@ -149,6 +156,13 @@ export default function UniversityMapInner({
             label: { show: false },
           },
           label: { show: false },
+          tooltip: {
+            show: true,
+            formatter: (params: any) => {
+              const country = provinceToCountry[params.name]
+              return country ? `${country} · ${params.name}` : params.name
+            },
+          },
         },
         series: [
           {
@@ -170,7 +184,13 @@ export default function UniversityMapInner({
         ],
         tooltip: {
           trigger: "item",
-          formatter: (params: any) => params.name,
+          formatter: (params: any) => {
+            if (params.componentType === "geo") {
+              const country = provinceToCountry[params.name]
+              return country ? `${country} · ${params.name}` : params.name
+            }
+            return params.name
+          },
         },
       })
 
