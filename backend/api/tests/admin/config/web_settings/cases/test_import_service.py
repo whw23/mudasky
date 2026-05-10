@@ -206,7 +206,7 @@ async def test_parse_workbook_missing_program(
 async def test_parse_workbook_missing_year(
     mock_repo, mock_uni_repo, service
 ):
-    """缺少入学年份报错。"""
+    """入学年份为空时视为可选，不报错。"""
     wb = Workbook()
     ws = wb.active
     ws.title = "成功案例"
@@ -215,11 +215,13 @@ async def test_parse_workbook_missing_year(
     ws.append(["张三", "哈佛", "CS", None, None, None, None, None, None])
 
     mock_uni_repo.get_university_by_name = AsyncMock(return_value=None)
+    mock_repo.find_case = AsyncMock(return_value=None)
 
     items, errors = await service._parse_workbook(wb)
 
-    assert len(errors) == 1
-    assert "入学年份" in errors[0]["error"]
+    assert len(errors) == 0
+    assert len(items) == 1
+    assert items[0]["data"]["year"] is None
 
 
 @pytest.mark.asyncio

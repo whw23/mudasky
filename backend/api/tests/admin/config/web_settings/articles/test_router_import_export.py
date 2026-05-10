@@ -140,8 +140,7 @@ class TestArticleImportExport:
 
         session = AsyncMock()
         result = await confirm_import(
-            category_id="cat-1",
-            items=[],
+            items="[]",
             user_id="admin-1",
             session=session,
             file=file,
@@ -169,8 +168,7 @@ class TestArticleImportExport:
 
         session = AsyncMock()
         result = await confirm_import(
-            category_id="cat-1",
-            items=[],
+            items="[]",
             user_id="admin-1",
             session=session,
             file=file,

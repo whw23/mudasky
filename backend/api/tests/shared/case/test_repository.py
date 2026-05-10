@@ -141,28 +141,47 @@ async def test_list_cases_no_filter(session):
 
 
 async def test_list_cases_with_year_filter(session):
-    """按年份筛选案例。
+    """按年份筛选案例。"""
+    cases = [MagicMock(spec=SuccessCase)]
+    count_result = MagicMock()
+    count_result.scalar_one.return_value = 1
+    list_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = cases
+    list_result.scalars.return_value = mock_scalars
 
-    注意：源码 list_cases 的 base_filter 从 True 开始，
-    True & BinaryExpression 会触发 TypeError。
-    此处验证该已知问题。
-    """
-    with pytest.raises(TypeError):
-        await list_cases(
-            session, offset=0, limit=10, year=2024
-        )
+    session.execute = AsyncMock(
+        side_effect=[count_result, list_result]
+    )
+
+    result_list, total = await list_cases(
+        session, offset=0, limit=10, year=2024
+    )
+
+    assert total == 1
+    assert len(result_list) == 1
 
 
 async def test_list_cases_with_featured_filter(session):
-    """按推荐状态筛选案例。
+    """按推荐状态筛选案例。"""
+    cases = [MagicMock(spec=SuccessCase)]
+    count_result = MagicMock()
+    count_result.scalar_one.return_value = 1
+    list_result = MagicMock()
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = cases
+    list_result.scalars.return_value = mock_scalars
 
-    同 test_list_cases_with_year_filter，
-    源码存在 True & BinaryExpression 的兼容问题。
-    """
-    with pytest.raises(TypeError):
-        await list_cases(
-            session, offset=0, limit=10, featured=True
-        )
+    session.execute = AsyncMock(
+        side_effect=[count_result, list_result]
+    )
+
+    result_list, total = await list_cases(
+        session, offset=0, limit=10, featured=True
+    )
+
+    assert total == 1
+    assert len(result_list) == 1
 
 
 async def test_list_cases_empty_result(session):
