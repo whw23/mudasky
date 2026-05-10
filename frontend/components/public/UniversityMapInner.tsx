@@ -100,12 +100,18 @@ function bindCountryHover(
   })
 }
 
+/** 将经度转换为地图数据范围（亚洲中心地图使用 -28.8~352 而非 -180~180） */
+function normalizeLon(lon: number): number {
+  return lon < -28.8 ? lon + 360 : lon
+}
+
 /** 地图渲染内部实现 */
 export default function UniversityMapInner({
   latitude,
   longitude,
   name,
 }: Props) {
+  const mapLon = normalizeLon(longitude)
   const innerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -135,7 +141,7 @@ export default function UniversityMapInner({
         geo: {
           map: "world-detail",
           roam: true,
-          center: [longitude, latitude],
+          center: [mapLon, latitude],
           zoom: 7,
           itemStyle: { areaColor: "#e8eaed", borderColor: "#c4c7cc" },
           emphasis: {
@@ -148,7 +154,7 @@ export default function UniversityMapInner({
           {
             type: "effectScatter",
             coordinateSystem: "geo",
-            data: [{ name, value: [longitude, latitude] }],
+            data: [{ name, value: [mapLon, latitude] }],
             symbolSize: 12,
             rippleEffect: { brushType: "stroke", scale: 4 },
             itemStyle: { color: "#dc2626" },
