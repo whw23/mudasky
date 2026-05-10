@@ -74,7 +74,7 @@ describe("CaseEditDialog", () => {
   it("渲染入学年份字段", () => {
     render(<CaseEditDialog {...defaultProps} />)
 
-    expect(screen.getByLabelText("入学年份")).toBeInTheDocument()
+    expect(screen.getByLabelText("入学年份（可选）")).toBeInTheDocument()
   })
 
   it("渲染录取大学和专业字段", () => {

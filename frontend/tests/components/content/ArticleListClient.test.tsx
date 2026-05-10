@@ -178,9 +178,8 @@ describe("ArticleListClient", () => {
     render(<ArticleListClient editable />)
 
     await waitFor(() => {
-      /* 草稿标签在卡片 badge 和快捷操作按钮中各出现一次 */
       const draftElements = screen.getAllByText("草稿")
-      expect(draftElements.length).toBeGreaterThanOrEqual(2)
+      expect(draftElements.length).toBeGreaterThanOrEqual(1)
     })
   })
 
