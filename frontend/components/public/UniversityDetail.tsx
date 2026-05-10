@@ -7,12 +7,12 @@
 
 import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import api from "@/lib/api"
 import { ImageGallery } from "./ImageGallery"
 import { UniversityMap } from "./UniversityMap"
 import { SafeHtml } from "@/components/common/SafeHtml"
-import { ExternalLink, MapPin, Award } from "lucide-react"
+import { ArrowLeft, ExternalLink, MapPin, Award } from "lucide-react"
 
 interface Discipline {
   id: string
@@ -83,6 +83,14 @@ export function UniversityDetail({ universityId }: Props) {
 
   return (
     <div className="space-y-10">
+      <Link
+        href="/universities"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
+      >
+        <ArrowLeft className="size-4" />
+        {t("backToList")}
+      </Link>
+
       {/* Header */}
       <div className="flex items-start gap-6">
         {data.logo_image_id && (
