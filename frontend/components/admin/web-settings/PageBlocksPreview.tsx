@@ -44,6 +44,7 @@ export function PageBlocksPreview({
   const [editingBlock, setEditingBlock] = useState<Block | null>(null)
   const [editingTab, setEditingTab] = useState<"config" | "content">("content")
   const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null)
+  const [blockRefreshKey, setBlockRefreshKey] = useState(0)
 
   /** 保存区块列表到后端 */
   const saveBlocks = useCallback(async (updatedBlocks: Block[]) => {
@@ -134,7 +135,7 @@ export function PageBlocksPreview({
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {blocks.map((block, index) => (
-                <Fragment key={block.id}>
+                <Fragment key={`${pageSlug}-${block.id}-${blockRefreshKey}`}>
                   {/* 插入点 */}
                   <InsertButton onClick={() => handleAddClick(index)} />
 
@@ -185,7 +186,7 @@ export function PageBlocksPreview({
       {/* 统一区块编辑弹窗 */}
       <UnifiedBlockEditor
         open={!!editingBlock}
-        onOpenChange={(open) => { if (!open) { setEditingBlock(null); setEditingFieldIndex(null) } }}
+        onOpenChange={(open) => { if (!open) { setEditingBlock(null); setEditingFieldIndex(null); setBlockRefreshKey((k) => k + 1) } }}
         block={editingBlock}
         defaultTab={editingTab}
         defaultFieldIndex={editingFieldIndex}

@@ -616,12 +616,12 @@ interface CaseItem {
   student_name: string
   university: string
   program: string
-  year: number
+  year: number | null
   testimonial: string | null
   is_featured: boolean
   avatar_image_id: string | null
   offer_image_id: string | null
-  related_university_id: string | null
+  university_id: string | null
 }
 
 /** 案例列表管理（case_grid 内容标签页） */
@@ -671,7 +671,7 @@ function CaseItemsList() {
               )}
             </div>
             <div className="truncate text-xs text-muted-foreground">
-              {c.university} · {c.program} · {c.year}
+              {c.university} · {c.program}{c.year ? ` · ${c.year}` : ""}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">

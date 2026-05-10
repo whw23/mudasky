@@ -19,6 +19,16 @@ import { UniversityEditDialog } from "@/components/admin/web-settings/University
 import { DisciplineManageDialog } from "@/components/admin/web-settings/DisciplineManageDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface UniversityData {
   id: string
@@ -58,6 +68,7 @@ interface BlockProps {
 export function UniversityListBlock({ block, header, bg, editable }: BlockProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<UniversityData | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<UniversityData | null>(null)
   const [disciplineOpen, setDisciplineOpen] = useState(false)
   const [previewData, setPreviewData] = useState<any>(null)
   const [importFile, setImportFile] = useState<File | null>(null)
@@ -75,6 +86,20 @@ export function UniversityListBlock({ block, header, bg, editable }: BlockProps)
   function handleCreateUniversity() {
     setEditItem(null)
     setEditOpen(true)
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    try {
+      await api.post("/admin/web-settings/universities/list/detail/delete", {
+        university_id: deleteTarget.id,
+      })
+      toast.success("院校已删除")
+      setDeleteTarget(null)
+      refreshData()
+    } catch {
+      toast.error("删除失败")
+    }
   }
 
   async function handleImportConfirm(items: any[]) {
@@ -125,6 +150,7 @@ export function UniversityListBlock({ block, header, bg, editable }: BlockProps)
             editable={editable}
             onEdit={editable ? handleEditUniversity : undefined}
             onAdd={editable ? handleCreateUniversity : undefined}
+            onDelete={editable ? (uni) => setDeleteTarget(uni as UniversityData) : undefined}
             onManageDisciplines={editable ? () => setDisciplineOpen(true) : undefined}
           />
         </div>
@@ -155,6 +181,23 @@ export function UniversityListBlock({ block, header, bg, editable }: BlockProps)
           columns={IMPORT_COLUMNS}
         />
       )}
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除院校「{deleteTarget?.name}」吗？此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

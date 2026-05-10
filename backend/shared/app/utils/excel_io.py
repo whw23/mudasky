@@ -1,6 +1,7 @@
 """Excel/ZIP 读写通用工具。"""
 
 import io
+import os
 import zipfile
 
 from PIL import Image, ImageDraw
@@ -36,13 +37,34 @@ def load_workbook_from_bytes(data: bytes) -> Workbook:
 
 
 def extract_zip(content: bytes) -> dict[str, bytes]:
-    """解压 ZIP，返回 {文件名: 内容} 字典。忽略 macOS 隐藏文件。"""
-    files = {}
+    """解压 ZIP，返回 {文件名: 内容} 字典。忽略 macOS 隐藏文件，自动去掉公共目录前缀。"""
+    raw: dict[str, bytes] = {}
     with zipfile.ZipFile(io.BytesIO(content)) as zf:
         for name in zf.namelist():
             if name.startswith("__") or name.startswith("."):
                 continue
-            files[name] = zf.read(name)
+            raw[name] = zf.read(name)
+
+    # 去掉公共目录前缀（如 "cases_template/images/x.jpg" → "images/x.jpg"）
+    real_files = [n for n in raw if not n.endswith("/")]
+    if not real_files:
+        return raw
+    prefix = os.path.commonpath(real_files)
+    if prefix and "/" in prefix:
+        prefix = prefix.rsplit("/", 1)[0] + "/"
+    elif prefix and not any(n == prefix for n in real_files):
+        prefix = prefix + "/"
+    else:
+        prefix = ""
+
+    if not prefix:
+        return raw
+
+    files = {}
+    for name, data in raw.items():
+        stripped = name[len(prefix):] if name.startswith(prefix) else name
+        if stripped:
+            files[stripped] = data
     return files
 
 

@@ -17,6 +17,16 @@ import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { ArticleEditDialog } from "@/components/admin/web-settings/ArticleEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface Category {
   id: string
@@ -60,6 +70,7 @@ export function ArticleListBlock({ block, header, bg, editable, blockLabel }: Bl
   /* 编辑弹窗状态 */
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<Article | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Article | null>(null)
 
   /* 导入预览状态 */
   const [previewData, setPreviewData] = useState<any>(null)
@@ -98,6 +109,20 @@ export function ArticleListBlock({ block, header, bg, editable, blockLabel }: Bl
   function handleCreateArticle() {
     setEditItem(null)
     setEditOpen(true)
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    try {
+      await api.post("/admin/web-settings/articles/list/detail/delete", {
+        article_id: deleteTarget.id,
+      })
+      toast.success("文章已删除")
+      setDeleteTarget(null)
+      refreshData()
+    } catch {
+      toast.error("删除失败")
+    }
   }
 
   /** 确认导入 */
@@ -143,6 +168,7 @@ export function ArticleListBlock({ block, header, bg, editable, blockLabel }: Bl
             categorySlug={categorySlug}
             editable={editable}
             onEdit={editable ? handleEditArticle : undefined}
+            onDelete={editable ? setDeleteTarget : undefined}
           />
 
           {/* 写文章占位卡片（仅编辑模式） */}
@@ -183,6 +209,23 @@ export function ArticleListBlock({ block, header, bg, editable, blockLabel }: Bl
           columns={IMPORT_COLUMNS}
         />
       )}
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除文章「{deleteTarget?.title}」吗？此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

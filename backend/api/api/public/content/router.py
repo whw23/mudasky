@@ -51,7 +51,9 @@ async def list_published_articles(
     result = build_paginated(
         articles, total, params, ArticleResponse
     )
-    seed = f"article:list:{page}:{page_size}:{category_id}:{total}"
+    latest_ts = max((a.updated_at for a in articles if a.updated_at), default=None)
+    ts = latest_ts.isoformat() if latest_ts else ""
+    seed = f"article:list:{page}:{page_size}:{category_id}:{total}:{ts}"
     if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result

@@ -3,7 +3,7 @@
 封装所有成功案例相关的数据库操作。
 """
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.case.models import SuccessCase
@@ -60,9 +60,7 @@ async def list_cases(
     if featured is not None:
         conditions.append(SuccessCase.is_featured == featured)
 
-    base_filter = True  # noqa: E712
-    for cond in conditions:
-        base_filter = base_filter & cond
+    base_filter = and_(true(), *conditions)
 
     count_stmt = (
         select(func.count())
@@ -109,13 +107,17 @@ async def find_case(
     session: AsyncSession,
     student_name: str,
     university: str,
-    year: int,
+    year: int | None = None,
 ) -> SuccessCase | None:
     """按唯一键查找案例。"""
-    stmt = select(SuccessCase).where(
+    conditions = [
         SuccessCase.student_name == student_name,
         SuccessCase.university == university,
-        SuccessCase.year == year,
-    )
+    ]
+    if year is not None:
+        conditions.append(SuccessCase.year == year)
+    else:
+        conditions.append(SuccessCase.year.is_(None))
+    stmt = select(SuccessCase).where(*conditions)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()

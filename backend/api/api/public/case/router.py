@@ -28,13 +28,13 @@ async def list_cases(
     page: int = 1,
     page_size: int = 20,
     year: int | None = None,
-    featured: bool | None = None,
+    is_featured: bool | None = None,
 ) -> PaginatedResponse[CaseResponse]:
     """分页查询成功案例，可按年份和推荐状态过滤。"""
     params = PaginationParams(page=page, page_size=page_size)
     svc = CaseService(session)
     cases, total = await svc.list_cases(
-        params.offset, params.page_size, year, featured
+        params.offset, params.page_size, year, is_featured
     )
 
     # 获取所有关联的院校信息
@@ -63,7 +63,9 @@ async def list_cases(
         total_pages=(total + params.page_size - 1) // params.page_size,
     )
 
-    seed = f"case:list:{page}:{page_size}:{year}:{featured}:{total}"
+    latest_ts = max((c.updated_at for c in cases if c.updated_at), default=None)
+    ts = latest_ts.isoformat() if latest_ts else ""
+    seed = f"case:list:{page}:{page_size}:{year}:{is_featured}:{total}:{ts}"
     if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result

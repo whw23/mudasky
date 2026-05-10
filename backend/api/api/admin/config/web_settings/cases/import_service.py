@@ -7,9 +7,13 @@ Excel 格式：单个 sheet，表头：学生姓名 | 院校名称 | 专业 | �
 Merge key: (student_name, university, year)
 """
 
+import logging
+
 from fastapi import UploadFile
 from openpyxl import Workbook
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.core.exceptions import BadRequestException
 from app.db.case import repository
@@ -125,7 +129,8 @@ class ImportService:
                     updated += 1
                 else:  # unchanged
                     skipped += 1
-            except Exception:
+            except Exception as e:
+                logger.error("导入案例失败: %s", e, exc_info=True)
                 skipped += 1
 
         return {"imported": imported, "updated": updated, "skipped": skipped}
@@ -234,8 +239,6 @@ class ImportService:
                 year = int(row[3])
             except ValueError:
                 raise ValueError(f"行 {row_num}: 入学年份必须是整数")
-        if not year:
-            raise ValueError(f"行 {row_num}: 入学年份不能为空")
 
         testimonial = str(row[4]).strip() if row[4] else None
 

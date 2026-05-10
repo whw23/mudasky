@@ -51,6 +51,7 @@ interface ArticleListClientProps {
   categorySlug?: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onDelete?: (article: Article) => void
   onRefresh?: () => void
 }
 
@@ -59,6 +60,7 @@ export function ArticleListClient({
   categorySlug,
   editable,
   onEdit,
+  onDelete,
 }: ArticleListClientProps) {
   const t = useTranslations("News")
   const pg = useTranslations("Pagination")
@@ -205,6 +207,7 @@ export function ArticleListClient({
               readMoreLabel={t("readMore")}
               editable={editable}
               onEdit={onEdit}
+              onDelete={editable ? onDelete : undefined}
               onTogglePin={editable ? handleTogglePin : undefined}
               onTogglePublish={editable ? handleTogglePublish : undefined}
             />
@@ -282,6 +285,7 @@ function ArticleCard({
   readMoreLabel,
   editable,
   onEdit,
+  onDelete,
   onTogglePin,
   onTogglePublish,
 }: {
@@ -292,6 +296,7 @@ function ArticleCard({
   readMoreLabel: string
   editable?: boolean
   onEdit?: (article: Article) => void
+  onDelete?: (article: Article) => void
   onTogglePin?: (article: Article) => void
   onTogglePublish?: (article: Article) => void
 }) {
@@ -346,43 +351,46 @@ function ArticleCard({
     "group block rounded-lg border bg-white p-6 transition-all hover:border-primary hover:shadow-sm"
 
   if (editable) {
+    const actionButtons = (
+      <>
+        {onTogglePin && (
+          <button
+            className={`pointer-events-auto rounded-full p-1.5 shadow-sm transition-colors ${
+              article.is_pinned
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-primary"
+            }`}
+            onClick={(e) => { e.stopPropagation(); onTogglePin(article) }}
+            title={article.is_pinned ? "取消置顶" : "置顶"}
+          >
+            {article.is_pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+          </button>
+        )}
+        {onTogglePublish && (
+          <button
+            className={`pointer-events-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-sm transition-colors ${
+              article.status === "published"
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+            }`}
+            onClick={(e) => { e.stopPropagation(); onTogglePublish(article) }}
+            title={article.status === "published" ? "转为草稿" : "发布"}
+          >
+            {article.status === "published" ? "已发布" : "草稿"}
+          </button>
+        )}
+      </>
+    )
+
     return (
-      <div className="relative">
-        <EditableOverlay
-          onClick={() => onEdit?.(article)}
-          label={`编辑文章 ${article.title}`}
-        >
-          <div className={cls}>{inner}</div>
-        </EditableOverlay>
-        <div className="absolute right-10 top-2 z-10 flex items-center gap-2">
-          {onTogglePin && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onTogglePin(article) }}
-              className={`rounded-full p-1.5 shadow-sm transition-colors ${
-                article.is_pinned
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-primary"
-              }`}
-              title={article.is_pinned ? "取消置顶" : "置顶"}
-            >
-              {article.is_pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
-            </button>
-          )}
-          {onTogglePublish && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onTogglePublish(article) }}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium shadow-sm transition-colors ${
-                article.status === "published"
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
-              title={article.status === "published" ? "转为草稿" : "发布"}
-            >
-              {article.status === "published" ? "已发布" : "草稿"}
-            </button>
-          )}
-        </div>
-      </div>
+      <EditableOverlay
+        onClick={() => onEdit?.(article)}
+        onDelete={onDelete ? () => onDelete(article) : undefined}
+        actions={actionButtons}
+        label={`编辑文章 ${article.title}`}
+      >
+        <div className={cls}>{inner}</div>
+      </EditableOverlay>
     )
   }
 

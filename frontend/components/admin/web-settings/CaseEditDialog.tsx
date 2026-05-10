@@ -34,12 +34,12 @@ interface CaseData {
   student_name: string
   university: string
   program: string
-  year: number
+  year: number | null
   testimonial: string | null
   is_featured: boolean
   avatar_image_id: string | null
   offer_image_id: string | null
-  related_university_id: string | null
+  university_id: string | null
 }
 
 interface University {
@@ -66,7 +66,7 @@ export function CaseEditDialog({
   const [studentName, setStudentName] = useState("")
   const [university, setUniversity] = useState("")
   const [program, setProgram] = useState("")
-  const [year, setYear] = useState(new Date().getFullYear())
+  const [year, setYear] = useState<number | null>(new Date().getFullYear())
   const [testimonial, setTestimonial] = useState("")
   const [avatarImageId, setAvatarImageId] = useState<string | null>(null)
   const [offerImageId, setOfferImageId] = useState<string | null>(null)
@@ -98,7 +98,7 @@ export function CaseEditDialog({
       setTestimonial(caseItem.testimonial ?? "")
       setAvatarImageId(caseItem.avatar_image_id)
       setOfferImageId(caseItem.offer_image_id)
-      setRelatedUniversityId(caseItem.related_university_id)
+      setRelatedUniversityId(caseItem.university_id)
     } else if (open && !caseItem) {
       setStudentName("")
       setUniversity("")
@@ -211,12 +211,12 @@ export function CaseEditDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="case-year">入学年份</Label>
+              <Label htmlFor="case-year">入学年份（可选）</Label>
               <Input
                 id="case-year"
                 type="number"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
+                value={year ?? ""}
+                onChange={(e) => setYear(e.target.value ? Number(e.target.value) : null)}
                 placeholder="2024"
               />
             </div>

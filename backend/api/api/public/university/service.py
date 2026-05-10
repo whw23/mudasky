@@ -101,19 +101,22 @@ class UniversityService:
         )
         image_ids = [img.image_id for img in images]
 
-        # 关联案例（案例表中 university 字段匹配院校名称）
+        # 关联案例（优先用外键，兼容文本匹配）
         related_cases = []
         try:
             stmt = (
                 select(SuccessCase)
-                .where(SuccessCase.university == university.name)
+                .where(
+                    (SuccessCase.university_id == university_id)
+                    | (SuccessCase.university == university.name)
+                )
                 .order_by(SuccessCase.year.desc())
                 .limit(10)
             )
             result = await self.session.execute(stmt)
             related_cases = list(result.scalars().all())
         except Exception:
-            pass  # 如果查询失败则返回空列表
+            pass
 
         return {
             "university": university,

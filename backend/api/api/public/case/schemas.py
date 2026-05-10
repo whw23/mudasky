@@ -20,7 +20,7 @@ class CaseResponse(BaseModel):
     student_name: str
     university: str
     program: str
-    year: int
+    year: int | None = None
     testimonial: str | None = None
     avatar_url: str | None = None
     is_featured: bool = False

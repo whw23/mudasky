@@ -5,7 +5,7 @@
 
 import io
 
-from fastapi import APIRouter, File, UploadFile, status
+from fastapi import APIRouter, File, Form, UploadFile, status
 from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import DbSession
@@ -144,7 +144,7 @@ async def import_preview(
 async def import_confirm(
     session: DbSession,
     file: UploadFile = File(...),
-    items: str = "",
+    items: str = Form(""),
 ) -> dict:
     """确认并执行批量导入。
 

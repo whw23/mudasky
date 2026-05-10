@@ -31,8 +31,8 @@ class SuccessCase(Base):
     program: Mapped[str] = mapped_column(
         String(200), nullable=False
     )
-    year: Mapped[int] = mapped_column(
-        Integer, nullable=False
+    year: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
     )
     testimonial: Mapped[str | None] = mapped_column(
         Text, nullable=True

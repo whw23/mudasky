@@ -37,7 +37,7 @@ interface CaseItem {
   student_name: string
   university: string
   program: string
-  year: number
+  year: number | null
   avatar_image_id: string | null
 }
 
@@ -187,7 +187,7 @@ function CaseGrid({ items, gridCls }: { items: CaseItem[]; gridCls: string }) {
             )}
             <div>
               <h4 className="font-bold">{c.student_name}</h4>
-              <p className="text-xs text-muted-foreground">{c.year}</p>
+              {c.year && <p className="text-xs text-muted-foreground">{c.year}</p>}
             </div>
           </div>
           <div className="mt-4 rounded-lg bg-gray-50 px-4 py-3">

@@ -20,7 +20,7 @@ class CaseCreate(BaseModel):
     program: str = Field(
         ..., max_length=200, description="录取专业"
     )
-    year: int = Field(..., description="入学年份")
+    year: int | None = Field(None, description="入学年份")
     testimonial: str | None = Field(
         None, description="学生感言"
     )
@@ -80,7 +80,7 @@ class CaseResponse(BaseModel):
     student_name: str
     university: str
     program: str
-    year: int
+    year: int | None = None
     testimonial: str | None = None
     avatar_url: str | None = None
     is_featured: bool = False

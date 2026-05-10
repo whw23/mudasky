@@ -18,7 +18,7 @@ interface CaseItem {
   student_name: string
   university: string
   program: string
-  year: number
+  year: number | null
   testimonial: string | null
   is_featured: boolean
   avatar_image_id: string | null
@@ -28,10 +28,11 @@ interface CaseGridProps {
   editable?: boolean
   onEdit?: (item: CaseItem) => void
   onAdd?: () => void
+  onDelete?: (item: CaseItem) => void
 }
 
 /** 案例卡片网格 */
-export function CaseGrid({ editable, onEdit, onAdd }: CaseGridProps) {
+export function CaseGrid({ editable, onEdit, onAdd, onDelete }: CaseGridProps) {
   const t = useTranslations("Cases")
   const [cases, setCases] = useState<CaseItem[]>([])
 
@@ -70,6 +71,7 @@ export function CaseGrid({ editable, onEdit, onAdd }: CaseGridProps) {
           editable={editable}
           onEdit={onEdit}
           onToggleFeatured={editable ? handleToggleFeatured : undefined}
+          onDelete={editable ? onDelete : undefined}
         />
       ))}
       {onAdd && (
@@ -99,11 +101,13 @@ function CaseCard({
   editable,
   onEdit,
   onToggleFeatured,
+  onDelete,
 }: {
   item: CaseItem
   editable?: boolean
   onEdit?: (item: CaseItem) => void
   onToggleFeatured?: (item: CaseItem) => void
+  onDelete?: (item: CaseItem) => void
 }) {
   const content = (
     <>
@@ -121,7 +125,7 @@ function CaseCard({
         )}
         <div>
           <h4 className="font-bold">{item.student_name}</h4>
-          <p className="text-xs text-muted-foreground">{item.year}</p>
+          {item.year && <p className="text-xs text-muted-foreground">{item.year}</p>}
         </div>
       </div>
       <div className="mt-4 rounded-lg bg-gray-50 px-4 py-3">
@@ -140,25 +144,29 @@ function CaseCard({
   const cls = "group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
 
   if (editable) {
+    const featuredAction = onToggleFeatured ? (
+      <button
+        className={`pointer-events-auto rounded-full p-1.5 shadow-sm transition-colors ${
+          item.is_featured
+            ? "bg-yellow-400 text-white hover:bg-yellow-500"
+            : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-yellow-500"
+        }`}
+        onClick={(e) => { e.stopPropagation(); onToggleFeatured(item) }}
+        title={item.is_featured ? "取消精选" : "设为精选"}
+      >
+        <Star className={`size-3.5 ${item.is_featured ? "fill-current" : ""}`} />
+      </button>
+    ) : undefined
+
     return (
-      <div className="relative">
-        <EditableOverlay onClick={() => onEdit?.(item)} label={`编辑案例 ${item.student_name}`}>
-          <div className={cls}>{content}</div>
-        </EditableOverlay>
-        {onToggleFeatured && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleFeatured(item) }}
-            className={`absolute left-2 top-2 z-10 rounded-full p-1.5 shadow-sm transition-colors ${
-              item.is_featured
-                ? "bg-yellow-400 text-white hover:bg-yellow-500"
-                : "bg-white text-muted-foreground hover:bg-gray-100 hover:text-yellow-500"
-            }`}
-            title={item.is_featured ? "取消精选" : "设为精选"}
-          >
-            <Star className={`size-3.5 ${item.is_featured ? "fill-current" : ""}`} />
-          </button>
-        )}
-      </div>
+      <EditableOverlay
+        onClick={() => onEdit?.(item)}
+        onDelete={onDelete ? () => onDelete(item) : undefined}
+        actions={featuredAction}
+        label={`编辑案例 ${item.student_name}`}
+      >
+        <div className={cls}>{content}</div>
+      </EditableOverlay>
     )
   }
 

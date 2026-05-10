@@ -16,18 +16,28 @@ import { ManageToolbar } from "@/components/admin/web-settings/ManageToolbar"
 import { CaseEditDialog } from "@/components/admin/web-settings/CaseEditDialog"
 import { ImportExportToolbar } from "@/components/admin/ImportExportToolbar"
 import { ImportPreviewDialog } from "@/components/admin/ImportPreviewDialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface CaseItem {
   id: string
   student_name: string
   university: string
   program: string
-  year: number
+  year: number | null
   testimonial: string | null
   is_featured: boolean
   avatar_image_id: string | null
   offer_image_id: string | null
-  related_university_id: string | null
+  university_id: string | null
 }
 
 /** 导入预览表格列 */
@@ -51,6 +61,7 @@ interface BlockProps {
 export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [editItem, setEditItem] = useState<CaseItem | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<CaseItem | null>(null)
   const [previewData, setPreviewData] = useState<any>(null)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -67,6 +78,20 @@ export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
   function handleCreateCase() {
     setEditItem(null)
     setEditOpen(true)
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    try {
+      await api.post("/admin/web-settings/cases/list/detail/delete", {
+        case_id: deleteTarget.id,
+      })
+      toast.success("案例已删除")
+      setDeleteTarget(null)
+      refreshData()
+    } catch {
+      toast.error("删除失败")
+    }
   }
 
   async function handleImportConfirm(items: any[]) {
@@ -110,6 +135,7 @@ export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
             editable={editable}
             onEdit={editable ? handleEditCase : undefined}
             onAdd={editable ? handleCreateCase : undefined}
+            onDelete={editable ? (item) => setDeleteTarget(item as CaseItem) : undefined}
           />
         </div>
       </section>
@@ -132,6 +158,23 @@ export function CaseGridBlock({ block, header, bg, editable }: BlockProps) {
           columns={IMPORT_COLUMNS}
         />
       )}
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除案例「{deleteTarget?.student_name}」吗？此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

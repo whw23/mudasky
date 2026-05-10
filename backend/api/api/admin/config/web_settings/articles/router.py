@@ -3,7 +3,9 @@
 提供文章的管理员 API 端点。
 """
 
-from fastapi import APIRouter, File, UploadFile, status
+import json
+
+from fastapi import APIRouter, File, Form, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 
 from api.core.dependencies import (
@@ -141,9 +143,9 @@ async def download_import_template(
     summary="预览文章导入",
 )
 async def preview_import(
-    category_id: str,
     session: DbSession,
     file: UploadFile = File(...),
+    category_id: str = Query(""),
 ) -> dict:
     """预览导入文件，返回解析结果。"""
     content = await file.read()
@@ -158,18 +160,18 @@ async def preview_import(
     summary="确认文章导入",
 )
 async def confirm_import(
-    category_id: str,
-    items: list[dict],
     user_id: CurrentUserId,
     session: DbSession,
     file: UploadFile = File(...),
+    items: str = Form(""),
 ) -> dict:
     """执行批量导入。"""
+    items_list = json.loads(items) if items else []
     content = await file.read()
     filename = file.filename or ""
     is_zip = filename.endswith(".zip")
     svc = ArticleImportService(session)
-    return await svc.confirm(items, user_id, content, is_zip)
+    return await svc.confirm(items_list, user_id, content, is_zip)
 
 
 @router.get(

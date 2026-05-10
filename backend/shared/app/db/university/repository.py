@@ -105,6 +105,7 @@ async def list_universities(
         select(University)
         .where(base_filter)
         .order_by(
+            University.is_featured.desc(),
             University.sort_order.asc(),
             University.created_at.desc(),
         )
