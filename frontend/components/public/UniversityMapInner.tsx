@@ -21,6 +21,21 @@ const DETAIL_MAPS = [
   { file: "/geo/germany.json", worldName: { zh: "德国", en: "Germany", ja: "ドイツ", de: "Deutschland" } },
   { file: "/geo/japan.json", worldName: { zh: "日本", en: "Japan", ja: "日本", de: "Japan" } },
   { file: "/geo/singapore.json", worldName: { zh: "新加坡", en: "Singapore", ja: "シンガポール", de: "Singapur" } },
+  { file: "/geo/usa.json", worldName: { zh: "美国", en: "United States", ja: "アメリカ合衆国", de: "Vereinigte Staaten" } },
+  { file: "/geo/uk.json", worldName: { zh: "英国", en: "United Kingdom", ja: "イギリス", de: "Vereinigtes Königreich" } },
+  { file: "/geo/australia.json", worldName: { zh: "澳大利亚", en: "Australia", ja: "オーストラリア", de: "Australien" } },
+  { file: "/geo/canada.json", worldName: { zh: "加拿大", en: "Canada", ja: "カナダ", de: "Kanada" } },
+  { file: "/geo/south_korea.json", worldName: { zh: "韩国", en: "South Korea", ja: "韓国", de: "Südkorea" } },
+  { file: "/geo/france.json", worldName: { zh: "法国", en: "France", ja: "フランス", de: "Frankreich" } },
+  { file: "/geo/italy.json", worldName: { zh: "意大利", en: "Italy", ja: "イタリア", de: "Italien" } },
+  { file: "/geo/russia.json", worldName: { zh: "俄罗斯", en: "Russia", ja: "ロシア", de: "Russland" } },
+  { file: "/geo/spain.json", worldName: { zh: "西班牙", en: "Spain", ja: "スペイン", de: "Spanien" } },
+  { file: "/geo/netherlands.json", worldName: { zh: "荷兰", en: "Netherlands", ja: "オランダ", de: "Niederlande" } },
+  { file: "/geo/switzerland.json", worldName: { zh: "瑞士", en: "Switzerland", ja: "スイス", de: "Schweiz" } },
+  { file: "/geo/new_zealand.json", worldName: { zh: "新西兰", en: "New Zealand", ja: "ニュージーランド", de: "Neuseeland" } },
+  { file: "/geo/malaysia.json", worldName: { zh: "马来西亚", en: "Malaysia", ja: "マレーシア", de: "Malaysia" } },
+  { file: "/geo/thailand.json", worldName: { zh: "泰国", en: "Thailand", ja: "タイ", de: "Thailand" } },
+  { file: "/geo/india.json", worldName: { zh: "印度", en: "India", ja: "インド", de: "Indien" } },
 ]
 
 type Locale = "zh" | "en" | "ja" | "de"
