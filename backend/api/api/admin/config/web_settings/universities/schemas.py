@@ -100,6 +100,7 @@ class ProgramResponse(BaseModel):
     name: str
     discipline_id: str
     sort_order: int
+    admission_requirements: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -109,6 +110,7 @@ class ProgramItem(BaseModel):
 
     name: str
     discipline_id: str
+    admission_requirements: str | None = None
 
 
 class SetProgramsRequest(BaseModel):

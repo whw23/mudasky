@@ -198,7 +198,14 @@ class UniversityService:
                     code="DISCIPLINE_NOT_FOUND",
                 )
         # Replace programs
-        programs_data = [{"name": p.name, "discipline_id": p.discipline_id} for p in programs]
+        programs_data = [
+            {
+                "name": p.name,
+                "discipline_id": p.discipline_id,
+                "admission_requirements": p.admission_requirements,
+            }
+            for p in programs
+        ]
         await prog_repo.replace_programs(self.session, university_id, programs_data)
         await self.session.commit()
 
