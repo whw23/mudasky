@@ -129,7 +129,7 @@ async def test_delete_program_different_id(session):
 async def test_replace_programs(mock_uuid, session):
     """替换院校的所有专业。"""
     programs = [
-        {"name": "计算机科学", "discipline_id": "disc-1"},
+        {"name": "计算机科学", "discipline_id": "disc-1", "admission_requirements": "GPA 3.5+"},
         {"name": "电气工程", "discipline_id": "disc-2"},
     ]
 
@@ -144,8 +144,10 @@ async def test_replace_programs(mock_uuid, session):
     assert len(result) == 2
     assert result[0].name == "计算机科学"
     assert result[0].sort_order == 0
+    assert result[0].admission_requirements == "GPA 3.5+"
     assert result[1].name == "电气工程"
     assert result[1].sort_order == 1
+    assert result[1].admission_requirements is None
 
 
 @patch(

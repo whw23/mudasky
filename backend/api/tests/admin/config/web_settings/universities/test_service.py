@@ -298,7 +298,7 @@ async def test_set_programs_success(mock_repo, mock_disc_repo, mock_prog_repo, s
     mock_prog_repo.replace_programs = AsyncMock()
 
     programs = [
-        ProgramItem(name="计算机科学", discipline_id="disc-1"),
+        ProgramItem(name="计算机科学", discipline_id="disc-1", admission_requirements="GPA 3.5+"),
         ProgramItem(name="金融学", discipline_id="disc-2"),
     ]
     await service.set_programs("uni-1", programs)
@@ -311,6 +311,8 @@ async def test_set_programs_success(mock_repo, mock_disc_repo, mock_prog_repo, s
     assert len(call_args[0][2]) == 2
     assert call_args[0][2][0]["name"] == "计算机科学"
     assert call_args[0][2][0]["discipline_id"] == "disc-1"
+    assert call_args[0][2][0]["admission_requirements"] == "GPA 3.5+"
+    assert call_args[0][2][1]["admission_requirements"] is None
 
 
 @pytest.mark.asyncio

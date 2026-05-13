@@ -19,7 +19,7 @@ def _uni_obj(**overrides) -> SimpleNamespace:
         name_en="Test Univ", country="中国",
         province="北京", city="北京",
         logo_url=None, description="描述",
-        programs=["计算机"], website=None,
+        programs=[], website=None,
         is_featured=False, sort_order=0,
         logo_image_id=None,
         admission_requirements=None,
@@ -349,3 +349,32 @@ class TestGetUniversity:
             "/public/universities/detail/uni-002"
         )
         assert resp.status_code == 200
+
+    async def test_get_university_with_programs(self, client):
+        """院校详情包含专业及录取要求。"""
+        uni = _uni_obj(
+            updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        )
+        prog1 = SimpleNamespace(
+            name="计算机科学", admission_requirements="GPA 3.5+"
+        )
+        prog2 = SimpleNamespace(
+            name="金融学", admission_requirements=None
+        )
+        self.mock_svc.get_university_detail.return_value = {
+            "university": uni,
+            "programs": [prog1, prog2],
+            "disciplines": [],
+            "image_ids": [],
+            "related_cases": [],
+        }
+        resp = await client.get(
+            "/public/universities/detail/uni-001"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["programs"]) == 2
+        assert data["programs"][0]["name"] == "计算机科学"
+        assert data["programs"][0]["admission_requirements"] == "GPA 3.5+"
+        assert data["programs"][1]["name"] == "金融学"
+        assert data["programs"][1]["admission_requirements"] is None
