@@ -44,7 +44,10 @@ function mockUniversity(overrides: Partial<University> = {}): University {
     city: "北京",
     logo_url: null,
     description: "顶尖学府",
-    programs: ["计算机科学", "数学"],
+    programs: [
+      { name: "计算机科学", admission_requirements: null },
+      { name: "数学", admission_requirements: null },
+    ],
     website: "https://pku.edu.cn",
     is_featured: true,
     sort_order: 1,
