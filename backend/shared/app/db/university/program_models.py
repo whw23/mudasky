@@ -1,6 +1,6 @@
 """院校专业模型。"""
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 
 from app.db import Base
 
@@ -28,4 +28,5 @@ class UniversityProgram(Base):
         index=True,
     )
     sort_order = Column(Integer, default=0)
+    admission_requirements = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())

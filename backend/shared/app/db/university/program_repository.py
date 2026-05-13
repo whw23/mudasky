@@ -64,6 +64,7 @@ async def replace_programs(
             name=p["name"],
             discipline_id=p["discipline_id"],
             sort_order=i,
+            admission_requirements=p.get("admission_requirements"),
         )
         session.add(prog)
         result.append(prog)
