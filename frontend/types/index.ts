@@ -139,7 +139,7 @@ export interface University {
   city: string
   logo_url: string | null
   description: string | null
-  programs: string[]
+  programs: { name: string; admission_requirements: string | null }[]
   website: string | null
   is_featured: boolean
   sort_order: number
@@ -147,7 +147,7 @@ export interface University {
   updated_at: string | null
   logo_image_id: string | null
   image_ids: string[]
-  disciplines: { id: string; name: string; category_name: string }[]
+  disciplines: { id: string; name: string; category_name: string; program_name: string }[]
   admission_requirements: string | null
   scholarship_info: string | null
   qs_rankings: { year: number; ranking: number }[] | null

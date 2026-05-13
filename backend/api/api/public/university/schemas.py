@@ -5,11 +5,18 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class ProgramBrief(BaseModel):
+    """专业摘要（嵌套用）。"""
+    name: str
+    admission_requirements: str | None = None
+
+
 class DisciplineItem(BaseModel):
     """学科项（嵌套用）。"""
     id: str
     name: str
     category_name: str
+    program_name: str = ""
 
 
 class CaseBrief(BaseModel):
@@ -34,7 +41,7 @@ class UniversityResponse(BaseModel):
     city: str
     logo_url: str | None = None
     description: str | None = None
-    programs: list[str] = []
+    programs: list[ProgramBrief] = []
     website: str | None = None
     is_featured: bool = False
     sort_order: int = 0

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Header, Response
 
-from .schemas import CaseBrief, DisciplineItem, UniversityResponse
+from .schemas import CaseBrief, DisciplineItem, ProgramBrief, UniversityResponse
 from .service import UniversityService
 from api.core.cache import set_cache_headers
 from api.core.dependencies import DbSession
@@ -145,7 +145,13 @@ async def get_university(
         city=uni.city,
         logo_url=uni.logo_url,
         description=uni.description,
-        programs=detail["programs"] or [],
+        programs=[
+            ProgramBrief(
+                name=p.name,
+                admission_requirements=p.admission_requirements,
+            )
+            for p in detail["programs"]
+        ] if detail["programs"] else [],
         website=uni.website,
         is_featured=uni.is_featured,
         sort_order=uni.sort_order,
