@@ -3,10 +3,11 @@
 /**
  * 院校专业管理组件。
  * 三级选择：大分类 → 小分类 → 专业名称。
+ * 每个专业可展开编辑独立的录取要求（富文本）。
  */
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -19,11 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { TiptapEditor } from "@/components/editor/TiptapEditor"
 
 interface Program {
   name: string
   discipline_id: string
   category_id: string
+  admission_requirements: string
 }
 
 interface DisciplineCategory {
@@ -48,6 +51,7 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
   const [disciplines, setDisciplines] = useState<Discipline[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
   const fetchPrograms = useCallback(async () => {
     try {
@@ -60,6 +64,7 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
           name: p.name,
           discipline_id: p.discipline_id,
           category_id: disc?.category_id ?? "",
+          admission_requirements: p.admission_requirements ?? "",
         }
       }))
     } catch {
@@ -83,11 +88,13 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
   }, [loading, fetchPrograms, disciplines])
 
   function addProgram() {
-    setPrograms([...programs, { name: "", discipline_id: "", category_id: "" }])
+    setPrograms([...programs, { name: "", discipline_id: "", category_id: "", admission_requirements: "" }])
   }
 
   function removeProgram(index: number) {
     setPrograms(programs.filter((_, i) => i !== index))
+    if (expandedIndex === index) setExpandedIndex(null)
+    else if (expandedIndex !== null && expandedIndex > index) setExpandedIndex(expandedIndex - 1)
   }
 
   function updateCategory(index: number, categoryId: string) {
@@ -108,6 +115,12 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
     setPrograms(updated)
   }
 
+  function updateAdmissionReqs(index: number, html: string) {
+    const updated = [...programs]
+    updated[index] = { ...updated[index], admission_requirements: html }
+    setPrograms(updated)
+  }
+
   async function handleSave() {
     const valid = programs.filter((p) => p.name.trim() && p.discipline_id)
     if (valid.length !== programs.length) {
@@ -118,7 +131,11 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
     try {
       await api.post("/admin/web-settings/universities/list/detail/programs", {
         university_id: universityId,
-        programs: valid.map((p) => ({ name: p.name.trim(), discipline_id: p.discipline_id })),
+        programs: valid.map((p) => ({
+          name: p.name.trim(),
+          discipline_id: p.discipline_id,
+          admission_requirements: p.admission_requirements.trim() || null,
+        })),
       })
       toast.success("专业已保存")
       await fetchPrograms()
@@ -156,46 +173,70 @@ export function ProgramManager({ universityId }: ProgramManagerProps) {
           {programs.map((prog, idx) => {
             const filteredDiscs = disciplines.filter((d) => d.category_id === prog.category_id)
             return (
-              <div key={idx} className="flex items-center gap-2">
-                <Select value={prog.category_id} onValueChange={(v) => { if (v !== null) updateCategory(idx, v) }}>
-                  <SelectTrigger className="w-28">
-                    <SelectValue placeholder="大分类" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={prog.discipline_id}
-                  onValueChange={(v) => { if (v !== null) updateDiscipline(idx, v) }}
-                  disabled={!prog.category_id}
-                >
-                  <SelectTrigger className="w-28">
-                    <SelectValue placeholder="小分类" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredDiscs.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  value={prog.name}
-                  onChange={(e) => updateName(idx, e.target.value)}
-                  placeholder="专业名称"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeProgram(idx)}
-                  className="size-8 shrink-0 p-0"
-                >
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
+              <div key={idx} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Select value={prog.category_id} onValueChange={(v) => { if (v !== null) updateCategory(idx, v) }}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue placeholder="大分类" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={prog.discipline_id}
+                    onValueChange={(v) => { if (v !== null) updateDiscipline(idx, v) }}
+                    disabled={!prog.category_id}
+                  >
+                    <SelectTrigger className="w-28">
+                      <SelectValue placeholder="小分类" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredDiscs.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={prog.name}
+                    onChange={(e) => updateName(idx, e.target.value)}
+                    placeholder="专业名称"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+                    className="size-8 shrink-0 p-0"
+                    title="录取要求"
+                  >
+                    {expandedIndex === idx
+                      ? <ChevronDown className="size-4 text-muted-foreground" />
+                      : <ChevronRight className="size-4 text-muted-foreground" />}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeProgram(idx)}
+                    className="size-8 shrink-0 p-0"
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </div>
+                {expandedIndex === idx && (
+                  <div className="ml-2 border-l-2 border-gray-200 pl-4">
+                    <Label className="text-xs text-muted-foreground">录取要求</Label>
+                    <TiptapEditor
+                      content={prog.admission_requirements}
+                      onChange={(html) => updateAdmissionReqs(idx, html)}
+                      placeholder="该专业的录取要求（可选）"
+                    />
+                  </div>
+                )}
               </div>
             )
           })}
