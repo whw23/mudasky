@@ -57,7 +57,7 @@ class ExportService:
 
         # Sheet2: 专业列表
         ws2 = wb.create_sheet("专业列表")
-        write_sheet_header(ws2, ["院校名称", "专业名称", "大分类", "小分类"])
+        write_sheet_header(ws2, ["院校名称", "专业名称", "大分类", "小分类", "录取要求"])
 
         # 收集图片文件
         image_files = {}  # {filename: bytes}
@@ -134,6 +134,7 @@ class ExportService:
                             prog.name,
                             cat.name if cat else "",
                             disc.name,
+                            prog.admission_requirements or "",
                         ]
                     )
 

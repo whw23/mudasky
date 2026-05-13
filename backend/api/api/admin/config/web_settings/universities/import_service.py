@@ -209,9 +209,9 @@ class ImportService:
 
         # Sheet2: 专业列表（纵向）
         ws2 = wb.create_sheet("专业列表")
-        write_sheet_header(ws2, ["院校名称", "专业名称", "大分类", "小分类"])
-        ws2.append(["哈佛大学", "计算机科学", "工学", "计算机科学"])
-        ws2.append(["哈佛大学", "金融学", "商学", "金融学"])
+        write_sheet_header(ws2, ["院校名称", "专业名称", "大分类", "小分类", "录取要求"])
+        ws2.append(["哈佛大学", "计算机科学", "工学", "计算机科学", "GPA 3.5+, GRE 320+"])
+        ws2.append(["哈佛大学", "金融学", "商学", "金融学", "GMAT 700+, 实习经历优先"])
 
         excel_bytes = workbook_to_bytes(wb)
 
@@ -249,6 +249,7 @@ class ImportService:
                 prog_name = str(row[1]).strip() if row[1] else ""
                 cat_name = str(row[2]).strip() if row[2] else ""
                 disc_name = str(row[3]).strip() if row[3] else ""
+                adm_reqs = str(row[4]).strip() if len(row) > 4 and row[4] else ""
                 if not uni_name or not prog_name:
                     continue
                 if uni_name not in programs_map:
@@ -258,6 +259,7 @@ class ImportService:
                         "program_name": prog_name,
                         "category_name": cat_name,
                         "discipline_name": disc_name,
+                        "admission_requirements": adm_reqs or None,
                     }
                 )
 
@@ -578,6 +580,7 @@ class ImportService:
                             {
                                 "name": p["program_name"],
                                 "discipline_id": disc.id,
+                                "admission_requirements": p.get("admission_requirements"),
                             }
                         )
         if programs:
@@ -669,6 +672,7 @@ class ImportService:
                             {
                                 "name": p["program_name"],
                                 "discipline_id": disc.id,
+                                "admission_requirements": p.get("admission_requirements"),
                             }
                         )
         await prog_repo.replace_programs(
