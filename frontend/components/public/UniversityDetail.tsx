@@ -12,12 +12,18 @@ import api from "@/lib/api"
 import { ImageGallery } from "./ImageGallery"
 import { UniversityMap } from "./UniversityMap"
 import { SafeHtml } from "@/components/common/SafeHtml"
-import { ArrowLeft, ExternalLink, MapPin, Award } from "lucide-react"
+import { ArrowLeft, ChevronDown, ChevronRight, ExternalLink, MapPin, Award } from "lucide-react"
+
+interface ProgramBrief {
+  name: string
+  admission_requirements: string | null
+}
 
 interface Discipline {
   id: string
   name: string
   category_name: string
+  program_name: string
 }
 
 interface CaseBrief {
@@ -39,6 +45,7 @@ interface UniversityData {
   description: string | null
   logo_image_id: string | null
   image_ids: string[]
+  programs: ProgramBrief[]
   disciplines: Discipline[]
   admission_requirements: string | null
   scholarship_info: string | null
@@ -57,6 +64,7 @@ export function UniversityDetail({ universityId }: Props) {
   const t = useTranslations("Universities")
   const [data, setData] = useState<UniversityData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expandedProgram, setExpandedProgram] = useState<string | null>(null)
 
   useEffect(() => {
     api
@@ -75,9 +83,16 @@ export function UniversityDetail({ universityId }: Props) {
 
   const latestRanking = data.qs_rankings?.sort((a, b) => b.year - a.year)[0]
 
-  const groupedDisciplines = data.disciplines.reduce<Record<string, string[]>>((acc, d) => {
+  const groupedDisciplines = data.disciplines.reduce<
+    Record<string, { name: string; programName: string; admissionRequirements: string | null }[]>
+  >((acc, d) => {
     if (!acc[d.category_name]) acc[d.category_name] = []
-    acc[d.category_name].push(d.name)
+    const prog = data.programs.find((p) => p.name === d.program_name)
+    acc[d.category_name].push({
+      name: d.name,
+      programName: d.program_name,
+      admissionRequirements: prog?.admission_requirements ?? null,
+    })
     return acc
   }, {})
 
@@ -149,15 +164,45 @@ export function UniversityDetail({ universityId }: Props) {
         <section>
           <h2 className="text-xl font-bold">{t("disciplines")}</h2>
           <div className="mt-3 space-y-3">
-            {Object.entries(groupedDisciplines).map(([category, names]) => (
+            {Object.entries(groupedDisciplines).map(([category, items]) => (
               <div key={category}>
                 <h3 className="font-medium text-muted-foreground">{category}</h3>
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {names.map((name) => (
-                    <span key={name} className="rounded-full bg-gray-100 px-3 py-1 text-sm">
-                      {name}
-                    </span>
-                  ))}
+                <div className="mt-1 space-y-1">
+                  {items.map((item) => {
+                    const key = `${item.name}-${item.programName}`
+                    const isExpanded = expandedProgram === key
+                    return (
+                      <div key={key}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!item.admissionRequirements) return
+                            setExpandedProgram(isExpanded ? null : key)
+                          }}
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm transition-colors ${
+                            item.admissionRequirements
+                              ? "cursor-pointer bg-gray-100 hover:bg-gray-200"
+                              : "cursor-default bg-gray-100"
+                          }`}
+                        >
+                          {item.name}
+                          {item.admissionRequirements && (
+                            isExpanded
+                              ? <ChevronDown className="size-3" />
+                              : <ChevronRight className="size-3" />
+                          )}
+                        </button>
+                        {item.admissionRequirements && isExpanded && (
+                          <div className="ml-4 mt-1 rounded-lg border bg-gray-50 p-3">
+                            <SafeHtml
+                              html={item.admissionRequirements}
+                              className="prose prose-sm max-w-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             ))}
