@@ -179,10 +179,14 @@ async def get_university(
         ],
     )
     ts = uni.updated_at.isoformat() if uni.updated_at else ""
+    progs_hash = hash(tuple(
+        (p.name, p.admission_requirements or "")
+        for p in detail["programs"]
+    ))
     cases_count = len(detail["related_cases"])
     cases_ts = max((c.updated_at for c in detail["related_cases"] if c.updated_at), default=None)
     cts = cases_ts.isoformat() if cases_ts else ""
-    seed = f"uni:{university_id}:{ts}:{cases_count}:{cts}"
+    seed = f"uni:{university_id}:{ts}:{progs_hash}:{cases_count}:{cts}"
     if set_cache_headers(response, seed, if_none_match):
         return response  # type: ignore[return-value]
     return result
