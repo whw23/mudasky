@@ -75,9 +75,13 @@ const mockUniData = {
   description: "<p>世界一流大学</p>",
   logo_image_id: "logo-1",
   image_ids: ["img-1"],
+  programs: [
+    { name: "计算机专业", admission_requirements: null },
+    { name: "电子工程专业", admission_requirements: null },
+  ],
   disciplines: [
-    { id: "d1", name: "计算机科学", category_name: "工学" },
-    { id: "d2", name: "电子工程", category_name: "工学" },
+    { id: "d1", name: "计算机科学", category_name: "工学", program_name: "计算机专业" },
+    { id: "d2", name: "电子工程", category_name: "工学", program_name: "电子工程专业" },
   ],
   admission_requirements: "<p>高考成绩优异</p>",
   scholarship_info: null,
