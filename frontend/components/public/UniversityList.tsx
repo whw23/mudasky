@@ -258,8 +258,9 @@ export function UniversityList({ editable = false, onEdit, onAdd, onDelete, onMa
                     onDelete={onDelete ? () => onDelete(uni) : undefined}
                     actions={featuredAction}
                     label={`编辑 ${uni.name}`}
+                    className="h-full"
                   >
-                    <div className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
+                    <div className="group h-full rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md">
                       {cardContent}
                     </div>
                   </EditableOverlay>
@@ -271,7 +272,7 @@ export function UniversityList({ editable = false, onEdit, onAdd, onDelete, onMa
                 <Link
                   key={uni.id}
                   href={`/universities/${uni.id}`}
-                  className="group rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
+                  className="group h-full rounded-lg border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-md"
                 >
                   {cardContent}
                 </Link>
