@@ -62,6 +62,7 @@ def _prog(**kw) -> MagicMock:
     p = MagicMock()
     p.name = kw.get("name", "计算机科学")
     p.discipline_id = kw.get("discipline_id", "disc-1")
+    p.admission_requirements = kw.get("admission_requirements")
     return p
 
 
