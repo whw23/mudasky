@@ -55,12 +55,14 @@ interface NavCustomItem {
 interface NavConfig {
   order: string[]
   custom_items: NavCustomItem[]
+  item_names?: Record<string, string | Record<string, string>>
 }
 
 /** 默认导航配置（兜底） */
 const DEFAULT_NAV_CONFIG: NavConfig = {
   order: ['home', 'universities', 'study-abroad', 'requirements', 'cases', 'visa', 'life', 'news', 'about'],
   custom_items: [],
+  item_names: {},
 }
 
 interface ConfigContextType {
