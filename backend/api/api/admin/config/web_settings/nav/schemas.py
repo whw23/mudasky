@@ -16,6 +16,7 @@ class NavConfig(BaseModel):
 
     order: list[str]
     custom_items: list[NavCustomItem] = []
+    item_names: dict[str, str | dict] = {}
 
 
 class NavReorderRequest(BaseModel):
@@ -37,3 +38,10 @@ class NavRemoveItemRequest(BaseModel):
 
     slug: str
     delete_content: bool = False
+
+
+class NavRenameItemRequest(BaseModel):
+    """重命名导航项请求。"""
+
+    slug: str
+    name: str | dict
