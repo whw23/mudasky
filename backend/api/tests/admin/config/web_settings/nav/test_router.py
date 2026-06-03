@@ -318,3 +318,77 @@ class TestRemoveNavItem:
             headers=superuser_headers,
         )
         assert resp.status_code == 422
+
+
+class TestRenameNavItem:
+    """POST /nav/rename-item 端点测试。"""
+
+    @pytest.fixture(autouse=True)
+    def _patch_service(self):
+        """模拟 NavService。"""
+        with patch(SVC_PATH) as mock_cls:
+            self.mock_svc = AsyncMock()
+            mock_cls.return_value = self.mock_svc
+            yield
+
+    async def test_rename_item_success(
+        self, client, superuser_headers
+    ):
+        """重命名导航项成功返回 200。"""
+        nav = _nav_with_custom()
+        nav.item_names = {"visa": {"zh": "签证攻略"}}
+        self.mock_svc.rename_item.return_value = nav
+
+        resp = await client.post(
+            "/admin/web-settings/nav/rename-item",
+            json={
+                "slug": "visa",
+                "name": {"zh": "签证攻略"},
+            },
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["item_names"]["visa"] == {"zh": "签证攻略"}
+        self.mock_svc.rename_item.assert_awaited_once_with(
+            "visa", {"zh": "签证攻略"}
+        )
+
+    async def test_rename_item_invalid_slug(
+        self, client, superuser_headers
+    ):
+        """重命名无效导航项返回 400。"""
+        self.mock_svc.rename_item.side_effect = (
+            BadRequestException(
+                message="无效的导航项: bad",
+                code="INVALID_NAV_KEY",
+            )
+        )
+        resp = await client.post(
+            "/admin/web-settings/nav/rename-item",
+            json={"slug": "bad", "name": "bad-name"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 400
+
+    async def test_rename_item_missing_slug(
+        self, client, superuser_headers
+    ):
+        """缺少 slug 字段返回 422。"""
+        resp = await client.post(
+            "/admin/web-settings/nav/rename-item",
+            json={"name": "只有名称"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 422
+
+    async def test_rename_item_missing_name(
+        self, client, superuser_headers
+    ):
+        """缺少 name 字段返回 422。"""
+        resp = await client.post(
+            "/admin/web-settings/nav/rename-item",
+            json={"slug": "visa"},
+            headers=superuser_headers,
+        )
+        assert resp.status_code == 422
