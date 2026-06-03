@@ -150,6 +150,39 @@ class NavService:
         await self._save(nav)
         return nav
 
+    async def rename_item(
+        self,
+        slug: str,
+        name: str | dict,
+    ) -> NavConfig:
+        """重命名导航项。
+
+        预设项：写入 item_names 覆盖。
+        自定义项：更新 custom_items 中的 name。
+        """
+        nav = await self.get_nav_config()
+        custom_slugs = {
+            item.slug for item in nav.custom_items
+        }
+        valid_keys = BUILTIN_KEYS | custom_slugs
+
+        if slug not in valid_keys:
+            raise BadRequestException(
+                message=f"无效的导航项: {slug}",
+                code="INVALID_NAV_KEY",
+            )
+
+        if slug in BUILTIN_KEYS:
+            nav.item_names[slug] = name
+        else:
+            for item in nav.custom_items:
+                if item.slug == slug:
+                    item.name = name
+                    break
+
+        await self._save(nav)
+        return nav
+
     async def _save(self, nav: NavConfig) -> None:
         """保存导航栏配置到数据库。"""
         config = await config_repo.get_by_key(

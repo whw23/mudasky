@@ -427,3 +427,46 @@ async def test_save_updates_when_config_exists(
     await service.reorder(["home", "about"])
 
     mock_repo.update_value.assert_awaited_once()
+
+
+# ---- rename_item ----
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_rename_item_builtin(mock_repo, service):
+    """重命名预设导航项成功（写入 item_names）。"""
+    mock_repo.get_by_key = AsyncMock(return_value=None)
+    mock_repo.create = AsyncMock()
+
+    result = await service.rename_item("visa", {"zh": "签证攻略"})
+
+    assert result.item_names["visa"] == {"zh": "签证攻略"}
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_rename_item_custom(mock_repo, service):
+    """重命名自定义导航项成功（更新 custom_items.name）。"""
+    nav = _nav_with_custom()
+    mock_repo.get_by_key = AsyncMock(
+        return_value=_make_config_record(nav.model_dump())
+    )
+    mock_repo.update_value = AsyncMock()
+
+    result = await service.rename_item("custom-1", {"zh": "新版自定义页"})
+
+    item = next(i for i in result.custom_items if i.slug == "custom-1")
+    assert item.name == {"zh": "新版自定义页"}
+
+
+@pytest.mark.asyncio
+@patch(REPO)
+async def test_rename_item_invalid_slug(mock_repo, service):
+    """重命名不存在的导航项抛出 BadRequestException。"""
+    mock_repo.get_by_key = AsyncMock(return_value=None)
+
+    with pytest.raises(BadRequestException) as exc_info:
+        await service.rename_item("nonexistent", "不存在")
+
+    assert exc_info.value.code == "INVALID_NAV_KEY"
