@@ -8,6 +8,7 @@ from .schemas import (
     NavAddItemRequest,
     NavConfig,
     NavRemoveItemRequest,
+    NavRenameItemRequest,
     NavReorderRequest,
 )
 from .service import NavService
@@ -70,3 +71,16 @@ async def remove_nav_item(
     return await svc.remove_item(
         data.slug, data.delete_content
     )
+
+
+@router.post(
+    "/rename-item",
+    response_model=NavConfig,
+    summary="重命名导航项",
+)
+async def rename_nav_item(
+    data: NavRenameItemRequest, session: DbSession
+) -> NavConfig:
+    """重命名导航项（预设项覆盖名称 / 自定义项修改名称）。"""
+    svc = NavService(session)
+    return await svc.rename_item(data.slug, data.name)
