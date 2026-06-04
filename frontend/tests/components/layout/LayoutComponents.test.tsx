@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => "zh",
 }))
 
 vi.mock("@/contexts/ConfigContext", () => ({
