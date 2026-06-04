@@ -16,8 +16,21 @@ interface PageBannerProps {
   pageKey: string
   /** 默认标题（i18n 翻译值，当 item_names 无覆盖时使用） */
   title: string
-  /** 英文副标题 */
+  /** 默认副标题（当 item_names 无多语言值时使用） */
   subtitle?: string
+}
+
+/** 从 item_names 的多语言值中取非当前语言的值作为副标题 */
+function getOtherLocaleValue(
+  name: string | Record<string, string> | undefined,
+  currentLocale: string,
+): string | undefined {
+  if (!name || typeof name === "string") return undefined
+  const otherLocales = ["en", "zh", "ja", "de"].filter((l) => l !== currentLocale)
+  for (const l of otherLocales) {
+    if (name[l]?.trim()) return name[l]
+  }
+  return undefined
 }
 
 /** 从配置读取 Banner 图片的页面横幅 */
@@ -31,6 +44,10 @@ export function PageBanner({ pageKey, title, subtitle }: PageBannerProps) {
     ? getLocalizedValue(overrideName, locale)
     : title
 
+  // 从 item_names 的多语言值中取非当前语言作为副标题
+  const overrideSubtitle = getOtherLocaleValue(overrideName, locale)
+  const displaySubtitle = overrideSubtitle ?? subtitle
+
   const imageIds = pageBanners?.[pageKey]?.image_ids || []
-  return <Banner title={displayTitle} subtitle={subtitle} imageIds={imageIds} />
+  return <Banner title={displayTitle} subtitle={displaySubtitle} imageIds={imageIds} />
 }

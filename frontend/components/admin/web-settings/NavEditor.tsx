@@ -13,6 +13,7 @@ import { useLocale } from "next-intl"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { getLocalizedValue } from "@/lib/i18n-config"
+import { useConfig } from "@/contexts/ConfigContext"
 import { AddNavItemDialog } from "./AddNavItemDialog"
 import { RemoveNavItemDialog } from "./RemoveNavItemDialog"
 import { RenameNavItemDialog } from "./RenameNavItemDialog"
@@ -55,6 +56,7 @@ interface NavEditorProps {
 export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
   const tNav = useTranslations("Nav")
   const locale = useLocale()
+  const { refreshConfig } = useConfig()
   const [navOrder, setNavOrder] = useState<string[]>([])
   const [customItems, setCustomItems] = useState<CustomItem[]>([])
   const [itemNames, setItemNames] = useState<Record<string, string | Record<string, string>>>({})
@@ -76,10 +78,11 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
       setNavOrder(data.order)
       setCustomItems(data.custom_items)
       setItemNames(data.item_names || {})
+      refreshConfig()
     } catch {
       toast.error("获取导航配置失败")
     }
-  }, [])
+  }, [refreshConfig])
 
   useEffect(() => {
     fetchNavConfig()

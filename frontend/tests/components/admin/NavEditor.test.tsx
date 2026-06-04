@@ -32,6 +32,12 @@ vi.mock("@/lib/i18n-config", () => ({
   },
 }))
 
+vi.mock("@/contexts/ConfigContext", () => ({
+  useConfig: () => ({
+    refreshConfig: vi.fn(),
+  }),
+}))
+
 /* mock 拖拽库 - 简化渲染 */
 vi.mock("@hello-pangea/dnd", () => ({
   DragDropContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -57,6 +63,11 @@ vi.mock("@/components/admin/web-settings/AddNavItemDialog", () => ({
 vi.mock("@/components/admin/web-settings/RemoveNavItemDialog", () => ({
   RemoveNavItemDialog: ({ open, name }: { open: boolean; name: string }) =>
     open ? <div data-testid="remove-nav-dialog">{name}</div> : null,
+}))
+
+vi.mock("@/components/admin/web-settings/RenameNavItemDialog", () => ({
+  RenameNavItemDialog: ({ open, slug }: { open: boolean; slug: string }) =>
+    open ? <div data-testid={`rename-dialog-${slug}`} /> : null,
 }))
 
 import api from "@/lib/api"
@@ -209,5 +220,58 @@ describe("NavEditor", () => {
     expect(screen.getByTestId("remove-nav-dialog")).toBeInTheDocument()
     /* "我的页面" 同时出现在导航按钮和对话框中，确认对话框存在即可 */
     expect(screen.getAllByText("我的页面").length).toBe(2)
+  })
+
+  it("item_names 覆盖预设项名称", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        order: ["home", "visa"],
+        custom_items: [],
+        item_names: { visa: { zh: "签证攻略" } },
+      },
+    })
+
+    render(<NavEditor {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByText("签证攻略")).toBeInTheDocument()
+    })
+  })
+
+  it("预设项和自定义项都显示重命名按钮", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        order: ["home", "custom-page"],
+        custom_items: [{ slug: "custom-page", name: "自定义页" }],
+        item_names: {},
+      },
+    })
+
+    render(<NavEditor {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("重命名 home")).toBeInTheDocument()
+      expect(screen.getByLabelText("重命名 自定义页")).toBeInTheDocument()
+    })
+  })
+
+  it("点击重命名按钮打开 RenameNavItemDialog", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        order: ["home", "visa"],
+        custom_items: [],
+        item_names: {},
+      },
+    })
+
+    render(<NavEditor {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("重命名 visa")).toBeInTheDocument()
+    })
+
+    await userEvent.click(screen.getByLabelText("重命名 visa"))
+
+    expect(screen.getByTestId("rename-dialog-visa")).toBeInTheDocument()
   })
 })
