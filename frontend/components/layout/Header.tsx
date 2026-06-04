@@ -121,12 +121,18 @@ export function Header({ editable, onEdit, onPageChange, activePage, hideNav, on
 
   /** 根据 navConfig 生成导航项列表 */
   const navItems = navConfig.order.map((key) => {
+    // 1. 先查 item_names 覆盖
+    const override = navConfig.item_names?.[key]
+    if (override) {
+      const label = getLocalizedValue(override, locale)
+      return { key, href: BUILTIN_HREF[key] || `/${key}`, label }
+    }
+    // 2. 预设项：从 i18n 读取
     const i18nKey = NAV_KEY_TO_I18N[key]
     if (i18nKey) {
-      // 预设项
       return { key, href: BUILTIN_HREF[key] || `/${key}`, label: tNav(i18nKey) }
     }
-    // 自定义项
+    // 3. 自定义项
     const custom = navConfig.custom_items.find((c) => c.slug === key)
     const name = custom?.name
     const label = typeof name === "string" ? name : (name as Record<string, string>)?.[locale] || key
