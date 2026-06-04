@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"
-import { GripVertical, Plus, X } from "lucide-react"
+import { GripVertical, Plus, X, Pencil } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
 import { toast } from "sonner"
@@ -15,6 +15,7 @@ import api from "@/lib/api"
 import { getLocalizedValue } from "@/lib/i18n-config"
 import { AddNavItemDialog } from "./AddNavItemDialog"
 import { RemoveNavItemDialog } from "./RemoveNavItemDialog"
+import { RenameNavItemDialog } from "./RenameNavItemDialog"
 
 /** 预设导航 key → 翻译 key 映射 */
 const NAV_KEY_TO_I18N: Record<string, string> = {
@@ -43,6 +44,7 @@ interface CustomItem {
 interface NavConfig {
   order: string[]
   custom_items: CustomItem[]
+  item_names?: Record<string, string | Record<string, string>>
 }
 
 interface NavEditorProps {
@@ -55,10 +57,15 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
   const locale = useLocale()
   const [navOrder, setNavOrder] = useState<string[]>([])
   const [customItems, setCustomItems] = useState<CustomItem[]>([])
+  const [itemNames, setItemNames] = useState<Record<string, string | Record<string, string>>>({})
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<{
     slug: string
     name: string
+  } | null>(null)
+  const [renameTarget, setRenameTarget] = useState<{
+    slug: string
+    name: string | Record<string, string>
   } | null>(null)
 
   /** 获取导航配置 */
@@ -68,6 +75,7 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
       const data = res.data as NavConfig
       setNavOrder(data.order)
       setCustomItems(data.custom_items)
+      setItemNames(data.item_names || {})
     } catch {
       toast.error("获取导航配置失败")
     }
@@ -79,15 +87,31 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
 
   /** 获取导航项显示名称 */
   function getItemName(key: string): string {
+    // 1. 先查 item_names 覆盖
+    const override = itemNames[key]
+    if (override) {
+      return getLocalizedValue(override, locale)
+    }
+    // 2. 预设项：从 i18n 读取
     const i18nKey = NAV_KEY_TO_I18N[key]
     if (i18nKey) {
       return tNav(i18nKey)
     }
+    // 3. 自定义项
     const custom = customItems.find((item) => item.slug === key)
     if (custom) {
       return getLocalizedValue(custom.name, locale)
     }
     return key
+  }
+
+  /** 获取导航项的原始名称（用于弹窗编辑） */
+  function getItemRawName(key: string): string | Record<string, string> {
+    const override = itemNames[key]
+    if (override) return override
+    const custom = customItems.find((item) => item.slug === key)
+    if (custom) return custom.name
+    return ""
   }
 
   /** 拖动结束处理 */
@@ -157,6 +181,18 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
                             {getItemName(key)}
                           </button>
 
+                          {/* 重命名按钮 */}
+                          <button
+                            onClick={() => {
+                              const rawName = getItemRawName(key)
+                              setRenameTarget({ slug: key, name: rawName })
+                            }}
+                            className="text-muted-foreground/40 hover:text-primary transition-colors"
+                            aria-label={`重命名 ${getItemName(key)}`}
+                          >
+                            <Pencil className="size-3" />
+                          </button>
+
                           {/* 自定义项删除按钮 */}
                           {!BUILTIN_KEYS.has(key) && (
                             <button
@@ -204,6 +240,17 @@ export function NavEditor({ activePage, onPageChange }: NavEditorProps) {
           onOpenChange={(open) => { if (!open) setRemoveTarget(null) }}
           slug={removeTarget.slug}
           name={removeTarget.name}
+          onSuccess={fetchNavConfig}
+        />
+      )}
+
+      {/* 重命名导航项弹窗 */}
+      {renameTarget && (
+        <RenameNavItemDialog
+          open={!!renameTarget}
+          onOpenChange={(open) => { if (!open) setRenameTarget(null) }}
+          slug={renameTarget.slug}
+          currentName={renameTarget.name}
           onSuccess={fetchNavConfig}
         />
       )}
