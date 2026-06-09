@@ -121,7 +121,7 @@ describe("BlockContentTab", () => {
       />,
     )
 
-    expect(screen.getByText("内容")).toBeInTheDocument()
+    expect(screen.getByTestId("localized-input-内容")).toBeInTheDocument()
   })
 
   it("cta 类型渲染简单字段表单", () => {
@@ -135,8 +135,8 @@ describe("BlockContentTab", () => {
       />,
     )
 
-    expect(screen.getByText("标题")).toBeInTheDocument()
-    expect(screen.getByText("描述")).toBeInTheDocument()
+    expect(screen.getByTestId("localized-input-标题")).toBeInTheDocument()
+    expect(screen.getByTestId("localized-input-描述")).toBeInTheDocument()
   })
 
   it("article_list 渲染文章列表管理", async () => {
