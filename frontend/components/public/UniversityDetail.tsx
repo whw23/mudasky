@@ -30,7 +30,7 @@ interface CaseBrief {
   id: string
   student_name: string
   program: string
-  year: number
+  year: number | null
   avatar_image_id: string | null
 }
 
@@ -264,7 +264,7 @@ export function UniversityDetail({ universityId }: Props) {
               >
                 <div className="font-medium">{c.student_name}</div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  {c.program} · {c.year}
+                  {c.program}{c.year !== null && c.year !== undefined ? ` · ${c.year}` : ""}
                 </div>
               </Link>
             ))}

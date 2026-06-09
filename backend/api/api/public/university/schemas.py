@@ -24,7 +24,7 @@ class CaseBrief(BaseModel):
     id: str
     student_name: str
     program: str
-    year: int
+    year: int | None = None
     avatar_image_id: str | None = None
 
     model_config = {"from_attributes": True}
