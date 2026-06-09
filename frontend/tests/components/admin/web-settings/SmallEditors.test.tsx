@@ -110,7 +110,7 @@ import {
 } from "@/components/admin/web-settings/BlockContentTab"
 
 describe("BlockContentTab", () => {
-  it("intro 类型渲染编辑内容按钮", () => {
+  it("intro 类型渲染简单字段表单", () => {
     render(
       <BlockContentTab
         block={mockBlock({ type: "intro" })}
@@ -121,10 +121,10 @@ describe("BlockContentTab", () => {
       />,
     )
 
-    expect(screen.getByText("编辑内容")).toBeInTheDocument()
+    expect(screen.getByText("内容")).toBeInTheDocument()
   })
 
-  it("cta 类型渲染编辑内容按钮", () => {
+  it("cta 类型渲染简单字段表单", () => {
     render(
       <BlockContentTab
         block={mockBlock({ type: "cta" })}
@@ -135,7 +135,8 @@ describe("BlockContentTab", () => {
       />,
     )
 
-    expect(screen.getByText("编辑内容")).toBeInTheDocument()
+    expect(screen.getByText("标题")).toBeInTheDocument()
+    expect(screen.getByText("描述")).toBeInTheDocument()
   })
 
   it("article_list 渲染文章列表管理", async () => {
