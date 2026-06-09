@@ -147,15 +147,18 @@ export function BlockContentTab({ block, locale, data, onDataChange, defaultFiel
     )
   }
 
-  if (editType === "simple" && onEditConfig) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8">
-        <Button variant="outline" onClick={() => onEditConfig(`${block.type}_edit_${block.id}`)}>
-          <Pencil className="mr-1.5 size-4" />
-          编辑内容
-        </Button>
-      </div>
-    )
+  if (editType === "simple") {
+    const fields = SIMPLE_FIELDS[block.type]
+    if (fields) {
+      return (
+        <SimpleFieldsForm
+          fields={fields}
+          data={data ?? {}}
+          locale={locale}
+          onChange={onDataChange}
+        />
+      )
+    }
   }
 
   if (block.type === "contact_info" && onEditConfig) {

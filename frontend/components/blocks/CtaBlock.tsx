@@ -64,7 +64,7 @@ export function CtaBlock({ block, header, bg, editable, onEdit, onEditConfig, bl
                 {desc && <p className="mt-4 text-muted-foreground">{desc}</p>}
               </div>
             </FieldOverlay>
-            <ConsultButton href={link} showLogin={showLogin} className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <ConsultButton className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
               立即咨询
               <ArrowRight className="size-4" />
             </ConsultButton>
