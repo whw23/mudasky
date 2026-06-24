@@ -366,5 +366,5 @@ class TestConstants:
         assert "image/svg+xml" not in CONVERTIBLE_MIME_TYPES
 
     def test_max_size(self):
-        """最大上传大小为 10MB。"""
-        assert MAX_IMAGE_SIZE == 10 * 1024 * 1024
+        """最大上传大小为 50MB。"""
+        assert MAX_IMAGE_SIZE == 50 * 1024 * 1024

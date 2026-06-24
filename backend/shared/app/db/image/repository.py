@@ -17,7 +17,7 @@ ALLOWED_MIME_TYPES = {
     "image/svg+xml",
     "application/pdf",
 }
-MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB
+MAX_IMAGE_SIZE = 50 * 1024 * 1024  # 50MB
 
 CONVERTIBLE_MIME_TYPES = {"image/png", "image/jpeg", "image/gif"}
 WEBP_QUALITY = 95
