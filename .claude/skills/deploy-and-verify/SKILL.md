@@ -71,10 +71,12 @@ gh run list -L 3
 
 ## 验证流程
 
+验证通过 HTTPS 域名访问生产环境。具体域名由本地环境变量 `PRODUCTION_DOMAIN` 提供，不在公开仓库中硬编码。
+
 ### 5. 检查版本
 
 ```bash
-curl -sf http://${PRODUCTION_HOST}:{GATEWAY_PORT}/api/version
+curl -sf https://${PRODUCTION_DOMAIN}/api/version
 ```
 
 返回四个容器的版本号（格式 `YYYYMMDD-<7位hash>`）。对比 main 分支的 commit hash，确认各容器是否更新。版本不一致是正常的 — CI 按路径过滤，只构建有改动的服务。
@@ -82,7 +84,7 @@ curl -sf http://${PRODUCTION_HOST}:{GATEWAY_PORT}/api/version
 ### 6. 健康检查
 
 ```bash
-curl -sf http://${PRODUCTION_HOST}:{GATEWAY_PORT}/api/health
+curl -sf https://${PRODUCTION_DOMAIN}/api/health
 ```
 
 预期返回 `{"status":"ok","version":"..."}`。
