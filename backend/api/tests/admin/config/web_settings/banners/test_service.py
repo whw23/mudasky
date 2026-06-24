@@ -204,8 +204,8 @@ async def test_upload_banner_file_too_large(
         return_value=_make_config_record(banners)
     )
 
-    # 11MB 数据，超过 10MB 限制
-    large_data = b"x" * (11 * 1024 * 1024)
+    # 51MB 数据，超过 50MB 限制
+    large_data = b"x" * (51 * 1024 * 1024)
     file = _make_upload_file(data=large_data)
     with pytest.raises(BadRequestException) as exc_info:
         await service.upload_banner("home", file)
